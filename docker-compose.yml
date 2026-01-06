@@ -1,0 +1,41 @@
+services:
+  api:
+    build: .
+    container_name: llm-chat-api
+    environment:
+      APP_ENV: ${APP_ENV:-development}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    ports:
+      - "8001:8000"
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - llmnet
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: llm-chat-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-llmchat}
+      POSTGRES_USER: ${POSTGRES_USER:-llmchat}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-llmchatpass}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - llmnet
+
+  redis:
+    image: redis:7-alpine
+    container_name: llm-chat-redis
+    ports:
+     - "6380:6379"
+    networks:
+      - llmnet
+
+networks:
+  llmnet:
+
+volumes:
+  postgres_data:
+
