@@ -4,6 +4,10 @@ import sys
 
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
+from app.infra.db import test_db_connection
+from app.infra.redis_client import test_redis_connection
+from app.api.ops import router as ops_router
+
 
 
 def _get_env(name: str, default: str) -> str:
@@ -45,6 +49,17 @@ app = FastAPI(
     title="LLM Chat Platform API",
     version="0.1.0",
 )
+app.include_router(ops_router)
+
+@app.on_event("startup")
+async def startup() -> None:
+    logger.info("starting application")
+
+    # Fail fast: si algo crítico no está disponible, no levantamos la app
+    await test_db_connection()
+    await test_redis_connection()
+
+    logger.info("dependencies ready")
 
 
 @app.get("/health", tags=["ops"])
@@ -57,3 +72,4 @@ def health():
             "app_env": APP_ENV,
         },
     )
+
