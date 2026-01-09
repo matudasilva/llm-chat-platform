@@ -112,3 +112,4 @@ Dependency-level health checks (database and cache connectivity at runtime) will
 Detailed technical documentation is available in the `docs/` directory, including the project's **Low Level Design (LLD)**:
 
 * `docs/lld_llm_chat_platform.md`
+
