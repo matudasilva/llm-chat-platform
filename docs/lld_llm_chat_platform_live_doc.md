@@ -77,13 +77,19 @@ llm-chat-platform/
 │   ├── main.py
 │   ├── api/
 │   │   └── ops.py
+│   ├── infra/
+│   │   ├── db.py
+│   │   ├── redis_client.py
+│   │   └── db/
+│   │       ├── __init__.py
+│   │       ├── base.py
+│   │       └── session.py
 │   └── requirements.txt
 ├── docs/
 │   └── lld_llm_chat_platform.md
 ├── infra/
 ├── scripts/
 ├── .env.example
-├── .gitignore
 ├── docker-compose.yml
 ├── Dockerfile
 └── README.md
@@ -127,7 +133,7 @@ The application loads configuration from environment variables to ensure portabi
 | APP_ENV   | Execution environment | development |
 | LOG_LEVEL | Logging level         | INFO        |
 
-Database and cache configuration is provided via environment variables and composed internally by the application.
+Database and cache configuration is provided via environment variables (`POSTGRES_*`, `REDIS_*`) and composed internally by the application.
 
 ### 6.2 Resolution strategy
 
@@ -243,10 +249,7 @@ Containerize the API and provision base infrastructure services while preserving
 ### 11.4 Networking
 
 * Docker network: `llmnet`
-* Internal service communication via service names:
-
-  * `postgres`
-  * `redis`
+* Internal service communication via service names (`postgres`, `redis`)
 
 ---
 
@@ -282,40 +285,56 @@ Dependency-level health checks (database and cache connectivity) are **intention
 
 ---
 
-## 14. Update – Day 5 (Compose hardening & deferred dependency checks)
+## 14. Update – Day 5 (Persistence scaffolding & operational alignment)
 
 ### Scope completed
 
-* Docker Compose refined to decouple API startup from dependency readiness:
+* SQLAlchemy 2.x **async scaffolding** introduced (engine, session, base)
+* PostgreSQL connectivity prepared using `asyncpg`
+* Database URL composed internally from environment variables (`POSTGRES_*`)
+* Redis connectivity maintained via existing client (no runtime coupling)
+* Docker Compose healthchecks validated for PostgreSQL and Redis
+* `/health` endpoint kept **process-level only** (no dependency checks)
+* Dependency-level health endpoint (`/health/deps`) explicitly **deferred**
 
-  * API depends on Postgres and Redis using `condition: service_started`
-* Infrastructure-level healthchecks added and validated:
+### Database layer structure
 
-  * PostgreSQL: `pg_isready`
-  * Redis: `redis-cli PING`
-* Application runtime behavior clarified:
+```
+app/infra/
+├── db.py              # Compatibility shim (re-export)
+├── redis_client.py
+└── db/
+    ├── __init__.py
+    ├── base.py        # DeclarativeBase for future ORM models
+    └── session.py     # Async engine, session factory, helpers
+```
 
-  * No DB or Redis checks executed during FastAPI startup
-  * `GET /health` remains process-level only
+### Design decisions
 
-### Design decision: defer runtime dependency checks
+* **No database checks at application startup**
 
-Dependency checks remain intentionally **out of the application runtime path** at this stage.
+  * Startup remains fast and resilient
+  * Infrastructure readiness validated externally (Docker healthchecks)
 
-A dedicated dependency endpoint (e.g. `GET /health/deps`) will be introduced once persistence and migration tooling are in place.
+* **No runtime dependency health endpoint yet**
 
-### Current status summary
+  * `/health/deps` postponed to Day 6/7
 
-The platform now provides:
+* **Progressive refactor strategy**
 
-* Stable containerized execution
-* Docker-level visibility into dependency health
-* Process-level liveness endpoint
-* Clean and explicit foundation for:
+  * `app/infra/db.py` retained as a shim to avoid breaking imports
 
-  * SQLAlchemy integration
-  * Alembic migrations
-  * Persistence layer design
+### Validation
+
+* `docker compose up --build` completes successfully
+* API responds to `GET /health`
+* PostgreSQL and Redis containers report `healthy` status
+
+### Out of scope (explicitly deferred)
+
+* ORM models (`Conversation`, `Message`, `UsageEvent`)
+* Alembic migrations
+* Runtime dependency readiness probes
 
 ---
 
@@ -330,7 +349,7 @@ The platform now provides:
 
 ### Day 7+
 
-* Introduce persistence models (Conversation, Message, UsageEvent)
+* Introduce persistence models
 * Add dependency health endpoint (`GET /health/deps`)
 * Expand observability (metrics / traces)
 * Begin LLM provider integration

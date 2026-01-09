@@ -1,16 +1,7 @@
 from fastapi import APIRouter
 
-from app.infra.db import test_db_connection
-from app.infra.redis_client import test_redis_connection
+router = APIRouter(tags=["ops"])
 
-router = APIRouter(prefix="/health", tags=["ops"])
-
-
-@router.get("/deps")
-async def health_deps():
-    await test_db_connection()
-    await test_redis_connection()
-    return {
-        "postgres": "ok",
-        "redis": "ok",
-    }
+# Day 5:
+# Dependency-level health checks are intentionally deferred.
+# /health/deps will be introduced in Day 6/7 once migrations/persistence are in place.
