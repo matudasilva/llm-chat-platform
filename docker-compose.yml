@@ -4,14 +4,11 @@ services:
     container_name: llm-chat-api
     env_file:
       - .env
-    environment:
-      APP_ENV: ${APP_ENV:-development}
-      LOG_LEVEL: ${LOG_LEVEL:-INFO}
     ports:
       - "8001:8000"
     depends_on:
       postgres:
-        condition: service_healthy
+        condition: service_started
       redis:
         condition: service_started
     networks:
@@ -26,6 +23,8 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-llmchatpass}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
+
     healthcheck:
         test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
         interval: 5s
@@ -37,10 +36,17 @@ services:
   redis:
     image: redis:7-alpine
     container_name: llm-chat-redis
-    ports:
-     - "6380:6379"
+
+    healthcheck:
+        test: ["CMD", "redis-cli", "PING"]
+        interval: 5s
+        timeout: 3s
+        retries: 10  
     networks:
       - llmnet
+    ports:
+     - "6380:6379"
+
 
 networks:
   llmnet:
