@@ -10,7 +10,8 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 
 from infra.db.base import Base
-from core.settings import settings 
+from core.settings import settings
+import models
 
 config = context.config
 
@@ -20,6 +21,7 @@ config.set_main_option("sqlalchemy.url", db_url)
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
+
 
 target_metadata = Base.metadata
 

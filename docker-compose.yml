@@ -14,7 +14,8 @@ services:
     networks:
       - llmnet
     environment:
-        DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-llmchat}:${POSTGRES_PASSWORD:-__REDACTED__}@llm-chat-postgres:5432/${POSTGRES_DB:-llmchat}
+        DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-llmchat}:${POSTGRES_PASSWORD:-__REDACTED__}@postgres:5432/${POSTGRES_DB:-llmchat}
+
 
 
 
