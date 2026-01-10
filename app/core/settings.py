@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     postgres_port: int = 5432
     postgres_db: str = "llmchat"
     postgres_user: str = "llmchat"
-    postgres_password: str = "__REDACTED__"
+    postgres_password: str = "__CHANGEME__"
 
     @property
     def database_url(self) -> str:
