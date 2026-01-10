@@ -1,359 +1,347 @@
-# Low Level Design (LLD)
+# LLM Chat Platform — LLD (Low Level Design)
 
-## Project: LLM Chat Platform
+**Document type:** Living LLD + architectural decision log
 
----
+**Scope:** Backend (FastAPI) for an LLM-based chat platform. This document captures low-level structure, implementation conventions, and the rationale behind key decisions.
 
-## 1. Document objective
-
-This document describes the **Low Level Design (LLD)** of the *LLM Chat Platform* project, covering the technical decisions, repository structure, and service behavior implemented during the initial development phases.
-
-The LLD serves as a technical reference for:
-
-* Project evolution
-* Architectural review
-* Technical interviews / portfolio presentation
-
-This is a **living document**, updated as the project evolves.
+**Source of truth:** This LLD is authoritative for decisions about runtime behavior, layering, configuration, and operational workflows.
 
 ---
 
-## 2. Current scope
+## 1. Context and objectives
 
-### Included
+### 1.1 Problem statement
 
-* Git repository initialization
-* Base project structure
-* Minimal API service built with FastAPI
-* Environment-based configuration
-* Structured logging to stdout
-* Process-level health endpoint
-* Containerization with Docker Compose
-* Base infrastructure services:
+Build a backend foundation for an LLM chat platform that can evolve safely: predictable runtime behavior, clear module boundaries, reproducible operations (migrations), and strong traceability.
 
-  * PostgreSQL
-  * Redis
+### 1.2 Current stack
 
-### Not included yet
+* **FastAPI** (HTTP API)
+* **PostgreSQL** (persistence)
+* **Redis** (cache / future orchestration)
+* **Docker Compose** (local/dev orchestration)
 
-* Model-level persistence (tables / migrations)
-* Alembic migrations
-* Authentication / authorization
-* LLM provider integration
-* Prompt/version management
-* Observability (metrics, traces)
+### 1.3 Guiding principles
+
+* **Separation of concerns:** runtime API behavior vs operational workflows (migrations, readiness).
+* **Explicit tradeoffs:** avoid hidden coupling and premature complexity.
+* **Traceability:** changes are reflected in both code and documentation.
+* **Incremental delivery:** foundations first (structure + discipline), features later.
 
 ---
 
-## 3. Repository and version control
+## 2. Architecture overview
 
-### 3.1 Repository
+### 2.1 High-level components
 
-* Name: `llm-chat-platform`
-* Hosting: GitHub
-* Default branch: `main`
+1. **API (FastAPI)**
 
-### 3.2 Commit conventions
+* Serves HTTP endpoints.
+* Will orchestrate chat sessions, provider calls, and persistence over time.
 
-The project follows a convention compatible with **Conventional Commits**:
+2. **PostgreSQL**
 
-* `chore:` structural or maintenance tasks
-* `feat:` new functionality
-* `docs:` documentation changes
+* Stores structured data once models are introduced.
+* Schema changes managed via Alembic migrations.
 
-Example:
+3. **Redis**
+
+* Reserved for caching and future use cases (rate limiting, ephemeral state, background orchestration, queues).
+
+### 2.2 Runtime coupling policy (critical)
+
+**The API runtime must not be coupled to DB/Redis readiness at startup** in the current phase.
+
+* No startup DB checks.
+* No startup Redis checks.
+* No automatic migration on startup.
+
+Rationale:
+
+* Deterministic API startup.
+* Clear separation between operational steps and runtime availability.
+* Avoid “dependency transient failure” preventing API boot.
+
+---
+
+## 3. Repository structure and module boundaries
+
+### 3.1 Current structure (simplified)
 
 ```
-feat(api): init fastapi app with health endpoint and env config
+app/
+  main.py
+  api/
+    ops.py                 # operational endpoints
+  core/
+    settings.py            # configuration (pydantic-settings)
+  infra/
+    db.py                  # compatibility shim (re-export)
+    db/
+      base.py              # DeclarativeBase
+      session.py           # async engine/session + helpers
+    redis_client.py        # redis client init (if present)
+  alembic/
+    env.py
+    versions/
+  alembic.ini
+
+README.md
+LLD.md
+.env.example
+docker-compose.yml
+Dockerfile
 ```
+
+### 3.2 Layering rules
+
+* **core/**
+
+  * Configuration and cross-cutting primitives.
+  * Must not depend on infra details.
+
+* **infra/**
+
+  * Infrastructure integration: DB engines/sessions, Redis client.
+  * Can depend on `core.settings`.
+
+* **api/**
+
+  * HTTP boundary: request/response, operational endpoints.
+  * Should not contain infra boot logic beyond dependency injection.
 
 ---
 
-## 4. Project structure
+## 4. Configuration strategy
 
-```text
-llm-chat-platform/
-├── app/
-│   ├── main.py
-│   ├── api/
-│   │   └── ops.py
-│   ├── infra/
-│   │   ├── db.py
-│   │   ├── redis_client.py
-│   │   └── db/
-│   │       ├── __init__.py
-│   │       ├── base.py
-│   │       └── session.py
-│   └── requirements.txt
-├── docs/
-│   └── lld_llm_chat_platform.md
-├── infra/
-├── scripts/
-├── .env.example
-├── docker-compose.yml
-├── Dockerfile
-└── README.md
-```
+### 4.1 Source of truth
 
-### 4.1 Directory responsibilities
+* Runtime configuration is derived from environment variables via `core.settings`.
+* Alembic also resolves the DB URL from **`settings.database_url`**.
 
-| Path     | Responsibility                            |
-| -------- | ----------------------------------------- |
-| app/     | API code and application logic            |
-| docs/    | Technical and architectural documentation |
-| infra/   | Infrastructure as Code (future)           |
-| scripts/ | Operational / automation scripts          |
+### 4.2 Database URL
+
+* SQLAlchemy async URL format:
+
+  * `postgresql+asyncpg://USER:PASSWORD@HOST:5432/DBNAME`
+
+* In Docker Compose, prefer using the **service name** as host:
+
+  * `@postgres:5432/...`
+
+Rationale:
+
+* Service DNS is stable across Compose runs.
+* Container names are not a stable interface.
 
 ---
 
-## 5. API service
+## 5. Health and readiness
 
-### 5.1 Framework
+### 5.1 `/health` endpoint policy
 
-* **FastAPI**
-* ASGI server: **Uvicorn**
+* `GET /health` is **process-level only**.
+* It validates only that the API process is running and responsive.
 
-**Rationale**
+### 5.2 Dependency readiness policy
 
-* High performance
-* Strong typing
-* Native async support
-* De facto standard for modern ML/AI-oriented APIs
+* Postgres and Redis are validated via Docker healthchecks:
 
----
+  * Postgres: `pg_isready`
+  * Redis: `redis-cli PING`
 
-## 6. Environment-based configuration
+### 5.3 Deferred endpoint
 
-The application loads configuration from environment variables to ensure portability across local, containerized, and future cloud environments.
+* `/health/deps` (DB + Redis connectivity) is intentionally deferred to a later phase.
 
-### 6.1 Defined variables
+Rationale:
 
-| Variable  | Description           | Default     |
-| --------- | --------------------- | ----------- |
-| APP_ENV   | Execution environment | development |
-| LOG_LEVEL | Logging level         | INFO        |
-
-Database and cache configuration is provided via environment variables (`POSTGRES_*`, `REDIS_*`) and composed internally by the application.
-
-### 6.2 Resolution strategy
-
-* Loaded at startup
-* Defaults applied when missing
-* Empty values normalized
-* `.env.example` documents the full configuration contract
+* Avoid early coupling and complexity.
+* Introduce dependency checks once persistence usage is real and stable.
 
 ---
 
-## 7. Logging
+## 6. Database integration (SQLAlchemy 2.0 async)
 
-### 7.1 Strategy
+### 6.1 Components
 
-* Logging to **stdout**
-* Container- and cloud-friendly
-* Single, consistent formatter
-* Compatible with Docker and orchestration platforms
+* `app/infra/db/base.py`
 
-### 7.2 Logged components
+  * Defines `Base` via SQLAlchemy `DeclarativeBase`.
 
-* Root logger
-* Uvicorn core
-* Uvicorn access logs
-* Application lifecycle events
+* `app/infra/db/session.py`
 
-Example:
+  * Defines async `engine`, `SessionLocal`, and `get_db()` dependency.
+  * May include a `test_db_connection()` helper used for manual diagnostics.
 
-```
-2026-01-09T01:42:49+0000 INFO app starting application
-```
+* `app/infra/db.py` (shim)
 
----
+  * Re-export module to avoid breaking imports while structure evolves.
 
-## 8. Health endpoints
+### 6.2 Session management
 
-### 8.1 Process-level health endpoint
+* Use `async_sessionmaker`.
+* `expire_on_commit=False` to avoid implicit lazy loads after commit in async contexts.
 
-**Endpoint**
+### 6.3 Startup behavior
 
-```
-GET /health
-```
-
-**Response**
-
-```json
-{
-  "status": "ok",
-  "app_env": "development"
-}
-```
-
-**Purpose**
-
-* Process liveness verification
-* Basis for container and orchestration liveness probes
-* Does not perform dependency checks
+* No mandatory DB connection checks on startup.
+* DB connectivity is verified operationally or via Docker healthchecks.
 
 ---
 
-## 9. Local execution
+## 7. Migrations (Alembic)
 
-### 9.1 Virtual environment
+### 7.1 Decision
 
-* Local Python virtual environment (`.venv`)
+Alembic is enabled for **reproducible schema migrations**.
 
-### 9.2 Execution
+* Migrations are an **operational step**.
+* Migrations are executed **inside the `api` container**.
+* Alembic uses **SQLAlchemy async** migration flow.
+* Alembic resolves DB URL from **`settings.database_url`**.
+
+### 7.2 Layout
+
+* `app/alembic/`
+* `app/alembic.ini`
+
+Rationale:
+
+* Tooling lives next to application code.
+* Avoids ambiguity across host vs container environments.
+
+### 7.3 Alembic env.py requirements
+
+* `target_metadata = Base.metadata`
+* Async online migrations using:
+
+  * `async_engine_from_config`
+  * `asyncio.run(run_migrations_online())`
+  * `connection.run_sync(...)`
+
+### 7.4 Canonical commands
+
+Run from project root:
 
 ```bash
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+docker compose exec -w /app/app api alembic current
+docker compose exec -w /app/app api alembic upgrade head
+docker compose exec -w /app/app api alembic revision -m "describe change"
+docker compose exec -w /app/app api alembic downgrade -1
 ```
 
-### 9.3 Testing
+Validate applied version directly in Postgres:
 
 ```bash
-curl http://127.0.0.1:8000/health
+docker compose exec postgres bash -lc 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "select * from alembic_version;"'
 ```
 
 ---
 
-## 10. Current state summary
+## 8. Redis integration
 
-* ✔ Minimal API operational
-* ✔ Environment-based configuration
-* ✔ Structured logging
-* ✔ Process-level health endpoint
-* ✔ Solid foundation for persistence and LLM integration
+### 8.1 Current intent
 
----
+Redis is included in the stack as a foundational dependency for:
 
-## 11. Day 3 – Containerization and base services
+* Caching
+* Rate limiting
+* Ephemeral session state
+* Future background orchestration
 
-### 11.1 Objective
+### 8.2 Current runtime coupling
 
-Containerize the API and provision base infrastructure services while preserving environment-based configuration and coexistence with other local stacks.
-
-### 11.2 Added artifacts
-
-* `Dockerfile` (API)
-* `docker-compose.yml` (API + PostgreSQL + Redis)
-* `.dockerignore`
-* Dedicated Docker network (`llmnet`)
-
-### 11.3 Services
-
-| Service  | Image / Build      | Port (host → container) | Purpose             |
-| -------- | ------------------ | ----------------------- | ------------------- |
-| api      | build (Dockerfile) | 8001 → 8000             | FastAPI (Uvicorn)   |
-| postgres | postgres:16-alpine | internal → 5432         | Relational database |
-| redis    | redis:7-alpine     | 6380 → 6379             | Cache / future use  |
-
-### 11.4 Networking
-
-* Docker network: `llmnet`
-* Internal service communication via service names (`postgres`, `redis`)
+* No mandatory Redis checks on startup.
+* Redis readiness validated via Docker healthcheck.
 
 ---
 
-## 12. Dependency management (Python)
+## 9. Logging and observability
 
-The project explicitly separates:
+### 9.1 Logging
 
-* `app/requirements.txt`: direct runtime dependencies
-* `requirements.lock` (optional): fully frozen dependency set
+* Use standard Python logging.
+* Ensure logs are actionable (clear context, avoid noisy stack traces for expected transient issues).
 
-**Rationale**
+### 9.2 Observability roadmap
 
-* Keep runtime dependencies readable
-* Allow strict reproducibility when required (CI / prod)
+Later phases may add:
 
----
-
-## 13. Update – Day 4 (Foundation & stability)
-
-### Scope completed
-
-* FastAPI application containerized and running under Docker Compose
-* PostgreSQL and Redis services integrated as core infrastructure
-* Centralized environment-based configuration
-* Structured logging enabled at application startup
-* Process-level health endpoint exposed (`GET /health`)
-
-### Design decision: health checks
-
-At this stage, the platform exposes **only a process-level health endpoint**.
-
-Dependency-level health checks (database and cache connectivity) are **intentionally deferred** to avoid coupling application startup stability to transient infrastructure conditions.
+* Structured logging (JSON)
+* Request IDs / correlation IDs
+* Metrics (Prometheus-compatible)
+* Distributed tracing (OpenTelemetry)
 
 ---
 
-## 14. Update – Day 5 (Persistence scaffolding & operational alignment)
+## 10. Security and governance (baseline)
 
-### Scope completed
-
-* SQLAlchemy 2.x **async scaffolding** introduced (engine, session, base)
-* PostgreSQL connectivity prepared using `asyncpg`
-* Database URL composed internally from environment variables (`POSTGRES_*`)
-* Redis connectivity maintained via existing client (no runtime coupling)
-* Docker Compose healthchecks validated for PostgreSQL and Redis
-* `/health` endpoint kept **process-level only** (no dependency checks)
-* Dependency-level health endpoint (`/health/deps`) explicitly **deferred**
-
-### Database layer structure
-
-```
-app/infra/
-├── db.py              # Compatibility shim (re-export)
-├── redis_client.py
-└── db/
-    ├── __init__.py
-    ├── base.py        # DeclarativeBase for future ORM models
-    └── session.py     # Async engine, session factory, helpers
-```
-
-### Design decisions
-
-* **No database checks at application startup**
-
-  * Startup remains fast and resilient
-  * Infrastructure readiness validated externally (Docker healthchecks)
-
-* **No runtime dependency health endpoint yet**
-
-  * `/health/deps` postponed to Day 6/7
-
-* **Progressive refactor strategy**
-
-  * `app/infra/db.py` retained as a shim to avoid breaking imports
-
-### Validation
-
-* `docker compose up --build` completes successfully
-* API responds to `GET /health`
-* PostgreSQL and Redis containers report `healthy` status
-
-### Out of scope (explicitly deferred)
-
-* ORM models (`Conversation`, `Message`, `UsageEvent`)
-* Alembic migrations
-* Runtime dependency readiness probes
+* Configuration via environment variables only; avoid secrets in repo.
+* No runtime behavior should require elevated permissions.
+* Migrations are operational and should be executed by trusted operators only.
 
 ---
 
-## 15. Planned next steps
+## 11. Roadmap (implementation-level)
 
-### Day 6
+### 11.1 Next steps (near-term)
 
-* Initialize Alembic
-* Configure migration environment
-* First reproducible migration
-* Prepare base ORM models
+* Introduce the first real model(s) (e.g., conversation/session entities).
+* Generate the first non-empty Alembic migration(s).
+* Add `/health/deps` once persistence and caching are actively used.
 
-### Day 7+
+### 11.2 Later
 
-* Introduce persistence models
-* Add dependency health endpoint (`GET /health/deps`)
-* Expand observability (metrics / traces)
-* Begin LLM provider integration
+* LLM provider abstraction layer
+* Conversation lifecycle + auditing
+* Policy controls (rate limiting, quotas)
+* LLMOps/LLMOps hooks:
+
+  * prompt/version traceability
+  * provider lifecycle
+  * evaluation harness integration
 
 ---
 
-**End of document**
+## 12. Decision log (ADR-style, abbreviated)
+
+### ADR-001 — Process-level `/health` only (current phase)
+
+**Decision:** `/health` is process-level only. Dependency checks remain at Docker level.
+
+**Why:** avoid early coupling; keep runtime deterministic.
+
+**Impact:** operational health for DB/Redis is handled via container healthchecks; `/health/deps` deferred.
+
+---
+
+### ADR-002 — No startup coupling to DB/Redis
+
+**Decision:** API does not check DB/Redis readiness on startup.
+
+**Why:** resilience and predictable boot; avoid cascading failures.
+
+**Impact:** operators rely on Docker health + operational commands for validation.
+
+---
+
+### ADR-003 — Alembic initialized under `app/` and executed in container
+
+**Decision:** Alembic lives under `app/alembic*` and runs via `docker compose exec -w /app/app api alembic ...`.
+
+**Why:** single canonical execution environment; reduces host/container drift.
+
+**Impact:** migrations are reproducible across machines; docs provide canonical commands.
+
+---
+
+### ADR-004 — Alembic DB URL comes from `settings.database_url`
+
+**Decision:** Alembic `env.py` sets `sqlalchemy.url` from `core.settings`.
+
+**Why:** single source of truth; avoids brittle INI interpolation.
+
+**Impact:** consistent configuration across runtime and tooling.
+
+---
