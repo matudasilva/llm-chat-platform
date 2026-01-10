@@ -13,51 +13,44 @@ services:
         condition: service_started
     networks:
       - llmnet
-    environment:
-        DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-llmchat}:${POSTGRES_PASSWORD:-__REDACTED__}@postgres:5432/${POSTGRES_DB:-llmchat}
-
-
-
+    # NO construir DATABASE_URL acá. Que venga en .env
+    # environment:
+    #   DATABASE_URL: ${DATABASE_URL}
 
   postgres:
     image: postgres:16-alpine
     container_name: llm-chat-postgres
+    env_file:
+      - .env
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-llmchat}
-      POSTGRES_USER: ${POSTGRES_USER:-llmchat}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-__REDACTED__}
-
-
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-
-
     healthcheck:
-        test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
-        interval: 5s
-        timeout: 5s
-        retries: 5
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     networks:
       - llmnet
 
   redis:
     image: redis:7-alpine
     container_name: llm-chat-redis
-
     healthcheck:
-        test: ["CMD", "redis-cli", "PING"]
-        interval: 5s
-        timeout: 3s
-        retries: 10  
+      test: ["CMD", "redis-cli", "PING"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
     networks:
       - llmnet
     ports:
-     - "6380:6379"
-
+      - "6380:6379"
 
 networks:
   llmnet:
 
 volumes:
   postgres_data:
-
