@@ -13,6 +13,10 @@ services:
         condition: service_started
     networks:
       - llmnet
+    environment:
+        DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-llmchat}:${POSTGRES_PASSWORD:-llmchatpass}@llm-chat-postgres:5432/${POSTGRES_DB:-llmchat}
+
+
 
   postgres:
     image: postgres:16-alpine
@@ -21,6 +25,8 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-llmchat}
       POSTGRES_USER: ${POSTGRES_USER:-llmchat}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-llmchatpass}
+
+
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
