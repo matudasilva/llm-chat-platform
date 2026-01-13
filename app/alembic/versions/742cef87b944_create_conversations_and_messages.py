@@ -33,9 +33,26 @@ def upgrade() -> None:
         sa.Column("metadata", postgresql.JSONB, nullable=True),
     )
 
-    # enum type for role
-    role_enum = sa.Enum("user", "assistant", "system", name="message_role")
-    role_enum.create(op.get_bind(), checkfirst=True)
+    # enum type for role (idempotent creation + prevent implicit create)
+    op.execute(sa.text("""
+    DO $$
+    BEGIN
+        IF NOT EXISTS (
+            SELECT 1
+            FROM pg_type t
+            JOIN pg_namespace n ON n.oid = t.typnamespace
+            WHERE t.typname = 'message_role'
+        ) THEN
+            CREATE TYPE message_role AS ENUM ('user', 'assistant', 'system');
+        END IF;
+    END$$;
+    """))
+
+    role_enum = postgresql.ENUM(
+        "user", "assistant", "system",
+        name="message_role",
+        create_type=False,
+    )
 
     # messages
     op.create_table(
@@ -60,9 +77,13 @@ def upgrade() -> None:
     )
 
 
+
 def downgrade() -> None:
     op.drop_index("ix_messages_conversation_id_created_at", table_name="messages")
     op.drop_table("messages")
     op.drop_table("conversations")
+    op.execute(sa.text("DROP TYPE IF EXISTS message_role;"))
 
-    sa.Enum("user", "assistant", "system", name="message_role").drop(op.get_bind(), checkfirst=True)
+
+
+
