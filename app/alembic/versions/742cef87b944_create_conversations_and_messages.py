@@ -14,6 +14,8 @@ from typing import Sequence, Union
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
+from sqlalchemy import inspect
+
 
 # revision identifiers, used by Alembic.
 revision: str = "742cef87b944"
@@ -23,15 +25,20 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
+    bind = op.get_bind()
+    inspector = inspect(bind)
+    existing_tables = set(inspector.get_table_names())
+
     # conversations
-    op.create_table(
-        "conversations",
-        sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True, nullable=False),
-        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
-        sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
-        sa.Column("title", sa.String(length=255), nullable=True),
-        sa.Column("metadata", postgresql.JSONB, nullable=True),
-    )
+    if "conversations" not in existing_tables:
+        op.create_table(
+            "conversations",
+            sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True, nullable=False),
+            sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
+            sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
+            sa.Column("title", sa.String(length=255), nullable=True),
+            sa.Column("metadata", postgresql.JSONB, nullable=True),
+        )
 
     # enum type for role (idempotent creation + prevent implicit create)
     op.execute(sa.text("""
@@ -55,26 +62,28 @@ def upgrade() -> None:
     )
 
     # messages
-    op.create_table(
-        "messages",
-        sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True, nullable=False),
-        sa.Column(
-            "conversation_id",
-            postgresql.UUID(as_uuid=True),
-            sa.ForeignKey("conversations.id", ondelete="CASCADE"),
-            nullable=False,
-        ),
-        sa.Column("role", role_enum, nullable=False),
-        sa.Column("content", sa.Text(), nullable=False),
-        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
-    )
+    if "messages" not in existing_tables:
+        op.create_table(
+            "messages",
+            sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True, nullable=False),
+            sa.Column(
+                "conversation_id",
+                postgresql.UUID(as_uuid=True),
+                sa.ForeignKey("conversations.id", ondelete="CASCADE"),
+                nullable=False,
+            ),
+            sa.Column("role", role_enum, nullable=False),
+            sa.Column("content", sa.Text(), nullable=False),
+            sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
+        )
 
-    op.create_index(
-        "ix_messages_conversation_id_created_at",
-        "messages",
-        ["conversation_id", "created_at"],
-        unique=False,
-    )
+        op.create_index(
+            "ix_messages_conversation_id_created_at",
+            "messages",
+            ["conversation_id", "created_at"],
+            unique=False,
+        )
+
 
 
 

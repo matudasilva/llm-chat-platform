@@ -8,7 +8,8 @@ from sqlalchemy import DateTime, Enum, ForeignKey, Index, Text, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from infra.db.base import Base
+from app.infra.db.base import Base
+
 
 
 class MessageRole(str, enum.Enum):

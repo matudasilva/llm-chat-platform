@@ -7,7 +7,8 @@ from sqlalchemy import DateTime, String, func
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from infra.db.base import Base
+from app.infra.db.base import Base
+
 
 
 class Conversation(Base):

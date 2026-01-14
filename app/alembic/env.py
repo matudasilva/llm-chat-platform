@@ -1,4 +1,10 @@
-from __future__ import annotations
+import os
+import sys
+sys.path.insert(
+    0,
+    os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+)
+
 
 import asyncio
 from logging.config import fileConfig
@@ -9,9 +15,9 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 
-from infra.db.base import Base
-from core.settings import settings
-import models
+from app.infra.db.base import Base
+from app.core.settings import settings
+import app.models
 
 config = context.config
 

@@ -1,0 +1,15 @@
+# docker-compose.dev.yml
+# Overrides for local development:
+# - bind mounts
+# - host UID/GID mapping
+# - dev environment flags
+
+services:
+  api:
+    user: "${LOCAL_UID:-1000}:${LOCAL_GID:-1000}"
+    volumes:
+      - ./app:/app/app
+    environment:
+      APP_ENV: dev
+      PYTHONPATH: /app
+    

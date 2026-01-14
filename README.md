@@ -216,3 +216,52 @@ Verify:
 * Day 7: Conversation & Message persistence baseline
 
 Next steps will build on this stable core (repositories, API endpoints, LLM adapters).
+
+
+## Usage tracking (LLMOps – minimal)
+
+The platform includes a minimal, non-intrusive usage tracking mechanism
+designed to support observability and future cost analysis.
+
+### What is tracked
+
+For each chat request, the following data can be recorded:
+
+- provider
+- model_version
+- prompt_version
+- request_id
+- latency_ms
+- token counts (when available)
+- status / error_message
+- timestamp
+
+### Design principles
+
+- Best-effort logging (never breaks request handling)
+- Explicit DB session injection (no hidden globals)
+- No provider coupling
+- Safe for future async/background execution
+
+### Current state
+
+- Database table: `usage_events`
+- ORM model: `UsageEvent`
+- Logger service: `log_usage_event(...)`
+- Integrated at endpoint level with stub provider
+
+This will later be extended when real LLM providers are introduced.
+
+
+## Development environment
+
+Local development uses bind mounts to avoid rebuilding images when:
+
+- modifying Alembic migrations
+- iterating on ORM models
+- debugging import paths
+
+Start dev environment:
+
+```bash
+./scripts/dev_up.py

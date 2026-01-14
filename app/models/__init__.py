@@ -1,4 +1,5 @@
-from models.conversation import Conversation
-from models.message import Message, MessageRole
+from .conversation import Conversation
+from .message import Message, MessageRole
+from .usage_event import UsageEvent
 
-__all__ = ["Conversation", "Message", "MessageRole"]
+__all__ = ["Conversation", "Message", "MessageRole", "UsageEvent"]

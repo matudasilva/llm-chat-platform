@@ -3,8 +3,10 @@ import os
 import sys
 
 from fastapi import FastAPI
-from app.api.ops import router as ops_router
 
+from app.api.ops import router as ops_router
+from app.api.chat import router as chat_router
+from app.infra.db.session import test_db_connection
 
 
 def _get_env(name: str, default: str) -> str:
@@ -13,7 +15,6 @@ def _get_env(name: str, default: str) -> str:
 
 
 def _configure_logging(app_env: str, log_level: str) -> None:
-    # Logging to stdout for container/platform friendliness (even though we're not using Docker yet)
     numeric_level = getattr(logging, log_level.upper(), logging.INFO)
 
     handler = logging.StreamHandler(sys.stdout)
@@ -37,7 +38,6 @@ def _configure_logging(app_env: str, log_level: str) -> None:
 
 APP_ENV = _get_env("APP_ENV", "development")
 LOG_LEVEL = _get_env("LOG_LEVEL", "INFO")
-
 _configure_logging(APP_ENV, LOG_LEVEL)
 
 logger = logging.getLogger("app")
@@ -46,12 +46,17 @@ app = FastAPI(
     title="LLM Chat Platform API",
     version="0.1.0",
 )
-app.include_router(ops_router)
+
+# Routers (definí prefijos acá, no adentro del router)
+app.include_router(ops_router, prefix="/ops")
+app.include_router(chat_router, prefix="/chat")
+
 
 @app.on_event("startup")
 async def startup() -> None:
     logger.info("starting application")
-    # Dependency checks are intentionally deferred (LLD Day 4); /health is process-level only.
+    # Ya que tu DB y alembic están andando, esto te ahorra sorpresas:
+    await test_db_connection()
 
 
 @app.get("/health", tags=["ops"])
@@ -61,5 +66,3 @@ def health():
         "status": "ok",
         "app_env": APP_ENV,
     }
-    
-
