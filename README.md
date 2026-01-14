@@ -9,7 +9,7 @@ This repository intentionally prioritizes **clarity, traceability, and correctne
 ## Project goals
 
 * Provide a clean backend foundation for LLM-powered chat applications
-* Separate **runtime concerns** from **operational concerns** (DB readiness, migrations, etc.)
+* Separate **runtime concerns** from **operational concerns** (DB readiness, migrations, telemetry)
 * Maintain an explicit and auditable evolution of the data model
 * Serve as a reference-quality backend project (interview / portfolio grade)
 
@@ -17,7 +17,7 @@ This repository intentionally prioritizes **clarity, traceability, and correctne
 
 ## Tech stack
 
-* **FastAPI** — HTTP API layer
+* **FastAPI** — async HTTP API
 * **PostgreSQL** — persistent storage
 * **Redis** — caching / ephemeral data
 * **SQLAlchemy 2.0 (async)** — ORM
@@ -28,14 +28,16 @@ This repository intentionally prioritizes **clarity, traceability, and correctne
 
 ## Architectural principles
 
+### Runtime vs Operations
+
 * **No DB or Redis checks at API startup**
 
   * `/health` is process-level only
-  * Dependency readiness is handled by Docker healthchecks
+  * Dependency readiness is handled via Docker healthchecks
 
 * **Migrations are operational**
 
-  * Alembic is never invoked automatically by the API
+  * Alembic is never executed automatically by the API
   * Schema changes are explicit, reproducible steps
 
 * **Single source of truth for configuration**
@@ -50,34 +52,38 @@ This repository intentionally prioritizes **clarity, traceability, and correctne
 app/
   main.py
   api/
-    ops.py                  # operational endpoints (/health)
+    ops.py                  # /health
+    chat.py                 # /chat endpoint
   models/
-    __init__.py
     conversation.py
     message.py
+    usage_event.py
   infra/
-    db.py                   # compatibility shim (re-export)
+    db.py                   # compatibility shim
     db/
       base.py               # DeclarativeBase
-      session.py            # async engine/session + helpers
+      session.py            # async engine/session
+  services/
+    usage_logger.py         # telemetry logging
   alembic/
     env.py
     versions/
   alembic.ini
-  requirements.txt
+
+scripts/
+  dev_up.py
 
 README.md
 LLD.md
 .env.example
 Dockerfile
 docker-compose.yml
+docker-compose.dev.yml
 ```
 
 ---
 
 ## Health endpoint
-
-The API exposes a **process-level** health endpoint:
 
 ```
 GET /health
@@ -85,13 +91,13 @@ GET /health
 
 Characteristics:
 
-* Confirms that the FastAPI process is alive
+* Confirms FastAPI process is alive
 * Does **not** check Postgres or Redis
-* Dependency readiness is validated via Docker Compose healthchecks
+* Dependency readiness validated by Docker Compose healthchecks
 
 ---
 
-## Data model (Day 7 baseline)
+## Data model (baseline)
 
 ### Conversation
 
@@ -101,6 +107,8 @@ Represents a logical chat session.
 * `created_at`, `updated_at`
 * optional `title`
 * optional `metadata` (JSONB)
+
+---
 
 ### Message
 
@@ -118,15 +126,35 @@ Represents a single message within a conversation.
 
 **Semantic contract**
 
-* `role = user` → human input
-* `role = assistant` → model output
-* `role = system` → system / control context
+* `user` → human input
+* `assistant` → model output
+* `system` → control / system context
+
+---
+
+### UsageEvent (LLMOps – minimal)
+
+Represents a single usage / telemetry event related to a model invocation.
+
+Tracked fields include:
+
+* `provider`
+* `model_version`
+* `prompt_version`
+* `request_id`
+* `latency_ms`
+* token counts (when available)
+* `status`
+* `error_message`
+* `created_at`
+
+This table is the **foundation for observability, cost analysis and auditability**.
 
 ---
 
 ## Database migrations (Alembic)
 
-Alembic is used for **reproducible schema evolution**.
+Alembic is used for **explicit, reproducible schema evolution**.
 
 ### Key rules
 
@@ -134,16 +162,7 @@ Alembic is used for **reproducible schema evolution**.
 * Alembic always resolves the DB URL from `settings.database_url`
 * Canonical execution environment is the `api` container
 
-### Layout
-
-```
-app/alembic/
-app/alembic.ini
-```
-
 ### Canonical commands
-
-All commands run inside the `api` container:
 
 ```bash
 docker compose exec -w /app/app api alembic current
@@ -173,20 +192,20 @@ This means:
 * Rebuilding the image without committed revisions can desynchronize:
 
   * Postgres `alembic_version`
-  * The repository’s migration graph
+  * Repository migration graph
 
 Typical failure symptoms:
 
 * `Can't locate revision identified by ...`
 * `KeyError` while resolving revisions
 
-**Operational rule**
-
 > Treat every Alembic revision file as a first-class source artifact.
 
 ---
 
-## Development workflow (local)
+## Development workflow
+
+### Standard (immutable images)
 
 ```bash
 git clone <repo>
@@ -202,66 +221,72 @@ Verify:
 
 ---
 
-## Documentation
+### Development mode (DEV – bind mounts)
 
-* **README.md** — High-level overview and operational rules
-* **LLD.md** — Living low-level design and architectural decisions
+Local development uses **bind mounts** to avoid rebuilding images when:
 
----
+* modifying Alembic migrations
+* iterating on ORM models
+* debugging import paths
 
-## Status
-
-* Day 1–5: Infrastructure, Docker, DB scaffolding
-* Day 6: Alembic initialization and migration pipeline
-* Day 7: Conversation & Message persistence baseline
-
-Next steps will build on this stable core (repositories, API endpoints, LLM adapters).
-
-
-## Usage tracking (LLMOps – minimal)
-
-The platform includes a minimal, non-intrusive usage tracking mechanism
-designed to support observability and future cost analysis.
-
-### What is tracked
-
-For each chat request, the following data can be recorded:
-
-- provider
-- model_version
-- prompt_version
-- request_id
-- latency_ms
-- token counts (when available)
-- status / error_message
-- timestamp
-
-### Design principles
-
-- Best-effort logging (never breaks request handling)
-- Explicit DB session injection (no hidden globals)
-- No provider coupling
-- Safe for future async/background execution
-
-### Current state
-
-- Database table: `usage_events`
-- ORM model: `UsageEvent`
-- Logger service: `log_usage_event(...)`
-- Integrated at endpoint level with stub provider
-
-This will later be extended when real LLM providers are introduced.
-
-
-## Development environment
-
-Local development uses bind mounts to avoid rebuilding images when:
-
-- modifying Alembic migrations
-- iterating on ORM models
-- debugging import paths
-
-Start dev environment:
+Start DEV environment:
 
 ```bash
 ./scripts/dev_up.py
+```
+
+Equivalent to:
+
+```bash
+docker compose \
+  -f docker-compose.yml \
+  -f docker-compose.dev.yml \
+  up -d
+```
+
+> ⚠️ DEV only. Production keeps images immutable.
+
+---
+
+## `/chat` endpoint – current state
+
+* Functional
+* Measures request latency
+* Persists `usage_events`
+* Uses a **stub provider** (no external LLM dependency yet)
+
+Acts as a **stable integration point** for future LLM providers.
+
+---
+
+## Project status (stable checkpoint)
+
+This repository is currently in a **stable and consistent state**, closing the structural phase:
+
+* Alembic migrations aligned (single head)
+* Core models implemented:
+
+  * `Conversation`
+  * `Message`
+  * `UsageEvent`
+* Minimal telemetry integrated
+* Fast iteration DEV environment in place
+
+All future work builds on this base.
+
+---
+
+## Next steps (not implemented yet)
+
+* LLM provider integration (OpenAI / Bedrock / etc.)
+* Conversation → message → usage chaining
+* Background / async-safe usage logging
+* Aggregated metrics and dashboards
+* Auth, rate limiting, quotas
+
+---
+
+## Documentation
+
+* **README.md** — Operational overview and rules
+* **LLD.md** — Living low-level design and architectural decisions
