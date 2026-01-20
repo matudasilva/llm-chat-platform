@@ -52,26 +52,27 @@ This repository intentionally prioritizes **clarity, traceability, and correctne
 app/
   main.py
   api/
+    routes/
+      chat.py               # /chat endpoint (write-path)
     ops.py                  # /health
-    chat.py                 # /chat endpoint
   models/
     conversation.py
     message.py
     usage_event.py
   infra/
-    db.py                   # compatibility shim
     db/
       base.py               # DeclarativeBase
       session.py            # async engine/session
   services/
-    usage_logger.py         # telemetry logging
-  alembic/
-    env.py
-    versions/
-  alembic.ini
+    usage_logger.py         # telemetry helper (legacy / optional)
+
+alembic/
+  env.py
+  versions/
 
 scripts/
   dev_up.py
+  dev_down.py
 
 README.md
 LLD.md
@@ -142,6 +143,8 @@ Tracked fields include:
 * `model_version`
 * `prompt_version`
 * `request_id`
+* `conversation_id` (FK)
+* `message_id` (FK)
 * `latency_ms`
 * token counts (when available)
 * `status`
@@ -149,6 +152,27 @@ Tracked fields include:
 * `created_at`
 
 This table is the **foundation for observability, cost analysis and auditability**.
+
+---
+
+## `/chat` endpoint — current state (Day 9)
+
+The `/chat` endpoint implements a **fully transactional write-path**.
+
+Each request executes, within a single DB transaction:
+
+1. Create or validate `Conversation`
+2. Persist `Message (user)`
+3. Execute model logic (currently a stub)
+4. Persist `Message (assistant)`
+5. Persist `UsageEvent` with valid foreign keys
+
+On failure:
+
+* Transaction is rolled back
+* A best-effort `UsageEvent` with `status=error` is recorded **without FKs**
+
+This guarantees **atomicity and traceability**.
 
 ---
 
@@ -248,17 +272,6 @@ docker compose \
 
 ---
 
-## `/chat` endpoint – current state
-
-* Functional
-* Measures request latency
-* Persists `usage_events`
-* Uses a **stub provider** (no external LLM dependency yet)
-
-Acts as a **stable integration point** for future LLM providers.
-
----
-
 ## Project status (stable checkpoint)
 
 This repository is currently in a **stable and consistent state**, closing the structural phase:
@@ -269,8 +282,14 @@ This repository is currently in a **stable and consistent state**, closing the s
   * `Conversation`
   * `Message`
   * `UsageEvent`
-* Minimal telemetry integrated
+* `/chat` endpoint fully transactional
+* Conversation, messages and usage events persisted atomically
+* Foreign key integrity enforced on success paths
+* Error paths explicitly avoid FK coupling to prevent cascade failures
+* Minimal telemetry integrated and validated against the database
 * Fast iteration DEV environment in place
+
+This checkpoint reflects the **Day N update**, where the chat write-path, transaction boundaries, and telemetry semantics were finalized and verified end-to-end.
 
 All future work builds on this base.
 
@@ -278,9 +297,9 @@ All future work builds on this base.
 
 ## Next steps (not implemented yet)
 
-* LLM provider integration (OpenAI / Bedrock / etc.)
-* Conversation → message → usage chaining
-* Background / async-safe usage logging
+* Real LLM provider integration (OpenAI / Bedrock / etc.)
+* Service layer extraction (`ChatService`)
+* Streaming responses
 * Aggregated metrics and dashboards
 * Auth, rate limiting, quotas
 
@@ -288,5 +307,5 @@ All future work builds on this base.
 
 ## Documentation
 
-* **README.md** — Operational overview and rules
-* **LLD.md** — Living low-level design and architectural decisions
+* **README.md** — operational overview and invariants
+* **LLD.md** — living low-level design and architectural decisions

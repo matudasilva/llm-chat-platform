@@ -1,439 +1,324 @@
-# LLM Chat Platform
+# Low Level Design (LLD)
 
-## Low-Level Design (LLD)
+## LLM Chat Platform
 
-**Document type:** Living Low-Level Design + Architectural Decision Record (ADR) log
-**Scope:** Backend (FastAPI)
-**Audience:** Backend architects, maintainers, operators
-**Status:** Stable checkpoint — **Day 8**
+**Status:** Stable baseline — validated up to Day 9
 
 ---
 
-## 0. Document intent
+## 0. Change log (high level)
 
-This LLD describes **how the system works internally** and the **operational rules** required to keep it reproducible.
+### Day 5–6 (Persistence foundations)
 
-* README = high-level entry point and day-to-day usage
-* LLD = **normative** technical design + ADRs + operational invariants
+* PostgreSQL connectivity stabilized
+* SQLAlchemy 2.0 async engine/session baseline
+* Alembic env configured for async SQLAlchemy
+* Docker Compose baseline established
 
-Changes that affect architecture, data model, or operational posture must be recorded as:
+### Day 7 (Core persistence models)
 
-* a new ADR section (preferred), or
-* an explicit update under the relevant section
+* `conversations` + `messages` introduced
+* Message role enum stabilized (`user|assistant|system`)
+* Ordering/index strategy defined
 
----
+### Day 8 (Minimal telemetry)
 
-## 1. System overview
+* `usage_events` introduced and stabilized
+* Best-effort usage logging pattern validated
+* Alembic chain integrity preserved (no multiple active heads)
 
-LLM Chat Platform is a backend designed to support **LLM-driven chat interactions**, prioritizing:
+### Day 9 (Transactional chat write path)
 
-* architectural order
-* operational traceability
-* reproducible persistence
-* safe evolution through versioned schema changes
+* `/chat` upgraded from stub-only to full write path:
 
-The platform is intentionally built around explicit boundaries:
-
-* deterministic API startup (no dependency checks at runtime)
-* strict separation between runtime and operational workflows
-* migration discipline (repository is the schema source of truth)
-* minimal, best-effort telemetry foundation (LLMOps baseline)
-
----
-
-## 2. Architectural principles
-
-### 2.1 Runtime vs operations separation
-
-The API runtime does **not** execute operational logic:
-
-* does not validate external dependencies on startup
-* does not run migrations
-* does not attempt to “self-heal” the environment
-
-Operations are **explicit** and performed by operators / CI / runbooks:
-
-* migrations
-* deep readiness checks
-* stamping / repair procedures
+  * Conversation create/validate
+  * Persist user + assistant messages
+  * Persist usage event in the same transaction
+* Error handling hardened (rollback + error telemetry without FKs)
+* Router/import path issues resolved (single authoritative chat router)
 
 ---
 
-### 2.2 Deterministic startup
+## 1. Purpose of this document
 
-The API process must start regardless of:
+This Low Level Design (LLD) documents the **actual implemented architecture** of the LLM Chat Platform up to **Day 9**.
 
-* PostgreSQL availability
-* Redis availability
+It is intentionally:
 
-Transient dependency failures must not prevent the HTTP process from coming up.
+* Implementation-driven (not aspirational)
+* Consistent with decisions taken under real execution constraints
+* Suitable for senior technical review
 
----
-
-### 2.3 Single source of truth for configuration
-
-* All configuration flows through `core.settings`
-* `settings.database_url` is the authoritative DB URL
-* No duplication of connection strings across code, Alembic, or Docker
+This document evolves with the codebase.
 
 ---
 
-### 2.4 Reproducible persistence
+## 2. Scope
 
-* The schema state is defined by **versioned migrations**
-* The database is **not** the source of truth
-* The repository is the source of truth
+### In-scope (implemented)
 
----
+* API service built with FastAPI
+* PostgreSQL persistence with SQLAlchemy 2 async
+* Alembic migration chain stabilized and reproducible
+* DEV/PROD environment split
+* `/health` endpoint
+* `/chat` endpoint with a transactional write-path
+* Minimal LLMOps telemetry (`usage_events`)
 
-### 2.5 Incremental design
+### Out-of-scope (explicit non-goals as of Day 9)
 
-Do not introduce layers and abstractions without stable need.
-
-The platform evolves by:
-
-* adding small, testable increments
-* preserving traceability
-* avoiding premature framework complexity
-
----
-
-## 3. Logical architecture
-
-### 3.1 Components
-
-1. **API (FastAPI)**
-
-   * HTTP boundary
-   * orchestrates conversation and message workflows
-   * records minimal usage telemetry
-   * does not perform infra bootstrap
-
-2. **PostgreSQL**
-
-   * durable persistence
-   * schema managed exclusively through Alembic
-
-3. **Redis**
-
-   * prepared for caching / rate limiting / ephemeral state
-   * not actively used in the current checkpoint
+* Real LLM provider integration
+* Streaming responses
+* Background workers / queues
+* Authentication, authorization
+* Quotas, rate limiting
+* Metrics aggregation dashboards
 
 ---
 
-## 4. Repository structure and layering
+## 3. Architectural goals
 
-### 4.1 Structure (simplified)
+* Build a **correct, traceable and evolvable** chat backend
+* Separate **runtime** concerns from **operational** responsibilities
+* Ensure **database integrity and auditability** from day one
+* Avoid premature abstractions while keeping extension points explicit
+
+---
+
+## 4. Tech stack
+
+* FastAPI (async)
+* PostgreSQL
+* Redis (reserved for ephemeral / future use)
+* SQLAlchemy 2.0 async
+* Alembic
+* Docker + Docker Compose
+
+---
+
+## 5. Glossary
+
+* **Write-path**: the set of DB writes performed during a request.
+* **Happy path**: a successful request execution.
+* **Best-effort logging**: telemetry attempts that must never break the main business path.
+* **Chain integrity (Alembic)**: the migration graph resolves deterministically from repo to DB.
+
+---
+
+## 6. Environment separation
+
+### 6.1 Production
+
+* Immutable Docker image
+* Application code copied via:
+
+```dockerfile
+COPY app /app/app
+```
+
+* No bind mounts
+* Deterministic runtime
+
+### 6.2 Development
+
+* `docker-compose.dev.yml`
+* Bind mount: `./app:/app/app`
+* Host UID/GID propagation
+* Enables rapid iteration on:
+
+  * ORM models
+  * Alembic revisions
+  * import paths
+
+### 6.3 Scripts
+
+* `scripts/dev_up.py` — bring up dev overlay
+* `scripts/dev_down.py` — bring down dev overlay
+
+---
+
+## 7. Repository structure
+
+Reference structure (may evolve, but invariants remain):
 
 ```
 app/
   main.py
-
-  api/routes/
-    ops.py                  # /health
-    chat.py                 # /chat endpoint
-
-  core/
-    settings.py
-
-  infra/
-    db.py                   # compatibility shim (re-export)
-    db/
-      base.py               # DeclarativeBase
-      session.py            # async engine/session + get_db()
-    redis_client.py
-
+  api/
+    ops.py
+    routes/
+      chat.py
+  schemas/
+    chat.py
   models/
     conversation.py
     message.py
     usage_event.py
-
+  infra/
+    db/
+      base.py
+      session.py
   services/
-    usage_logger.py         # best-effort telemetry logger
+    usage_logger.py
 
-  alembic/
-    env.py
-    versions/
-
-  alembic.ini
+alembic/
+  env.py
+  versions/
 
 scripts/
   dev_up.py
   dev_down.py
 
-README.md
-lld_llm_chat_platform_live_doc.md
-.env.example
 Dockerfile
+.env.example
+README.md
+LLD.md
+alembic.ini
 docker-compose.yml
 docker-compose.dev.yml
 ```
 
-### 4.2 Layering rules
+---
 
-* `core/` must not depend on `infra/`
-* `infra/` may depend on `core.settings`
-* `api/` does not execute infra bootstrap logic
-* `models/` define domain structure (data), not orchestration behavior
+## 8. Configuration strategy
+
+### 8.1 Single source of truth
+
+* `settings.database_url` is authoritative
+* Both runtime and Alembic resolve DB URL from the same settings
+
+### 8.2 Environment variables (typical)
+
+* `APP_ENV`: `development|production`
+* `LOG_LEVEL`: `INFO|DEBUG|...`
+* `DATABASE_URL`: `postgresql+asyncpg://...`
+* `REDIS_URL`: `redis://...` (reserved)
 
 ---
 
-## 5. Configuration
+## 9. Database layer
 
-### 5.1 Strategy
+### 9.1 Engine and session
 
-* environment variables → `core.settings`
-* prohibited:
+* SQLAlchemy 2.0 async engine
+* `AsyncSession` provided via FastAPI dependency injection
 
-  * hardcoding connection values
-  * duplicating URLs
-  * fragile string interpolation across layers
+### 9.2 Transaction boundaries
 
-### 5.2 Database URL
+* Explicit boundaries using:
 
-Required format:
-
-```
-postgresql+asyncpg://USER:PASSWORD@HOST:5432/DBNAME
+```python
+async with db.begin():
+    ...
 ```
 
-In Docker Compose:
+Design intent:
 
-* `HOST` must be the service name (`postgres`)
-
-`settings.database_url` remains the single source of truth.
+* Business writes happen as one atomic unit
+* Telemetry can be coupled to business writes (happy path)
+* Telemetry must decouple on error paths
 
 ---
 
-## 6. Health and readiness
+## 10. Data model
 
-### 6.1 `/health`
+### 10.1 conversations
 
-* **process-level** endpoint
-* validates only that the API process responds
-* does not check Postgres or Redis
+Represents a logical chat session.
 
-### 6.2 Dependency readiness
+Fields:
 
-Validated via Docker healthchecks:
-
-* PostgreSQL → `pg_isready`
-* Redis → `redis-cli PING`
-
-The API does not implement readiness logic.
-
----
-
-## 7. Data access (SQLAlchemy 2.0 async)
-
-### 7.1 Core building blocks
-
-* `infra/db/base.py` → `DeclarativeBase`
-* `infra/db/session.py` → async engine, sessionmaker, `get_db()`
-* `infra/db.py` → compatibility shim
-
-### 7.2 Rules
-
-* `expire_on_commit=False`
-* no mandatory checks at startup
-* DB sessions are explicit dependencies
-
----
-
-## 8. Migrations (Alembic)
-
-### 8.1 Nature
-
-* migrations are operational
-* never automatic
-* never executed by the API runtime
-
-### 8.2 Canonical execution
-
-```
-docker compose exec -w /app/app api alembic current
-docker compose exec -w /app/app api alembic upgrade head
-docker compose exec -w /app/app api alembic revision -m "message"
-docker compose exec -w /app/app api alembic downgrade -1
-```
-
-### 8.3 Configuration
-
-* DB URL resolved from `settings.database_url`
-* async migration pattern
-* `target_metadata = Base.metadata`
-
-### 8.4 Operational invariant (critical)
-
-The API image build uses:
-
-```
-COPY app /app/app
-```
-
-Therefore:
-
-* **every file in `app/alembic/versions/` must be committed**
-* rebuilding without committed revisions can desynchronize:
-
-  * Postgres `alembic_version`
-  * repository revision graph
-
-Typical symptoms:
-
-* `Can't locate revision identified by ...`
-* `KeyError` while resolving revisions
-* multiple heads
-
----
-
-## 9. Domain models
-
-### 9.1 Conversation
-
-**Table:** `conversations`
-
-* `id` (UUID, PK)
-* `created_at` (timestamptz)
-* `updated_at` (timestamptz)
-* `title` (nullable)
-* `metadata` (JSONB, nullable)
-
----
-
-### 9.2 Message
-
-**Table:** `messages`
-
-* `id` (UUID, PK)
-* `conversation_id` (FK, ON DELETE CASCADE)
-* `role` (`user | assistant | system`)
-* `content`
+* `id: UUID (PK)`
 * `created_at`
+* `updated_at`
+* `title` (nullable)
+* `metadata` (nullable, JSONB)
 
-**Index:** `(conversation_id, created_at)`
+Semantics:
 
-**Semantic contract**
+* Created lazily on first message
+* Acts as aggregation root for messages
 
-* `user` → human input
-* `assistant` → model output
-* `system` → system/control context
+### 10.2 messages
 
----
+Represents a message inside a conversation.
 
-### 9.3 UsageEvent (Telemetry / LLMOps baseline)
+Fields:
 
-**Objective**: capture minimal request-level telemetry even before a real provider exists.
-
-**Table:** `usage_events`
-
-Main fields:
-
-* `id` (UUID PK)
-* `conversation_id` (FK nullable → `conversations.id`, ON DELETE SET NULL)
-* `message_id` (FK nullable → `messages.id`, ON DELETE SET NULL)
-* `provider` (varchar 64)
-* `model_version` (varchar 128)
-* `prompt_version` (varchar 64)
-* `request_id` (UUID, nullable)
-* `input_tokens` (int, nullable)
-* `output_tokens` (int, nullable)
-* `total_tokens` (int, nullable)
-* `latency_ms` (int, nullable)
-* `status` (varchar 32, nullable)
-* `error_message` (text, nullable)
-* `timestamp` (timestamptz, default now)
+* `id: UUID (PK)`
+* `conversation_id: UUID (FK -> conversations.id)`
+* `role: enum(user|assistant|system)`
+* `content: text`
+* `created_at`
 
 Indexes:
 
-* `ix_usage_events_request_id (request_id)`
-* `ix_usage_events_conversation_ts (conversation_id, timestamp)`
-* `ix_usage_events_message_id (message_id)`
+* `(conversation_id, created_at)` for ordered retrieval
 
-SQL verification:
+Semantic contract:
 
-```sql
-select provider,
-       model_version,
-       prompt_version,
-       status,
-       latency_ms,
-       total_tokens,
-       timestamp
-from usage_events
-order by timestamp desc
-limit 5;
-```
+* `user`: human input
+* `assistant`: model output
+* `system`: control context
 
----
+### 10.3 usage_events
 
-## 10. Dev / Prod split (Day 8)
+Minimal LLMOps telemetry entity.
 
-### 10.1 Objective
+Fields:
 
-Separate the **development flow** (fast, iterative) from the **production build flow** (immutable and reproducible).
+* `id: UUID (PK)`
+* `provider: text`
+* `model_version: text`
+* `prompt_version: text`
+* `request_id: UUID (nullable)`
+* `conversation_id: UUID (nullable FK)`
+* `message_id: UUID (nullable FK)`
+* `input_tokens: int (nullable)`
+* `output_tokens: int (nullable)`
+* `total_tokens: int (nullable)`
+* `latency_ms: int (nullable)`
+* `status: text` (current: `success|error`; legacy may exist)
+* `error_message: text (nullable)`
+* `timestamp/created_at: timestamptz`
 
-### 10.2 Technical decision
+Indexes (expected / implemented):
 
-**Production / base** (`docker-compose.yml`)
+* `request_id`
+* `(conversation_id, timestamp)`
+* `message_id`
 
-* immutable image build using `COPY app /app/app`
+Design intent:
 
-**Development overlay** (`docker-compose.dev.yml`)
-
-* bind mount the code to avoid rebuilds
-* propagate UID/GID to avoid root-owned artifacts
-
-```yaml
-services:
-  api:
-    user: "${LOCAL_UID:-1000}:${LOCAL_GID:-1000}"
-    volumes:
-      - ./app:/app/app
-    environment:
-      APP_ENV: dev
-```
-
-### 10.3 Rationale
-
-* prevents losing generated artifacts at rebuild time
-* accelerates iteration on migrations, models, and endpoints
-* preserves strict immutability for production
-
-### 10.4 Trade-offs
-
-* dev bind mounts do not perfectly replicate production runtime
-* mitigation: dev overlay is strictly dev-only; prod remains immutable
+* Capture who/what/when/how-long/result
+* Foundation for observability and auditability
 
 ---
 
-## 11. Migration stabilization (Day 8)
+## 11. Alembic migration strategy
 
-### 11.1 Observed problem
+### 11.1 Rules
 
-Databases were observed in a state where they were stamped with revisions missing from the repository/image, causing:
+* Migrations are **operational**, never automatic at runtime
+* Canonical execution environment is the `api` container
 
-* `Can't locate revision identified by ...`
-* multiple heads
-* `DuplicateTableError` / already-existing objects
+### 11.2 Chain integrity
 
-### 11.2 Decision and solution
+Invariants:
 
-* reconstructed the revision chain with **noop / preserve-chain** migrations where necessary
-* resolved multiple heads using explicit **merge** revisions
-* preserved historical no-op revisions for traceability
+* Single active head
+* Historical branchpoints preserved via no-op revisions
+* Merge revisions recorded
 
-### 11.3 Current revision chain (conceptual)
+Practical consequence:
 
-* baseline init (noop)
-* descriptive change (noop) as branchpoint
-* preserve-chain branch (noop)
-* real migration: conversations/messages
-* mergepoint between heads
-* additional preservation for intermediate stamped revisions
-* creation/stabilization of usage_events
+* All files under `alembic/versions/` must be committed
+* Rebuilding images without committed revisions can desynchronize:
 
-### 11.4 Verification commands
+  * DB `alembic_version`
+  * repository migration graph
+
+### 11.3 Canonical commands
 
 ```bash
 docker compose exec -T -w /app/app api alembic current
@@ -444,206 +329,276 @@ docker compose exec -T -w /app/app api alembic heads
 ```
 
 ```bash
-docker compose exec -T -w /app/app api alembic history --verbose | tail -n 60
+docker compose exec -T -w /app/app api alembic upgrade head
 ```
 
-Acceptance criteria:
+---
 
-* `current == heads`
-* a single operational head exists
+## 12. API layer
+
+### 12.1 Application entrypoint
+
+* `app/main.py` defines:
+
+  * logging configuration
+  * FastAPI instance
+  * router inclusion
+
+### 12.2 Routers
+
+* `/health` (process-level liveness)
+* `/chat` (core write path)
+
+Routers are:
+
+* included explicitly in `main.py`
+* prefixed at inclusion time
 
 ---
 
-## 12. Telemetry logging service (best-effort)
+## 13. Schemas (Pydantic)
 
-### 12.1 Objective
+### 13.1 ChatRequest
 
-Log telemetry without breaking the endpoint, even if:
+Fields:
 
-* the DB is unavailable
-* insert/commit fails
+* `conversation_id: UUID | None`
+* `message: str` (required)
 
-### 12.2 Conceptual interface
+Validation policy:
 
-`log_usage_event(...)`:
+* `message` is required
+* extra fields are rejected (strict)
 
-* creates a `UsageEvent`
-* commits
-* swallows and logs errors so request flow remains intact
+### 13.2 ChatResponse
 
-### 12.3 Endpoint integration pattern
+Fields:
 
-* endpoint records telemetry in a `finally` block
-* failures in telemetry logging must not affect user response
-
----
-
-## 13. API `/chat` stub + telemetry (Day 8)
-
-### 13.1 Current behavior
-
-* returns a stub response (no real provider yet)
-* measures latency via `time.perf_counter`
-* generates `request_id`
-* logs a `usage_event` in `finally`
-
-### 13.2 Why it exists now
-
-* validates DB integration and commit semantics
-* validates table + indexes
-* prepares token integration when a provider is added
+* `request_id: UUID`
+* `conversation_id: UUID`
+* `user_message_id: UUID | None`
+* `assistant_message_id: UUID | None`
+* `assistant_content: str | None`
+* `status: success|error`
+* `error_message: str | None`
 
 ---
 
-## 14. Development scripts
+## 14. `/health` endpoint
 
-### 14.1 Objective
+### 14.1 Contract
 
-Avoid repeating long compose override commands and standardize the dev workflow.
+`GET /health`
 
-### 14.2 Scripts
+* Confirms process is alive
+* Does not validate Postgres/Redis directly
+* Dependency readiness handled via Docker healthchecks
 
-* `scripts/dev_up.py` — starts dev environment with overlay
-* `scripts/dev_down.py` — stops dev environment
+---
 
-Canonical usage:
+## 15. `/chat` endpoint (Day 9 design)
+
+### 15.1 Responsibilities
+
+* Generate `request_id`
+* Create or validate `Conversation`
+* Persist user message
+* Execute model logic (currently stub)
+* Persist assistant message
+* Persist UsageEvent
+
+All inside a single DB transaction.
+
+### 15.2 Execution order (strict)
+
+1. Start timer
+2. Generate `request_id`
+3. `async with db.begin()`
+4. Resolve conversation
+5. Insert `Message(role=user)`; flush
+6. Execute model (stub)
+7. Insert `Message(role=assistant)`; flush
+8. Insert `UsageEvent` (FKs valid)
+9. Commit transaction
+10. Return response
+
+### 15.3 Use of `flush()`
+
+`flush()` is used to ensure:
+
+* primary keys are materialized
+* FK constraints can be satisfied
+* ordering is deterministic
+
+Important:
+
+* `flush()` does not commit
+* commit occurs when transaction ends successfully
+
+### 15.4 Error handling policy
+
+On unexpected exceptions:
+
+* enforce rollback
+* record best-effort error UsageEvent without FKs
+* re-raise exception
+
+Rationale:
+
+* avoids “error while logging the error”
+* decouples observability from business data success
+
+### 15.5 Stub provider semantics
+
+* Deterministic response: `"stub: provider not configured yet"`
+* No external LLM calls
+* No token accounting
+
+The stub exists to validate the persistence + telemetry pipeline before provider integration.
+
+---
+
+## 16. Observed failure modes (and resolutions)
+
+### 16.1 Missing `/chat` in OpenAPI
+
+Cause:
+
+* router import/inclusion inconsistencies
+
+Resolution:
+
+* single authoritative router file
+* explicit inclusion in `main.py`
+
+### 16.2 Import-time crash in Docker
+
+Cause:
+
+* stale imports pointing to non-existent modules
+
+Resolution:
+
+* removed ambiguous paths
+* enforced explicit `app.api.routes.chat`
+
+### 16.3 FK violations when logging usage events
+
+Cause:
+
+* usage logging attempted with conversation_id that did not exist (rolled back / not created)
+
+Resolution:
+
+* usage event on success inside the same transaction
+* error usage events without FKs
+
+### 16.4 Indentation/syntax errors halting container
+
+Cause:
+
+* indentation error after `except` statement
+
+Resolution:
+
+* strict formatting and container log verification
+
+---
+
+## 17. Operational workflows
+
+### 17.1 Standard bring-up
+
+```bash
+cp .env.example .env
+docker compose up -d
+```
+
+### 17.2 DEV bring-up (bind mounts)
 
 ```bash
 ./scripts/dev_up.py
 ```
 
----
-
-## 15. Operational lessons learned (Runbook material)
-
-### 15.1 Golden rule
-
-In **immutable image mode** (no bind mounts), any file generated inside the container
-(e.g., `alembic merge`) must be committed on the host or it will be lost at rebuild.
-
-### 15.2 Recommended practice
-
-* Dev: bind mounts + UID/GID propagation
-* Prod: immutable, reproducible image builds
-
----
-
-## 16. Definition of Done (Day 8 checkpoint)
-
-* Alembic
-
-  * `alembic current == alembic heads`
-  * migrations reproducible on a fresh environment
-
-* Database
-
-  * tables `conversations`, `messages`, `usage_events` present
-
-* Application
-
-  * `/chat` responds
-  * inserts rows into `usage_events`
-
-* DevEx
-
-  * `docker-compose.dev.yml` present and documented
-  * `scripts/dev_up.py` present and usable
-
----
-
-## 17. Architectural Decision Records (ADRs)
-
-### ADR-001 — No DB/Redis checks at startup
-
-**Decision:** the API does not validate dependencies during startup.
-**Rationale:** deterministic startup; operational workflows own readiness.
-**Impact:** `/health` remains process-level; readiness delegated to Docker healthchecks.
-
----
-
-### ADR-002 — `/health` is process-level
-
-**Decision:** `/health` confirms only process liveness.
-**Impact:** monitoring and health semantics are unambiguous.
-
----
-
-### ADR-003 — Migrations are explicit and operational
-
-**Decision:** Alembic is never invoked automatically by the API.
-**Impact:** schema changes are auditable and reproducible.
-
----
-
-### ADR-004 — Single source of configuration
-
-**Decision:** `settings.database_url` is the only DB URL source.
-**Impact:** avoids drift across Docker/Alembic/code.
-
----
-
-### ADR-005 — Minimal Conversation/Message domain baseline
-
-**Decision:** implement minimal conversation/message persistence with explicit semantic roles.
-**Impact:** stable base for future provider integration.
-
----
-
-### ADR-006 — Alembic revisions are first-class artifacts
-
-**Decision:** every Alembic revision file must be committed.
-**Impact:** prevents image/repo/DB revision graph desynchronization.
-
----
-
-### ADR-007 — Dev/Prod split via Compose overlays
-
-**Decision:** production uses immutable images; development uses bind-mount overlays.
-**Impact:** faster iteration while preserving production reproducibility.
-
----
-
-### ADR-008 — Best-effort telemetry logging
-
-**Decision:** usage logging must never break request flow; failures are swallowed and logged.
-**Impact:** telemetry becomes additive and safe by design.
-
----
-
-## Appendix A — Troubleshooting patterns (starter)
-
-### A.1 Missing revision / stamped DB
-
-Symptoms:
-
-* `Can't locate revision identified by ...`
-* `alembic heads` shows revisions not present in repo
-
-Preferred response:
-
-* reconstruct chain with preserve-chain no-op revisions when necessary
-* avoid rewriting history in a way that breaks existing stamped environments
-
-### A.2 Multiple heads
-
-Symptoms:
-
-* `alembic heads` returns more than one head
-
-Preferred response:
-
-* create an explicit merge revision
-* verify `current == heads`
-
-### A.3 Validations
-
-Always run:
+### 17.3 Verify migrations
 
 ```bash
 docker compose exec -T -w /app/app api alembic current
+```
+
+```bash
 docker compose exec -T -w /app/app api alembic heads
+```
+
+### 17.4 Verify chat write path
+
+```bash
+curl -s -X POST http://localhost:8001/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message":"hola"}' | jq
+```
+
+DB verification:
+
+```bash
+docker compose exec -T postgres psql -U llmchat -d llmchat -c \
+"select role, count(*) from messages group by role order by role;"
+```
+
+```bash
+docker compose exec -T postgres psql -U llmchat -d llmchat -c \
+"select provider, status, conversation_id, message_id, timestamp from usage_events order by timestamp desc limit 5;"
 ```
 
 ---
 
-**End of LLD — Stable checkpoint Day 8**
+## 18. Current guarantees (post Day 9)
+
+* `/chat` successful requests produce:
+
+  * `Conversation`
+  * `Message(user)`
+  * `Message(assistant)`
+  * `UsageEvent` with FK references
+* Failure does not corrupt database integrity
+* Failure does not block telemetry capture (best-effort)
+* Alembic chain remains reproducible
+
+---
+
+## 19. Next evolution steps
+
+* Introduce provider interface abstraction (port/adapters)
+* Integrate real providers (OpenAI/Bedrock/etc.)
+* Add integration tests for write-path and failure modes
+* Introduce streaming responses
+* Introduce auth, quotas, rate limiting
+* Metrics aggregation and dashboards
+
+---
+
+## 20. Appendix
+
+### 20.1 Design discipline
+
+* Keep runtime behavior deterministic
+* Keep migrations explicit
+* Keep traceability mandatory
+* Keep changes incremental and reviewable
+
+---
+
+---
+
+## Appendices
+
+Detailed execution-level documentation, debugging playbooks, and deep technical references
+are maintained in a separate companion document:
+
+- **LLD Appendix — LLM Chat Platform (Debug & Deep Dive)**
+
+This separation is intentional to keep the core LLD focused on architecture and decisions,
+while allowing the appendix to evolve with operational learnings and real-world failures.
+
+
+**End of document — valid up to Day 9**
