@@ -6,7 +6,7 @@ from fastapi import FastAPI
 
 from app.api.ops import router as ops_router
 from app.infra.db.session import test_db_connection
-from app.api.routes.chat import router as chat_router
+from app.api.router import api_router
 
 
 def _get_env(name: str, default: str) -> str:
@@ -51,8 +51,7 @@ app = FastAPI(
 
 # Routers (definí prefijos acá, no adentro del router)
 app.include_router(ops_router, prefix="/ops")
-app.include_router(chat_router, prefix="/chat")
-
+app.include_router(api_router)
 
 
 @app.on_event("startup")
