@@ -272,7 +272,7 @@ docker compose \
 
 ---
 
-## Project status (stable checkpoint)
+## Stable Baseline
 
 This repository is currently in a **stable and consistent state**, closing the structural phase:
 
@@ -309,3 +309,32 @@ All future work builds on this base.
 
 * **README.md** — operational overview and invariants
 * **LLD.md** — living low-level design and architectural decisions
+
+
+## Project Status
+
+## Project Status
+
+Current state: **Day 10**
+
+The platform provides a stable write-path for chat interactions and a fully implemented read-path for inspection, auditing, and traceability.
+
+
+### Implemented
+
+* Atomic chat write-path (`POST /chat`)
+* Read-only conversation inspection endpoints
+* UsageEvent-based auditing and filtering
+* End-to-end traceability by `request_id`
+
+
+### Roadmap
+
+#### Next (Day 11)
+* Pluggable LLM provider interface (`ProviderPort`)
+* `ChatService` orchestration layer (no DB or transaction logic)
+
+#### Later
+* Streaming responses
+* Auth, rate limiting, quotas
+* Aggregated metrics and dashboards

@@ -2,9 +2,12 @@
 
 **Companion document to:** `lld_llm_chat_platform_live_doc.md`
 
-**Scope:** Deep technical appendices, debugging playbooks and execution-level details
+**Scope:** Deep technical appendices, debugging playbooks, and execution-level details
 
-**Validity:** Up to Day 9
+**Validity:** Up to Day 10 (Appendix F)
+
+> Note: Appendices A–E describe the effective system state up to Day 9.
+> Appendix F documents the Day 10 traceability layer, implemented as a read-only reconstruction mechanism.
 
 ---
 
@@ -109,7 +112,7 @@ Client
        └─ return ChatResponse
 ```
 
-Guarantees:
+**Guarantees**
 
 * Atomic write-path
 * No partial persistence
@@ -132,7 +135,7 @@ Client
        └─ re-raise exception
 ```
 
-Guarantees:
+**Guarantees**
 
 * Database consistency preserved
 * Error observability retained
@@ -248,6 +251,139 @@ docker compose exec -T postgres psql -U llmchat -d llmchat -c \
 * [ ] `/health` responds
 * [ ] `/chat` persists messages
 * [ ] `usage_events` populated
+
+---
+
+## Appendix F — End-to-End Traceability (Day 10)
+
+### F.1 Purpose
+
+This appendix documents the internal mechanics and validation rules used to achieve **end-to-end traceability** of a single `/chat` execution, reconstructed from a `request_id`.
+
+The objective is to provide **auditable, implementation-level detail** without introducing changes to the primary write-path, schema, or public API surface.
+
+---
+
+### F.2 Traceability Scope
+
+The traceability mechanism is intentionally designed as **read-only and non-invasive**:
+
+* No changes to the `/chat` transactional flow
+* No changes to Alembic migrations
+* No schema recreation or backfills
+* No additional public API endpoints
+
+All reconstruction is performed via **internal services and offline scripts**, operating exclusively on persisted data.
+
+---
+
+### F.3 Reconstruction Flow (D1)
+
+Given a `request_id`:
+
+1. Retrieve all `UsageEvent` records matching the request
+2. Select a `primary_event`
+
+   * Prefer `status = success`
+   * Fallback to the most recent event otherwise
+3. Resolve `conversation_id` from the primary event
+4. Load the associated `Conversation`
+5. Load all `Message` records for the conversation
+
+   * Ordered deterministically by `(created_at, id)`
+6. Reconstruct the input/output pair:
+
+   * `output_message` resolved directly from `UsageEvent.message_id`
+   * `input_message` resolved as the nearest preceding `user` message
+
+---
+
+### F.4 Edge Case Handling
+
+#### Identical Timestamps
+
+In scenarios where `user` and `assistant` messages share identical timestamps:
+
+* Temporal comparison alone is insufficient
+* Positional ordering within the deterministic message list is used
+* Backward traversal ensures correct `user → assistant` pairing
+
+This guarantees correctness under high-throughput or low-latency conditions.
+
+---
+
+### F.5 Enum Normalization
+
+Both `Message.role` and `UsageEvent.status` may be represented as enums or strings depending on execution context.
+
+A normalization step is applied:
+
+* Enum values resolved via `.value` when present
+* Fully-qualified enum strings reduced to terminal values
+* All comparisons performed against lowercase canonical forms
+
+This prevents false negatives during reconstruction and coherence checks.
+
+---
+
+### F.6 Coherence Checks
+
+Each trace reconstruction produces an explicit **coherence report**.
+
+**Checks performed**
+
+* `usage_event_found`
+* `single_usage_event`
+* `success_has_fks`
+* `conversation_found`
+* `messages_loaded`
+* `input_output_resolved`
+
+Each check records:
+
+* `name`
+* Boolean result (`ok`)
+* Optional diagnostic detail
+
+---
+
+### F.7 Errors vs Warnings
+
+* **Errors** indicate invariant violations and cause trace failure
+* **Warnings** indicate best-effort limitations but allow trace completion
+
+---
+
+### F.8 Example Output (Redacted)
+
+```json
+{
+  "request_id": "<uuid>",
+  "reconstruction": {
+    "input_message": { "role": "user", "content": "..." },
+    "output_message": { "role": "assistant", "content": "..." }
+  },
+  "coherence": {
+    "errors": [],
+    "warnings": [],
+    "checks": [
+      { "name": "input_output_resolved", "ok": true }
+    ]
+  }
+}
+```
+
+---
+
+### F.9 Design Rationale
+
+This traceability design intentionally prioritizes:
+
+* Determinism over heuristics
+* Explicit checks over implicit assumptions
+* Read-path analysis over write-path modification
+
+The result is a trace system that is **auditable, debuggable, and safe for production environments**.
 
 ---
 

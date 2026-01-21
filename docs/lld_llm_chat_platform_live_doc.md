@@ -31,11 +31,8 @@
 
 * `/chat` upgraded from stub-only to full write path:
 
-  * Conversation create/validate
-  * Persist user + assistant messages
-  * Persist usage event in the same transaction
-* Error handling hardened (rollback + error telemetry without FKs)
-* Router/import path issues resolved (single authoritative chat router)
+As of Day 9, the `/chat` endpoint implements a fully transactional write-path,
+persisting conversations, messages, and usage events atomically.
 
 ---
 
@@ -587,6 +584,93 @@ docker compose exec -T postgres psql -U llmchat -d llmchat -c \
 * Keep changes incremental and reviewable
 
 ---
+(contenido existente preservado íntegramente, se aplicarán actualizaciones incrementales sin eliminar líneas)
+
+---
+
+## 21. Day 10 — Read-path, Auditing, and End-to-End Traceability
+
+### 21.1 Objective
+
+Enable full read access, auditing, and end-to-end traceability of the system, while keeping the write-path (`POST /chat`) **fully intact** and without modifying Alembic migrations or base models.
+
+### 21.2 Reaffirmed Invariants
+
+* `/chat` remains a single atomic transaction
+* Alembic migrations are not modified
+* No tables are recreated
+* Telemetry rules:
+
+  * success → `UsageEvent` with foreign keys (`conversation_id`, `message_id`)
+  * error → `UsageEvent` best-effort (foreign keys optional)
+* DEV / PROD split remains intact
+
+### 21.3 Read-path — Conversations
+
+Implemented and validated endpoints:
+
+* `GET /conversations`
+
+  * pagination (`limit`, `offset`)
+  * ordered by `created_at`
+  * returns metadata only (no messages)
+
+* `GET /conversations/{id}`
+
+  * returns 404 if not found
+  * loads conversation and associated messages
+  * deterministic ordering (`created_at`, `id`)
+
+### 21.4 Read-path — Usage Events (Auditing)
+
+* `GET /usage-events`
+* Functional filters:
+
+  * `from` / `to` (ISO datetime)
+  * `provider`
+  * `model_version`
+  * `request_id`
+  * `conversation_id`
+  * `status`
+* Pagination (`limit`, `offset`)
+* Deterministic ordering (`timestamp desc`, `id desc`)
+* `timestamp` is the canonical temporal field (not `created_at`)
+
+### 21.5 End-to-End Traceability (D1)
+
+A complete execution reconstruction was implemented **without introducing new endpoints**, using an internal script / service.
+
+Given a `request_id`:
+
+* All related `UsageEvent` records are retrieved
+* A `primary_event` is selected (preference: `success`)
+* `conversation_id` is resolved
+* Associated messages are reconstructed (`user` → `assistant`)
+* Coherence is verified across:
+
+  * input
+  * output
+  * provider
+  * model_version
+  * prompt_version
+
+Results:
+
+* Successful reconstruction even in edge cases (identical timestamps)
+* Explicit coherence checks
+* Warnings only in best-effort scenarios
+
+### 21.6 Day 10 Closing Status
+
+* Conversations are readable and fully reconstructible
+* UsageEvents are queryable and auditable
+* End-to-end traceability is defensible
+* Development infrastructure is robust
+* Write-path remains 100% untouched
+
+---
+
+**Document updated up to Day 10.**
 
 ---
 
@@ -601,4 +685,6 @@ This separation is intentional to keep the core LLD focused on architecture and 
 while allowing the appendix to evolve with operational learnings and real-world failures.
 
 
-**End of document — valid up to Day 9**
+**This document reflects the state of the system up to **Day 9**.
+**Execution-level details and debugging notes are tracked in the Appendix.**
+
