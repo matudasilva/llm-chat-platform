@@ -12,4 +12,6 @@ services:
     environment:
       APP_ENV: dev
       PYTHONPATH: /app
-    
+  postgres:
+    ports:
+      - "15432:5432" 
