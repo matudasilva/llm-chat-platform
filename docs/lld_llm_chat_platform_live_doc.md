@@ -670,9 +670,88 @@ Results:
 
 ---
 
-**Document updated up to Day 10.**
+**Document updated up to Day 11.**
+
 
 ---
+
+## 22. Provider Abstraction & DB-agnostic Orchestration (Day 11)
+
+### 22.1 Objective
+
+Introduce a provider abstraction layer and an orchestration service that remain fully decoupled from:
+
+- FastAPI / HTTP concerns
+- SQLAlchemy / database persistence
+- Alembic migration chain
+
+This prepares the system for real LLM provider integration without contaminating the transactional write-path (`POST /chat`).
+
+### 22.2 ProviderPort contract (async-first)
+
+A provider is modeled as an async-first port:
+
+- `ProviderPort.generate(input: ProviderInput) -> ProviderResult`
+
+**ProviderInput (domain-only)**
+
+- `request_id` (UUID): correlation id, propagated end-to-end
+- `messages`: domain `ChatMessage[]` (provider-agnostic)
+- optional runtime hints: `temperature`, `max_tokens`, `metadata`
+
+**ProviderResult (domain-only)**
+
+- `content` (generated text)
+- required metadata: `provider`, `model_version`, `prompt_version`
+- optional metrics: `input_tokens`, `output_tokens`, `total_tokens`, `latency_ms`
+- optional `raw` payload for local debugging (not persisted by default)
+
+**Non-goals**
+
+- ProviderResult intentionally does **not** carry DB foreign keys (`conversation_id`, `message_id`)
+- `status` is not a provider concern; it is a write-path concern and is determined by request execution outcome
+
+Rationale: preserve best-effort telemetry rules and keep observability decoupled from business-data success.
+
+### 22.3 StubProvider (deterministic, no IO)
+
+A deterministic stub provider is implemented to validate the contract before integrating real providers:
+
+- deterministic output derived from `request_id` + last input message
+- configurable simulated latency
+- configurable deterministic error mode
+- no external IO and no persistent side effects
+
+### 22.4 ChatService (pure orchestration)
+
+`ChatService` orchestrates:
+
+- input messages → provider invocation → assistant output message
+
+Rules:
+
+- no database access
+- no transaction management
+- no FastAPI/HTTP semantics
+
+The service returns a `ChatServiceResult` containing:
+
+- `request_id`
+- `assistant_message` (domain message to be persisted later by `/chat`)
+- `provider_result` (metadata/metrics used later for `UsageEvent` emission)
+
+### 22.5 Evidence (runners and tests)
+
+Reproducibility artifacts:
+
+- `app/scripts/run_stub_chat.py` (ok path + error path)
+- `app/scripts/run_stub_determinism.py` (determinism + sensitivity checks)
+- contract tests (no DB):
+  - `app/tests/core/test_stub_provider_contract.py`
+  - `app/tests/core/test_chat_service_contract.py`
+
+Integration with `/chat` is intentionally deferred to the next iteration, after the contract surface is validated.
+
 
 ## Appendices
 
@@ -687,4 +766,3 @@ while allowing the appendix to evolve with operational learnings and real-world 
 
 **This document reflects the state of the system up to **Day 9**.
 **Execution-level details and debugging notes are tracked in the Appendix.**
-

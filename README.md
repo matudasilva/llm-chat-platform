@@ -4,6 +4,9 @@ Backend platform for building a **LLM-based chat system**, designed with strong 
 
 This repository intentionally prioritizes **clarity, traceability, and correctness** over premature feature density.
 
+> This project focuses on the **operational side of AI systems (LLMOps)**: running LLM-powered workloads with transactional guarantees, observability, traceability, and production-safe failure handling.
+> Model quality and prompt engineering are intentionally out of scope.
+
 ---
 
 ## Project goals
@@ -12,6 +15,19 @@ This repository intentionally prioritizes **clarity, traceability, and correctne
 * Separate **runtime concerns** from **operational concerns** (DB readiness, migrations, telemetry)
 * Maintain an explicit and auditable evolution of the data model
 * Serve as a reference-quality backend project (interview / portfolio grade)
+
+---
+
+## Design philosophy
+
+This platform is designed around the assumption that **LLM calls are external, fallible, and expensive operations**.
+
+As a result, the system explicitly prioritizes:
+
+* Clear transaction boundaries
+* Deterministic persistence semantics
+* Non-invasive observability and telemetry
+* Operational correctness over feature velocity
 
 ---
 
@@ -35,7 +51,7 @@ This repository intentionally prioritizes **clarity, traceability, and correctne
   * `/health` is process-level only
   * Dependency readiness is handled via Docker healthchecks
 
-* **Migrations are operational**
+* **Migrations are operational concerns**
 
   * Alembic is never executed automatically by the API
   * Schema changes are explicit, reproducible steps
@@ -54,6 +70,7 @@ app/
   api/
     routes/
       chat.py               # /chat endpoint (write-path)
+      usage_events.py       # usage and inspection endpoints (read-path)
     ops.py                  # /health
   models/
     conversation.py
@@ -63,8 +80,11 @@ app/
     db/
       base.py               # DeclarativeBase
       session.py            # async engine/session
+    schemas/
+      trace.py              # trace reconstruction schemas
+      usage_events.py
   services/
-    usage_logger.py         # telemetry helper (legacy / optional)
+    trace.py                # deterministic trace reconstruction
 
 alembic/
   env.py
@@ -73,9 +93,12 @@ alembic/
 scripts/
   dev_up.py
   dev_down.py
+  trace_request.py
 
 README.md
-LLD.md
+docs/
+  lld_llm_chat_platform_live_doc.md
+  lld_apendix.md
 .env.example
 Dockerfile
 docker-compose.yml
@@ -129,11 +152,11 @@ Represents a single message within a conversation.
 
 * `user` → human input
 * `assistant` → model output
-* `system` → control / system context
+* `system` → control / orchestration context
 
 ---
 
-### UsageEvent (LLMOps – minimal)
+### UsageEvent (LLMOps — minimal)
 
 Represents a single usage / telemetry event related to a model invocation.
 
@@ -143,23 +166,23 @@ Tracked fields include:
 * `model_version`
 * `prompt_version`
 * `request_id`
-* `conversation_id` (FK)
-* `message_id` (FK)
+* `conversation_id` (FK, nullable)
+* `message_id` (FK, nullable)
 * `latency_ms`
 * token counts (when available)
 * `status`
 * `error_message`
 * `created_at`
 
-This table is the **foundation for observability, cost analysis and auditability**.
+This table is the **foundation for observability, cost analysis, and auditability**.
 
 ---
 
-## `/chat` endpoint — current state (Day 9)
+## `/chat` endpoint — transactional write-path
 
 The `/chat` endpoint implements a **fully transactional write-path**.
 
-Each request executes, within a single DB transaction:
+Each request executes, within a single database transaction:
 
 1. Create or validate `Conversation`
 2. Persist `Message (user)`
@@ -169,10 +192,25 @@ Each request executes, within a single DB transaction:
 
 On failure:
 
-* Transaction is rolled back
-* A best-effort `UsageEvent` with `status=error` is recorded **without FKs**
+* The transaction is rolled back
+* A best-effort `UsageEvent` with `status=error` is recorded **without foreign keys**
 
-This guarantees **atomicity and traceability**.
+This guarantees atomicity while preserving **post-hoc traceability under failure conditions**.
+
+---
+
+## End-to-end traceability (Day 10)
+
+Every chat execution can be deterministically reconstructed using a `request_id`, **without modifying the write-path or database schema**.
+
+This enables:
+
+* Post-hoc auditing and inspection
+* Deterministic input/output reconstruction
+* Latency and cost analysis
+* Failure investigation without partial persistence
+
+Trace reconstruction is implemented as a **read-only analysis layer** and documented in detail in the LLD appendix.
 
 ---
 
@@ -245,7 +283,7 @@ Verify:
 
 ---
 
-### Development mode (DEV – bind mounts)
+### Development mode (DEV — bind mounts)
 
 Local development uses **bind mounts** to avoid rebuilding images when:
 
@@ -272,69 +310,61 @@ docker compose \
 
 ---
 
-## Stable Baseline
+## Project status
 
-This repository is currently in a **stable and consistent state**, closing the structural phase:
+Current state: **Day 10**
 
-* Alembic migrations aligned (single head)
-* Core models implemented:
+The platform provides:
 
-  * `Conversation`
-  * `Message`
-  * `UsageEvent`
-* `/chat` endpoint fully transactional
-* Conversation, messages and usage events persisted atomically
-* Foreign key integrity enforced on success paths
-* Error paths explicitly avoid FK coupling to prevent cascade failures
-* Minimal telemetry integrated and validated against the database
-* Fast iteration DEV environment in place
+* A stable, transactional write-path for chat interactions
+* A read-only inspection and auditing layer
+* Deterministic end-to-end traceability via `request_id`
 
-This checkpoint reflects the **Day N update**, where the chat write-path, transaction boundaries, and telemetry semantics were finalized and verified end-to-end.
+### Implemented
 
-All future work builds on this base.
+* Atomic chat write-path (`POST /chat`)
+* Conversation and message persistence
+* UsageEvent-based telemetry
+* End-to-end execution trace reconstruction
 
----
+### Roadmap
 
-## Next steps (not implemented yet)
+**Near-term (Day 11)**
 
-* Real LLM provider integration (OpenAI / Bedrock / etc.)
-* Service layer extraction (`ChatService`)
+Provider abstraction (no vendor lock-in):
+
+- `ProviderPort` (async-first) with explicit contract:
+  - `ProviderInput` (request_id + messages, provider-agnostic)
+  - `ProviderResult` (content + minimal metadata + metrics)
+- Deterministic `StubProvider`:
+  - configurable simulated latency
+  - deterministic failure mode for error-path validation
+  - no external IO / no side effects
+- DB-agnostic orchestration layer:
+  - `ChatService` orchestrates input → provider → output
+  - no DB access, no transactions, no HTTP semantics
+
+Evidence / reproducibility:
+
+- Container-run runners (under `app/scripts/`):
+  - `run_stub_chat.py` (ok path + error path)
+  - `run_stub_determinism.py` (determinism + sensitivity checks)
+- Contract tests (pure, no DB):
+  - `app/tests/core/test_stub_provider_contract.py`
+  - `app/tests/core/test_chat_service_contract.py`
+
+> Note: `/chat` integration is intentionally deferred until the provider contract is validated.
+
+**Future**
+
 * Streaming responses
+* Authentication, rate limiting, quotas
 * Aggregated metrics and dashboards
-* Auth, rate limiting, quotas
 
 ---
 
 ## Documentation
 
 * **README.md** — operational overview and invariants
-* **LLD.md** — living low-level design and architectural decisions
-
-
-## Project Status
-
-## Project Status
-
-Current state: **Day 10**
-
-The platform provides a stable write-path for chat interactions and a fully implemented read-path for inspection, auditing, and traceability.
-
-
-### Implemented
-
-* Atomic chat write-path (`POST /chat`)
-* Read-only conversation inspection endpoints
-* UsageEvent-based auditing and filtering
-* End-to-end traceability by `request_id`
-
-
-### Roadmap
-
-#### Next (Day 11)
-* Pluggable LLM provider interface (`ProviderPort`)
-* `ChatService` orchestration layer (no DB or transaction logic)
-
-#### Later
-* Streaming responses
-* Auth, rate limiting, quotas
-* Aggregated metrics and dashboards
+* **docs/lld_llm_chat_platform_live_doc.md** — living low-level design
+* **docs/lld_apendix.md** — deep technical appendices and traceability details

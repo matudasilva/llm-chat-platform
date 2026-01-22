@@ -385,6 +385,172 @@ This traceability design intentionally prioritizes:
 
 The result is a trace system that is **auditable, debuggable, and safe for production environments**.
 
+
+
+---
+
+## Appendix G — Provider Abstraction & Determinism Evidence (Day 11)
+
+### G.1 Purpose
+
+This appendix documents the **provider abstraction layer** introduced in Day 11 and the deterministic validation artifacts associated with it.
+
+Scope and constraints:
+
+* No changes to the `/chat` transactional write-path
+* No modifications to Alembic migrations
+* No changes to persistence models
+
+The objective is to validate provider contracts **before** integrating real LLM vendors, preserving architectural invariants established in previous days.
+
+---
+
+### G.2 Runtime import root (important)
+
+Inside the `api` container, the effective application root is:
+
+```
+/app/app
+```
+
+As a result:
+
+* Top-level imports are resolved from modules such as `core`, `api`, `models`, `infra`, and `services`
+* There is **no synthetic `app.*` package** in runtime
+
+This convention applies consistently to:
+
+* Domain code
+* Runners
+* Tests
+
+---
+
+### G.3 Provider abstraction (Day 11)
+
+A provider is modeled via an **async-first port**, fully decoupled from HTTP and persistence concerns.
+
+Key characteristics:
+
+* Providers implement a single operation:
+
+  ```
+  ProviderPort.generate(input: ProviderInput) -> ProviderResult
+  ```
+
+* `ProviderInput` is domain-only and includes:
+
+  * `request_id`
+  * a sequence of domain `ChatMessage`
+  * optional runtime hints
+
+* `ProviderResult` is also domain-only and includes:
+
+  * generated `content`
+  * required metadata (`provider`, `model_version`, `prompt_version`)
+  * optional metrics (`input_tokens`, `output_tokens`, `total_tokens`, `latency_ms`)
+
+Explicit non-goals:
+
+* No database foreign keys in `ProviderResult`
+* No `status` field (request outcome is a write-path concern)
+
+This separation preserves **best-effort telemetry** guarantees under failure conditions.
+
+---
+
+### G.4 StubProvider (deterministic, no IO)
+
+A deterministic `StubProvider` is implemented to validate the provider contract prior to real integrations.
+
+Properties:
+
+* Output is deterministically derived from `request_id` and input content
+* Configurable simulated latency
+* Configurable deterministic error mode
+* No external IO
+* No persistent side effects
+
+This makes both success and failure paths **fully reproducible**.
+
+---
+
+### G.5 ChatService (DB-agnostic orchestration)
+
+`ChatService` is introduced as a pure orchestration layer:
+
+Responsibilities:
+
+* Accept domain messages
+* Invoke the injected provider
+* Produce an assistant domain message and provider metadata
+
+Non-responsibilities:
+
+* No database access
+* No transaction handling
+* No HTTP or FastAPI semantics
+
+The service returns a `ChatServiceResult` containing:
+
+* `request_id`
+* `assistant_message`
+* `provider_result`
+
+This result is intentionally shaped to be consumed later by the `/chat` write-path.
+
+---
+
+### G.6 Reproducible runners
+
+The following runners provide executable evidence of correctness and determinism.
+
+**Success and error paths**:
+
+```bash
+docker compose exec -T -w /app/app api sh -lc 'PYTHONPATH=/app/app python scripts/run_stub_chat.py'
+```
+
+**Determinism and sensitivity checks**:
+
+```bash
+docker compose exec -T -w /app/app api sh -lc 'PYTHONPATH=/app/app python scripts/run_stub_determinism.py'
+```
+
+---
+
+### G.7 Contract tests (host execution)
+
+Contract tests are intentionally pure and do not require database or container execution.
+
+From the repository root:
+
+```bash
+pip install -r app/requirements-dev.txt
+PYTHONPATH=app pytest
+```
+
+Test coverage includes:
+
+* Provider determinism
+* Provider error propagation
+* Metric coherence
+* ChatService behavior and error forwarding
+
+---
+
+### G.8 Design notes
+
+* Provider contracts are validated **before** vendor integration
+* Determinism is enforced to simplify debugging and traceability
+* Observability concerns remain decoupled from business data persistence
+* Integration with `/chat` is intentionally deferred to the next iteration
+
+---
+
+**End of Appendix G (Day 11)**
+
 ---
 
 **End of appendix — complements the live LLD document**
+
