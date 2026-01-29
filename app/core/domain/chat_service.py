@@ -1,26 +1,11 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import Sequence
 from uuid import UUID
 
-from .chat_types import ChatMessage
-from .provider import ProviderInput, ProviderPort, ProviderResult
-
-
-@dataclass(frozen=True, slots=True)
-class ChatServiceResult:
-    """
-    Output of the DB-agnostic orchestration layer.
-
-    It returns:
-    - request_id: correlation id propagated end-to-end
-    - assistant_message: what should be persisted as the assistant output message
-    - provider_result: metadata/metrics needed to later emit a UsageEvent
-    """
-    request_id: UUID
-    assistant_message: ChatMessage
-    provider_result: ProviderResult
+from .types import ChatMessage
+from .chat_types import ChatServiceResult
+from .provider import ProviderInput, ProviderPort
 
 
 class ChatService:

@@ -6,7 +6,7 @@ import time
 from dataclasses import dataclass
 from typing import Literal
 
-from core.domain.provider import ProviderInput, ProviderPort, ProviderResult
+from app.core.domain.provider import ProviderInput, ProviderPort, ProviderResult
 
 
 @dataclass(slots=True)

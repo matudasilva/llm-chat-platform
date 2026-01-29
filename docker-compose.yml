@@ -14,7 +14,9 @@ services:
     networks:
       - llmnet
     # NO construir DATABASE_URL acá. Que venga en .env
-    # environment:
+    environment:
+        - STUB_PROVIDER_MODE=${STUB_PROVIDER_MODE:-ok}
+
     #   DATABASE_URL: ${DATABASE_URL}
 
   postgres:

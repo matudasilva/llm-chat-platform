@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import Any, Protocol, Sequence
 from uuid import UUID
 
-from .chat_types import ChatMessage
+from .types import ChatMessage
 
 
 @dataclass(frozen=True, slots=True)

@@ -11,11 +11,21 @@ from app.models.conversation import Conversation
 from app.models.message import Message, MessageRole
 from app.models.usage_event import UsageEvent
 
+from app.api.deps import get_chat_service
+from app.core.domain.chat_service import ChatService
+from app.core.domain.types import ChatMessage
+
+
 router = APIRouter(tags=["chat"])
 
 
 @router.post("", response_model=ChatResponse)
-async def chat(payload: ChatRequest, db: AsyncSession = Depends(get_db)) -> ChatResponse:
+async def chat(
+    payload: ChatRequest,
+    db: AsyncSession = Depends(get_db),
+    chat_service: ChatService = Depends(get_chat_service),
+) -> ChatResponse:
+
     start = time.perf_counter()
     request_id = uuid.uuid4()
 
@@ -52,8 +62,15 @@ async def chat(payload: ChatRequest, db: AsyncSession = Depends(get_db)) -> Chat
             await db.flush()
             user_message_id = user_msg.id
 
-            # 3) Execute model (stub)
-            assistant_content = "stub: provider not configured yet"
+            # 3) Execute model (via ChatService + StubProvider)
+            service_result = await chat_service.run(
+                request_id=request_id,
+                messages=[ChatMessage(role="user", content=payload.message)],
+            )
+
+            assistant_content = service_result.assistant_message.content
+            provider_result = service_result.provider_result
+
 
             # 4) Persist assistant message
             assistant_msg = Message(
@@ -73,15 +90,19 @@ async def chat(payload: ChatRequest, db: AsyncSession = Depends(get_db)) -> Chat
 
             ev = UsageEvent(
                 id=uuid.uuid4(),
-                provider="stub",
-                model_version="local",
-                prompt_version="v0",
+                provider=provider_result.provider,
+                model_version=provider_result.model_version,
+                prompt_version=provider_result.prompt_version,
+
                 status=status.value,  # "success" | "error"
                 request_id=request_id,
                 latency_ms=latency_ms,
                 error_message=None,
                 conversation_id=conversation_id,
                 message_id=assistant_message_id,  # convención: assistant message
+                input_tokens=provider_result.input_tokens,
+                output_tokens=provider_result.output_tokens,
+                total_tokens=provider_result.total_tokens,
             )
             db.add(ev)
 

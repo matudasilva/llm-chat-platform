@@ -1,8 +1,8 @@
 import asyncio
 import uuid
 
-from core.domain.chat_service import ChatService
-from core.domain.chat_types import ChatMessage
+from app.core.domain.chat_service import ChatService
+from app.core.domain.chat_types import ChatMessage
 from core.providers.stub_provider import StubProvider
 
 

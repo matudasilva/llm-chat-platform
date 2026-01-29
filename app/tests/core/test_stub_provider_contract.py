@@ -1,9 +1,10 @@
 import uuid
 import pytest
 
-from core.domain.chat_types import ChatMessage
+from app.core.domain.types import ChatMessage
 from core.domain.provider import ProviderInput
-from core.providers.stub_provider import StubProvider
+from app.core.providers.stub_provider import StubProvider
+
 
 
 @pytest.mark.asyncio
