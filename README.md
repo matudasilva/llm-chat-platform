@@ -344,6 +344,30 @@ Provider abstraction (no vendor lock-in):
   - `ChatService` orchestrates input → provider → output
   - no DB access, no transactions, no HTTP semantics
 
+**Near-term (Day 12)**
+
+ChatService integration into write-path (`/chat`):
+
+- `/chat` endpoint delegates model execution to `ChatService`
+  - preserves atomic write-path semantics (single DB transaction)
+  - preserves flush ordering (IDs before FKs)
+
+- UsageEvent emission aligned with LLMOps minimum viable:
+  - success path: full metadata + valid foreign keys
+  - error path: best-effort telemetry without FKs (never blocks response)
+
+- Provider mode controlled via environment (`STUB_PROVIDER_MODE`)
+  - enables deterministic success and failure scenarios
+
+- Reproducible smoke evidence:
+  - success path runner (message persistence + usage_event success)
+  - error path runner (rollback + usage_event error)
+
+- Regression gates:
+  - contract tests passing (core remains DB-agnostic)
+  - OpenAPI and read-paths unchanged
+
+
 Evidence / reproducibility:
 
 - Container-run runners (under `app/scripts/`):

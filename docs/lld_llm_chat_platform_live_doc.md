@@ -2,7 +2,7 @@
 
 ## LLM Chat Platform
 
-**Status:** Stable baseline — validated up to Day 9
+**Status:** Stable baseline — validated up to Day 12
 
 ---
 
@@ -33,6 +33,17 @@
 
 As of Day 9, the `/chat` endpoint implements a fully transactional write-path,
 persisting conversations, messages, and usage events atomically.
+
+
+### Day 10–12 (Traceability + Provider abstraction + /chat integration)
+
+request_id end-to-end
+
+ProviderPort/StubProvider/ChatService
+
+/chat delegates to ChatService (atomicity preserved)
+
+endpoint smoke evidence (success + rollback)
 
 ---
 
@@ -453,6 +464,16 @@ Rationale:
 
 The stub exists to validate the persistence + telemetry pipeline before provider integration.
 
+### 15.6 Update — Day 12: ChatService integration
+
+* delegate to ChatService
+* UsageEvent success use ProviderResult metrics
+*error path: provider error → rollback + best-effort usage_event without FKs
+
+UsageEvent success usa ProviderResult metrics
+
+error path: provider error → rollback + best-effort usage_event sin FKs
+
 ---
 
 ## 16. Observed failure modes (and resolutions)
@@ -740,6 +761,8 @@ The service returns a `ChatServiceResult` containing:
 - `assistant_message` (domain message to be persisted later by `/chat`)
 - `provider_result` (metadata/metrics used later for `UsageEvent` emission)
 
+- now is integrated on /chat
+
 ### 22.5 Evidence (runners and tests)
 
 Reproducibility artifacts:
@@ -751,6 +774,9 @@ Reproducibility artifacts:
   - `app/tests/core/test_chat_service_contract.py`
 
 Integration with `/chat` is intentionally deferred to the next iteration, after the contract surface is validated.
+
+* run_chat_endpoint_smoke.py
+* run_chat_endpoint_error_smoke.py
 
 
 ## Appendices
@@ -764,5 +790,5 @@ This separation is intentional to keep the core LLD focused on architecture and 
 while allowing the appendix to evolve with operational learnings and real-world failures.
 
 
-**This document reflects the state of the system up to **Day 9**.
+**This document reflects the state of the system up to **Day 12**.
 **Execution-level details and debugging notes are tracked in the Appendix.**

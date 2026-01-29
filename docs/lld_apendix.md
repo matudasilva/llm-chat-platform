@@ -552,5 +552,119 @@ Test coverage includes:
 
 ---
 
-**End of appendix — complements the live LLD document**
+## Appendix H — Day 12: `/chat` integration evidence
 
+### H.1 Purpose
+
+This appendix documents the reproducible evidence for the Day 12 integration of
+`ChatService` into the `/chat` write-path.
+
+The goal of this iteration was **integration without feature expansion**:
+- preserve atomicity of the write-path
+- preserve flush ordering and foreign key integrity
+- validate error propagation and rollback semantics
+- provide concrete, repeatable evidence of correct behavior
+
+No changes to the data model or migrations were introduced.
+
+---
+
+### H.2 Provider mode wiring (`STUB_PROVIDER_MODE`)
+
+The active provider mode is controlled via the environment variable
+`STUB_PROVIDER_MODE`, allowing deterministic success and failure scenarios.
+
+This variable is injected into the `api` service via Docker Compose and is
+consumed by the provider wiring layer when constructing the `StubProvider`.
+
+**Valid values:**
+- `ok` (default): provider returns a deterministic response
+- `error`: provider raises an exception during generation
+
+**Verification inside the running container:**
+
+```bash
+docker compose exec -T api sh -lc \
+  'python -c "import os; print(os.getenv(\"STUB_PROVIDER_MODE\"))"'
+```
+
+This mechanism enables reproducible validation of both success and error paths
+without modifying application code.
+
+### H.3 Endpoint smoke runners (success and rollback)
+
+Two smoke runners are provided to validate the `/chat` endpoint behavior
+end-to-end, including persistence and telemetry.
+
+#### H.3.1 Success path
+
+Validates that:
+- the user message and assistant message are persisted
+- a `UsageEvent` with status `success` is emitted
+- foreign keys (`conversation_id`, `message_id`) are present and valid
+
+**Commands:**
+
+```bash
+STUB_PROVIDER_MODE=ok docker compose up -d --build
+
+until curl -s -o /dev/null -w "%{http_code}" http://localhost:8001/openapi.json | grep -q 200; do
+  sleep 1
+done
+
+PYTHONPATH=app python app/scripts/run_chat_endpoint_smoke.py
+```
+Expected output includes:
+
+```bash
+[OK] success path validated
+```
+
+
+
+
+#### H.3.2 Error path (rollback validation)
+
+Validates that:
+- a provider failure triggers a full transactional rollback
+- no new messages are persisted
+- a `UsageEvent` with status `error` is emitted
+- foreign keys are intentionally omitted (best-effort telemetry)
+
+**Commands:**
+
+```bash
+STUB_PROVIDER_MODE=error docker compose up -d --build
+
+until curl -s -o /dev/null -w "%{http_code}" http://localhost:8001/openapi.json | grep -q 200; do
+  sleep 1
+done
+
+STUB_PROVIDER_MODE=error PYTHONPATH=app \
+  python app/scripts/run_chat_endpoint_error_smoke.py
+```
+
+Expected output includes:
+```bash
+[OK] error path validated (rollback + best-effort usage_event)
+```
+### H.4 Regression gates
+
+The following regression checks must pass after Day 12 integration:
+
+- **Core contract tests (DB-agnostic):**
+
+```bash
+  PYTHONPATH=app pytest -q
+```
+- **API surface stability:**
+  - `/chat` remains the single write-path
+  - read-path endpoints (`/conversations`, `/usage-events`) remain unchanged
+  - OpenAPI schema is preserved
+
+Successful execution of these checks confirms that the Day 12 integration
+introduced no regressions and preserved all architectural invariants.
+
+
+
+**End of appendix — complements the live LLD document**
