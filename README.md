@@ -31,11 +31,35 @@ As a result, the system explicitly prioritizes:
 
 ---
 
+## Non-goals (explicit)
+
+This project intentionally does **not** aim to:
+
+* optimize prompt quality or model output
+* benchmark LLM vendors
+* provide UI / frontend components
+* act as a full SaaS product
+
+The focus is strictly on **running LLM workloads safely and correctly in production-like environments**.
+
+---
+
+## Intended audience
+
+This repository is designed for:
+
+* Backend / Platform Engineers
+* Cloud & LLMOps Architects
+* Engineers preparing for senior technical interviews
+* Teams learning how to operationalize LLM workloads safely
+
+---
+
 ## Tech stack
 
 * **FastAPI** — async HTTP API
 * **PostgreSQL** — persistent storage
-* **Redis** — caching / ephemeral data
+* **Redis** — caching / ephemeral data (reserved)
 * **SQLAlchemy 2.0 (async)** — ORM
 * **Alembic** — schema migrations
 * **Docker + Docker Compose** — reproducible environments
@@ -58,7 +82,7 @@ As a result, the system explicitly prioritizes:
 
 * **Single source of truth for configuration**
 
-  * `settings.database_url` is authoritative
+  * `settings.database_url` is authoritative for both runtime and Alembic
 
 ---
 
@@ -70,19 +94,18 @@ app/
   api/
     routes/
       chat.py               # /chat endpoint (write-path)
-      usage_events.py       # usage and inspection endpoints (read-path)
+      usage_events.py       # usage & inspection endpoints (read-path)
     ops.py                  # /health
+  core/
+    domain/                 # provider contracts, ChatService, errors
   models/
     conversation.py
     message.py
     usage_event.py
   infra/
     db/
-      base.py               # DeclarativeBase
-      session.py            # async engine/session
-    schemas/
-      trace.py              # trace reconstruction schemas
-      usage_events.py
+      base.py
+      session.py
   services/
     trace.py                # deterministic trace reconstruction
 
@@ -93,7 +116,8 @@ alembic/
 scripts/
   dev_up.py
   dev_down.py
-  trace_request.py
+  run_stub_chat.py
+  run_stub_determinism.py
 
 README.md
 docs/
@@ -112,8 +136,6 @@ docker-compose.dev.yml
 ```
 GET /health
 ```
-
-Characteristics:
 
 * Confirms FastAPI process is alive
 * Does **not** check Postgres or Redis
@@ -148,17 +170,11 @@ Represents a single message within a conversation.
 
 * `(conversation_id, created_at)` — optimized for ordered retrieval
 
-**Semantic contract**
-
-* `user` → human input
-* `assistant` → model output
-* `system` → control / orchestration context
-
 ---
 
 ### UsageEvent (LLMOps — minimal)
 
-Represents a single usage / telemetry event related to a model invocation.
+Represents a telemetry event related to a model invocation.
 
 Tracked fields include:
 
@@ -186,9 +202,11 @@ Each request executes, within a single database transaction:
 
 1. Create or validate `Conversation`
 2. Persist `Message (user)`
-3. Execute model logic (currently a stub)
+3. Execute model logic via `ChatService`
 4. Persist `Message (assistant)`
 5. Persist `UsageEvent` with valid foreign keys
+
+### Failure semantics
 
 On failure:
 
@@ -199,18 +217,48 @@ This guarantees atomicity while preserving **post-hoc traceability under failure
 
 ---
 
-## End-to-end traceability (Day 10)
+## Provider abstraction & orchestration
 
-Every chat execution can be deterministically reconstructed using a `request_id`, **without modifying the write-path or database schema**.
+### ProviderPort
 
-This enables:
+Providers implement a single async-first contract:
 
-* Post-hoc auditing and inspection
-* Deterministic input/output reconstruction
-* Latency and cost analysis
-* Failure investigation without partial persistence
+```
+ProviderPort.generate(input: ProviderInput) -> ProviderResult
+```
 
-Trace reconstruction is implemented as a **read-only analysis layer** and documented in detail in the LLD appendix.
+* Provider contracts are **DB-agnostic**
+* No HTTP or FastAPI semantics
+* No persistence side effects
+
+### ChatService
+
+`ChatService` is a pure orchestration layer:
+
+* Accepts domain messages
+* Invokes the provider with timeout protection
+* Returns assistant output + provider metadata
+
+Non-responsibilities:
+
+* No database access
+* No transaction management
+* No HTTP concerns
+
+---
+
+## End-to-end traceability
+
+Every execution can be deterministically reconstructed using a `request_id`, **without modifying the write-path or schema**.
+
+Capabilities:
+
+* Input/output reconstruction
+* Latency and cost inspection
+* Failure investigation
+* Auditable execution history
+
+Trace reconstruction is implemented as a **read-only analysis layer** and documented in the LLD Appendix.
 
 ---
 
@@ -221,7 +269,7 @@ Alembic is used for **explicit, reproducible schema evolution**.
 ### Key rules
 
 * Migrations are never executed automatically at runtime
-* Alembic always resolves the DB URL from `settings.database_url`
+* Alembic resolves DB URL from `settings.database_url`
 * Canonical execution environment is the `api` container
 
 ### Canonical commands
@@ -234,10 +282,6 @@ docker compose exec -w /app/app api alembic current
 docker compose exec -w /app/app api alembic upgrade head
 ```
 
-```bash
-docker compose exec -w /app/app api alembic revision --autogenerate -m "describe change"
-```
-
 ---
 
 ## ⚠️ Migration integrity rule (critical)
@@ -248,26 +292,21 @@ The API image is built using:
 COPY app /app/app
 ```
 
-This means:
+This implies:
 
-* **All files under `app/alembic/versions/` must be committed to Git**
-* Rebuilding the image without committed revisions can desynchronize:
+* **All Alembic revision files must be committed**
+* Missing revisions will desynchronize the migration graph
 
-  * Postgres `alembic_version`
-  * Repository migration graph
-
-Typical failure symptoms:
+Typical symptoms:
 
 * `Can't locate revision identified by ...`
-* `KeyError` while resolving revisions
-
-> Treat every Alembic revision file as a first-class source artifact.
+* `KeyError` during Alembic resolution
 
 ---
 
 ## Development workflow
 
-### Standard (immutable images)
+### Standard
 
 ```bash
 git clone <repo>
@@ -276,114 +315,88 @@ cp .env.example .env
 docker compose up -d
 ```
 
-Verify:
-
-* `/health` responds
-* Postgres and Redis containers are healthy
-
----
-
-### Development mode (DEV — bind mounts)
-
-Local development uses **bind mounts** to avoid rebuilding images when:
-
-* modifying Alembic migrations
-* iterating on ORM models
-* debugging import paths
-
-Start DEV environment:
+### Development mode (bind mounts)
 
 ```bash
 ./scripts/dev_up.py
 ```
 
-Equivalent to:
+Used for:
+
+* Alembic iteration
+* ORM changes
+* import/debug cycles
+
+---
+
+## Test & evidence
+
+### Contract tests (DB-agnostic)
 
 ```bash
-docker compose \
-  -f docker-compose.yml \
-  -f docker-compose.dev.yml \
-  up -d
+PYTHONPATH=app pytest -q
 ```
 
-> ⚠️ DEV only. Production keeps images immutable.
+### Deterministic runners
+
+```bash
+PYTHONPATH=app python app/scripts/run_stub_chat.py
+```
+
+```bash
+PYTHONPATH=app python app/scripts/run_stub_determinism.py
+```
 
 ---
 
 ## Project status
 
-Current state: **Day 10**
+## Project status
 
-The platform provides:
-
-* A stable, transactional write-path for chat interactions
-* A read-only inspection and auditing layer
-* Deterministic end-to-end traceability via `request_id`
-
-### Implemented
-
-* Atomic chat write-path (`POST /chat`)
-* Conversation and message persistence
-* UsageEvent-based telemetry
-* End-to-end execution trace reconstruction
-
-### Roadmap
-
-**Near-term (Day 11)**
-
-Provider abstraction (no vendor lock-in):
-
-- `ProviderPort` (async-first) with explicit contract:
-  - `ProviderInput` (request_id + messages, provider-agnostic)
-  - `ProviderResult` (content + minimal metadata + metrics)
-- Deterministic `StubProvider`:
-  - configurable simulated latency
-  - deterministic failure mode for error-path validation
-  - no external IO / no side effects
-- DB-agnostic orchestration layer:
-  - `ChatService` orchestrates input → provider → output
-  - no DB access, no transactions, no HTTP semantics
-
-**Near-term (Day 12)**
-
-ChatService integration into write-path (`/chat`):
-
-- `/chat` endpoint delegates model execution to `ChatService`
-  - preserves atomic write-path semantics (single DB transaction)
-  - preserves flush ordering (IDs before FKs)
-
-- UsageEvent emission aligned with LLMOps minimum viable:
-  - success path: full metadata + valid foreign keys
-  - error path: best-effort telemetry without FKs (never blocks response)
-
-- Provider mode controlled via environment (`STUB_PROVIDER_MODE`)
-  - enables deterministic success and failure scenarios
-
-- Reproducible smoke evidence:
-  - success path runner (message persistence + usage_event success)
-  - error path runner (rollback + usage_event error)
-
-- Regression gates:
-  - contract tests passing (core remains DB-agnostic)
-  - OpenAPI and read-paths unchanged
+**Current state: Day 13 — Hardened & validated**
 
 
-Evidence / reproducibility:
+### Day 13 — Hardening & Guardrails
 
-- Container-run runners (under `app/scripts/`):
-  - `run_stub_chat.py` (ok path + error path)
-  - `run_stub_determinism.py` (determinism + sensitivity checks)
-- Contract tests (pure, no DB):
-  - `app/tests/core/test_stub_provider_contract.py`
-  - `app/tests/core/test_chat_service_contract.py`
+This iteration focuses on **operational hardening**, not feature expansion.
 
-> Note: `/chat` integration is intentionally deferred until the provider contract is validated.
+The goal of Day 13 is to ensure that the `/chat` write-path behaves
+**correctly under adverse conditions**, including invalid input,
+provider failures, and telemetry issues.
 
-**Future**
+Guarantees added in Day 13:
 
-* Streaming responses
-* Authentication, rate limiting, quotas
-* Aggregated metrics and dashboards
+* Explicit input guardrails:
+  * blank or whitespace-only messages are rejected
+  * oversized messages are rejected deterministically
+* Request payload size bounded via middleware
+* Provider execution is hardened:
+  * explicit timeout handling
+  * provider failures normalized into domain-level errors
+* Error handling is controlled:
+  * no raw provider exceptions leak through the API
+  * transactional integrity is preserved on failure
+* Telemetry is defensive:
+  * UsageEvent emission is best-effort
+  * telemetry failures never break the request flow
+* Contract and guardrail tests act as regression gates
+
+No changes were introduced to:
+
+* database schema
+* Alembic migrations
+* API surface
+* transactional semantics of `/chat`
+
+
+### Implemented (as of Day 13)
+
+* Transactional `/chat` write-path
+* Provider abstraction + orchestration layer
+* Deterministic stub provider
+* End-to-end traceability
+* Regression-safe integration
+
 
 ---
 
@@ -392,3 +405,16 @@ Evidence / reproducibility:
 * **README.md** — operational overview and invariants
 * **docs/lld_llm_chat_platform_live_doc.md** — living low-level design
 * **docs/lld_apendix.md** — deep technical appendices and traceability details
+
+---
+
+## Recommendations for next iterations
+
+* Add streaming support without breaking atomicity
+* Introduce real providers (OpenAI / Bedrock) via adapters
+* Add auth, quotas, and rate limiting
+* Aggregate usage metrics and dashboards
+
+---
+
+**This repository is intentionally built as a correctness-first reference system.**
