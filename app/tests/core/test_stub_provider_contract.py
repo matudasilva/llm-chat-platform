@@ -2,7 +2,7 @@ import uuid
 import pytest
 
 from app.core.domain.types import ChatMessage
-from core.domain.provider import ProviderInput
+from app.core.domain.provider import ProviderInput
 from app.core.providers.stub_provider import StubProvider
 
 

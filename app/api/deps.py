@@ -3,6 +3,7 @@ import os
 from app.core.domain.provider import ProviderPort
 from app.core.providers.stub_provider import StubProvider
 from app.core.domain.chat_service import ChatService
+from app.core.settings import settings
 
 
 def get_provider() -> ProviderPort:
@@ -11,7 +12,7 @@ def get_provider() -> ProviderPort:
     return StubProvider(mode=mode, simulated_latency_ms=latency_ms)
 
 def get_chat_service() -> ChatService:
-    return ChatService(provider=get_provider())
+    return ChatService(provider=get_provider(), timeout_s=settings.PROVIDER_TIMEOUT_S)
 
 
 

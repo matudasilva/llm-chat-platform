@@ -15,6 +15,10 @@ from app.api.deps import get_chat_service
 from app.core.domain.chat_service import ChatService
 from app.core.domain.types import ChatMessage
 
+from app.core.domain.errors import ProviderTimeoutError, ProviderExecutionError
+from app.core.settings import settings
+from app.core.utils.limits import sanitize_error_message, truncate 
+
 
 router = APIRouter(tags=["chat"])
 
@@ -69,6 +73,7 @@ async def chat(
             )
 
             assistant_content = service_result.assistant_message.content
+            assistant_content = truncate(assistant_content, settings.MAX_ASSISTANT_CHARS)
             provider_result = service_result.provider_result
 
 
@@ -104,7 +109,12 @@ async def chat(
                 output_tokens=provider_result.output_tokens,
                 total_tokens=provider_result.total_tokens,
             )
-            db.add(ev)
+            try:
+                db.add(ev)
+            except Exception:
+            # Telemetry must never break the request.
+                pass
+
 
         # commit OK (sale del begin)
         return ChatResponse(
@@ -118,13 +128,12 @@ async def chat(
         )
 
     except HTTPException:
-        # Mantener semántica de 404 etc.
         raise
 
-    except Exception as e:
-        error_message = str(e)
+    except (ProviderTimeoutError, ProviderExecutionError) as e:
+        # Controlled provider failure: return error response (no stack trace).
+        error_message = sanitize_error_message(str(e), settings.MAX_ERROR_MESSAGE_CHARS)
 
-        # rollback defensivo
         try:
             await db.rollback()
         except Exception:
@@ -132,13 +141,13 @@ async def chat(
 
         latency_ms = int((time.perf_counter() - start) * 1000)
 
-        # Best-effort: registrar error SIN FKs
+        # Best-effort UsageEvent without FKs
         try:
             async with db.begin():
                 db.add(
                     UsageEvent(
                         id=uuid.uuid4(),
-                        provider="stub",
+                        provider="stub",          # si querés, podríamos intentar inferir provider del ProviderResult, pero hoy no lo tenemos acá
                         model_version="local",
                         prompt_version="v0",
                         status=ChatStatus.error.value,
@@ -152,4 +161,52 @@ async def chat(
         except Exception:
             pass
 
-        raise
+        return ChatResponse(
+            request_id=request_id,
+            conversation_id=conversation_id,
+            user_message_id=None,
+            assistant_message_id=None,
+            assistant_content=None,
+            status=ChatStatus.error,
+            error_message=error_message,
+        )
+
+    except Exception as e:
+        # Unexpected server error: still return controlled error response.
+        error_message = sanitize_error_message("internal error", settings.MAX_ERROR_MESSAGE_CHARS)
+
+        try:
+            await db.rollback()
+        except Exception:
+            pass
+
+        latency_ms = int((time.perf_counter() - start) * 1000)
+
+        try:
+            async with db.begin():
+                db.add(
+                    UsageEvent(
+                        id=uuid.uuid4(),
+                        provider="stub",
+                        model_version="local",
+                        prompt_version="v0",
+                        status=ChatStatus.error.value,
+                        request_id=request_id,
+                        latency_ms=latency_ms,
+                        error_message=sanitize_error_message(str(e), settings.MAX_ERROR_MESSAGE_CHARS),
+                        conversation_id=None,
+                        message_id=None,
+                    )
+                )
+        except Exception:
+            pass
+
+        return ChatResponse(
+            request_id=request_id,
+            conversation_id=conversation_id,
+            user_message_id=None,
+            assistant_message_id=None,
+            assistant_content=None,
+            status=ChatStatus.error,
+            error_message=error_message,
+        )

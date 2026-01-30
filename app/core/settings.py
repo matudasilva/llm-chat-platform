@@ -37,4 +37,11 @@ class Settings(BaseSettings):
             return f"redis://:{self.redis_password}@{self.redis_host}:{self.redis_port}/{self.redis_db}"
         return f"redis://{self.redis_host}:{self.redis_port}/{self.redis_db}"
 
+    # Defensive limits (hardening)
+    MAX_REQUEST_BYTES: int = 64 * 1024          # 64 KiB
+    MAX_MESSAGE_CHARS: int = 8_000
+    MAX_ASSISTANT_CHARS: int = 8_000
+    MAX_ERROR_MESSAGE_CHARS: int = 512
+    PROVIDER_TIMEOUT_S: float = 12.0
+
 settings = Settings()

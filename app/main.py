@@ -7,6 +7,9 @@ from fastapi import FastAPI
 from app.api.ops import router as ops_router
 from app.infra.db.session import test_db_connection
 from app.api.router import api_router
+from app.core.settings import settings
+from app.http.middleware.request_size_limit import RequestSizeLimitMiddleware
+
 
 
 def _get_env(name: str, default: str) -> str:
@@ -47,6 +50,11 @@ app = FastAPI(
     version="0.1.0",
 
 
+)
+
+app.add_middleware(
+    RequestSizeLimitMiddleware,
+    max_bytes=settings.MAX_REQUEST_BYTES,
 )
 
 # Routers (definí prefijos acá, no adentro del router)
