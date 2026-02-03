@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 from typing import Sequence
 from uuid import UUID
 
@@ -8,6 +9,8 @@ from .types import ChatMessage
 from .chat_types import ChatServiceResult
 from .provider import ProviderInput, ProviderPort
 from .errors import ProviderTimeoutError, ProviderExecutionError
+
+logger = logging.getLogger(__name__)
 
 
 class ChatService:
@@ -36,9 +39,23 @@ class ChatService:
                 timeout=self._timeout_s,
             )
         except asyncio.TimeoutError as e:
+            # Internal diagnostics: full stacktrace in logs, sanitized error outward.
+            logger.exception(
+                "provider_timeout request_id=%s provider=%s messages_count=%d timeout_s=%.3f",
+                str(request_id),
+                type(self._provider).__name__,
+                len(messages),
+                float(self._timeout_s),
+            )
             raise ProviderTimeoutError("provider timeout") from e
         except Exception as e:
             # Keep provider internals out of the boundary. Details belong in logs.
+            logger.exception(
+                "provider_execution_error request_id=%s provider=%s messages_count=%d",
+                str(request_id),
+                type(self._provider).__name__,
+                len(messages),
+            )
             raise ProviderExecutionError("provider execution failed") from e
 
         assistant = ChatMessage(role="assistant", content=provider_out.content)

@@ -17,7 +17,7 @@ from app.core.domain.types import ChatMessage
 
 from app.core.domain.errors import ProviderTimeoutError, ProviderExecutionError
 from app.core.settings import settings
-from app.core.utils.limits import sanitize_error_message, truncate 
+from app.core.utils.limits import sanitize_error_message, truncate
 
 
 router = APIRouter(tags=["chat"])
@@ -29,7 +29,6 @@ async def chat(
     db: AsyncSession = Depends(get_db),
     chat_service: ChatService = Depends(get_chat_service),
 ) -> ChatResponse:
-
     start = time.perf_counter()
     request_id = uuid.uuid4()
 
@@ -42,7 +41,7 @@ async def chat(
     assistant_content: str | None = None
 
     try:
-        # Una transacción: o queda todo, o no queda nada
+        # Single transaction: either everything is persisted, or nothing is.
         async with db.begin():
             # 1) Conversation: create or validate
             if conversation_id is None:
@@ -66,7 +65,7 @@ async def chat(
             await db.flush()
             user_message_id = user_msg.id
 
-            # 3) Execute model (via ChatService + StubProvider)
+            # 3) Execute model (via ChatService + ProviderPort)
             service_result = await chat_service.run(
                 request_id=request_id,
                 messages=[ChatMessage(role="user", content=payload.message)],
@@ -75,7 +74,6 @@ async def chat(
             assistant_content = service_result.assistant_message.content
             assistant_content = truncate(assistant_content, settings.MAX_ASSISTANT_CHARS)
             provider_result = service_result.provider_result
-
 
             # 4) Persist assistant message
             assistant_msg = Message(
@@ -90,33 +88,31 @@ async def chat(
 
             status = ChatStatus.success
 
-            # 5) UsageEvent WITH valid FKs
+            # 5) UsageEvent WITH valid FKs (best-effort)
             latency_ms = int((time.perf_counter() - start) * 1000)
 
-            ev = UsageEvent(
-                id=uuid.uuid4(),
-                provider=provider_result.provider,
-                model_version=provider_result.model_version,
-                prompt_version=provider_result.prompt_version,
-
-                status=status.value,  # "success" | "error"
-                request_id=request_id,
-                latency_ms=latency_ms,
-                error_message=None,
-                conversation_id=conversation_id,
-                message_id=assistant_message_id,  # convención: assistant message
-                input_tokens=provider_result.input_tokens,
-                output_tokens=provider_result.output_tokens,
-                total_tokens=provider_result.total_tokens,
-            )
+            # Telemetry must never break the request.
             try:
+                ev = UsageEvent(
+                    id=uuid.uuid4(),
+                    provider=provider_result.provider,
+                    model_version=provider_result.model_version,
+                    prompt_version=provider_result.prompt_version,
+                    status=status.value,  # "success" | "error"
+                    request_id=request_id,
+                    latency_ms=latency_ms,
+                    error_message=None,
+                    conversation_id=conversation_id,
+                    message_id=assistant_message_id,  # convention: assistant message
+                    input_tokens=provider_result.input_tokens,
+                    output_tokens=provider_result.output_tokens,
+                    total_tokens=provider_result.total_tokens,
+                )
                 db.add(ev)
             except Exception:
-            # Telemetry must never break the request.
                 pass
 
-
-        # commit OK (sale del begin)
+        # commit OK (exits db.begin())
         return ChatResponse(
             request_id=request_id,
             conversation_id=conversation_id,
@@ -147,7 +143,7 @@ async def chat(
                 db.add(
                     UsageEvent(
                         id=uuid.uuid4(),
-                        provider="stub",          # si querés, podríamos intentar inferir provider del ProviderResult, pero hoy no lo tenemos acá
+                        provider="stub",
                         model_version="local",
                         prompt_version="v0",
                         status=ChatStatus.error.value,
