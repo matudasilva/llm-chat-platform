@@ -65,14 +65,16 @@ async def chat(
             await db.flush()
             user_message_id = user_msg.id
 
-            # 3) Execute model (via ChatService + ProviderPort)
+            # 3) Execute model (via ChatService)
             service_result = await chat_service.run(
                 request_id=request_id,
                 messages=[ChatMessage(role="user", content=payload.message)],
             )
 
-            assistant_content = service_result.assistant_message.content
-            assistant_content = truncate(assistant_content, settings.MAX_ASSISTANT_CHARS)
+            assistant_content = truncate(
+                service_result.assistant_message.content,
+                settings.MAX_ASSISTANT_CHARS,
+            )
             provider_result = service_result.provider_result
 
             # 4) Persist assistant message
@@ -89,7 +91,11 @@ async def chat(
             status = ChatStatus.success
 
             # 5) UsageEvent WITH valid FKs (best-effort)
-            latency_ms = int((time.perf_counter() - start) * 1000)
+            latency_ms = max(0, int((time.perf_counter() - start) * 1000))
+
+            input_tokens = max(0, int(provider_result.input_tokens))
+            output_tokens = max(0, int(provider_result.output_tokens))
+            total_tokens = max(0, int(provider_result.total_tokens))
 
             # Telemetry must never break the request.
             try:
@@ -98,21 +104,21 @@ async def chat(
                     provider=provider_result.provider,
                     model_version=provider_result.model_version,
                     prompt_version=provider_result.prompt_version,
-                    status=status.value,  # "success" | "error"
+                    status=status.value,
                     request_id=request_id,
                     latency_ms=latency_ms,
                     error_message=None,
                     conversation_id=conversation_id,
-                    message_id=assistant_message_id,  # convention: assistant message
-                    input_tokens=provider_result.input_tokens,
-                    output_tokens=provider_result.output_tokens,
-                    total_tokens=provider_result.total_tokens,
+                    message_id=assistant_message_id,
+                    input_tokens=input_tokens,
+                    output_tokens=output_tokens,
+                    total_tokens=total_tokens,
                 )
                 db.add(ev)
             except Exception:
                 pass
 
-        # commit OK (exits db.begin())
+        # commit OK (exit db.begin)
         return ChatResponse(
             request_id=request_id,
             conversation_id=conversation_id,
@@ -127,7 +133,6 @@ async def chat(
         raise
 
     except (ProviderTimeoutError, ProviderExecutionError) as e:
-        # Controlled provider failure: return error response (no stack trace).
         error_message = sanitize_error_message(str(e), settings.MAX_ERROR_MESSAGE_CHARS)
 
         try:
@@ -135,9 +140,8 @@ async def chat(
         except Exception:
             pass
 
-        latency_ms = int((time.perf_counter() - start) * 1000)
+        latency_ms = max(0, int((time.perf_counter() - start) * 1000))
 
-        # Best-effort UsageEvent without FKs
         try:
             async with db.begin():
                 db.add(
@@ -168,7 +172,6 @@ async def chat(
         )
 
     except Exception as e:
-        # Unexpected server error: still return controlled error response.
         error_message = sanitize_error_message("internal error", settings.MAX_ERROR_MESSAGE_CHARS)
 
         try:
@@ -176,7 +179,7 @@ async def chat(
         except Exception:
             pass
 
-        latency_ms = int((time.perf_counter() - start) * 1000)
+        latency_ms = max(0, int((time.perf_counter() - start) * 1000))
 
         try:
             async with db.begin():
