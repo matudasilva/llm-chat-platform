@@ -398,6 +398,23 @@ No changes were introduced to:
 * Regression-safe integration
 
 
+## Day 14 — Operational Hardening & Evidence
+
+- Internal provider diagnostics
+  - Provider timeout and execution failures are logged with full exception context
+  - Client-facing errors remain sanitized
+
+- Telemetry best-effort guarantee
+  - `UsageEvent` failures never break `/chat` (covered by explicit test)
+
+- Request payload size guard
+  - Requests exceeding `MAX_REQUEST_BYTES` return HTTP 413
+  - Verified via `tests/api/test_request_size_limit.py`
+
+- Defensive metrics
+  - latency and token counters are clamped to non-negative values before persistence
+
+
 ---
 
 ## Documentation

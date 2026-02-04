@@ -4,7 +4,8 @@
 
 **Scope:** Deep technical appendices, debugging playbooks, and execution-level details
 
-**Validity:** Up to Day 10 (Appendix F)
+**Validity:** Up to Day 12 (Appendix H)
+
 
 > Note: Appendices A–E describe the effective system state up to Day 9.
 > Appendix F documents the Day 10 traceability layer, implemented as a read-only reconstruction mechanism.
@@ -241,6 +242,62 @@ docker compose exec -T postgres psql -U llmchat -d llmchat -c \
 docker compose exec -T postgres psql -U llmchat -d llmchat -c \
 "select provider, status, conversation_id, message_id from usage_events order by created_at desc limit 5;"
 ```
+### D.5 RequestSizeLimitMiddleware raises `KeyError: 'receive'` under TestClient
+
+**Symptoms**
+
+Pytest fails on requests (typically `POST /chat`) with:
+
+KeyError: 'receive'
+
+
+originating from:
+
+- `app/http/middleware/request_size_limit.py`
+
+**Cause**
+
+`BaseHTTPMiddleware` in Starlette wraps requests in a way that can make `request.scope["receive"]`
+unavailable or unsafe to mutate, depending on the execution path.
+
+**Resolution (validated)**
+
+Use an ASGI middleware (pure `__call__(scope, receive, send)`) or guard for missing `receive`
+and fall back to `call_next(request)`.
+
+**Regression test evidence**
+
+- `tests/api/test_chat_guardrails.py` executes via `TestClient` and must pass.
+- Passing suite confirms middleware compatibility with Starlette test transport.
+
+### D.6 `ChatService.__init__()` mismatch: missing `timeout_s`
+
+**Symptoms**
+
+Pytest collection/execution fails with:
+
+TypeError: ChatService.init() missing 1 required keyword-only argument: 'timeout_s'
+
+
+Trigger points observed:
+
+- core contract tests instantiating `ChatService(provider)`
+- FastAPI dependency `get_chat_service()` instantiating `ChatService(provider=get_provider())`
+
+**Cause**
+
+`ChatService` constructor changed to require `timeout_s` (keyword-only), but call sites were not updated.
+
+**Resolution (validated)**
+
+- Update all call sites to pass `timeout_s=...`
+- Update contract tests accordingly
+- Wire a single settings-backed value via DI layer (`app/api/deps.py`)
+
+**Regression evidence**
+
+- `app/tests/core/test_chat_service_contract.py`
+- API tests (which hit DI): `tests/api/test_chat_guardrails.py`
 
 ---
 
@@ -457,6 +514,22 @@ Explicit non-goals:
 
 This separation preserves **best-effort telemetry** guarantees under failure conditions.
 
+**Quick verification**
+
+Inside container:
+
+```bash
+docker compose exec -T -w /app/app api python -c "import sys; print(sys.path); import core; print(core.__file__)"
+```
+
+Host execution (repo root):
+
+```bash
+PYTHONPATH=app python -c "import core; print(core.__file__)"
+```
+
+
+
 ---
 
 ### G.4 StubProvider (deterministic, no IO)
@@ -664,6 +737,86 @@ The following regression checks must pass after Day 12 integration:
 
 Successful execution of these checks confirms that the Day 12 integration
 introduced no regressions and preserved all architectural invariants.
+
+### H.5 Guardrails & provider-boundary regression gates (A2/A3)
+
+The following checks validate that input guardrails and provider execution boundaries remain intact.
+
+#### H.5.1 API guardrails (blank + oversized message)
+
+Validates that `/chat` rejects invalid input deterministically:
+
+- blank / whitespace-only message → request rejected
+- message exceeding `MAX_MESSAGE_CHARS` → request rejected
+
+**Command:**
+
+```bash
+PYTHONPATH=app pytest -q tests/api/test_chat_guardrails.py
+```
+Expected:
+
+test suite passes
+
+no DB writes are produced for rejected inputs
+
+H.5.2 Provider error normalization (contract-level)
+
+Validates that provider exceptions do not cross the ChatService boundary:
+
+provider failure → ProviderExecutionError raised
+
+original exception is preserved as __cause__ for debugging
+
+Command:
+```bash
+PYTHONPATH=app pytest -q app/tests/core/test_chat_service_contract.py
+```
+Expected:
+
+test suite passes
+
+error type and message match the boundary contract
+
+H.5.3 Timeout behavior (optional gate)
+
+If a timeout-mode stub is available (or latency simulation is used),
+validate that time-bounded execution produces ProviderTimeoutError.
+
+This check is intentionally contract-level and DB-agnostic.
+
+
+---
+
+## Appendix J — Day 14 (Operational hardening & evidence)
+
+### J.1 Internal provider diagnostics logging
+Evidence:
+- `pytest -q tests/core/test_chat_service_timeout.py -s --log-cli-level=INFO`
+- `pytest -q tests/core/test_chat_service_provider_error.py -s --log-cli-level=INFO`
+
+Notes:
+- Full exceptions are logged internally.
+- Client-facing errors remain sanitized.
+
+### J.2 Telemetry is best-effort (UsageEvent)
+Evidence:
+- `pytest -q tests/api/test_chat_telemetry_best_effort.py`
+
+### J.3 Request size limit (HTTP 413)
+Evidence:
+- `pytest -q tests/api/test_request_size_limit.py`
+Expected:
+- HTTP 413
+- Body: `{"detail":"Payload too large"}`
+
+### J.4 Defensive clamps + helpers unit tests
+Evidence:
+- `pytest -q tests/core/test_limits_helpers.py`
+
+Notes:
+- `latency_ms` and token counters are clamped to non-negative values before persistence.
+
 
 
 

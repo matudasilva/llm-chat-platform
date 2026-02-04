@@ -456,6 +456,38 @@ Rationale:
 * avoids “error while logging the error”
 * decouples observability from business data success
 
+#### Input guardrails and execution boundaries (Day 12)
+
+The `/chat` write-path enforces **early guardrails** and **explicit execution boundaries**
+to protect both persistence integrity and provider isolation.
+
+**Input-level guardrails (A2):**
+
+- Blank or whitespace-only messages are rejected at schema validation level
+- Maximum message length is enforced at schema level (`MAX_MESSAGE_CHARS`)
+- Requests exceeding maximum payload size are rejected by HTTP middleware
+  (`RequestSizeLimitMiddleware`) *before* reaching application logic
+
+These checks ensure that invalid or abusive input never enters:
+- the database transaction
+- the provider execution boundary
+
+**Execution-level guardrails (A3):**
+
+- Provider execution is wrapped by `ChatService` with an explicit timeout
+- Provider failures are normalized into domain errors:
+  - `ProviderTimeoutError`
+  - `ProviderExecutionError`
+- Provider internals and raw exceptions are never leaked across the service boundary
+
+Design rationale:
+
+- Guardrails fail fast and deterministically
+- Business transactions remain atomic
+- Telemetry must never break the main execution path
+- Provider instability cannot corrupt persistence state
+
+
 ### 15.5 Stub provider semantics
 
 * Deterministic response: `"stub: provider not configured yet"`
@@ -763,6 +795,27 @@ The service returns a `ChatServiceResult` containing:
 
 - now is integrated on /chat
 
+**Execution boundary guarantees (Day 12):**
+
+- `ChatService` is the exclusive execution boundary for providers
+- All provider calls are:
+  - time-bounded
+  - exception-normalized
+  - isolated from persistence concerns
+
+`ChatService` guarantees that:
+
+- successful execution returns a valid `ChatServiceResult`
+- timeouts raise `ProviderTimeoutError`
+- provider failures raise `ProviderExecutionError`
+- raw provider exceptions never cross the boundary
+
+This allows `/chat` to reason only in terms of:
+- success vs error
+- rollback vs commit
+- telemetry emission strategy
+
+
 ### 22.5 Evidence (runners and tests)
 
 Reproducibility artifacts:
@@ -777,6 +830,55 @@ Integration with `/chat` is intentionally deferred to the next iteration, after 
 
 * run_chat_endpoint_smoke.py
 * run_chat_endpoint_error_smoke.py
+
+Additional evidence (Day 12):
+
+- API guardrail tests:
+  - `tests/api/test_chat_guardrails.py`
+    - rejects blank messages
+    - rejects oversized messages
+- Contract-level timeout and error propagation tests:
+  - `test_chat_service_contract.py`
+    - provider timeout handling
+    - provider error normalization
+
+
+---
+
+## Addendum — Day 14: Operational hardening & evidence
+
+Day 14 focused on strengthening operational robustness and reproducibility
+without modifying architectural invariants or public contracts.
+
+### Scope
+
+The following guarantees were reinforced:
+
+* `/chat` remains the single transactional write-path
+* No database schema or Alembic changes were introduced
+* Provider abstraction and DB-agnostic boundaries remain unchanged
+
+### Changes
+
+* Internal diagnostic logging added at provider boundaries
+  * Full exception traces are logged internally
+  * Client-facing responses remain sanitized
+* Best-effort telemetry hardened
+  * Telemetry failures never break the `/chat` request
+  * Defensive clamping applied to latency and token metrics
+* Request guardrails extended
+  * Payload size limits enforced at middleware level
+  * Explicit `413 Payload Too Large` behavior validated via tests
+
+### Evidence
+
+Reproducible evidence and verification commands are documented in
+`lld_apendix.md`, including:
+
+* Provider timeout and execution error logging
+* Telemetry best-effort behavior under failure
+* Request size limit enforcement
+
 
 
 ## Appendices
