@@ -1,5 +1,10 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import Field
+from pydantic import BaseModel, Field
+
+class TokenRates(BaseModel):
+    # Cost per 1K tokens, expressed in your chosen currency unit (e.g., USD).
+    input_per_1k: float = 0.0
+    output_per_1k: float = 0.0
 
 
 class Settings(BaseSettings):
@@ -43,5 +48,11 @@ class Settings(BaseSettings):
     MAX_ASSISTANT_CHARS: int = 8_000
     MAX_ERROR_MESSAGE_CHARS: int = 512
     PROVIDER_TIMEOUT_S: float = 12.0
+
+    # Cost Awareness (MVP): provider-agnostic token pricing table (no external calls).
+    # Unknown providers should be treated as 0.0 cost by the estimator.
+    cost_rates_by_provider: dict[str, TokenRates] = {
+        "stub": TokenRates(input_per_1k=0.0, output_per_1k=0.0),
+    }
 
 settings = Settings()
