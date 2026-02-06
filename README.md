@@ -414,6 +414,17 @@ No changes were introduced to:
 - Defensive metrics
   - latency and token counters are clamped to non-negative values before persistence
 
+## Day 15 — Cost Awareness (MVP)
+
+The platform includes a provider-agnostic cost estimator based on token usage:
+
+- `app.core.utils.costs.estimate_cost(provider, input_tokens, output_tokens) -> float`
+- Pure helper: no DB access, no external calls (no live pricing).
+- Unknown providers return `0.0`.
+- Negative token counts are clamped to `0`.
+- Token pricing is configured via `Settings.cost_rates_by_provider` as cost per 1K input/output tokens.
+
+This is intentionally not billing. It enables deterministic, interview-friendly cost reasoning from recorded token counts.
 
 ---
 
