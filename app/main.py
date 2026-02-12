@@ -9,6 +9,8 @@ from app.infra.db.session import test_db_connection
 from app.api.router import api_router
 from app.core.settings import settings
 from app.http.middleware.request_size_limit import RequestSizeLimitMiddleware
+from app.http.middleware.structured_logging import StructuredJsonLoggingMiddleware
+
 
 
 
@@ -45,11 +47,23 @@ _configure_logging(APP_ENV, LOG_LEVEL)
 
 logger = logging.getLogger("app")
 
+logging.basicConfig(
+    level=getattr(logging, str(getattr(settings, "log_level", "INFO")).upper(), logging.INFO),
+    format="%(message)s",
+    handlers=[logging.StreamHandler(sys.stdout)],
+)
+
+
 app = FastAPI(
     title="LLM Chat Platform API",
     version="0.1.0",
 
 
+)
+
+app.add_middleware(
+    StructuredJsonLoggingMiddleware,
+    app_env=str(getattr(settings, "app_env", "unknown")),
 )
 
 app.add_middleware(
