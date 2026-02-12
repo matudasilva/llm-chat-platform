@@ -1,5 +1,20 @@
 # LLM Chat Platform
 
+This repository presents a reference architecture for an enterprise-ready LLM Chat Platform, focused on production-grade LLM systems integration and MLOps-aligned operational practices.
+
+It models how AI-powered workloads should be architected and operated in real cloud environments with:
+
+- Provider-agnostic integration
+- Transactional write-path design
+- Structured logging and observability
+- Cost governance and telemetry
+- Operational resilience
+
+> This project intentionally prioritizes architectural clarity, traceability, and operational correctness over premature feature velocity.
+
+---
+
+
 Backend platform for building a **LLM-based chat system**, designed with strong architectural separation, explicit operational steps, and long-term evolvability in mind.
 
 This repository intentionally prioritizes **clarity, traceability, and correctness** over premature feature density.
@@ -349,11 +364,10 @@ PYTHONPATH=app python app/scripts/run_stub_determinism.py
 
 ---
 
-## Project status
 
 ## Project status
 
-**Current state: Day 13 — Hardened & validated**
+**Current state: Day 15 — Cost Awareness completed (MVP)**
 
 
 ### Day 13 — Hardening & Guardrails
