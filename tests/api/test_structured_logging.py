@@ -6,10 +6,15 @@ def test_structured_logging_emits_json_line(client, capsys):
     r = client.get("/health")
     assert r.status_code == 200
 
-    out = capsys.readouterr().out
+    captured = capsys.readouterr()
+    text = (captured.out or "") + "\n" + (captured.err or "")
 
-    # Find the last JSON line we emitted (it is a single-line JSON object)
-    json_lines = [line for line in out.splitlines() if line.startswith('{"request_id"')]
+    # Find JSON line (single-line JSON object)
+    json_lines = [
+        line.strip()
+        for line in text.splitlines()
+        if line.lstrip().startswith('{"request_id"')
+    ]
     assert len(json_lines) >= 1
 
     payload = json.loads(json_lines[-1])
