@@ -17,8 +17,6 @@ It models how AI-powered workloads should be architected and operated in real cl
 
 Backend platform for building a **LLM-based chat system**, designed with strong architectural separation, explicit operational steps, and long-term evolvability in mind.
 
-This repository intentionally prioritizes **clarity, traceability, and correctness** over premature feature density.
-
 > This project focuses on the **operational side of AI systems (LLMOps)**: running LLM-powered workloads with transactional guarantees, observability, traceability, and production-safe failure handling.
 > Model quality and prompt engineering are intentionally out of scope.
 
@@ -274,6 +272,17 @@ Capabilities:
 * Auditable execution history
 
 Trace reconstruction is implemented as a **read-only analysis layer** and documented in the LLD Appendix.
+
+---
+
+## Observability: Structured Logging
+
+The API emits **one JSON log line per HTTP request** to stdout (cloud-friendly).
+Logs include `request_id` for correlation. Request/response bodies are never logged.
+
+Example:
+```json
+{"request_id":"...","path":"/health","method":"GET","status":200,"latency_ms":1,"app_env":"development"}
 
 ---
 

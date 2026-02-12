@@ -879,7 +879,24 @@ Reproducible evidence and verification commands are documented in
 * Telemetry best-effort behavior under failure
 * Request size limit enforcement
 
+## Addendum — Day 16: Structured JSON Logging
 
+### Scope
+
+Add minimal, enterprise-ready structured logging to improve observability, without changing
+runtime semantics or transactional guarantees.
+
+### Changes
+
+* Added ASGI middleware emitting one JSON log line per HTTP request to stdout
+* Mandatory fields: `request_id`, `path`, `method`, `status`, `latency_ms`, `app_env`
+* No request/response bodies are logged
+* Correlation uses `request_id` (state/header) or generates a UUID for logging only
+
+### Evidence
+
+Reproducible commands and expected output shape are documented in `lld_apendix.md`
+(Appendix L — Day 16).
 
 ## Appendices
 

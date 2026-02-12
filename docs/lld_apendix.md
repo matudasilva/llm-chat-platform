@@ -4,11 +4,15 @@
 
 **Scope:** Deep technical appendices, debugging playbooks, and execution-level details
 
-**Validity:** Up to Day 12 (Appendix H)
+**Validity:** Up to Day 16 (Appendix L)
 
 
-> Note: Appendices A–E describe the effective system state up to Day 9.
-> Appendix F documents the Day 10 traceability layer, implemented as a read-only reconstruction mechanism.
+> Note:
+> Appendices A–E describe the effective system state up to Day 9.
+> Appendix F documents the Day 10 traceability layer (read-only reconstruction).
+> Later appendices record incremental architectural and operational changes through Day 16.
+
+
 
 ---
 
@@ -470,6 +474,7 @@ Inside the `api` container, the effective application root is:
 /app/app
 ```
 
+
 As a result:
 
 * Top-level imports are resolved from modules such as `core`, `api`, `models`, `infra`, and `services`
@@ -480,6 +485,20 @@ This convention applies consistently to:
 * Domain code
 * Runners
 * Tests
+
+**Quick verification**
+
+Inside container:
+
+```bash
+docker compose exec -T -w /app/app api python -c "import sys; print(sys.path); import core; print(core.__file__)"
+```
+
+Host execution (repo root):
+
+```bash
+PYTHONPATH=app python -c "import core; print(core.__file__)"
+```
 
 ---
 
@@ -513,20 +532,6 @@ Explicit non-goals:
 * No `status` field (request outcome is a write-path concern)
 
 This separation preserves **best-effort telemetry** guarantees under failure conditions.
-
-**Quick verification**
-
-Inside container:
-
-```bash
-docker compose exec -T -w /app/app api python -c "import sys; print(sys.path); import core; print(core.__file__)"
-```
-
-Host execution (repo root):
-
-```bash
-PYTHONPATH=app python -c "import core; print(core.__file__)"
-```
 
 
 
@@ -817,7 +822,120 @@ Evidence:
 Notes:
 - `latency_ms` and token counters are clamped to non-negative values before persistence.
 
+---
 
+## Appendix K — Day 15 (Cost Awareness / MVP)
 
+### K.1 Purpose
+
+This appendix documents the MVP cost awareness capability.
+
+Scope and constraints:
+- Provider-agnostic estimation based on token counts
+- No external calls (no live pricing), no DB access
+- No changes to `/chat` contract or write-path semantics
+
+### K.2 Implementation surface
+
+- Pure helper: `app/core/utils/costs.py`
+  - `estimate_cost(provider, input_tokens, output_tokens) -> float`
+  - Unknown providers return `0.0`
+  - Negative token counts are clamped to `0`
+- Static pricing table in settings:
+  - `Settings.cost_rates_by_provider` (cost per 1K input/output tokens)
+
+### K.3 Reproducible evidence
+
+**Unknown provider + stub (expected 0.0):**
+
+```bash
+python -c "from app.core.utils.costs import estimate_cost; print('unknown:', estimate_cost('unknown', 1200, 300)); print('stub:', estimate_cost('stub', 1200, 300))"
+```
+
+Expected:
+```bash
+unknown: 0.0
+stub: 0.0
+```
+
+**Non-zero example using a demo rate (no external calls):**
+Evidence:
+```bash
+python - <<'PY'
+from app.core.settings import settings
+from app.core.utils.costs import estimate_cost
+
+settings.cost_rates_by_provider["demo"] = type("R", (), {"input_per_1k": 1.0, "output_per_1k": 2.0})()
+print("demo:", estimate_cost("demo", 1000, 500))  # expected 2.0
+PY
+```
+Expected:
+```bash
+demo: 2.0
+```
+
+### K.4 Regression gate
+```bash
+pytest -q
+```
+
+Expected:
+
+test suite passes (warnings allowed)
+```bash
+- `....................... [100%]`
+app/infra/schemas/conversations.py:8
+  /home/matias/Cursor/llm-chat-platform/app/infra/schemas/conversations.py:8: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class ConversationSummary(BaseModel):
+
+app/infra/schemas/conversations.py:18
+  /home/matias/Cursor/llm-chat-platform/app/infra/schemas/conversations.py:18: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class MessageOut(BaseModel):
+
+app/main.py:65
+  /home/matias/Cursor/llm-chat-platform/app/main.py:65: DeprecationWarning: 
+          on_event is deprecated, use lifespan event handlers instead.
+  
+          Read more about it in the
+          [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+          
+    @app.on_event("startup")
+
+.venv/lib/python3.13/site-packages/fastapi/applications.py:4576
+  /home/matias/Cursor/llm-chat-platform/.venv/lib/python3.13/site-packages/fastapi/applications.py:4576: DeprecationWarning: 
+          on_event is deprecated, use lifespan event handlers instead.
+  
+          Read more about it in the
+          [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+          
+    return self.router.on_event(event_type)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+```
+
+## Appendix L — Day 16: Structured JSON Logging
+
+### L.1 Purpose
+
+Provide cloud-friendly structured logging (JSON) with request correlation, without logging bodies and without affecting `/chat` semantics.
+
+### L.2 Reproducible evidence
+
+Command:
+
+```bash
+pytest -q tests/api/test_structured_logging.py -s --log-cli-level=INFO
+```
+
+Expected output shape:
+
+One JSON line to stdout with:
+
+request_id, path, method, status, latency_ms, app_env
+
+Example:
+```bash
+{"request_id":"...","path":"/health","method":"GET","status":200,"latency_ms":1,"app_env":"development"}
+```
 
 **End of appendix — complements the live LLD document**
