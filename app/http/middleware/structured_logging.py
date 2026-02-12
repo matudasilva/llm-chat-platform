@@ -6,23 +6,28 @@ import uuid
 from typing import Optional
 
 
-class StructuredJsonLoggingMiddleware:
-    """
-    ASGI middleware: emits exactly one JSON log line per request (on response end).
-    - No request/response bodies are logged.
-    - request_id correlation order:
-        1) scope["state"]["request_id"] (if your app sets it)
-        2) incoming header X-Request-Id
-        3) generated UUID4 (logging only)
-    """
+class _DynamicStdoutHandler(logging.Handler):
+    """Writes to sys.stdout dynamically so pytest capsys/capfd can capture it."""
+    def emit(self, record: logging.LogRecord) -> None:
+        try:
+            msg = self.format(record)
+            sys.stdout.write(msg + "\n")
+            sys.stdout.flush()
+        except Exception:
+            self.handleError(record)
 
+
+class StructuredJsonLoggingMiddleware:
     def __init__(self, app, *, app_env: str):
         self.app = app
         self.app_env = app_env
         self.logger = logging.getLogger("app.access")
+
+        # Keep it isolated: one JSON line, no prefixes, no double logging
         self.logger.propagate = False
-        if not any(isinstance(h, logging.StreamHandler) for h in self.logger.handlers):
-            handler = logging.StreamHandler(sys.stdout)
+
+        if not any(isinstance(h, _DynamicStdoutHandler) for h in self.logger.handlers):
+            handler = _DynamicStdoutHandler()
             handler.setFormatter(logging.Formatter("%(message)s"))
             self.logger.addHandler(handler)
 
@@ -56,7 +61,6 @@ class StructuredJsonLoggingMiddleware:
                 "latency_ms": latency_ms,
                 "app_env": self.app_env,
             }
-            # single-line JSON, cloud-friendly
             self.logger.info(json.dumps(payload, ensure_ascii=False, separators=(",", ":")))
 
     def _resolve_request_id(self, scope) -> uuid.UUID:
