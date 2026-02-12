@@ -898,6 +898,37 @@ runtime semantics or transactional guarantees.
 Reproducible commands and expected output shape are documented in `lld_apendix.md`
 (Appendix L — Day 16).
 
+## Addendum — Day 17: Offline Cost Analytics Pipeline
+
+### Scope
+
+Introduce an offline, read-only analytics layer over persisted `usage_events`
+to enable cost exploration without modifying runtime semantics.
+
+### Changes
+
+* Added `scripts/export_usage_events.py`
+  - Read-only export of `usage_events` to JSONL
+  - No write operations
+* Added `scripts/run_cost_report.py`
+  - Offline aggregation using `estimate_cost`
+  - No database access
+* Outputs written under `/app/app/reports/` (gitignored)
+* No migrations introduced
+* No changes to `/chat` write-path semantics
+
+### Notes
+
+* DB column name is `timestamp` (verified via `\d+ usage_events`)
+* Export layer maps DB `timestamp` → JSON field `timestamp`
+* Pipeline is deterministic and reproducible
+
+### Evidence
+
+Reproducible commands and expected output are documented in
+`lld_apendix.md` (Appendix M — Day 17).
+
+
 ## Appendices
 
 Detailed execution-level documentation, debugging playbooks, and deep technical references

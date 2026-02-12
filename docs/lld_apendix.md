@@ -938,4 +938,46 @@ Example:
 {"request_id":"...","path":"/health","method":"GET","status":200,"latency_ms":1,"app_env":"development"}
 ```
 
+## Appendix M — Day 17 (Offline Cost Analytics Pipeline)
+
+### M.1 Evidence
+
+```bash
+docker compose exec -T -w /app/app api sh -lc \
+  'PYTHONPATH=/app/app python scripts/export_usage_events.py --limit 2000'
+
+docker compose exec -T -w /app/app api sh -lc \
+  'PYTHONPATH=/app/app python scripts/run_cost_report.py --in reports/usage_events.jsonl'
+```
+
+M.2 Expected output:
+```bash
+[OK] exported 42 usage_events -> reports/usage_events.jsonl
+=== Cost Report (offline) ===
+events_total=42
+estimated_cost_total=0.000000
+
+-- Cost by provider --
+manual-test cost=0.000000 events=1
+stub cost=0.000000 events=37
+test cost=0.000000 events=4
+
+-- Cost by status --
+error cost=0.000000 events=18
+ok cost=0.000000 events=4
+success cost=0.000000 events=20
+
+-- Cost by day --
+2026-01-14 cost=0.000000
+2026-01-15 cost=0.000000
+2026-01-16 cost=0.000000
+2026-01-20 cost=0.000000
+2026-01-28 cost=0.000000
+2026-01-29 cost=0.000000
+```
+M.3 Notes
+* DB column is timestamp (verified via \d+ usage_events)
+* Output files are written under /app/app/reports/ (gitignored).
+
+
 **End of appendix — complements the live LLD document**

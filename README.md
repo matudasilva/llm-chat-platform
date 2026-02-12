@@ -1,238 +1,43 @@
 # LLM Chat Platform
 
-This repository presents a reference architecture for an enterprise-ready LLM Chat Platform, focused on production-grade LLM systems integration and MLOps-aligned operational practices.
+Reference architecture for an enterprise-ready LLM Chat backend, focused on transactional guarantees, observability, traceability, and cost-aware operation.
 
-It models how AI-powered workloads should be architected and operated in real cloud environments with:
+This project models how AI-powered workloads should be integrated and operated in production-like environments with:
 
-- Provider-agnostic integration
-- Transactional write-path design
-- Structured logging and observability
-- Cost governance and telemetry
-- Operational resilience
+* Provider-agnostic orchestration
+* Fully transactional write-path design
+* Deterministic trace reconstruction
+* Structured JSON logging
+* Offline cost analytics
+* Explicit operational boundaries
 
-> This project intentionally prioritizes architectural clarity, traceability, and operational correctness over premature feature velocity.
-
----
-
-
-Backend platform for building a **LLM-based chat system**, designed with strong architectural separation, explicit operational steps, and long-term evolvability in mind.
-
-> This project focuses on the **operational side of AI systems (LLMOps)**: running LLM-powered workloads with transactional guarantees, observability, traceability, and production-safe failure handling.
-> Model quality and prompt engineering are intentionally out of scope.
+> This project intentionally prioritizes architectural clarity, invariants, and operational correctness over feature velocity.
 
 ---
 
-## Project goals
+## Core Principles
 
-* Provide a clean backend foundation for LLM-powered chat applications
-* Separate **runtime concerns** from **operational concerns** (DB readiness, migrations, telemetry)
-* Maintain an explicit and auditable evolution of the data model
-* Serve as a reference-quality backend project (interview / portfolio grade)
+### 1. Transactional Integrity First
 
----
+`/chat` is the **single authoritative write-path**.
 
-## Design philosophy
+Each request executes within one database transaction:
 
-This platform is designed around the assumption that **LLM calls are external, fallible, and expensive operations**.
-
-As a result, the system explicitly prioritizes:
-
-* Clear transaction boundaries
-* Deterministic persistence semantics
-* Non-invasive observability and telemetry
-* Operational correctness over feature velocity
-
----
-
-## Non-goals (explicit)
-
-This project intentionally does **not** aim to:
-
-* optimize prompt quality or model output
-* benchmark LLM vendors
-* provide UI / frontend components
-* act as a full SaaS product
-
-The focus is strictly on **running LLM workloads safely and correctly in production-like environments**.
-
----
-
-## Intended audience
-
-This repository is designed for:
-
-* Backend / Platform Engineers
-* Cloud & LLMOps Architects
-* Engineers preparing for senior technical interviews
-* Teams learning how to operationalize LLM workloads safely
-
----
-
-## Tech stack
-
-* **FastAPI** — async HTTP API
-* **PostgreSQL** — persistent storage
-* **Redis** — caching / ephemeral data (reserved)
-* **SQLAlchemy 2.0 (async)** — ORM
-* **Alembic** — schema migrations
-* **Docker + Docker Compose** — reproducible environments
-
----
-
-## Architectural principles
-
-### Runtime vs Operations
-
-* **No DB or Redis checks at API startup**
-
-  * `/health` is process-level only
-  * Dependency readiness is handled via Docker healthchecks
-
-* **Migrations are operational concerns**
-
-  * Alembic is never executed automatically by the API
-  * Schema changes are explicit, reproducible steps
-
-* **Single source of truth for configuration**
-
-  * `settings.database_url` is authoritative for both runtime and Alembic
-
----
-
-## Repository structure (simplified)
-
-```
-app/
-  main.py
-  api/
-    routes/
-      chat.py               # /chat endpoint (write-path)
-      usage_events.py       # usage & inspection endpoints (read-path)
-    ops.py                  # /health
-  core/
-    domain/                 # provider contracts, ChatService, errors
-  models/
-    conversation.py
-    message.py
-    usage_event.py
-  infra/
-    db/
-      base.py
-      session.py
-  services/
-    trace.py                # deterministic trace reconstruction
-
-alembic/
-  env.py
-  versions/
-
-scripts/
-  dev_up.py
-  dev_down.py
-  run_stub_chat.py
-  run_stub_determinism.py
-
-README.md
-docs/
-  lld_llm_chat_platform_live_doc.md
-  lld_apendix.md
-.env.example
-Dockerfile
-docker-compose.yml
-docker-compose.dev.yml
-```
-
----
-
-## Health endpoint
-
-```
-GET /health
-```
-
-* Confirms FastAPI process is alive
-* Does **not** check Postgres or Redis
-* Dependency readiness validated by Docker Compose healthchecks
-
----
-
-## Data model (baseline)
-
-### Conversation
-
-Represents a logical chat session.
-
-* `id` (UUID)
-* `created_at`, `updated_at`
-* optional `title`
-* optional `metadata` (JSONB)
-
----
-
-### Message
-
-Represents a single message within a conversation.
-
-* `id` (UUID)
-* `conversation_id` (FK → Conversation)
-* `role`: `user | assistant | system`
-* `content`
-* `created_at`
-
-**Index**
-
-* `(conversation_id, created_at)` — optimized for ordered retrieval
-
----
-
-### UsageEvent (LLMOps — minimal)
-
-Represents a telemetry event related to a model invocation.
-
-Tracked fields include:
-
-* `provider`
-* `model_version`
-* `prompt_version`
-* `request_id`
-* `conversation_id` (FK, nullable)
-* `message_id` (FK, nullable)
-* `latency_ms`
-* token counts (when available)
-* `status`
-* `error_message`
-* `created_at`
-
-This table is the **foundation for observability, cost analysis, and auditability**.
-
----
-
-## `/chat` endpoint — transactional write-path
-
-The `/chat` endpoint implements a **fully transactional write-path**.
-
-Each request executes, within a single database transaction:
-
-1. Create or validate `Conversation`
-2. Persist `Message (user)`
-3. Execute model logic via `ChatService`
-4. Persist `Message (assistant)`
-5. Persist `UsageEvent` with valid foreign keys
-
-### Failure semantics
+1. Persist user message
+2. Invoke provider via `ChatService`
+3. Persist assistant message
+4. Persist `UsageEvent`
 
 On failure:
 
-* The transaction is rolled back
-* A best-effort `UsageEvent` with `status=error` is recorded **without foreign keys**
+* Business writes are rolled back
+* Error telemetry is emitted best-effort (without foreign keys)
 
-This guarantees atomicity while preserving **post-hoc traceability under failure conditions**.
+No partial persistence is allowed.
 
 ---
 
-## Provider abstraction & orchestration
-
-### ProviderPort
+### 2. Provider-Agnostic Architecture
 
 Providers implement a single async-first contract:
 
@@ -240,97 +45,135 @@ Providers implement a single async-first contract:
 ProviderPort.generate(input: ProviderInput) -> ProviderResult
 ```
 
-* Provider contracts are **DB-agnostic**
-* No HTTP or FastAPI semantics
-* No persistence side effects
+`ChatService` orchestrates execution but:
 
-### ChatService
+* Has no DB access
+* Has no HTTP semantics
+* Has no transaction control
 
-`ChatService` is a pure orchestration layer:
-
-* Accepts domain messages
-* Invokes the provider with timeout protection
-* Returns assistant output + provider metadata
-
-Non-responsibilities:
-
-* No database access
-* No transaction management
-* No HTTP concerns
+This preserves strict separation between domain orchestration and persistence.
 
 ---
 
-## End-to-end traceability
+### 3. Runtime vs Operations Separation
 
-Every execution can be deterministically reconstructed using a `request_id`, **without modifying the write-path or schema**.
+* No DB checks at API startup
+* Migrations are never auto-run
+* Alembic is executed explicitly
+* Docker healthchecks handle readiness
 
-Capabilities:
-
-* Input/output reconstruction
-* Latency and cost inspection
-* Failure investigation
-* Auditable execution history
-
-Trace reconstruction is implemented as a **read-only analysis layer** and documented in the LLD Appendix.
+The API process lifecycle remains deterministic.
 
 ---
 
-## Observability: Structured Logging
+## Observability & Traceability
 
-The API emits **one JSON log line per HTTP request** to stdout (cloud-friendly).
-Logs include `request_id` for correlation. Request/response bodies are never logged.
+### Structured JSON Logging (Day 16)
 
-Example:
+One JSON log line is emitted per HTTP request:
+
 ```json
 {"request_id":"...","path":"/health","method":"GET","status":200,"latency_ms":1,"app_env":"development"}
+```
+
+Characteristics:
+
+* Correlated via `request_id`
+* No request/response bodies logged
+* Logs to stdout (cloud-friendly)
+* No vendor lock-in
+* No impact on `/chat` semantics
 
 ---
 
-## Database migrations (Alembic)
+### Deterministic Trace Reconstruction (Day 10)
 
-Alembic is used for **explicit, reproducible schema evolution**.
+Every `/chat` execution can be reconstructed from a `request_id`:
 
-### Key rules
+* Input message
+* Output message
+* Latency
+* Provider metadata
+* Status
 
-* Migrations are never executed automatically at runtime
-* Alembic resolves DB URL from `settings.database_url`
-* Canonical execution environment is the `api` container
+This is implemented as a **read-only analysis layer**, without modifying the write-path or schema.
 
-### Canonical commands
+---
 
-```bash
-docker compose exec -w /app/app api alembic current
+### Offline Cost Analytics (Day 15–17)
+
+The platform includes:
+
+* Provider-agnostic cost estimation (`estimate_cost`)
+* Static per-provider token rates (configurable)
+* Read-only export pipeline over `usage_events`
+* Offline aggregation (cost by provider, status, day)
+
+Characteristics:
+
+* No external pricing calls
+* No billing coupling
+* No schema changes
+* Fully reproducible via scripts
+
+This enables deterministic cost reasoning from recorded token usage.
+
+---
+
+## Data Model (Operational View)
+
+### Conversation
+
+Logical chat session container.
+
+### Message
+
+Ordered by `(conversation_id, created_at)`.
+
+### UsageEvent
+
+Foundation for:
+
+* Telemetry
+* Cost estimation
+* Observability
+* Failure audit
+
+Nullable foreign keys allow error telemetry without breaking atomicity.
+
+---
+
+## Tech Stack
+
+* FastAPI (async API)
+* PostgreSQL
+* SQLAlchemy 2.0 (async)
+* Alembic
+* Docker / Docker Compose
+* Redis (reserved)
+
+---
+
+## Repository Structure
+
 ```
+app/
+  main.py
+  api/
+  core/
+  infra/
+  models/
+  services/
+  scripts/
 
-```bash
-docker compose exec -w /app/app api alembic upgrade head
+alembic/
+docs/
+experiments/
 ```
 
 ---
 
-## ⚠️ Migration integrity rule (critical)
-
-The API image is built using:
-
-```
-COPY app /app/app
-```
-
-This implies:
-
-* **All Alembic revision files must be committed**
-* Missing revisions will desynchronize the migration graph
-
-Typical symptoms:
-
-* `Can't locate revision identified by ...`
-* `KeyError` during Alembic resolution
-
----
-
-## Development workflow
-
-### Standard
+## Running the Platform
 
 ```bash
 git clone <repo>
@@ -339,133 +182,87 @@ cp .env.example .env
 docker compose up -d
 ```
 
-### Development mode (bind mounts)
+Health check:
 
-```bash
-./scripts/dev_up.py
 ```
-
-Used for:
-
-* Alembic iteration
-* ORM changes
-* import/debug cycles
+GET /health
+```
 
 ---
 
-## Test & evidence
+## Migrations
 
-### Contract tests (DB-agnostic)
+```bash
+docker compose exec -w /app/app api alembic current
+docker compose exec -w /app/app api alembic upgrade head
+```
+
+Migrations are never executed automatically.
+
+---
+
+## Testing
 
 ```bash
 PYTHONPATH=app pytest -q
 ```
 
-### Deterministic runners
+Contract tests validate:
 
-```bash
-PYTHONPATH=app python app/scripts/run_stub_chat.py
-```
-
-```bash
-PYTHONPATH=app python app/scripts/run_stub_determinism.py
-```
+* Provider abstraction
+* Guardrails
+* Error normalization
+* Telemetry best-effort guarantees
+* Structured logging
+* Cost estimation logic
 
 ---
 
+## Architectural Guarantees
 
-## Project status
+* `/chat` remains the only write-path
+* One transaction per request
+* Provider failures never corrupt business data
+* Observability is non-invasive
+* No cost logic is coupled to provider execution
+* No schema drift through analytics layers
 
-**Current state: Day 15 — Cost Awareness completed (MVP)**
+---
 
+## Non-Goals
 
-### Day 13 — Hardening & Guardrails
+This project intentionally does not:
 
-This iteration focuses on **operational hardening**, not feature expansion.
+* Optimize model quality
+* Provide frontend components
+* Act as a SaaS product
+* Implement billing
 
-The goal of Day 13 is to ensure that the `/chat` write-path behaves
-**correctly under adverse conditions**, including invalid input,
-provider failures, and telemetry issues.
-
-Guarantees added in Day 13:
-
-* Explicit input guardrails:
-  * blank or whitespace-only messages are rejected
-  * oversized messages are rejected deterministically
-* Request payload size bounded via middleware
-* Provider execution is hardened:
-  * explicit timeout handling
-  * provider failures normalized into domain-level errors
-* Error handling is controlled:
-  * no raw provider exceptions leak through the API
-  * transactional integrity is preserved on failure
-* Telemetry is defensive:
-  * UsageEvent emission is best-effort
-  * telemetry failures never break the request flow
-* Contract and guardrail tests act as regression gates
-
-No changes were introduced to:
-
-* database schema
-* Alembic migrations
-* API surface
-* transactional semantics of `/chat`
-
-
-### Implemented (as of Day 13)
-
-* Transactional `/chat` write-path
-* Provider abstraction + orchestration layer
-* Deterministic stub provider
-* End-to-end traceability
-* Regression-safe integration
-
-
-## Day 14 — Operational Hardening & Evidence
-
-- Internal provider diagnostics
-  - Provider timeout and execution failures are logged with full exception context
-  - Client-facing errors remain sanitized
-
-- Telemetry best-effort guarantee
-  - `UsageEvent` failures never break `/chat` (covered by explicit test)
-
-- Request payload size guard
-  - Requests exceeding `MAX_REQUEST_BYTES` return HTTP 413
-  - Verified via `tests/api/test_request_size_limit.py`
-
-- Defensive metrics
-  - latency and token counters are clamped to non-negative values before persistence
-
-## Day 15 — Cost Awareness (MVP)
-
-The platform includes a provider-agnostic cost estimator based on token usage:
-
-- `app.core.utils.costs.estimate_cost(provider, input_tokens, output_tokens) -> float`
-- Pure helper: no DB access, no external calls (no live pricing).
-- Unknown providers return `0.0`.
-- Negative token counts are clamped to `0`.
-- Token pricing is configured via `Settings.cost_rates_by_provider` as cost per 1K input/output tokens.
-
-This is intentionally not billing. It enables deterministic, interview-friendly cost reasoning from recorded token counts.
+It is a correctness-first backend reference system.
 
 ---
 
 ## Documentation
 
-* **README.md** — operational overview and invariants
-* **docs/lld_llm_chat_platform_live_doc.md** — living low-level design
-* **docs/lld_apendix.md** — deep technical appendices and traceability details
+* `docs/lld_llm_chat_platform_live_doc.md` — live low-level design
+* `docs/lld_apendix.md` — deep technical appendices & reproducible evidence
 
 ---
 
-## Recommendations for next iterations
+## Current State
 
-* Add streaming support without breaking atomicity
-* Introduce real providers (OpenAI / Bedrock) via adapters
-* Add auth, quotas, and rate limiting
-* Aggregate usage metrics and dashboards
+Day 17 — Observability & Offline Cost Analytics completed.
+
+The platform now demonstrates:
+
+* Transactional LLM write-path
+* Provider abstraction layer
+* Deterministic traceability
+* Structured JSON logging
+* Defensive telemetry
+* Offline cost analytics
+* Strict architectural invariants
 
 ---
 
-**This repository is intentionally built as a correctness-first reference system.**
+**This repository is designed as a production-minded LLM backend reference system.**
