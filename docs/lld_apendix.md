@@ -947,7 +947,7 @@ docker compose exec -T -w /app/app api sh -lc \
   'PYTHONPATH=/app/app python scripts/export_usage_events.py --limit 2000'
 
 docker compose exec -T -w /app/app api sh -lc \
-  'PYTHONPATH=/app/app python scripts/run_cost_report.py --in reports/usage_events.jsonl'
+  'PYTHONPATH=/app/app python app/scripts/run_cost_report.py --in reports/usage_events.jsonl'
 ```
 
 M.2 Expected output:
@@ -978,6 +978,133 @@ success cost=0.000000 events=20
 M.3 Notes
 * DB column is timestamp (verified via \d+ usage_events)
 * Output files are written under /app/app/reports/ (gitignored).
+
+## Appendix N — Day 18 (Cost Analytics Artifacts)
+
+### N.1 Purpose
+
+Elevate the offline cost analytics pipeline to produce **reproducible, portfolio-grade artifacts**
+without modifying the runtime system:
+
+- read-only processing
+- no database schema changes
+- no Alembic changes
+- no changes to `/chat`
+- no external calls (no live pricing)
+- standard library only (no pandas)
+
+### N.2 Reproducible commands (canonical)
+
+Export a UsageEvent sample as JSONL:
+
+```bash
+docker compose exec -T -w /app/app api sh -lc \
+  'PYTHONPATH=/app/app python scripts/export_usage_events.py --limit 2000'
+
+```
+
+Generate offline cost reports (console + CSV artifacts):
+```bash
+docker compose exec -T -w /app/app api sh -lc \
+  'PYTHONPATH=/app/app python app/scripts/run_cost_report.py --in reports/usage_events.jsonl'
+
+```
+### N.3 Expected artifacts
+
+The report generator writes deterministic CSV files under reports/:
+
+* reports/cost_by_provider.csv
+* reports/cost_by_status.csv
+* reports/cost_by_day.csv
+
+All CSV files:
+
+* include a header row
+* are UTF-8 encoded
+* are deterministically ordered (stable sort)
+* are generated automatically on every run
+
+CLI confirmations:
+
+* [OK] wrote reports/cost_by_provider.csv
+* [OK] wrote reports/cost_by_status.csv
+* [OK] wrote reports/cost_by_day.csv
+
+### N.4 CSV schemas
+
+cost_by_provider.csv
+
+Columns:
+
+* provider
+* events_count
+* estimated_cost
+
+cost_by_status.csv
+
+Columns:
+
+* status (canonical)
+* events_count
+* estimated_cost
+
+cost_by_day.csv
+
+Columns:
+
+day (UTC date, ISO-8601: YYYY-MM-DD)
+
+events_count
+
+estimated_cost
+
+### N.5 Canonical status normalization (report-only)
+
+The report applies a read-only canonical mapping for aggregation:
+
+* success -> success
+* ok -> success
+* error -> error
+* any other / unknown -> other
+
+This mapping is internal to the report generator.
+No values are modified in the database or persisted back.
+
+### N.6 Temporal field note
+
+Day bucketing is derived from the event timestamp field.
+The canonical temporal column in the DB is timestamp (previously verified).
+The report generator remains defensive and can fall back to created_at if present in JSONL exports.
+
+
+---
+
+## 3) Checklist resumido para Notion (Day 18)
+
+- [ ] Update `scripts/run_cost_report.py` to generate CSV artifacts under `reports/`
+- [ ] Add canonical status mapping for aggregation (`ok -> success`, unknown -> `other`)
+- [ ] Enforce deterministic ordering:
+  - [ ] providers alphabetical
+  - [ ] statuses alphabetical
+  - [ ] days ascending
+- [ ] Keep console output + add `[OK] wrote ...` confirmations
+- [ ] Document Appendix N (commands + CSV schemas + normalization rules)
+- [ ] Run:
+  - [ ] `docker compose exec ... export_usage_events.py --limit 2000`
+  - [ ] `docker compose exec ... run_cost_report.py --in reports/usage_events.jsonl`
+- [ ] Ensure `pytest -q` still passes (no runtime changes)
+
+---
+
+## 4) Commit message sugerido (EN)
+
+**Technical commit**
+- `feat(cost-analytics): generate deterministic CSV artifacts in offline cost report`
+
+**Docs commit**
+- `docs(appendix): add Appendix N for Day 18 cost analytics artifacts`
+
+--- 
 
 
 **End of appendix — complements the live LLD document**
