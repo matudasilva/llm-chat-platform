@@ -1,107 +1,269 @@
+#!/usr/bin/env python3
+"""
+Offline cost analytics report generator (read-only).
+
+Input: JSONL exported usage events (no external calls, no DB writes)
+Output:
+  - Console summary (human-readable)
+  - Deterministic CSV artifacts under reports/
+
+Constraints:
+  - Standard library only (no pandas)
+  - No schema changes
+  - No runtime changes to /chat
+"""
+
+from __future__ import annotations
+
 import argparse
 import csv
 import json
-from collections import defaultdict
-from datetime import datetime
-from typing import Dict, Iterable, Any, Tuple
-
-# Reuse Day 15 helper (provider-agnostic)
-from core.utils.costs import estimate_cost
+import os
+from dataclasses import dataclass
+from datetime import datetime, timezone
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 
+STATUS_CANONICAL_MAP = {
+    "success": "success",
+    "ok": "success",
+    "error": "error",
+}
 
-def _iter_jsonl(path: str) -> Iterable[Dict[str, Any]]:
+
+def canonical_status(raw: Any) -> str:
+    s = "" if raw is None else str(raw).strip().lower()
+    return STATUS_CANONICAL_MAP.get(s, "other")
+
+
+def parse_iso_datetime(value: Any) -> Optional[datetime]:
+    """
+    Best-effort parse ISO datetime from JSONL.
+    Supports:
+      - "2026-02-13T12:34:56.123456+00:00"
+      - "2026-02-13T12:34:56+00:00"
+      - "2026-02-13T12:34:56Z"
+      - naive ISO (treated as UTC)
+    Returns None if parsing fails.
+    """
+    if value is None:
+        return None
+    s = str(value).strip()
+    if not s:
+        return None
+
+    # Handle trailing Z
+    if s.endswith("Z"):
+        s = s[:-1] + "+00:00"
+
+    try:
+        dt = datetime.fromisoformat(s)
+    except ValueError:
+        return None
+
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt
+
+
+def extract_day_iso(event: Dict[str, Any]) -> str:
+    """
+    Day bucket is derived from timestamp-like fields.
+    Preference order:
+      1) timestamp (canonical per earlier verification)
+      2) created_at
+    Falls back to "unknown" if neither is parseable.
+    """
+    dt = parse_iso_datetime(event.get("timestamp"))
+    if dt is None:
+        dt = parse_iso_datetime(event.get("created_at"))
+    if dt is None:
+        return "unknown"
+    return dt.astimezone(timezone.utc).date().isoformat()
+
+
+def safe_float(x: Any) -> float:
+    try:
+        if x is None:
+            return 0.0
+        return float(x)
+    except (TypeError, ValueError):
+        return 0.0
+
+
+@dataclass(frozen=True)
+class AggRow:
+    key: str
+    events_count: int
+    estimated_cost: float
+
+
+def read_jsonl(path: str) -> Iterable[Dict[str, Any]]:
     with open(path, "r", encoding="utf-8") as f:
-        for line in f:
+        for line_no, line in enumerate(f, start=1):
             line = line.strip()
             if not line:
                 continue
-            yield json.loads(line)
+            try:
+                obj = json.loads(line)
+            except json.JSONDecodeError as e:
+                raise ValueError(f"Invalid JSONL at line {line_no}: {e}") from e
+            if not isinstance(obj, dict):
+                raise ValueError(
+                    f"Invalid JSONL at line {line_no}: expected object, got {type(obj).__name__}"
+                )
+            yield obj
 
 
-def _day_bucket(created_at_iso: str) -> str:
-    # created_at is ISO string
-    dt = datetime.fromisoformat(created_at_iso)
-    return dt.date().isoformat()
+def ensure_reports_dir(out_dir: str) -> None:
+    os.makedirs(out_dir, exist_ok=True)
 
 
-def main() -> None:
-    p = argparse.ArgumentParser(description="Offline cost report from exported usage_events (JSONL).")
-    p.add_argument("--in", dest="in_path", default="reports/usage_events.jsonl", help="Input JSONL export.")
-    p.add_argument("--out-csv", default="reports/cost_report.csv", help="Output CSV (summary).")
-    p.add_argument("--write-csv", action="store_true", help="Write CSV output file.")
+def write_csv(path: str, header: List[str], rows: Iterable[List[Any]]) -> None:
+    # Deterministic output: newline="" + utf-8 + explicit header
+    with open(path, "w", encoding="utf-8", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(header)
+        for r in rows:
+            w.writerow(r)
+
+
+def aggregate(
+    events: Iterable[Dict[str, Any]],
+) -> Tuple[
+    Dict[str, Tuple[int, float]],
+    Dict[str, Tuple[int, float]],
+    Dict[str, Tuple[int, float]],
+    int,
+    float,
+]:
+    """
+    Returns:
+      by_provider: provider -> (count, cost)
+      by_status: canonical_status -> (count, cost)
+      by_day: day_iso -> (count, cost)
+      total_events, total_cost
+    """
+    by_provider: Dict[str, Tuple[int, float]] = {}
+    by_status: Dict[str, Tuple[int, float]] = {}
+    by_day: Dict[str, Tuple[int, float]] = {}
+
+    total_events = 0
+    total_cost = 0.0
+
+    for ev in events:
+        provider = str(ev.get("provider") or "").strip() or "unknown"
+        status = canonical_status(ev.get("status"))
+        day = extract_day_iso(ev)
+
+        # Exporter should already include this, but be defensive.
+        est_cost = safe_float(ev.get("estimated_cost"))
+
+        total_events += 1
+        total_cost += est_cost
+
+        c, s = by_provider.get(provider, (0, 0.0))
+        by_provider[provider] = (c + 1, s + est_cost)
+
+        c, s = by_status.get(status, (0, 0.0))
+        by_status[status] = (c + 1, s + est_cost)
+
+        c, s = by_day.get(day, (0, 0.0))
+        by_day[day] = (c + 1, s + est_cost)
+
+    return by_provider, by_status, by_day, total_events, total_cost
+
+
+def fmt_money(x: float) -> str:
+    # Keep stable formatting for console; CSV keeps numeric floats.
+    return f"{x:.6f}"
+
+
+def print_console_summary(
+    by_provider: Dict[str, Tuple[int, float]],
+    by_status: Dict[str, Tuple[int, float]],
+    by_day: Dict[str, Tuple[int, float]],
+    total_events: int,
+    total_cost: float,
+) -> None:
+    print("")
+    print("=== Cost Report (offline, read-only) ===")
+    print(f"events_total: {total_events}")
+    print(f"estimated_cost_total: {fmt_money(total_cost)}")
+    print("")
+
+    print("-- cost_by_provider --")
+    for provider in sorted(by_provider.keys()):
+        c, s = by_provider[provider]
+        print(f"{provider}\tevents={c}\tcost={fmt_money(s)}")
+    print("")
+
+    print("-- cost_by_status (canonical) --")
+    for status in sorted(by_status.keys()):
+        c, s = by_status[status]
+        print(f"{status}\tevents={c}\tcost={fmt_money(s)}")
+    print("")
+
+    print("-- cost_by_day (UTC) --")
+    for day in sorted(by_day.keys()):
+        c, s = by_day[day]
+        print(f"{day}\tevents={c}\tcost={fmt_money(s)}")
+    print("")
+
+
+def main() -> int:
+    p = argparse.ArgumentParser(
+        description="Generate offline cost analytics reports from UsageEvent JSONL."
+    )
+    p.add_argument(
+        "--in",
+        dest="in_path",
+        required=True,
+        help="Path to input JSONL file (exported usage events).",
+    )
     args = p.parse_args()
 
-    total_cost = 0.0
-    by_provider = defaultdict(float)
-    by_status = defaultdict(float)
-    by_day = defaultdict(float)
+    in_path = args.in_path
+    if not os.path.isfile(in_path):
+        raise SystemExit(f"Input not found: {in_path}")
 
-    # optional: counts for context
-    counts = defaultdict(int)  # keys: total, success, error, etc.
-    by_provider_count = defaultdict(int)
+    out_dir = "reports"
+    ensure_reports_dir(out_dir)
 
-    for ev in _iter_jsonl(args.in_path):
-        provider = (ev.get("provider") or "unknown").strip()
-        status = (ev.get("status") or "unknown").strip()
+    events_iter = list(read_jsonl(in_path))
+    by_provider, by_status, by_day, total_events, total_cost = aggregate(events_iter)
 
-        # Tokens may be null; helper clamps negatives but not None
-        in_tok = ev.get("input_tokens") or 0
-        out_tok = ev.get("output_tokens") or 0
+    # Console output
+    print_console_summary(by_provider, by_status, by_day, total_events, total_cost)
 
-        cost = float(estimate_cost(provider, in_tok, out_tok))
+    # CSV artifacts (deterministic ordering)
+    provider_csv = os.path.join(out_dir, "cost_by_provider.csv")
+    status_csv = os.path.join(out_dir, "cost_by_status.csv")
+    day_csv = os.path.join(out_dir, "cost_by_day.csv")
 
-        total_cost += cost
-        by_provider[provider] += cost
-        by_status[status] += cost
+    write_csv(
+        provider_csv,
+        header=["provider", "events_count", "estimated_cost"],
+        rows=[[k, by_provider[k][0], by_provider[k][1]] for k in sorted(by_provider.keys())],
+    )
+    print(f"[OK] wrote {provider_csv}")
 
-        if ev.get("timestamp"):
-            by_day[_day_bucket(ev["timestamp"])] += cost
+    write_csv(
+        status_csv,
+        header=["status", "events_count", "estimated_cost"],
+        rows=[[k, by_status[k][0], by_status[k][1]] for k in sorted(by_status.keys())],
+    )
+    print(f"[OK] wrote {status_csv}")
 
-        counts["total_events"] += 1
-        counts[f"status:{status}"] += 1
-        by_provider_count[provider] += 1
+    write_csv(
+        day_csv,
+        header=["day", "events_count", "estimated_cost"],
+        rows=[[k, by_day[k][0], by_day[k][1]] for k in sorted(by_day.keys())],
+    )
+    print(f"[OK] wrote {day_csv}")
 
-    # stdout summary (human-readable)
-    print("=== Cost Report (offline) ===")
-    print(f"events_total={counts['total_events']}")
-    print(f"estimated_cost_total={total_cost:.6f}")
-
-    print("\n-- Cost by provider --")
-    for k in sorted(by_provider.keys()):
-        print(f"{k} cost={by_provider[k]:.6f} events={by_provider_count[k]}")
-
-    print("\n-- Cost by status --")
-    for k in sorted(by_status.keys()):
-        print(f"{k} cost={by_status[k]:.6f} events={counts.get(f'status:{k}', 0)}")
-
-    if by_day:
-        print("\n-- Cost by day --")
-        for day in sorted(by_day.keys()):
-            print(f"{day} cost={by_day[day]:.6f}")
-
-    # optional CSV output (summary rows)
-    if args.write_csv:
-        rows: Iterable[Tuple[str, str, float, int]] = []
-
-        # provider rows
-        provider_rows = [("provider", p, by_provider[p], by_provider_count[p]) for p in sorted(by_provider.keys())]
-        status_rows = [("status", s, by_status[s], counts.get(f"status:{s}", 0)) for s in sorted(by_status.keys())]
-        day_rows = [("day", d, by_day[d], 0) for d in sorted(by_day.keys())]
-
-        out_rows = list(provider_rows) + list(status_rows) + list(day_rows)
-
-        import os
-        os.makedirs(os.path.dirname(args.out_csv) or ".", exist_ok=True)
-
-        with open(args.out_csv, "w", newline="", encoding="utf-8") as f:
-            w = csv.writer(f)
-            w.writerow(["dimension", "key", "estimated_cost", "event_count"])
-            for dim, key, cost, cnt in out_rows:
-                w.writerow([dim, key, f"{cost:.6f}", cnt])
-
-        print(f"\n[OK] wrote {args.out_csv}")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
