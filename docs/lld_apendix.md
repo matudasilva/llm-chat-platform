@@ -1152,6 +1152,37 @@ Run test suite inside the dev container:
 ```bash
 docker compose -p "$DEV_PROJECT" --env-file .env.dev -f docker-compose.dev.yml exec -T -w /app/app api pytest -q
 ```
+## Appendix P — Day 20 (Offline Cost Pipeline Tests: Quality + Determinism)
 
+### P.1 Purpose
+
+Add unit tests to harden the Day 17–18 offline cost analytics pipeline:
+
+- canonical status mapping (ok -> success, unknown -> other)
+- deterministic ordering (provider/status/day)
+- stable CSV schema (expected headers)
+- invalid JSONL input fails with a clear error (includes line number)
+
+### P.2 Reproducible commands (canonical)
+
+```bash
+export DEV_PROJECT=llm-chat-platform-dev
+
+docker compose -p "$DEV_PROJECT" --env-file .env.dev -f docker-compose.dev.yml up -d --build
+
+# Full suite (tests/ + app/tests/) inside dev container
+docker compose -p "$DEV_PROJECT" --env-file .env.dev -f docker-compose.dev.yml exec -T -w /app api pytest -q
+
+# Only the offline pipeline tests (focused run)
+docker compose -p "$DEV_PROJECT" --env-file .env.dev -f docker-compose.dev.yml exec -T -w /app api \
+  pytest -q tests/test_cost_report_pipeline.py
+```
+
+### P.3 Notes
+Tests run the report script against temporary JSONL inputs and a temporary output directory to keep runs isolated.
+
+pytest.ini is bind-mounted into the dev container at /app/pytest.ini to keep testpaths and cache_dir stable across runs.
+
+---
 
 **End of appendix — complements the live LLD document**
