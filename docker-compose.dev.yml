@@ -21,7 +21,7 @@ services:
     environment:
       APP_ENV: dev
       PYTHONPATH: /app
-      DATABASE_URL: postgresql+asyncpg://llmchat:llmchat@postgres:5432/llmchat
+      DATABASE_URL: ${DATABASE_URL}
 
     depends_on:
       - postgres
@@ -31,9 +31,9 @@ services:
     ports:
       - "15432:5432"
     environment:
-      POSTGRES_DB: llmchat
-      POSTGRES_USER: llmchat
-      POSTGRES_PASSWORD: llmchat
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
