@@ -5,16 +5,23 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-# System deps (mínimos; ampliamos si luego agregamos psycopg/compilación)
+# Minimal system deps
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
   && rm -rf /var/lib/apt/lists/*
 
-# Instalar dependencias primero (cache eficiente)
+# Install runtime dependencies first (cache-friendly)
 COPY app/requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r /app/requirements.txt
 
-# Copiar el código
+# Dev-only: optionally install test/dev dependencies (e.g., pytest)
+ARG INSTALL_DEV_DEPS=0
+COPY app/requirements-dev.txt /app/requirements-dev.txt
+RUN if [ "$INSTALL_DEV_DEPS" = "1" ]; then \
+      pip install --no-cache-dir -r /app/requirements-dev.txt ; \
+    fi
+
+# Copy application code (prod image remains self-contained)
 COPY app /app/app
 
 EXPOSE 8000

@@ -1,17 +1,41 @@
 # docker-compose.dev.yml
-# Overrides for local development:
+# Local dev stack (self-contained):
 # - bind mounts
-# - host UID/GID mapping
-# - dev environment flags
+# - dev-only test deps (pytest)
+# - postgres image for local dev
+
+
+name: llm-chat-platform-dev
 
 services:
   api:
     user: "${LOCAL_UID:-1000}:${LOCAL_GID:-1000}"
+    build:
+      context: .
+      args:
+        INSTALL_DEV_DEPS: "1"
     volumes:
       - ./app:/app/app
+      - ./reports:/app/app/reports
+      - ./tests:/app/tests
     environment:
       APP_ENV: dev
       PYTHONPATH: /app
+      DATABASE_URL: postgresql+asyncpg://llmchat:llmchat@postgres:5432/llmchat
+
+    depends_on:
+      - postgres
+
   postgres:
+    image: postgres:16
     ports:
-      - "15432:5432" 
+      - "15432:5432"
+    environment:
+      POSTGRES_DB: llmchat
+      POSTGRES_USER: llmchat
+      POSTGRES_PASSWORD: llmchat
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
