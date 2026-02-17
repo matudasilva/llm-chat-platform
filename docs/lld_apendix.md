@@ -1106,5 +1106,45 @@ The report generator remains defensive and can fall back to created_at if presen
 
 --- 
 
+## Appendix O — Day 19 (Dev Ergonomics: Bind Mount + Pytest)
+
+### O.1 Purpose
+
+Improve developer ergonomics in the local dev environment (dev-only), without changing production runtime behavior:
+
+- bind-mount host source code into the `api` container (no rebuild needed for code changes)
+- enable `pytest -q` inside the dev container by installing `app/requirements-dev.txt` (dev-only)
+- keep existing transactional guarantees and `/chat` semantics unchanged
+
+### O.2 Reproducible commands (canonical)
+
+Use a stable Compose project name to avoid project/context mismatches:
+
+```bash
+export DEV_PROJECT=llm-chat-platform-dev
+
+Bring up the dev stack (build dev image with test dependencies):
+``bash
+docker compose -p "$DEV_PROJECT" -f docker-compose.dev.yml up -d --build
+```
+
+Verify bind mounts are active:
+
+```bash
+docker compose -p "$DEV_PROJECT" -f docker-compose.dev.yml exec -T api sh -lc 'ls -la /app/app | head'
+docker compose -p "$DEV_PROJECT" -f docker-compose.dev.yml exec -T api sh -lc 'ls -la /app/tests | head'
+docker compose -p "$DEV_PROJECT" -f docker-compose.dev.yml exec -T api sh -lc 'ls -la /app/app/reports | head'
+```
+
+Verify Postgres connectivity (optional):
+```bash
+docker compose -p "$DEV_PROJECT" -f docker-compose.dev.yml exec -T postgres \
+  psql -U llmchat -d llmchat -c "select 1;"
+```
+Run test suite inside the dev container:
+```bash
+docker compose -p "$DEV_PROJECT" -f docker-compose.dev.yml exec -T -w /app/app api pytest -q
+```
+
 
 **End of appendix — complements the live LLD document**
