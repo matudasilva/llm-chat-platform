@@ -18,10 +18,14 @@ services:
       - ./app:/app/app
       - ./reports:/app/app/reports
       - ./tests:/app/tests
+      - ./pytest.ini:/app/pytest.ini:ro
+
     environment:
       APP_ENV: dev
       PYTHONPATH: /app
       DATABASE_URL: ${DATABASE_URL}
+      PYTEST_ADDOPTS: "-o cache_dir=/tmp/pytest_cache"
+
 
     depends_on:
       - postgres

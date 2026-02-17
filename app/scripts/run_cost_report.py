@@ -19,9 +19,11 @@ import argparse
 import csv
 import json
 import os
+import sys
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any, Dict, Iterable, List, Optional, Tuple
+from pathlib import Path
 
 
 STATUS_CANONICAL_MAP = {
@@ -118,6 +120,16 @@ def read_jsonl(path: str) -> Iterable[Dict[str, Any]]:
 def ensure_reports_dir(out_dir: str) -> None:
     os.makedirs(out_dir, exist_ok=True)
 
+def read_jsonl(path: str):
+    with open(path, "r", encoding="utf-8") as f:
+        for line_no, line in enumerate(f, start=1):
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                yield json.loads(line)
+            except json.JSONDecodeError as e:
+                raise SystemExit(f"Invalid JSON at line {line_no}: {e.msg}")
 
 def write_csv(path: str, header: List[str], rows: Iterable[List[Any]]) -> None:
     # Deterministic output: newline="" + utf-8 + explicit header
@@ -221,13 +233,19 @@ def main() -> int:
         required=True,
         help="Path to input JSONL file (exported usage events).",
     )
+    p.add_argument(
+        "--outdir",
+        dest="out_dir",
+        default="reports",
+        help="Output directory for CSV reports (default: reports).",
+    )
     args = p.parse_args()
 
     in_path = args.in_path
     if not os.path.isfile(in_path):
         raise SystemExit(f"Input not found: {in_path}")
 
-    out_dir = "reports"
+    out_dir = args.out_dir
     ensure_reports_dir(out_dir)
 
     events_iter = list(read_jsonl(in_path))
@@ -267,3 +285,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
