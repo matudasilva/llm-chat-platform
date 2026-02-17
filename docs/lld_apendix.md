@@ -1185,4 +1185,86 @@ pytest.ini is bind-mounted into the dev container at /app/pytest.ini to keep tes
 
 ---
 
+## Appendix Q — Day 21 (Runtime Observability: Request/Correlation IDs + Health/Readiness)
+
+### Goal
+Improve runtime operability (SRE/Platform vibes) without modifying DB schema or the `/chat` write-path.
+This adds:
+- Request ID + Correlation ID propagation (headers + JSON logs)
+- Liveness and readiness endpoints (read-only)
+- Minimal test coverage
+
+### Q.1 Request ID + Correlation ID
+
+**Headers**
+- If request includes `X-Request-ID`, use it as-is.
+- Otherwise generate a UUID as `X-Request-ID`.
+- If request includes `X-Correlation-ID`, preserve it.
+- Otherwise default `X-Correlation-ID = X-Request-ID`.
+
+**Propagation**
+- Both IDs are returned in response headers for every HTTP request.
+- IDs are included in structured JSON access logs (top-level fields `request_id`, `correlation_id`).
+
+**Repro checks**
+```bash
+# Preserves incoming IDs
+curl -sS -D - -o /dev/null \
+  -H "X-Request-ID: req-123" \
+  -H "X-Correlation-ID: corr-456" \
+  http://localhost:8001/openapi.json
+
+# Generates IDs when missing (expect UUID values)
+curl -sS -D - -o /dev/null http://localhost:8001/openapi.json
+
+# Verify logs include request_id + correlation_id
+docker compose logs -n 50 api
+```
+### Q.2 Health / Readiness endpoints
+
+Liveness
+
+GET /healthz
+
+Always returns 200 OK
+
+No DB / Redis calls (safe for liveness probes)
+
+Readiness (best-effort)
+
+GET /readyz
+
+Performs on-demand checks with short timeouts
+
+Returns:
+
+200 OK when checks pass
+
+503 Service Unavailable when any check fails
+
+Never affects /chat and never performs checks on startup
+
+Repro checks
+```bash
+curl -i http://localhost:8001/healthz
+curl -i http://localhost:8001/readyz
+```
+
+### Run in dev container:
+```bash
+docker compose down
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
+docker compose -f docker-compose.yml -f docker-compose.dev.yml exec -T -w /app/app api python -m pytest -q
+```
+Expected:
+
+Tests validate request/correlation IDs in headers
+
+GET /healthz returns 200 without DB calls (unit/integration)
+
+GET /readyz returns 200/503 using mocked readiness checker
+
+---
+
+
 **End of appendix — complements the live LLD document**

@@ -3,9 +3,33 @@ from __future__ import annotations
 import csv
 import json
 import subprocess
+import sys
 from pathlib import Path
 
-SCRIPT = Path("app/scripts/run_cost_report.py")
+
+def _resolve_script_path() -> Path:
+    # Candidate 1: repo root = tests/.. (common)
+    root1 = Path(__file__).resolve().parents[1]
+    cand1 = root1 / "scripts" / "run_cost_report.py"
+    if cand1.exists():
+        return cand1
+
+    # Candidate 2: repo root = tests/../.. (when tests live under /app/app/tests)
+    root2 = Path(__file__).resolve().parents[2]
+    cand2 = root2 / "scripts" / "run_cost_report.py"
+    if cand2.exists():
+        return cand2
+
+    # Candidate 3: explicit path under /app/app (dev container layout)
+    cand3 = Path("/app/app/scripts/run_cost_report.py")
+    if cand3.exists():
+        return cand3
+
+    raise FileNotFoundError(
+        f"run_cost_report.py not found. Tried: {cand1}, {cand2}, {cand3}"
+    )
+
+SCRIPT = _resolve_script_path()
 
 
 
@@ -20,7 +44,7 @@ def _run(tmp_path: Path, events: list[dict], *, corrupt: bool = False):
         if corrupt:
             f.write("{ not-json }\n")
 
-    cmd = ["python", str(SCRIPT), "--in", str(inp), "--outdir", str(outdir)]
+    cmd = [sys.executable, str(SCRIPT), "--in", str(inp), "--outdir", str(outdir)]
     res = subprocess.run(cmd, capture_output=True, text=True)
     return res, outdir
 

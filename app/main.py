@@ -5,13 +5,12 @@ import sys
 from fastapi import FastAPI
 
 from app.api.ops import router as ops_router
-from app.infra.db.session import test_db_connection
 from app.api.router import api_router
 from app.core.settings import settings
 from app.http.middleware.request_size_limit import RequestSizeLimitMiddleware
 from app.http.middleware.structured_logging import StructuredJsonLoggingMiddleware
-
-
+from app.http.middleware.request_context import RequestContextMiddleware
+from app.api.runtime_ops import router as runtime_ops_router
 
 
 def _get_env(name: str, default: str) -> str:
@@ -47,12 +46,6 @@ _configure_logging(APP_ENV, LOG_LEVEL)
 
 logger = logging.getLogger("app")
 
-logging.basicConfig(
-    level=getattr(logging, str(getattr(settings, "log_level", "INFO")).upper(), logging.INFO),
-    format="%(message)s",
-    handlers=[logging.StreamHandler(sys.stdout)],
-)
-
 
 app = FastAPI(
     title="LLM Chat Platform API",
@@ -61,15 +54,21 @@ app = FastAPI(
 
 )
 
-app.add_middleware(
-    StructuredJsonLoggingMiddleware,
-    app_env=str(getattr(settings, "app_env", "unknown")),
-)
+app.include_router(runtime_ops_router)
+
+app.add_middleware(RequestContextMiddleware)
 
 app.add_middleware(
     RequestSizeLimitMiddleware,
     max_bytes=settings.MAX_REQUEST_BYTES,
 )
+
+app.add_middleware(
+    StructuredJsonLoggingMiddleware,
+    app_env=str(getattr(settings, "app_env", "unknown")),
+)
+
+
 
 # Routers (definí prefijos acá, no adentro del router)
 app.include_router(ops_router, prefix="/ops")
@@ -77,10 +76,9 @@ app.include_router(api_router)
 
 
 @app.on_event("startup")
-async def startup() -> None:
-    logger.info("starting application")
-    # Ya que tu DB y alembic están andando, esto te ahorra sorpresas:
-    await test_db_connection()
+async def startup():
+    logger.info("app starting application")
+    # NOTE: Do not perform DB checks on startup. Readiness is handled via /readyz.
 
 
 @app.get("/health", tags=["ops"])
