@@ -1118,32 +1118,39 @@ Improve developer ergonomics in the local dev environment (dev-only), without ch
 
 ### O.2 Reproducible commands (canonical)
 
-Use a stable Compose project name to avoid project/context mismatches:
+Use a stable Compose project name to avoid project/context mismatches, and load dev-only credentials from a local env file.
+
+Create a local env file (gitignored) from the example:
 
 ```bash
-export DEV_PROJECT=llm-chat-platform-dev
+cp .env.dev.example .env.dev
+# Edit .env.dev locally (do not commit)
 
+Set the canonical dev project name:
+```bash
+export DEV_PROJECT=llm-chat-platform-dev
+```
 Bring up the dev stack (build dev image with test dependencies):
-``bash
-docker compose -p "$DEV_PROJECT" -f docker-compose.dev.yml up -d --build
+```bash
+docker compose -p "$DEV_PROJECT" --env-file .env.dev -f docker-compose.dev.yml up -d --build
 ```
 
 Verify bind mounts are active:
-
 ```bash
-docker compose -p "$DEV_PROJECT" -f docker-compose.dev.yml exec -T api sh -lc 'ls -la /app/app | head'
-docker compose -p "$DEV_PROJECT" -f docker-compose.dev.yml exec -T api sh -lc 'ls -la /app/tests | head'
-docker compose -p "$DEV_PROJECT" -f docker-compose.dev.yml exec -T api sh -lc 'ls -la /app/app/reports | head'
+docker compose -p "$DEV_PROJECT" --env-file .env.dev -f docker-compose.dev.yml exec -T api sh -lc 'ls -la /app/app | head'
+docker compose -p "$DEV_PROJECT" --env-file .env.dev -f docker-compose.dev.yml exec -T api sh -lc 'ls -la /app/tests | head'
+docker compose -p "$DEV_PROJECT" --env-file .env.dev -f docker-compose.dev.yml exec -T api sh -lc 'ls -la /app/app/reports | head'
 ```
 
 Verify Postgres connectivity (optional):
 ```bash
-docker compose -p "$DEV_PROJECT" -f docker-compose.dev.yml exec -T postgres \
+docker compose -p "$DEV_PROJECT" --env-file .env.dev -f docker-compose.dev.yml exec -T postgres \
   psql -U llmchat -d llmchat -c "select 1;"
 ```
+
 Run test suite inside the dev container:
 ```bash
-docker compose -p "$DEV_PROJECT" -f docker-compose.dev.yml exec -T -w /app/app api pytest -q
+docker compose -p "$DEV_PROJECT" --env-file .env.dev -f docker-compose.dev.yml exec -T -w /app/app api pytest -q
 ```
 
 
