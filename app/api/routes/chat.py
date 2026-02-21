@@ -1,5 +1,6 @@
 import time
 import uuid
+import logging
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -18,7 +19,9 @@ from app.core.domain.types import ChatMessage
 from app.core.domain.errors import ProviderTimeoutError, ProviderExecutionError
 from app.core.settings import settings
 from app.core.utils.limits import sanitize_error_message, truncate
+from app.http.request_context import get_request_id
 
+logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["chat"])
 
@@ -30,12 +33,13 @@ async def chat(
     chat_service: ChatService = Depends(get_chat_service),
 ) -> ChatResponse:
     start = time.perf_counter()
-    request_id = uuid.uuid4()
+    rid = get_request_id()
+    request_id = uuid.UUID(rid) if rid else uuid.uuid4()
 
     status = ChatStatus.error
     error_message: str | None = None
-
-    conversation_id = payload.conversation_id
+    is_new_conversation = payload.conversation_id is None
+    conversation_id = payload.conversation_id or uuid.uuid4()
     user_message_id: uuid.UUID | None = None
     assistant_message_id: uuid.UUID | None = None
     assistant_content: str | None = None
@@ -44,11 +48,10 @@ async def chat(
         # Single transaction: either everything is persisted, or nothing is.
         async with db.begin():
             # 1) Conversation: create or validate
-            if conversation_id is None:
-                conv = Conversation(id=uuid.uuid4())
+            if is_new_conversation:
+                conv = Conversation(id=conversation_id)
                 db.add(conv)
                 await db.flush()
-                conversation_id = conv.id
             else:
                 conv = await db.get(Conversation, conversation_id)
                 if conv is None:
@@ -93,9 +96,15 @@ async def chat(
             # 5) UsageEvent WITH valid FKs (best-effort)
             latency_ms = max(0, int((time.perf_counter() - start) * 1000))
 
-            input_tokens = max(0, int(provider_result.input_tokens))
-            output_tokens = max(0, int(provider_result.output_tokens))
-            total_tokens = max(0, int(provider_result.total_tokens))
+            def _as_int_or_zero(v) -> int:
+                try:
+                    return max(0, int(v or 0))
+                except Exception:
+                    return 0
+
+            input_tokens = _as_int_or_zero(provider_result.input_tokens)
+            output_tokens = _as_int_or_zero(provider_result.output_tokens)
+            total_tokens = _as_int_or_zero(provider_result.total_tokens)
 
             # Telemetry must never break the request.
             try:
@@ -108,7 +117,7 @@ async def chat(
                     request_id=request_id,
                     latency_ms=latency_ms,
                     error_message=None,
-                    conversation_id=conversation_id,
+                    conversation_id=None,
                     message_id=assistant_message_id,
                     input_tokens=input_tokens,
                     output_tokens=output_tokens,
@@ -172,6 +181,12 @@ async def chat(
         )
 
     except Exception as e:
+
+        logger.exception(
+            "chat_unhandled_error request_id=%s conversation_id=%s",
+            str(request_id),
+            str(conversation_id),
+)
         error_message = sanitize_error_message("internal error", settings.MAX_ERROR_MESSAGE_CHARS)
 
         try:

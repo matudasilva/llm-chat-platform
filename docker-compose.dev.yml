@@ -19,12 +19,19 @@ services:
       - ./reports:/app/app/reports
       - ./tests:/app/tests
       - ./pytest.ini:/app/pytest.ini:ro
-
+    ports:
+      - "8001:8000"
+    
     environment:
       APP_ENV: dev
       PYTHONPATH: /app
       DATABASE_URL: ${DATABASE_URL}
       PYTEST_ADDOPTS: "-o cache_dir=/tmp/pytest_cache"
+      environment:
+      PROVIDER: ${PROVIDER:-stub}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
+      PROVIDER_TIMEOUT_S: ${PROVIDER_TIMEOUT_S:-12.0}
 
 
     depends_on:

@@ -9,6 +9,7 @@ from .types import ChatMessage
 from .chat_types import ChatServiceResult
 from .provider import ProviderInput, ProviderPort
 from .errors import ProviderTimeoutError, ProviderExecutionError
+from .provider_errors import ProviderError, ProviderErrorKind
 
 logger = logging.getLogger(__name__)
 
@@ -48,6 +49,20 @@ class ChatService:
                 float(self._timeout_s),
             )
             raise ProviderTimeoutError("provider timeout") from e
+
+        except ProviderError as e:
+            # Provider already normalized the failure; keep outward message safe and short.
+            logger.exception(
+                "provider_error request_id=%s provider=%s kind=%s messages_count=%d",
+                str(request_id),
+                type(self._provider).__name__,
+                getattr(e.kind, "value", str(e.kind)),
+                len(messages),
+            )
+            if e.kind == ProviderErrorKind.timeout:
+                raise ProviderTimeoutError("provider timeout") from e
+            raise ProviderExecutionError(str(e)) from e
+
         except Exception as e:
             # Keep provider internals out of the boundary. Details belong in logs.
             logger.exception(
