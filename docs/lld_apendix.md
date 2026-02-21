@@ -1266,5 +1266,89 @@ GET /readyz returns 200/503 using mocked readiness checker
 
 ---
 
+## Appendix R — Day 22 (Real Provider MVP: OpenAI behind feature flag, no streaming)
+
+### R.1 Goal
+Integrate a real LLM provider without changing the `/chat` public contract or breaking write-path atomicity.
+Provider selection is controlled via environment variables. No streaming is introduced.
+
+### R.2 Environment variables
+- `PROVIDER` (default: `stub`)
+  - `stub` | `openai` | `bedrock`
+- `PROVIDER_TIMEOUT_S` (default: `12.0`)
+- `OPENAI_API_KEY` (required only when `PROVIDER=openai`)
+- `OPENAI_MODEL` (default: `gpt-4o-mini`)
+- `STUB_PROVIDER_MODE` (default: `ok`)
+- `STUB_SIMULATED_LATENCY_MS` (default: `0`)
+- `DATABASE_URL` (required for local dev; must match the Postgres container credentials)
+
+### R.3 Local run (dev compose)
+Bring up the dev stack:
+
+```bash
+docker compose -f docker-compose.dev.yml up -d --build
+docker compose -f docker-compose.dev.yml ps
+```
+
+Health/readiness:
+```bash
+curl -sS http://localhost:8001/healthz && echo
+curl -sS http://localhost:8001/readyz && echo
+```
+
+### R.4 Database migrations (after resetting volumes)
+If you recreate the Postgres volume (e.g. docker compose down -v), you must re-apply migrations:
+```bash
+If you recreate the Postgres volume (e.g. docker compose down -v), you must re-apply migrations:
+```
+
+### R.5 Manual /chat smoke (no streaming)
+Stub provider (default):
+```bash
+curl -sS -X POST http://localhost:8001/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message":"hello"}' | jq
+  ```
+  Expected: status=success and non-null conversation_id, user_message_id, assistant_message_id.
+
+### R.6 OpenAI provider (real, no streaming)
+
+Set env vars (do not commit secrets):
+```bash
+export PROVIDER=openai
+export OPENAI_API_KEY="***"
+export OPENAI_MODEL="gpt-4o-mini"
+export PROVIDER_TIMEOUT_S="12.0"
+```
+
+Recreate the API container to apply env:
+```bash
+docker compose -f docker-compose.dev.yml up -d --force-recreate api
+```
+Smoke:
+```bash
+curl -sS -X POST http://localhost:8001/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message":"hello"}' | jq
+```
+Expected behavior:
+
+status=success when OPENAI_API_KEY is set and valid
+
+status=error with a short safe message when the provider is not configured or fails
+
+Response headers include X-Request-ID and X-Correlation-ID, and request_id in the JSON body matches X-Request-ID
+
+### R.7 Notes
+
+Changing Postgres credentials after the database volume is initialized will not update the internal user password. In dev, prefer recreating volumes (docker compose down -v) and re-running migrations.
+
+Provider errors are normalized and sanitized; secrets and upstream payloads are not returned to clients.
+```bash
+::contentReference[oaicite:0]{index=0}
+```
+Note: If your OpenAI account has no active billing/quota, calls may return rate-limit/quota errors (handled as `status=error` with a sanitized message).
+
+----
 
 **End of appendix — complements the live LLD document**
