@@ -27,7 +27,6 @@ services:
       PYTHONPATH: /app
       DATABASE_URL: ${DATABASE_URL}
       PYTEST_ADDOPTS: "-o cache_dir=/tmp/pytest_cache"
-      environment:
       PROVIDER: ${PROVIDER:-stub}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}

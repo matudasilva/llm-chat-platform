@@ -1,16 +1,19 @@
+# app/main.py
 import logging
 import os
 import sys
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
 from app.api.ops import router as ops_router
 from app.api.router import api_router
+from app.api.runtime_ops import router as runtime_ops_router
 from app.core.settings import settings
+from app.http.middleware.request_context import RequestContextMiddleware
 from app.http.middleware.request_size_limit import RequestSizeLimitMiddleware
 from app.http.middleware.structured_logging import StructuredJsonLoggingMiddleware
-from app.http.middleware.request_context import RequestContextMiddleware
-from app.api.runtime_ops import router as runtime_ops_router
+from app.infra.db.session import init_db, close_db
 
 
 def _get_env(name: str, default: str) -> str:
@@ -29,7 +32,7 @@ def _configure_logging(app_env: str, log_level: str) -> None:
     handler.setFormatter(formatter)
 
     root = logging.getLogger()
-    root.handlers = []  # avoid duplicate handlers on reload
+    root.handlers = []
     root.setLevel(numeric_level)
     root.addHandler(handler)
 
@@ -47,43 +50,33 @@ _configure_logging(APP_ENV, LOG_LEVEL)
 logger = logging.getLogger("app")
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    logger.info("app starting application")
+    init_db(app)          # <-- crea engine + sessionmaker en app.state
+    try:
+        yield
+    finally:
+        await close_db(app)  # <-- dispose engine
+
+
 app = FastAPI(
     title="LLM Chat Platform API",
     version="0.1.0",
-
-
+    lifespan=lifespan,
 )
 
 app.include_router(runtime_ops_router)
 
 app.add_middleware(RequestContextMiddleware)
+app.add_middleware(RequestSizeLimitMiddleware, max_bytes=settings.MAX_REQUEST_BYTES)
+app.add_middleware(StructuredJsonLoggingMiddleware, app_env=str(getattr(settings, "app_env", "unknown")))
 
-app.add_middleware(
-    RequestSizeLimitMiddleware,
-    max_bytes=settings.MAX_REQUEST_BYTES,
-)
-
-app.add_middleware(
-    StructuredJsonLoggingMiddleware,
-    app_env=str(getattr(settings, "app_env", "unknown")),
-)
-
-
-
-# Routers (definí prefijos acá, no adentro del router)
 app.include_router(ops_router, prefix="/ops")
 app.include_router(api_router)
-
-
-@app.on_event("startup")
-async def startup():
-    logger.info("app starting application")
-    # NOTE: Do not perform DB checks on startup. Readiness is handled via /readyz.
 
 
 @app.get("/health", tags=["ops"])
 def health():
     logger.info("health check")
-    return {
-        "app_env": APP_ENV,
-    }
+    return {"app_env": APP_ENV}

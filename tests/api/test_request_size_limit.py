@@ -1,17 +1,16 @@
-# tests/api/test_request_size_limit.py
-import pytest
-from fastapi.testclient import TestClient
+from __future__ import annotations
 
-from app.main import app
+import httpx
+import pytest
+
 from app.core.settings import settings
 
 
-def test_payload_over_max_request_bytes_returns_413() -> None:
-    client = TestClient(app)
-
+@pytest.mark.asyncio
+async def test_payload_over_max_request_bytes_returns_413(client: httpx.AsyncClient) -> None:
     oversized = b"a" * (settings.MAX_REQUEST_BYTES + 1)
 
-    r = client.post(
+    r = await client.post(
         "/chat",
         content=oversized,
         headers={"Content-Type": "application/json"},
@@ -19,4 +18,3 @@ def test_payload_over_max_request_bytes_returns_413() -> None:
 
     assert r.status_code == 413
     assert r.json() == {"detail": "Payload too large"}
-

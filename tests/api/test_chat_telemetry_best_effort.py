@@ -3,7 +3,8 @@ from __future__ import annotations
 import uuid
 from typing import Any, AsyncIterator, Dict, Tuple, Type
 
-from fastapi.testclient import TestClient
+import httpx
+import pytest
 
 import app.api.routes.chat as chat_routes
 from app.infra.db.session import get_db
@@ -19,7 +20,6 @@ class _BeginTx:
         return self._session
 
     async def __aexit__(self, exc_type, exc, tb) -> bool:
-        # Do not suppress exceptions from the endpoint.
         return False
 
 
@@ -39,7 +39,6 @@ class FakeAsyncSession:
         return None
 
     def add(self, obj: Any) -> None:
-        # Persist only what the route needs for db.get(Conversation, id)
         if isinstance(obj, Conversation):
             self._store[(Conversation, obj.id)] = obj
 
@@ -54,7 +53,8 @@ async def _override_get_db() -> AsyncIterator[FakeAsyncSession]:
     yield FakeAsyncSession()
 
 
-def test_chat_telemetry_failure_does_not_break_chat(monkeypatch) -> None:
+@pytest.mark.asyncio
+async def test_chat_telemetry_failure_does_not_break_chat(client: httpx.AsyncClient, monkeypatch) -> None:
     """
     Telemetry (UsageEvent) is best-effort.
     If telemetry fails, /chat must still succeed.
@@ -63,20 +63,13 @@ def test_chat_telemetry_failure_does_not_break_chat(monkeypatch) -> None:
     def _boom(*args, **kwargs):
         raise RuntimeError("telemetry down")
 
-    # Force UsageEvent constructor to fail
     monkeypatch.setattr(chat_routes, "UsageEvent", _boom, raising=True)
 
     # Override DB dependency to avoid real Postgres in this test.
     app.dependency_overrides[get_db] = _override_get_db
 
     try:
-        client = TestClient(app)
-
-        r = client.post(
-            "/chat",
-            json={"message": "hello"},
-        )
-
+        r = await client.post("/chat", json={"message": "hello"})
         assert r.status_code == 200
 
         body = r.json()

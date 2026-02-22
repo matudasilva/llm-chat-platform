@@ -1,15 +1,19 @@
+from __future__ import annotations
+
 import json
 import uuid
+import httpx
+import pytest
 
 
-def test_structured_logging_emits_json_line(client, capsys):
-    r = client.get("/health")
+@pytest.mark.asyncio
+async def test_structured_logging_emits_json_line(client: httpx.AsyncClient, capsys) -> None:
+    r = await client.get("/health")
     assert r.status_code == 200
 
     captured = capsys.readouterr()
     text = (captured.out or "") + "\n" + (captured.err or "")
 
-    # Find JSON line (single-line JSON object)
     json_lines = [
         line.strip()
         for line in text.splitlines()
