@@ -1349,6 +1349,61 @@ Provider errors are normalized and sanitized; secrets and upstream payloads are 
 ```
 Note: If your OpenAI account has no active billing/quota, calls may return rate-limit/quota errors (handled as `status=error` with a sanitized message).
 
+
+## Appendix S — Day 23 (Read-only Conversation Inspection Endpoints)
+
+### S.1 Purpose
+
+Add production-style, read-only endpoints to inspect conversations and messages without modifying:
+- `/chat` transactional write-path
+- database schema / Alembic migrations
+- atomicity guarantees
+
+### S.2 Endpoints
+
+1) `GET /conversations/{conversation_id}`
+
+- 404 if not found
+- Returns conversation metadata and messages ordered by `(created_at ASC, id ASC)`
+- Implementation uses two queries (conversation + messages) to avoid N+1 behavior
+
+2) `GET /conversations`
+
+- Pagination: `limit` (default 20, max 100), `offset` (default 0)
+- Returns conversation metadata plus `message_count`
+- Uses a single aggregated query (`COUNT(messages.id)`) and does not load message content
+
+### S.3 Implementation surface
+
+- `app/services/conversation_query_service.py`
+  - Read-only SQLAlchemy async queries only
+  - No FastAPI/HTTP semantics
+- `app/schemas/conversations.py`
+  - Response models for read-path endpoints
+- `app/api/routes/conversations.py`
+  - Thin HTTP layer calling query service
+
+### S.4 Repro commands
+
+```bash
+pytest -q tests/api/test_conversations_read_endpoints.py
+```
+Manual smoke:
+```bash
+curl -sS http://localhost:8001/conversations | jq
+curl -sS http://localhost:8001/conversations/<conversation_id> | jq
+```
+### S.5 Invariants preserved
+
+/chat remains the only write-path
+
+No schema changes
+
+Read-only endpoints do not affect atomicity or telemetry behavior
+
+Structured logging and request_id propagation remain unchanged (middleware-based)
+
+
 ----
 
 **End of appendix — complements the live LLD document**

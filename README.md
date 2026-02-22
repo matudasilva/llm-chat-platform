@@ -265,4 +265,18 @@ The platform now demonstrates:
 
 ---
 
+### Read-only inspection endpoints (Day 23)
+
+The platform exposes read-only endpoints to inspect persisted conversations:
+
+- `GET /conversations?limit=20&offset=0`
+  - Returns conversation metadata plus `message_count` (no message content).
+- `GET /conversations/{conversation_id}`
+  - Returns conversation metadata plus ordered messages (`created_at ASC`).
+
+Constraints:
+- No write operations
+- `/chat` remains the single authoritative write-path
+- No database schema changes
+
 **This repository is designed as a production-minded LLM backend reference system.**
