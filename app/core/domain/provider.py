@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Protocol, Sequence
+from typing import Any, AsyncIterator, Protocol, Sequence
 from uuid import UUID
 
 from .types import ChatMessage
+from typing import AsyncIterator
 
 
 @dataclass(frozen=True, slots=True)
@@ -55,4 +56,7 @@ class ProviderPort(Protocol):
     without contaminating the domain contract.
     """
     async def generate(self, input: ProviderInput) -> ProviderResult:
+        ...
+        
+    def stream(self, input: ProviderInput) -> AsyncIterator[str]:
         ...

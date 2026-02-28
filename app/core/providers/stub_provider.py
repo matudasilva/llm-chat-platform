@@ -4,7 +4,7 @@ import asyncio
 import hashlib
 import time
 from dataclasses import dataclass
-from typing import Literal
+from typing import AsyncIterator, Literal
 
 from app.core.domain.provider import ProviderInput, ProviderPort, ProviderResult
 
@@ -58,3 +58,7 @@ class StubProvider(ProviderPort):
             latency_ms=self.simulated_latency_ms + elapsed_ms,
             raw={"digest": digest, "mode": self.mode},
         )
+    async def stream(self, input: ProviderInput) -> AsyncIterator[str]:
+        result = await self.generate(input)
+        for part in result.content.split():
+            yield part + " "

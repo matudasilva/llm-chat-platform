@@ -16,7 +16,8 @@ class ChatStatus(str, Enum):
 
 class ChatRequest(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
-
+    stream: bool = False
+    
     conversation_id: Optional[UUID] = Field(
         default=None,
         description="Conversation identifier (null on early error).",
@@ -42,6 +43,7 @@ class ChatResponse(BaseModel):
 
     request_id: UUID = Field(..., description="Unique request identifier for tracing.")
     conversation_id: UUID = Field(..., description="Conversation identifier for the chat session.")
+    stream: bool = False
 
     user_message_id: Optional[UUID] = Field(
         default=None,

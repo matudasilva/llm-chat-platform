@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from typing import Sequence
+from typing import AsyncIterator, Sequence
 from uuid import UUID
 
 from .types import ChatMessage
@@ -10,6 +10,7 @@ from .chat_types import ChatServiceResult
 from .provider import ProviderInput, ProviderPort
 from .errors import ProviderTimeoutError, ProviderExecutionError
 from .provider_errors import ProviderError, ProviderErrorKind
+
 
 logger = logging.getLogger(__name__)
 
@@ -80,3 +81,28 @@ class ChatService:
             assistant_message=assistant,
             provider_result=provider_out,
         )
+
+    async def stream_chat(
+        self, *, request_id: UUID, messages: Sequence[ChatMessage]
+    ) -> AsyncIterator[str]:
+        provider_in = ProviderInput(request_id=request_id, messages=messages)
+
+        try:
+            stream_iter = self._provider.stream(provider_in)
+        except AttributeError:
+            result = await self.run(request_id=request_id, messages=messages)
+            yield result.assistant_message.content
+            return
+
+        if stream_iter is None:
+            result = await self.run(request_id=request_id, messages=messages)
+            yield result.assistant_message.content
+            return
+
+        try:
+            async for chunk in stream_iter:
+                yield chunk
+        except TypeError:
+            result = await self.run(request_id=request_id, messages=messages)
+            yield result.assistant_message.content
+            return

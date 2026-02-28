@@ -1,30 +1,38 @@
+import json
+import logging
 import time
 import uuid
-import logging
+from typing import AsyncIterator
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from app.infra.db.session import get_db
-from app.schemas.chat import ChatRequest, ChatResponse, ChatStatus
-
-from app.models.conversation import Conversation
-from app.models.message import Message, MessageRole
-from app.models.usage_event import UsageEvent
 
 from app.api.deps import get_chat_service
 from app.core.domain.chat_service import ChatService
+from app.core.domain.errors import ProviderExecutionError, ProviderTimeoutError
 from app.core.domain.types import ChatMessage
-
-from app.core.domain.errors import ProviderTimeoutError, ProviderExecutionError
 from app.core.settings import settings
 from app.core.utils.limits import sanitize_error_message, truncate
 from app.http.request_context import get_request_id
+from app.infra.db.session import get_db
+from app.models.conversation import Conversation
+from app.models.message import Message, MessageRole
+from app.models.usage_event import UsageEvent
+from app.schemas.chat import ChatRequest, ChatResponse, ChatStatus
+from app.core.domain.provider_errors import ProviderError
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["chat"])
 
+def _sse(event: str, data: str) -> str:
+    # SSE format: event + data lines + blank line
+    return f"event: {event}\ndata: {data}\n\n"
+
+
+def _sse_json(event: str, payload: dict) -> str:
+    return _sse(event, json.dumps(payload, separators=(",", ":")))
 
 @router.post("", response_model=ChatResponse)
 async def chat(
@@ -43,6 +51,125 @@ async def chat(
     user_message_id: uuid.UUID | None = None
     assistant_message_id: uuid.UUID | None = None
     assistant_content: str | None = None
+    
+    if getattr(payload, "stream", False):
+
+        async def event_generator() -> AsyncIterator[str]:
+            logger.info(
+                "chat_streaming_start request_id=%s conversation_id=%s is_new=%s",
+                str(request_id),
+                str(conversation_id),
+                str(is_new_conversation),
+            )
+            start_stream = time.perf_counter()
+            chunks: list[str] = []
+
+            try:
+                # 1) Stream from provider (no DB, no transaction)
+                async for chunk in chat_service.stream_chat(
+                    request_id=request_id,
+                    messages=[ChatMessage(role="user", content=payload.message)],
+                ):
+                    chunks.append(chunk)
+                    yield _sse("token", chunk)
+
+                # 2) Persist AFTER provider finishes (single atomic transaction)
+                assistant_text = "".join(chunks)
+                assistant_content_final = truncate(assistant_text, settings.MAX_ASSISTANT_CHARS)
+
+                user_msg_id = uuid.uuid4()
+                assistant_msg_id = uuid.uuid4()
+
+                async with db.begin():
+                    # Conversation: create or validate
+                    if is_new_conversation:
+                        conv = Conversation(id=conversation_id)
+                        db.add(conv)
+                        await db.flush()
+                    else:
+                        conv = await db.get(Conversation, conversation_id)
+                        if conv is None:
+                            yield _sse_json("error", {"error_kind": "not_found"})
+                            return
+
+                    # Persist user message
+                    db.add(
+                        Message(
+                            id=user_msg_id,
+                            conversation_id=conversation_id,
+                            role=MessageRole.user,
+                            content=payload.message,
+                        )
+                    )
+                    await db.flush()
+
+                    # Persist assistant message
+                    db.add(
+                        Message(
+                            id=assistant_msg_id,
+                            conversation_id=conversation_id,
+                            role=MessageRole.assistant,
+                            content=assistant_content_final,
+                        )
+                    )
+                    await db.flush()
+
+                    # Usage event best-effort (success)
+                    latency_ms = max(0, int((time.perf_counter() - start_stream) * 1000))
+                    try:
+                        db.add(
+                            UsageEvent(
+                                id=uuid.uuid4(),
+                                provider="stub",
+                                model_version="local",
+                                prompt_version="v0",
+                                status=ChatStatus.success.value,
+                                request_id=request_id,
+                                latency_ms=latency_ms,
+                                error_message=None,
+                                conversation_id=None,
+                                message_id=assistant_msg_id,
+                                input_tokens=0,
+                                output_tokens=0,
+                                total_tokens=0,
+                            )
+                        )
+                    except Exception:
+                        pass
+
+                # 3) Done
+                yield _sse_json(
+                    "done",
+                    {
+                        "request_id": str(request_id),
+                        "conversation_id": str(conversation_id),
+                        "user_message_id": str(user_msg_id),
+                        "assistant_message_id": str(assistant_msg_id),
+                        "status": "success",
+                    },
+                )
+
+            except ProviderError as e:
+                yield _sse_json(
+                    "error",
+                    {
+                        "error_kind": getattr(e.kind, "value", str(e.kind)),
+                        "retryable": bool(getattr(e, "retryable", False)),
+                    },
+                )
+                return
+            except Exception as e:
+                logger.exception(
+                    "chat_streaming_unhandled_error request_id=%s conversation_id=%s",
+                    str(request_id),
+                    str(conversation_id),
+                )
+                yield _sse_json("error", {"error_kind": "internal"})
+                return
+
+        return StreamingResponse(event_generator(), media_type="text/event-stream")
+    
+
 
     try:
         # Single transaction: either everything is persisted, or nothing is.
