@@ -1404,6 +1404,180 @@ Read-only endpoints do not affect atomicity or telemetry behavior
 Structured logging and request_id propagation remain unchanged (middleware-based)
 
 
+## Appendix T — Day 24 (Provider Hardening: Retry & Structured Provider Logging)
+
+T.1 Purpose
+
+Introduce resilience and production-grade observability at the provider boundary,
+without modifying:
+
+/chat transactional semantics
+
+database schema
+
+Alembic migrations
+
+ProviderPort contract surface
+
+Scope is strictly confined to the OpenAI provider adapter layer.
+
+T.2 Retry Policy (Controlled Backoff)
+
+The OpenAI provider now executes through retry_async(...)
+using a configurable RetryPolicy.
+
+Configuration surface (OpenAIProviderConfig):
+
+max_attempts
+
+backoff_base_ms
+
+backoff_max_ms
+
+timeout_s
+
+Retry is applied only for transient conditions:
+
+ProviderErrorKind.rate_limit
+
+ProviderErrorKind.upstream
+
+ProviderErrorKind.timeout
+
+Non-retryable:
+
+ProviderErrorKind.auth
+
+ProviderErrorKind.unknown
+
+other 4xx client errors
+
+Design intent:
+
+No infinite loops
+
+No hidden implicit retries
+
+Explicit retry boundary
+
+T.3 HTTP + Transport Error Normalization
+
+All upstream failures are normalized into ProviderError
+before crossing the provider boundary.
+
+Mapping rules:
+
+Condition	ProviderErrorKind
+401 / 403	auth
+429	rate_limit
+5xx	upstream
+TimeoutException	timeout
+Network / Connect errors	upstream
+Other	unknown
+
+Guarantees:
+
+No raw httpx exceptions escape
+
+No provider payload leakage
+
+No API keys exposed
+
+Stable domain-level error contract
+
+T.4 Structured Provider Logging Events
+
+The provider emits structured JSON logs with safe metadata.
+
+Events emitted:
+
+provider.request
+
+provider.retry
+
+provider.response
+
+provider.error
+
+provider.total
+
+Included fields (safe):
+
+provider
+
+model
+
+request_id
+
+messages_count
+
+attempt
+
+max_attempts
+
+status_code
+
+latency_ms
+
+error_kind
+
+retryable
+
+Explicitly NOT logged:
+
+message content
+
+prompt payload
+
+raw provider responses
+
+API keys
+
+This ensures production-grade observability
+while preserving strict data safety.
+
+T.5 Reproducible Evidence
+
+Run full suite (stub mode):
+```bash
+docker compose -f docker-compose.dev.yml run --rm -e PROVIDER=stub api python -m pytest -q
+```
+
+Expected:
+
+All tests pass
+Provider retry tests validated
+Provider error normalization tests validated
+Structured provider logging tests validated
+
+Optional log inspection:
+```bash
+docker compose logs -n 50 api
+```
+Expected log events include:
+```bash
+provider.request
+provider.response
+provider.retry
+provider.error
+provider.total
+```
+
+T.6 Architectural Impact
+
+Day 24 completes the provider evolution:
+Day 11 → abstraction introduced
+Day 14 → operational guardrails
+Day 22 → real provider (MVP)
+Day 24 → resilience + structured logging hardening
+
+The Provider layer now acts as a hardened isolation boundary
+between external LLM APIs and core application logic.
+
+No public API changes.
+No schema changes.
+No write-path changes.
+
 ----
 
 **End of appendix — complements the live LLD document**

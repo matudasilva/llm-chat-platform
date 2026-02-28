@@ -53,6 +53,30 @@ ProviderPort.generate(input: ProviderInput) -> ProviderResult
 
 This preserves strict separation between domain orchestration and persistence.
 
+#### Provider Resilience Boundary (Day 24)
+
+The provider layer acts as a hardened isolation boundary between external LLM APIs and core domain logic.
+
+Features:
+
+* Controlled retry with exponential backoff
+* Retry only for transient failures (429, 5xx, timeout)
+* No retry for auth or client errors
+* Full HTTP + transport error normalization into `ProviderError`
+* Structured provider logging events:
+  - provider.request
+  - provider.retry
+  - provider.response
+  - provider.error
+  - provider.total
+
+Guarantees:
+
+* No API keys leaked
+* No raw provider payloads propagated
+* No message content logged
+* No changes to `/chat` contract
+
 ---
 
 ### 3. Runtime vs Operations Separation
@@ -83,6 +107,34 @@ Characteristics:
 * Logs to stdout (cloud-friendly)
 * No vendor lock-in
 * No impact on `/chat` semantics
+
+---
+
+### Structured Provider Logging (Day 24)
+
+In addition to HTTP-level logs, the provider adapter emits structured JSON events for operational diagnostics:
+
+Events:
+
+* provider.request
+* provider.retry
+* provider.response
+* provider.error
+* provider.total
+
+These logs include safe metadata only:
+
+- request_id
+- provider
+- model
+- attempt
+- max_attempts
+- status_code
+- latency_ms
+
+No user message content or secrets are logged.
+
+This enables production-grade observability without compromising data safety.
 
 ---
 
@@ -251,14 +303,17 @@ It is a correctness-first backend reference system.
 
 ## Current State
 
-Day 17 — Observability & Offline Cost Analytics completed.
+Day 24 — Provider Hardening (Resilience & Structured Logging) completed.
 
 The platform now demonstrates:
 
 * Transactional LLM write-path
 * Provider abstraction layer
 * Deterministic traceability
-* Structured JSON logging
+* Structured HTTP JSON logging
+* Structured provider logging (request/retry/response/error/total)
+* Controlled retry policy with backoff
+* Error normalization boundary (HTTP + transport → domain)
 * Defensive telemetry
 * Offline cost analytics
 * Strict architectural invariants

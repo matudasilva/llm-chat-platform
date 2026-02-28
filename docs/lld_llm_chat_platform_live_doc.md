@@ -929,6 +929,145 @@ Reproducible commands and expected output are documented in
 `lld_apendix.md` (Appendix M — Day 17).
 
 
+## Addendum — Day 24: Provider Hardening (Resilience & Structured Logging)
+
+Scope
+
+Day 24 introduced resilience mechanisms and structured observability
+to the real OpenAI provider implementation, without modifying:
+
+/chat transactional semantics
+
+database schema
+
+Alembic migration chain
+
+ProviderPort contract surface
+
+The changes are strictly confined to the provider adapter layer.
+
+Retry & Backoff Policy
+
+The OpenAI provider now executes through retry_async(...)
+with a configurable RetryPolicy.
+
+Configurable parameters (via OpenAIProviderConfig):
+
+max_attempts
+
+backoff_base_ms
+
+backoff_max_ms
+
+Retry is applied only for transient failures:
+
+ProviderErrorKind.rate_limit
+
+ProviderErrorKind.upstream
+
+ProviderErrorKind.timeout
+
+Non-retryable errors:
+
+ProviderErrorKind.auth
+
+ProviderErrorKind.unknown
+
+other 4xx client errors
+
+This ensures controlled retry behavior without infinite loops
+or hidden implicit retries.
+
+Error Normalization Boundary
+
+All transport and HTTP errors are normalized into ProviderError
+before crossing the provider boundary.
+
+Mapping guarantees:
+
+Condition	ProviderErrorKind
+401 / 403	auth
+429	rate_limit
+5xx	upstream
+TimeoutException	timeout
+Network errors	upstream
+other	unknown
+
+Raw HTTP payloads, provider-specific exceptions,
+and API keys are never propagated upstream.
+
+This preserves a stable domain-level error contract.
+
+Structured Provider Logging
+
+The OpenAI provider emits structured operational logs
+for resilience diagnostics and traceability.
+
+Emitted events:
+
+provider.request
+
+provider.retry
+
+provider.response
+
+provider.error
+
+provider.total
+
+Safe metadata included:
+
+provider
+
+model
+
+request_id
+
+messages_count
+
+attempt
+
+max_attempts
+
+status_code
+
+latency_ms
+
+error_kind
+
+retryable
+
+Explicitly NOT logged:
+
+user message content
+
+prompt payload
+
+raw provider responses
+
+API keys
+
+Design intent:
+
+Enable production-grade observability
+
+Maintain strict data safety guarantees
+
+Avoid logging sensitive content
+
+Architectural Impact
+
+Day 24 completes the provider evolution:
+
+Day 11 → abstraction introduced
+
+Day 14 → operational guardrails
+
+Day 24 → resilience + structured logging
+
+The Provider layer now acts as a hardened isolation boundary
+between external LLM APIs and core application logic.
+
 ## Appendices
 
 Detailed execution-level documentation, debugging playbooks, and deep technical references
@@ -940,5 +1079,5 @@ This separation is intentional to keep the core LLD focused on architecture and 
 while allowing the appendix to evolve with operational learnings and real-world failures.
 
 
-**This document reflects the state of the system up to **Day 12**.
+**This document reflects the state of the system up to **Day 24**.
 **Execution-level details and debugging notes are tracked in the Appendix.**
