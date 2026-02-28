@@ -21,7 +21,8 @@ This project models how AI-powered workloads should be integrated and operated i
 
 `/chat` is the **single authoritative write-path**.
 
-Each request executes within one database transaction:
+Each request uses a single DB transaction in non-stream mode.
+When `stream=true`, tokens are streamed via SSE first and persistence happens in a single DB transaction after the provider completes.
 
 1. Persist user message
 2. Invoke provider via `ChatService`
@@ -39,11 +40,10 @@ No partial persistence is allowed.
 
 ### 2. Provider-Agnostic Architecture
 
-Providers implement a single async-first contract:
+Providers implement an async-first contract:
 
-```
-ProviderPort.generate(input: ProviderInput) -> ProviderResult
-```
+- `ProviderPort.generate(input: ProviderInput) -> ProviderResult`
+- `ProviderPort.stream(input: ProviderInput) -> AsyncIterator[str]` (optional; used by `/chat` when `stream=true`)
 
 `ChatService` orchestrates execution but:
 
@@ -239,7 +239,18 @@ Health check:
 ```
 GET /health
 ```
+### Local streaming demo UI
 
+After starting the API container, open:
+
+- `http://localhost:8001/ui` (if port publishing works on your host)
+
+If not, use the API container IP:
+
+```bash
+docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' llm-chat-platform-dev-api-1
+```
+Then open: http://<IP>:8000/ui
 ---
 
 ## Migrations
@@ -283,7 +294,7 @@ Contract tests validate:
 
 ## Non-Goals
 
-This project intentionally does not:
+This project intentionally does not: - Provide a frontend application or build pipeline (a minimal single-file demo UI is available at `GET /ui` for local streaming demos).
 
 * Optimize model quality
 * Provide frontend components
@@ -303,20 +314,11 @@ It is a correctness-first backend reference system.
 
 ## Current State
 
-Day 24 — Provider Hardening (Resilience & Structured Logging) completed.
+Day 25 — Streaming SSE + Minimal UI completed.
 
-The platform now demonstrates:
-
-* Transactional LLM write-path
-* Provider abstraction layer
-* Deterministic traceability
-* Structured HTTP JSON logging
-* Structured provider logging (request/retry/response/error/total)
-* Controlled retry policy with backoff
-* Error normalization boundary (HTTP + transport → domain)
-* Defensive telemetry
-* Offline cost analytics
-* Strict architectural invariants
+- `POST /chat` supports SSE streaming behind `stream=true`
+- Minimal demo UI at `GET /ui` (single static HTML)
+- Streaming smoke test: `tests/api/test_chat_streaming.py`
 
 ---
 
@@ -333,5 +335,7 @@ Constraints:
 - No write operations
 - `/chat` remains the single authoritative write-path
 - No database schema changes
+
+
 
 **This repository is designed as a production-minded LLM backend reference system.**

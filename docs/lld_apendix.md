@@ -1580,4 +1580,78 @@ No write-path changes.
 
 ----
 
+## Appendix U — Day 25 (Streaming SSE + Minimal UI)
+
+### U.1 Goal
+
+Add streaming SSE to `POST /chat` behind `stream=true`, without breaking the non-stream contract,
+without schema changes, and preserving write-path invariants.
+Also add a minimal single-file HTML UI for local demo.
+
+### U.2 SSE contract
+
+When `stream=true`, `POST /chat` returns `Content-Type: text/event-stream` and emits:
+
+- `event: token`
+  - `data: <string chunk>`
+- `event: done`
+  - `data: {"request_id":"...","conversation_id":"...","user_message_id":"...","assistant_message_id":"...","status":"success"}`
+- `event: error`
+  - `data: {"error_kind":"<kind>","retryable":<bool>}`
+
+### U.3 Persistence semantics (stream mode)
+
+- Provider streaming happens outside any DB transaction.
+- After the provider finishes, the server opens a single DB transaction and persists:
+  - conversation (create/validate)
+  - user message
+  - assistant message (full accumulated content)
+  - usage event (best-effort)
+- If `conversation_id` is invalid, streaming emits `event:error` (cannot switch to an HTTP 404 after streaming begins).
+
+### U.4 Demo UI
+
+A minimal HTML page is served at `GET /ui` (excluded from OpenAPI schema).
+The page performs a streaming `POST /chat` request using `fetch()` and parses SSE lines from the response body.
+
+### U.5 Repro commands
+
+Canonical green test command:
+
+```bash
+docker compose -f docker-compose.dev.yml run --rm -e PROVIDER=stub api python -m pytest -q
+```
+Smoke streaming test:
+```bash
+pytest -q tests/api/test_chat_streaming.py
+```
+Run the API:
+```bash
+docker compose -f docker-compose.dev.yml up -d --build api
+```
+Open the UI:
+
+http://localhost:8001/ui (if port publishing works on your host)
+
+Otherwise, use container IP:
+```bash
+docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' llm-chat-platform-dev-api-1
+```
+Then open: http://<IP>:8000/ui
+
+Optional manual SSE smoke:
+```bash
+IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' llm-chat-platform-dev-api-1)
+curl -N --no-buffer -X POST http://$IP:8000/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message":"hello","stream":true}'
+  ```
+### U.6 Artifacts / files
+
+* app/api/routes/chat.py — streaming branch and SSE generator
+* app/api/routes/ui.py — serves the UI page
+* app/static/chat.html — minimal UI
+* tests/api/test_chat_streaming.py — streaming SSE smoke test
+----
+
 **End of appendix — complements the live LLD document**
