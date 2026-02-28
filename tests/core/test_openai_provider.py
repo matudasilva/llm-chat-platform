@@ -118,7 +118,17 @@ async def test_openai_provider_timeout_maps_to_provider_error_timeout():
 
     client = httpx.AsyncClient(base_url="https://api.openai.com", transport=TimeoutTransport())
 
-    p = OpenAIProvider(OpenAIProviderConfig(api_key="k", model="gpt-4o-mini", timeout_s=0.01), http_client=client)
+    p = OpenAIProvider(
+        OpenAIProviderConfig(
+            api_key="k",
+            model="gpt-4o-mini",
+            timeout_s=1.0,
+            max_attempts=1,
+            backoff_base_ms=0,
+            backoff_max_ms=0,
+        ),
+        http_client=client,
+    )
 
     provider_in = ProviderInput(request_id=None, messages=[type("M", (), {"role": "user", "content": "hi"})()])
 
