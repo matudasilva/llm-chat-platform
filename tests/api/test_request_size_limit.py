@@ -8,7 +8,7 @@ from app.core.settings import settings
 
 @pytest.mark.asyncio
 async def test_payload_over_max_request_bytes_returns_413(client: httpx.AsyncClient) -> None:
-    oversized = b"a" * (settings.MAX_REQUEST_BYTES + 1)
+    oversized = b"a" * (settings.max_request_bytes + 1)
 
     r = await client.post(
         "/chat",

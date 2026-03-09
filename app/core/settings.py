@@ -1,5 +1,6 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator, model_validator
+
 
 class TokenRates(BaseModel):
     # Cost per 1K tokens, expressed in your chosen currency unit (e.g., USD).
@@ -21,6 +22,101 @@ class Settings(BaseSettings):
     postgres_user: str = "llmchat"
     postgres_password: str = "__CHANGEME__"
 
+    # Providers
+    provider: str = "stub"
+    provider_timeout_s: float = 30.0
+
+    stub_provider_mode: str = "ok"
+    stub_simulated_latency_ms: int = 0
+
+    openai_api_key: str | None = None
+    openai_model: str = "gpt-4.1-mini"
+    openai_max_attempts: int = 3
+    openai_backoff_base_ms: int = 200
+    openai_backoff_max_ms: int = 2000
+
+    # Redis
+    redis_host: str = "redis"
+    redis_port: int = 6379
+    redis_db: int = 0
+    redis_password: str | None = None
+
+    # Defensive limits (hardening)
+    max_request_bytes: int = 64 * 1024
+    max_message_chars: int = 8_000
+    max_assistant_chars: int = 8_000
+    max_error_message_chars: int = 512
+
+    # Cost Awareness (MVP): provider-agnostic token pricing table (no external calls).
+    # Unknown providers should be treated as 0.0 cost by the estimator.
+    cost_rates_by_provider: dict[str, TokenRates] = {
+        "stub": TokenRates(input_per_1k=0.0, output_per_1k=0.0),
+    }
+
+    @field_validator("provider")
+    @classmethod
+    def validate_provider(cls, value: str) -> str:
+        allowed = {"stub", "openai", "bedrock"}
+        if value not in allowed:
+            raise ValueError(f"provider must be one of: {sorted(allowed)}")
+        return value
+
+    @field_validator("provider_timeout_s")
+    @classmethod
+    def validate_provider_timeout_s(cls, value: float) -> float:
+        if value <= 0:
+            raise ValueError("provider_timeout_s must be > 0")
+        return value
+
+    @field_validator("stub_provider_mode")
+    @classmethod
+    def validate_stub_provider_mode(cls, value: str) -> str:
+        allowed = {"ok", "error"}
+        if value not in allowed:
+            raise ValueError(f"stub_provider_mode must be one of: {sorted(allowed)}")
+        return value
+
+    @field_validator("stub_simulated_latency_ms")
+    @classmethod
+    def validate_stub_simulated_latency_ms(cls, value: int) -> int:
+        if value < 0:
+            raise ValueError("stub_simulated_latency_ms must be >= 0")
+        return value
+
+    @field_validator("openai_max_attempts")
+    @classmethod
+    def validate_openai_max_attempts(cls, value: int) -> int:
+        if value < 1:
+            raise ValueError("openai_max_attempts must be >= 1")
+        return value
+
+    @field_validator("openai_backoff_base_ms")
+    @classmethod
+    def validate_openai_backoff_base_ms(cls, value: int) -> int:
+        if value < 0:
+            raise ValueError("openai_backoff_base_ms must be >= 0")
+        return value
+
+    @field_validator("openai_backoff_max_ms")
+    @classmethod
+    def validate_openai_backoff_max_ms(cls, value: int) -> int:
+        if value < 0:
+            raise ValueError("openai_backoff_max_ms must be >= 0")
+        return value
+
+    @field_validator("max_request_bytes", "max_message_chars", "max_assistant_chars", "max_error_message_chars")
+    @classmethod
+    def validate_positive_limits(cls, value: int) -> int:
+        if value <= 0:
+            raise ValueError("limit values must be > 0")
+        return value
+
+    @model_validator(mode="after")
+    def validate_backoff_relationship(self) -> "Settings":
+        if self.openai_backoff_max_ms < self.openai_backoff_base_ms:
+            raise ValueError("openai_backoff_max_ms must be >= openai_backoff_base_ms")
+        return self
+
     @property
     def database_url(self) -> str:
         if self.database_url_override:
@@ -30,29 +126,11 @@ class Settings(BaseSettings):
             f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
         )
 
-    # Redis
-    redis_host: str = "redis"
-    redis_port: int = 6379
-    redis_db: int = 0
-    redis_password: str | None = None
-
     @property
     def redis_url(self) -> str:
         if self.redis_password:
             return f"redis://:{self.redis_password}@{self.redis_host}:{self.redis_port}/{self.redis_db}"
         return f"redis://{self.redis_host}:{self.redis_port}/{self.redis_db}"
 
-    # Defensive limits (hardening)
-    MAX_REQUEST_BYTES: int = 64 * 1024          # 64 KiB
-    MAX_MESSAGE_CHARS: int = 8_000
-    MAX_ASSISTANT_CHARS: int = 8_000
-    MAX_ERROR_MESSAGE_CHARS: int = 512
-    PROVIDER_TIMEOUT_S: float = 12.0
-
-    # Cost Awareness (MVP): provider-agnostic token pricing table (no external calls).
-    # Unknown providers should be treated as 0.0 cost by the estimator.
-    cost_rates_by_provider: dict[str, TokenRates] = {
-        "stub": TokenRates(input_per_1k=0.0, output_per_1k=0.0),
-    }
 
 settings = Settings()

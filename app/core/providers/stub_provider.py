@@ -55,9 +55,10 @@ class StubProvider(ProviderPort):
             input_tokens=in_tok,
             output_tokens=out_tok,
             total_tokens=(in_tok + out_tok) if (in_tok and out_tok) else None,
-            latency_ms=self.simulated_latency_ms + elapsed_ms,
+            latency_ms=elapsed_ms,
             raw={"digest": digest, "mode": self.mode},
         )
+        
     async def stream(self, input: ProviderInput) -> AsyncIterator[str]:
         result = await self.generate(input)
         for part in result.content.split():

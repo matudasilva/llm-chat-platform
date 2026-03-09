@@ -17,7 +17,7 @@ class ChatStatus(str, Enum):
 class ChatRequest(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
     stream: bool = False
-    
+
     conversation_id: Optional[UUID] = Field(
         default=None,
         description="Conversation identifier (null on early error).",
@@ -25,7 +25,7 @@ class ChatRequest(BaseModel):
     message: str = Field(
         ...,
         min_length=1,
-        max_length=settings.MAX_MESSAGE_CHARS,
+        max_length=settings.max_message_chars,
         description="User message content.",
     )
 
@@ -63,6 +63,6 @@ class ChatResponse(BaseModel):
 
     error_message: Optional[str] = Field(
         default=None,
-        max_length=settings.MAX_ERROR_MESSAGE_CHARS,
+        max_length=settings.max_error_message_chars,
         description="Error details suitable for logs/UI (kept short).",
     )

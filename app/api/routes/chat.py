@@ -75,7 +75,7 @@ async def chat(
 
                 # 2) Persist AFTER provider finishes (single atomic transaction)
                 assistant_text = "".join(chunks)
-                assistant_content_final = truncate(assistant_text, settings.MAX_ASSISTANT_CHARS)
+                assistant_content_final = truncate(assistant_text, settings.max_assistant_chars)
 
                 user_msg_id = uuid.uuid4()
                 assistant_msg_id = uuid.uuid4()
@@ -203,7 +203,7 @@ async def chat(
 
             assistant_content = truncate(
                 service_result.assistant_message.content,
-                settings.MAX_ASSISTANT_CHARS,
+                settings.max_assistant_chars,
             )
             provider_result = service_result.provider_result
 
@@ -269,7 +269,7 @@ async def chat(
         raise
 
     except (ProviderTimeoutError, ProviderExecutionError) as e:
-        error_message = sanitize_error_message(str(e), settings.MAX_ERROR_MESSAGE_CHARS)
+        error_message = sanitize_error_message(str(e), settings.max_error_message_chars)
 
         try:
             await db.rollback()
@@ -314,7 +314,7 @@ async def chat(
             str(request_id),
             str(conversation_id),
 )
-        error_message = sanitize_error_message("internal error", settings.MAX_ERROR_MESSAGE_CHARS)
+        error_message = sanitize_error_message("internal error", settings.max_error_message_chars)
 
         try:
             await db.rollback()
@@ -334,7 +334,7 @@ async def chat(
                         status=ChatStatus.error.value,
                         request_id=request_id,
                         latency_ms=latency_ms,
-                        error_message=sanitize_error_message(str(e), settings.MAX_ERROR_MESSAGE_CHARS),
+                        error_message=sanitize_error_message(str(e), settings.max_error_message_chars),
                         conversation_id=None,
                         message_id=None,
                     )

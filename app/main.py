@@ -69,7 +69,7 @@ app = FastAPI(
 app.include_router(runtime_ops_router)
 
 app.add_middleware(RequestContextMiddleware)
-app.add_middleware(RequestSizeLimitMiddleware, max_bytes=settings.MAX_REQUEST_BYTES)
+app.add_middleware(RequestSizeLimitMiddleware, max_bytes=settings.max_request_bytes)
 app.add_middleware(StructuredJsonLoggingMiddleware, app_env=str(getattr(settings, "app_env", "unknown")))
 
 app.include_router(ops_router, prefix="/ops")
