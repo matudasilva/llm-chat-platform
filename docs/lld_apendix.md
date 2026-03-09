@@ -752,7 +752,7 @@ The following checks validate that input guardrails and provider execution bound
 Validates that `/chat` rejects invalid input deterministically:
 
 - blank / whitespace-only message → request rejected
-- message exceeding `MAX_MESSAGE_CHARS` → request rejected
+- message exceeding `settings.max_message_chars` → request rejected
 
 **Command:**
 
@@ -1318,7 +1318,7 @@ Set env vars (do not commit secrets):
 export PROVIDER=openai
 export OPENAI_API_KEY="***"
 export OPENAI_MODEL="gpt-4o-mini"
-export PROVIDER_TIMEOUT_S="12.0"
+export PROVIDER_TIMEOUT_S="30.0"
 ```
 
 Recreate the API container to apply env:

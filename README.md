@@ -253,6 +253,28 @@ docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' llm
 Then open: http://<IP>:8000/ui
 ---
 
+## Provider Configuration
+
+Provider selection:
+
+* `PROVIDER=stub|openai|bedrock`
+
+Stub provider knobs:
+
+* `STUB_PROVIDER_MODE=ok|error`
+* `STUB_SIMULATED_LATENCY_MS=<int>`
+
+OpenAI provider knobs:
+
+* `OPENAI_API_KEY` (required when `PROVIDER=openai`)
+* `OPENAI_MODEL`
+* `PROVIDER_TIMEOUT_S`
+* `OPENAI_MAX_ATTEMPTS`
+* `OPENAI_BACKOFF_BASE_MS`
+* `OPENAI_BACKOFF_MAX_MS`
+
+Provider configuration is centralized in `app/core/settings.py`.
+
 ## Migrations
 
 ```bash
@@ -266,17 +288,22 @@ Migrations are never executed automatically.
 
 ## Testing
 
+Canonical green command:
+
 ```bash
-PYTHONPATH=app pytest -q
+docker compose -f docker-compose.dev.yml run --rm -e PROVIDER=stub api python -m pytest -q
 ```
 
-Contract tests validate:
+Current coverage includes:
 
-* Provider abstraction
-* Guardrails
-* Error normalization
+* `/chat` non-stream regression
+* Streaming SSE smoke test (`token` + `done`)
+* Read-only conversation inspection endpoints
+* Health and readiness endpoints
+* Request ID propagation
+* Request size limit enforcement
+* Structured logging behavior
 * Telemetry best-effort guarantees
-* Structured logging
 * Cost estimation logic
 
 ---
@@ -294,8 +321,10 @@ Contract tests validate:
 
 ## Non-Goals
 
-This project intentionally does not: - Provide a frontend application or build pipeline (a minimal single-file demo UI is available at `GET /ui` for local streaming demos).
+This project intentionally does not:
 
+* Provide a frontend application or build pipeline
+  * A minimal single-file demo UI is available at `GET /ui` for local streaming demos
 * Optimize model quality
 * Provide frontend components
 * Act as a SaaS product
@@ -314,11 +343,14 @@ It is a correctness-first backend reference system.
 
 ## Current State
 
-Day 25 — Streaming SSE + Minimal UI completed.
+Day 26 — Provider configuration hardening completed.
 
-- `POST /chat` supports SSE streaming behind `stream=true`
-- Minimal demo UI at `GET /ui` (single static HTML)
-- Streaming smoke test: `tests/api/test_chat_streaming.py`
+* `POST /chat` supports SSE streaming behind `stream=true`
+* Minimal demo UI at `GET /ui` (single static HTML)
+* Streaming smoke test: `tests/api/test_chat_streaming.py`
+* Provider configuration is centralized in `app/core/settings.py`
+* Provider factory no longer reads environment variables directly
+* `.env.example` reflects the validated provider configuration surface
 
 ---
 

@@ -2,7 +2,7 @@
 
 ## LLM Chat Platform
 
-**Status:** Stable baseline — validated up to Day 12
+**Status:** Stable baseline — validated up to Day 25 (Streaming SSE + Minimal UI + Stable async tests)
 
 ---
 
@@ -49,13 +49,14 @@ endpoint smoke evidence (success + rollback)
 
 ## 1. Purpose of this document
 
-This Low Level Design (LLD) documents the **actual implemented architecture** of the LLM Chat Platform up to **Day 9**.
+This Low Level Design (LLD) documents the **actual implemented architecture** of the LLM Chat Platform up to **Day 25**.
 
 It is intentionally:
 
 * Implementation-driven (not aspirational)
 * Consistent with decisions taken under real execution constraints
 * Suitable for senior technical review
+* Updated incrementally to preserve historical design context
 
 This document evolves with the codebase.
 
@@ -69,18 +70,22 @@ This document evolves with the codebase.
 * PostgreSQL persistence with SQLAlchemy 2 async
 * Alembic migration chain stabilized and reproducible
 * DEV/PROD environment split
-* `/health` endpoint
-* `/chat` endpoint with a transactional write-path
+* Liveness and readiness endpoints
+* `/chat` endpoint with transactional persistence semantics
+* Streaming SSE on `POST /chat` behind `stream=true`
+* Minimal demo UI served at `GET /ui`
+* Read-only inspection endpoints for conversations and usage events
 * Minimal LLMOps telemetry (`usage_events`)
+* Provider abstraction with validated stub and hardened OpenAI adapter
 
-### Out-of-scope (explicit non-goals as of Day 9)
+### Out-of-scope (explicit non-goals as of Day 25)
 
-* Real LLM provider integration
-* Streaming responses
+* Full frontend application / SPA / build pipeline
 * Background workers / queues
 * Authentication, authorization
 * Quotas, rate limiting
 * Metrics aggregation dashboards
+* Additional provider implementations beyond the current validated surface
 
 ---
 
@@ -90,6 +95,24 @@ This document evolves with the codebase.
 * Separate **runtime** concerns from **operational** responsibilities
 * Ensure **database integrity and auditability** from day one
 * Avoid premature abstractions while keeping extension points explicit
+
+### 3.1 Runtime architecture
+
+#### Layers
+
+* API layer (FastAPI routers) — request validation, HTTP semantics, streaming SSE
+* Domain layer — `ChatService` orchestration and provider contract
+* Infrastructure layer — SQLAlchemy async session lifecycle, persistence wiring, and DB models
+* Provider layer — validated stub provider and hardened OpenAI adapter
+* Observability layer — HTTP structured logs, provider structured logs, usage telemetry
+
+#### Request correlation
+
+* Request ID is propagated through middleware and request context
+* `/chat` responses include `request_id` for traceability
+* Operational analysis and trace reconstruction use `request_id` as the primary correlation key
+
+---
 
 ---
 
@@ -149,46 +172,56 @@ COPY app /app/app
 
 Reference structure (may evolve, but invariants remain):
 
-```
+```text
 app/
   main.py
   api/
     ops.py
+    runtime_ops.py
     routes/
       chat.py
+      conversations.py
+      usage_events.py
+      ui.py
   schemas/
     chat.py
+    conversations.py
+  core/
+    domain/
+    providers/
+    utils/
+    settings.py
+  http/
+    middleware/
+  infra/
+    db/
+    schemas/
   models/
     conversation.py
     message.py
     usage_event.py
-  infra/
-    db/
-      base.py
-      session.py
   services/
+    conversation_query_service.py
+    readiness.py
+    trace.py
+    usage_events.py
     usage_logger.py
+  static/
+    chat.html
+  scripts/
 
-alembic/
-  env.py
-  versions/
+tests/
+  api/
+  core/
 
-scripts/
-  dev_up.py
-  dev_down.py
-
-Dockerfile
-.env.example
-README.md
-LLD.md
-alembic.ini
-docker-compose.yml
-docker-compose.dev.yml
-```
+docs/
+  lld_llm_chat_platform_live_doc.md
+  lld_llm_chat_platform_live_doc_v2.md
+  lld_apendix.md
 
 ---
 
-## 8. Configuration strategy
+## 8. Configuration strategy”
 
 ### 8.1 Single source of truth
 
@@ -197,10 +230,16 @@ docker-compose.dev.yml
 
 ### 8.2 Environment variables (typical)
 
-* `APP_ENV`: `development|production`
-* `LOG_LEVEL`: `INFO|DEBUG|...`
-* `DATABASE_URL`: `postgresql+asyncpg://...`
-* `REDIS_URL`: `redis://...` (reserved)
+* APP_ENV: development|production
+* LOG_LEVEL: INFO|DEBUG|...
+* DATABASE_URL: postgresql+asyncpg://...
++ REDIS_URL: redis://... (reserved)
+* PROVIDER: stub|openai|bedrock
+* PROVIDER_TIMEOUT_S: provider execution timeout
+* OPENAI_API_KEY: required when PROVIDER=openai
+* OPENAI_MODEL: OpenAI model selection
+* STUB_PROVIDER_MODE: ok|error
+* STUB_SIMULATED_LATENCY_MS: deterministic stub latency
 
 ---
 
@@ -354,13 +393,21 @@ docker compose exec -T -w /app/app api alembic upgrade head
 
 ### 12.2 Routers
 
-* `/health` (process-level liveness)
-* `/chat` (core write path)
+* `/health` (legacy process-level liveness)
+* `/healthz` (liveness)
+* `/readyz` (readiness)
+* `/ops/health` (operations surface)
+* `/chat` (core write path; non-stream JSON by default, SSE when `stream=true`)
+* `/conversations`
+* `/conversations/{conversation_id}`
+* `/usage-events`
+* `/ui` (minimal local demo UI; excluded from OpenAPI schema)
 
 Routers are:
 
 * included explicitly in `main.py`
-* prefixed at inclusion time
+* prefixed at inclusion time where applicable
+* kept thin, with orchestration and query logic delegated to domain/services layers
 
 ---
 
@@ -372,11 +419,13 @@ Fields:
 
 * `conversation_id: UUID | None`
 * `message: str` (required)
+* `stream: bool = False`
 
 Validation policy:
 
 * `message` is required
 * extra fields are rejected (strict)
+* non-stream mode remains the default behavior
 
 ### 13.2 ChatResponse
 
@@ -399,36 +448,56 @@ Fields:
 `GET /health`
 
 * Confirms process is alive
-* Does not validate Postgres/Redis directly
-* Dependency readiness handled via Docker healthchecks
+* Preserved as a lightweight legacy health surface
+
+Additional operational endpoints are also implemented:
+
+* `GET /healthz` — liveness probe
+* `GET /readyz` — readiness probe with best-effort dependency checks
+* `GET /ops/health` — operations-oriented health surface
+
+Dependency readiness is not enforced at API startup.
+Runtime checks remain explicit and read-only.
 
 ---
 
-## 15. `/chat` endpoint (Day 9 design)
+## 15. `/chat` endpoint (evolved through Day 25)
 
 ### 15.1 Responsibilities
+
+Non-stream mode (`stream=false`, default):
 
 * Generate `request_id`
 * Create or validate `Conversation`
 * Persist user message
-* Execute model logic (currently stub)
+* Execute model logic via `ChatService`
 * Persist assistant message
-* Persist UsageEvent
+* Persist `UsageEvent`
+* Return JSON response
 
-All inside a single DB transaction.
+Streaming mode (`stream=true`):
 
-### 15.2 Execution order (strict)
+* Generate `request_id`
+* Resolve or allocate `conversation_id`
+* Stream provider output through SSE
+* Accumulate assistant content in memory
+* Persist conversation + messages + usage after provider completion
+* Emit final SSE completion event
+
+In both modes, `/chat` remains the only authoritative write-path.
+
+### 15.2 Execution order (non-stream)
 
 1. Start timer
 2. Generate `request_id`
 3. `async with db.begin()`
 4. Resolve conversation
 5. Insert `Message(role=user)`; flush
-6. Execute model (stub)
+6. Execute model via `ChatService.run(...)`
 7. Insert `Message(role=assistant)`; flush
 8. Insert `UsageEvent` (FKs valid)
 9. Commit transaction
-10. Return response
+10. Return JSON response
 
 ### 15.3 Use of `flush()`
 
@@ -445,16 +514,19 @@ Important:
 
 ### 15.4 Error handling policy
 
-On unexpected exceptions:
+On unexpected exceptions in non-stream mode:
 
 * enforce rollback
-* record best-effort error UsageEvent without FKs
-* re-raise exception
+* record best-effort error `UsageEvent` without FKs
+* re-raise exception or return sanitized error semantics, depending on boundary
 
 Rationale:
 
 * avoids “error while logging the error”
 * decouples observability from business data success
+* preserves business-data atomicity even when provider execution fails
+
+
 
 #### Input guardrails and execution boundaries (Day 12)
 
@@ -490,21 +562,87 @@ Design rationale:
 
 ### 15.5 Stub provider semantics
 
-* Deterministic response: `"stub: provider not configured yet"`
+* Deterministic response behavior for non-stream execution
+* Deterministic streaming behavior for `stream=true`
+* Configurable simulated latency
+* Configurable deterministic error mode
 * No external LLM calls
-* No token accounting
+* Token accounting may be absent or synthetic depending on test scenario
 
-The stub exists to validate the persistence + telemetry pipeline before provider integration.
+The stub exists to validate persistence, telemetry, provider contracts, and streaming semantics before relying on external providers.
 
-### 15.6 Update — Day 12: ChatService integration
+### 15.6 Update — ChatService integration and provider boundary
 
-* delegate to ChatService
-* UsageEvent success use ProviderResult metrics
-*error path: provider error → rollback + best-effort usage_event without FKs
+`/chat` delegates provider execution to `ChatService`.
 
-UsageEvent success usa ProviderResult metrics
+Rules:
 
-error path: provider error → rollback + best-effort usage_event sin FKs
+* `ChatService` has no database access
+* `ChatService` has no transaction control
+* `ChatService` normalizes provider failures into domain-level errors
+* success-path `UsageEvent` fields are derived from `ProviderResult`
+* error-path telemetry remains best-effort and may omit foreign keys
+
+This preserves a clean execution boundary between:
+
+* HTTP layer
+* transactional persistence
+* provider orchestration
+
+
+### 15.7 Streaming mode (Day 25)
+
+Streaming is opt-in via `stream=true`.
+
+When enabled, `POST /chat` returns `Content-Type: text/event-stream` and emits:
+
+* `event: token`
+  * `data: <string chunk>`
+* `event: done`
+  * `data: <json>`
+* `event: error`
+  * `data: <json>`
+
+#### Execution order (stream=true)
+
+1. Resolve `request_id`
+2. Resolve or allocate `conversation_id`
+3. Start SSE response
+4. Execute provider streaming via `ChatService.stream_chat(...)`
+5. Emit `token` events as chunks arrive
+6. Accumulate assistant content in memory
+7. After provider completion, open a single DB transaction
+8. Create or validate conversation
+9. Persist user message
+10. Persist assistant message using the full accumulated content
+11. Persist `UsageEvent` best-effort
+12. Emit `done`
+13. End stream
+
+#### Persistence semantics
+
+Streaming provider execution happens outside the database transaction.
+
+The final persistence phase still uses a single DB transaction for:
+
+* conversation
+* user message
+* assistant message
+
+This preserves atomicity for database writes while avoiding long-lived transactions during streaming.
+
+#### Important tradeoff
+
+The client may receive streamed tokens before the final DB transaction commits.
+
+If final persistence fails:
+
+* the stream emits `event: error`
+* no conversation/messages are committed
+
+#### Fallback semantics
+
+`ChatService.stream_chat(...)` supports defensive fallback behavior for providers that do not implement valid streaming.
 
 ---
 
@@ -602,28 +740,73 @@ docker compose exec -T postgres psql -U llmchat -d llmchat -c \
 
 ---
 
-## 18. Current guarantees (post Day 9)
+## 18. Current guarantees (post Day 25)
 
-* `/chat` successful requests produce:
+### 18.1 Observability
+
+#### HTTP structured logging
+
+* One JSON log line is emitted per HTTP request
+* Mandatory fields include: `request_id`, `path`, `method`, `status`, `latency_ms`, `app_env`
+* Request and response bodies are not logged
+* Logs are emitted to stdout
+
+#### Provider structured logging
+
+* The provider layer emits structured lifecycle events
+* Typical events include:
+  * `provider.request`
+  * `provider.retry`
+  * `provider.response`
+  * `provider.error`
+  * `provider.total`
+* Logged metadata is intentionally safe and excludes user content, prompt payloads, raw provider responses, and secrets
+
+#### Traceability
+
+* `request_id` is propagated end-to-end
+* `/chat` execution can be reconstructed deterministically from persisted business data and telemetry
+* Trace reconstruction remains read-only and does not modify runtime semantics
+
+#### Request protection
+
+* Middleware-level request size limits protect the API process from oversized payloads
+* Guardrail failures are explicit and test-validated
+
+#### Offline analytics
+
+* Persisted `usage_events` support read-only offline export and aggregation
+* Cost estimation remains provider-agnostic and decoupled from runtime execution
+
+### 18.1 Current guarantees (post Day 25)
+
+* `/chat` remains the only authoritative write-path
+* Non-stream mode persists business data inside one transaction
+* Stream mode persists business data only after provider completion
+* Successful non-stream requests produce:
 
   * `Conversation`
   * `Message(user)`
   * `Message(assistant)`
   * `UsageEvent` with FK references
+
+* Successful stream requests produce the same persisted entities after streaming completes
 * Failure does not corrupt database integrity
 * Failure does not block telemetry capture (best-effort)
+* Provider failures are normalized at the domain boundary
+* Request/response observability remains non-invasive
 * Alembic chain remains reproducible
 
 ---
 
 ## 19. Next evolution steps
 
-* Introduce provider interface abstraction (port/adapters)
-* Integrate real providers (OpenAI/Bedrock/etc.)
-* Add integration tests for write-path and failure modes
-* Introduce streaming responses
-* Introduce auth, quotas, rate limiting
-* Metrics aggregation and dashboards
+* Harden provider configuration through centralized settings
+* Reduce provider-specific environment parsing in factory code
+* Improve streaming telemetry consistency
+* Consider richer SSE completion payloads
+* Introduce auth, quotas, and rate limiting in future controlled phases
+* Expand operational documentation without changing core invariants
 
 ---
 
@@ -636,8 +819,39 @@ docker compose exec -T postgres psql -U llmchat -d llmchat -c \
 * Keep traceability mandatory
 * Keep changes incremental and reviewable
 
----
-(contenido existente preservado íntegramente, se aplicarán actualizaciones incrementales sin eliminar líneas)
+### 20.1 Tests (async-first)
+
+#### Canonical green command
+
+`docker compose -f docker-compose.dev.yml run --rm -e PROVIDER=stub api python -m pytest -q`
+
+#### Test stack
+
+* `httpx.AsyncClient`
+* `ASGITransport`
+* `LifespanManager` to ensure startup and shutdown hooks execute
+
+#### Coverage targets (current)
+
+* `/chat` non-stream regression
+* Streaming SSE smoke test (`token` + `done`)
+* Conversations read endpoints
+* Health and readiness endpoints
+* Request ID propagation
+* Request size limit enforcement
+* Structured logging behavior
+* Telemetry best-effort behavior under failure
+
+#### Intent
+
+The test suite validates runtime invariants without weakening the architecture-first boundary between:
+
+* HTTP layer
+* provider orchestration
+* persistence
+* observability
+
+
 
 ---
 
@@ -723,7 +937,7 @@ Results:
 
 ---
 
-**Document updated up to Day 11.**
+**Document updated incrementally through Day 25.**
 
 
 ---
@@ -745,6 +959,7 @@ This prepares the system for real LLM provider integration without contaminating
 A provider is modeled as an async-first port:
 
 - `ProviderPort.generate(input: ProviderInput) -> ProviderResult`
+- `ProviderPort.stream(input: ProviderInput) -> AsyncIterator[str]`
 
 **ProviderInput (domain-only)**
 
@@ -773,13 +988,17 @@ A deterministic stub provider is implemented to validate the contract before int
 - deterministic output derived from `request_id` + last input message
 - configurable simulated latency
 - configurable deterministic error mode
+- deterministic streaming support
 - no external IO and no persistent side effects
+
+This makes success, failure, and streaming paths fully reproducible.
 
 ### 22.4 ChatService (pure orchestration)
 
 `ChatService` orchestrates:
 
 - input messages → provider invocation → assistant output message
+- optional provider streaming → incremental chunk emission to the API layer
 
 Rules:
 
@@ -793,9 +1012,9 @@ The service returns a `ChatServiceResult` containing:
 - `assistant_message` (domain message to be persisted later by `/chat`)
 - `provider_result` (metadata/metrics used later for `UsageEvent` emission)
 
-- now is integrated on /chat
+This service is integrated into `/chat`.
 
-**Execution boundary guarantees (Day 12):**
+**Execution boundary guarantees:**
 
 - `ChatService` is the exclusive execution boundary for providers
 - All provider calls are:
@@ -806,19 +1025,22 @@ The service returns a `ChatServiceResult` containing:
 `ChatService` guarantees that:
 
 - successful execution returns a valid `ChatServiceResult`
-- timeouts raise `ProviderTimeoutError`
-- provider failures raise `ProviderExecutionError`
+- timeouts raise normalized provider timeout errors
+- provider failures raise normalized execution errors
 - raw provider exceptions never cross the boundary
+- streaming mode may fall back defensively when a provider does not expose valid streaming behavior
 
 This allows `/chat` to reason only in terms of:
+
 - success vs error
 - rollback vs commit
 - telemetry emission strategy
+- non-stream JSON vs streaming SSE response mode
 
 
 ### 22.5 Evidence (runners and tests)
 
-Reproducibility artifacts:
+Reproducibility artifacts include:
 
 - `app/scripts/run_stub_chat.py` (ok path + error path)
 - `app/scripts/run_stub_determinism.py` (determinism + sensitivity checks)
@@ -826,21 +1048,13 @@ Reproducibility artifacts:
   - `app/tests/core/test_stub_provider_contract.py`
   - `app/tests/core/test_chat_service_contract.py`
 
-Integration with `/chat` is intentionally deferred to the next iteration, after the contract surface is validated.
+Later validated integration evidence includes:
 
-* run_chat_endpoint_smoke.py
-* run_chat_endpoint_error_smoke.py
-
-Additional evidence (Day 12):
-
-- API guardrail tests:
-  - `tests/api/test_chat_guardrails.py`
-    - rejects blank messages
-    - rejects oversized messages
-- Contract-level timeout and error propagation tests:
-  - `test_chat_service_contract.py`
-    - provider timeout handling
-    - provider error normalization
+- `/chat` success and rollback smoke runners
+- request ID propagation tests
+- readiness tests
+- streaming smoke test:
+  - `tests/api/test_chat_streaming.py`
 
 
 ---
@@ -1068,6 +1282,34 @@ Day 24 → resilience + structured logging
 The Provider layer now acts as a hardened isolation boundary
 between external LLM APIs and core application logic.
 
+## Addendum — Day 25: Streaming SSE + Minimal UI
+
+### Scope
+
+Day 25 introduced opt-in SSE streaming on `POST /chat` and a minimal static demo UI,
+without modifying database schema, Alembic migrations, or the default non-stream JSON contract.
+
+### Changes
+
+* `POST /chat` now supports `stream=true`
+* Streaming emits SSE events:
+  * `token`
+  * `done`
+  * `error`
+* Streaming provider execution occurs outside the DB transaction
+* Final persistence happens in a single DB transaction after provider completion
+* Minimal demo UI added at `GET /ui`
+* Streaming smoke test added
+
+### Preserved invariants
+
+* `/chat` remains the only write-path
+* Non-stream mode preserves single-transaction semantics
+* Streaming does not require schema changes
+* Provider orchestration remains DB-agnostic
+* Observability remains non-invasive
+
+
 ## Appendices
 
 Detailed execution-level documentation, debugging playbooks, and deep technical references
@@ -1079,5 +1321,5 @@ This separation is intentional to keep the core LLD focused on architecture and 
 while allowing the appendix to evolve with operational learnings and real-world failures.
 
 
-**This document reflects the state of the system up to **Day 24**.
+**This document reflects the state of the system up to Day 25.**
 **Execution-level details and debugging notes are tracked in the Appendix.**
