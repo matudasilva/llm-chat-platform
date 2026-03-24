@@ -590,7 +590,7 @@ This preserves a clean execution boundary between:
 * provider orchestration
 
 
-### 15.7 Streaming mode (Day 25)
+### 15.7 Streaming mode (Day 27B)
 
 Streaming is opt-in via `stream=true`.
 
@@ -609,15 +609,17 @@ When enabled, `POST /chat` returns `Content-Type: text/event-stream` and emits:
 2. Resolve or allocate `conversation_id`
 3. Start SSE response
 4. Execute provider streaming via `ChatService.stream_chat(...)`
-5. Emit `token` events as chunks arrive
-6. Accumulate assistant content in memory
-7. After provider completion, open a single DB transaction
-8. Create or validate conversation
-9. Persist user message
-10. Persist assistant message using the full accumulated content
-11. Persist `UsageEvent` best-effort
-12. Emit `done`
-13. End stream
+5. The provider returns `ProviderStreamSession`
+6. Emit `token` events from `ProviderStreamSession.chunks` as chunks arrive
+7. Accumulate assistant content in memory
+8. After provider completion, call `ProviderStreamSession.get_final_result()`
+9. Open a single DB transaction
+10. Create or validate conversation
+11. Persist user message
+12. Persist assistant message using the full accumulated content
+13. Persist `UsageEvent` best-effort
+14. Emit `done`
+15. End stream
 
 #### Persistence semantics
 
@@ -628,8 +630,30 @@ The final persistence phase still uses a single DB transaction for:
 * conversation
 * user message
 * assistant message
+* usage event (best-effort)
 
 This preserves atomicity for database writes while avoiding long-lived transactions during streaming.
+
+`ProviderStreamSession` exposes:
+
+* `chunks: AsyncIterator[str]`
+* `get_final_result() -> ProviderStreamResult`
+
+`ProviderStreamResult` contains:
+
+* `content`
+* `provider_result`
+
+`ProviderResult` is authoritative for streaming telemetry and metadata:
+
+* `input_tokens`
+* `output_tokens`
+* `total_tokens`
+* `model_version`
+* `prompt_version`
+* `latency_ms`
+
+Downstream layers do not reconstruct these values.
 
 #### Important tradeoff
 
@@ -959,7 +983,7 @@ This prepares the system for real LLM provider integration without contaminating
 A provider is modeled as an async-first port:
 
 - `ProviderPort.generate(input: ProviderInput) -> ProviderResult`
-- `ProviderPort.stream(input: ProviderInput) -> AsyncIterator[str]`
+- `ProviderPort.stream(input: ProviderInput) -> ProviderStreamSession`
 
 **ProviderInput (domain-only)**
 
@@ -998,7 +1022,7 @@ This makes success, failure, and streaming paths fully reproducible.
 `ChatService` orchestrates:
 
 - input messages → provider invocation → assistant output message
-- optional provider streaming → incremental chunk emission to the API layer
+- optional provider streaming via `ProviderStreamSession` → incremental chunk emission to the API layer and authoritative final result retrieval
 
 Rules:
 

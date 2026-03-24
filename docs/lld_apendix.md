@@ -1646,6 +1646,31 @@ curl -N --no-buffer -X POST http://$IP:8000/chat \
   -H "Content-Type: application/json" \
   -d '{"message":"hello","stream":true}'
   ```
+
+### Streaming validation
+
+Canonical test command:
+
+```bash
+docker compose -f docker-compose.dev.yml run --rm -e PROVIDER=stub api python -m pytest -q
+```
+
+Example curl:
+
+```bash
+curl -N -X POST http://localhost:8001/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message":"hello","stream":true}'
+```
+
+Expected SSE events:
+
+- `event: token`
+- `event: done`
+- `event: error`
+
+Note: the stub provider supports simulated latency via `STUB_SIMULATED_LATENCY_MS`.
+
 ### U.6 Artifacts / files
 
 * app/api/routes/chat.py — streaming branch and SSE generator

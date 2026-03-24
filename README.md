@@ -297,7 +297,7 @@ docker compose -f docker-compose.dev.yml run --rm -e PROVIDER=stub api python -m
 Current coverage includes:
 
 * `/chat` non-stream regression
-* Streaming SSE smoke test (`token` + `done`)
+* Streaming SSE smoke test (`token`, `done`, `error`)
 * Read-only conversation inspection endpoints
 * Health and readiness endpoints
 * Request ID propagation
@@ -346,6 +346,9 @@ It is a correctness-first backend reference system.
 Day 26 — Provider configuration hardening completed.
 
 * `POST /chat` supports SSE streaming behind `stream=true`
+* Real OpenAI streaming is supported through the provider abstraction
+* Streaming SSE emits `token`, `done`, and `error` events
+* Streaming usage metadata is provider-driven and remains consistent when persisted
 * Minimal demo UI at `GET /ui` (single static HTML)
 * Streaming smoke test: `tests/api/test_chat_streaming.py`
 * Provider configuration is centralized in `app/core/settings.py`
