@@ -217,6 +217,91 @@ async def test_openai_provider_stream_returns_session_and_final_metadata():
 
 
 @pytest.mark.asyncio
+async def test_openai_provider_stream_accepts_eventless_completed_payload():
+    def handler(_: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200,
+            headers={"content-type": "text/event-stream"},
+            stream=_MockStream(
+                [
+                    'data: {"type":"response.output_text.delta","delta":"hi"}\n',
+                    "\n",
+                    'data: {"type":"response.completed","response":{"model":"gpt-4.1-mini-2025-01-01","output":[{"type":"message","role":"assistant","content":[{"type":"output_text","text":"hi"}]}]}}\n',
+                    "\n",
+                    "data: [DONE]\n",
+                    "\n",
+                ]
+            ),
+        )
+
+    client = httpx.AsyncClient(
+        base_url="https://api.openai.com",
+        transport=httpx.MockTransport(handler),
+    )
+
+    p = OpenAIProvider(
+        OpenAIProviderConfig(api_key="k", model="gpt-4.1-mini", timeout_s=1.0),
+        http_client=client,
+    )
+
+    session = await p.stream(
+        ProviderInput(request_id=uuid4(), messages=[type("M", (), {"role": "user", "content": "hi"})()])
+    )
+
+    chunks = []
+    async for chunk in session.chunks:
+        chunks.append(chunk)
+
+    final_result = await session.get_final_result()
+
+    assert chunks == ["hi"]
+    assert final_result.content == "hi"
+    assert final_result.provider_result.model_version == "gpt-4.1-mini-2025-01-01"
+
+    await client.aclose()
+
+
+@pytest.mark.asyncio
+async def test_openai_provider_stream_maps_sse_error_payload():
+    def handler(_: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200,
+            headers={"content-type": "text/event-stream"},
+            stream=_MockStream(
+                [
+                    'event: error\n',
+                    'data: {"type":"error","error":{"message":"rate limited","type":"rate_limit_error","code":"rate_limit_exceeded"}}\n',
+                    "\n",
+                ]
+            ),
+        )
+
+    client = httpx.AsyncClient(
+        base_url="https://api.openai.com",
+        transport=httpx.MockTransport(handler),
+    )
+
+    p = OpenAIProvider(
+        OpenAIProviderConfig(api_key="k", model="gpt-4.1-mini", timeout_s=1.0),
+        http_client=client,
+    )
+
+    session = await p.stream(
+        ProviderInput(request_id=uuid4(), messages=[type("M", (), {"role": "user", "content": "hi"})()])
+    )
+
+    with pytest.raises(ProviderError) as exc:
+        async for _ in session.chunks:
+            pass
+        await session.get_final_result()
+
+    assert exc.value.kind == ProviderErrorKind.rate_limit
+    assert exc.value.error_code == "rate_limit_exceeded"
+
+    await client.aclose()
+
+
+@pytest.mark.asyncio
 async def test_openai_provider_stream_normalizes_transport_errors():
     class BrokenStream(httpx.AsyncByteStream):
         async def __aiter__(self):

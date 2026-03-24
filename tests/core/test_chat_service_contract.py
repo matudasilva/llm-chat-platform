@@ -71,3 +71,21 @@ async def test_chat_service_stream_chat_propagates_final_provider_result() -> No
         result.provider_result.provider_result.input_tokens
         + result.provider_result.provider_result.output_tokens
     )
+
+
+@pytest.mark.asyncio
+async def test_chat_service_stream_chat_does_not_swallow_provider_attribute_error() -> None:
+    class BrokenStreamingProvider:
+        async def generate(self, input):
+            raise AssertionError("generate fallback must not run")
+
+        async def stream(self, input):
+            raise AttributeError("provider stream startup bug")
+
+    service = ChatService(BrokenStreamingProvider(), timeout_s=1.0)
+
+    with pytest.raises(AttributeError, match="startup bug"):
+        await service.stream_chat(
+            request_id=uuid.uuid4(),
+            messages=[ChatMessage(role="user", content="stream me")],
+        )

@@ -60,6 +60,12 @@ def _map_http_status(status_code: int, *, provider: str) -> ProviderError:
     """
     Map HTTP status codes into a normalized ProviderError.
     """
+    if status_code == 400:
+        return ProviderError(
+            kind=ProviderErrorKind.bad_request,
+            message="provider request failed",
+        )
+
     if status_code in (401, 403):
         return ProviderError(
             kind=ProviderErrorKind.auth,
@@ -452,9 +458,19 @@ class OpenAIProvider(ProviderPort):
         logger = logging.getLogger(__name__)
         content_parts: list[str] = []
         final_response_payload: dict[str, Any] | None = None
+        saw_response_completed = False
+        last_event_name: str | None = None
+        last_payload_keys: tuple[str, ...] = ()
 
         try:
             async for event_name, payload in _iter_sse_events(response):
+                last_event_name = event_name or _stream_payload_type(payload)
+                last_payload_keys = tuple(sorted(payload.keys()))
+
+                stream_error = _extract_stream_error(payload)
+                if stream_error is not None:
+                    raise stream_error
+
                 delta = _extract_stream_delta(event_name, payload)
                 if delta:
                     content_parts.append(delta)
@@ -462,6 +478,7 @@ class OpenAIProvider(ProviderPort):
 
                 response_payload = _extract_stream_response_payload(event_name, payload)
                 if response_payload is not None:
+                    saw_response_completed = True
                     final_response_payload = response_payload
 
             latency_ms = int((time.monotonic() - start) * 1000)
@@ -501,6 +518,9 @@ class OpenAIProvider(ProviderPort):
                     "messages_count": messages_count,
                     "latency_ms": latency_ms,
                     "stream": True,
+                    "stream_event": "response.completed" if saw_response_completed else None,
+                    "saw_response_completed": saw_response_completed,
+                    "has_final_model": isinstance(final_payload.get("model"), str),
                     "has_usage": any(
                         value is not None
                         for value in (
@@ -525,6 +545,11 @@ class OpenAIProvider(ProviderPort):
                     "latency_ms": int((time.monotonic() - start) * 1000),
                     "stream": True,
                     "error_kind": getattr(error, "kind", ProviderErrorKind.unknown),
+                    "stream_event": last_event_name,
+                    "payload_keys": last_payload_keys,
+                    "saw_response_completed": saw_response_completed,
+                    "has_final_model": isinstance((final_response_payload or {}).get("model"), str),
+                    "has_usage": isinstance((final_response_payload or {}).get("usage"), dict),
                 },
             )
         finally:
@@ -564,29 +589,35 @@ def _safe_int(v: Any) -> int | None:
 async def _iter_sse_events(response: httpx.Response) -> AsyncIterator[tuple[str | None, dict[str, Any]]]:
     event_name: str | None = None
     data_lines: list[str] = []
+    line_iter = response.aiter_lines()
 
-    async for raw_line in response.aiter_lines():
-        line = raw_line.strip()
+    try:
+        async for raw_line in line_iter:
+            line = raw_line.strip()
 
-        if not line:
-            event = _parse_sse_event(event_name, data_lines)
-            if event is not None:
-                yield event
-            event_name = None
-            data_lines = []
-            continue
+            if not line:
+                event = _parse_sse_event(event_name, data_lines)
+                if event is not None:
+                    yield event
+                event_name = None
+                data_lines = []
+                continue
 
-        if line.startswith(":"):
-            continue
-        if line.startswith("event:"):
-            event_name = line.removeprefix("event:").strip() or None
-            continue
-        if line.startswith("data:"):
-            data_lines.append(line.removeprefix("data:").lstrip())
+            if line.startswith(":"):
+                continue
+            if line.startswith("event:"):
+                event_name = line.removeprefix("event:").strip() or None
+                continue
+            if line.startswith("data:"):
+                data_lines.append(line.removeprefix("data:").lstrip())
 
-    event = _parse_sse_event(event_name, data_lines)
-    if event is not None:
-        yield event
+        event = _parse_sse_event(event_name, data_lines)
+        if event is not None:
+            yield event
+    finally:
+        aclose = getattr(line_iter, "aclose", None)
+        if callable(aclose):
+            await aclose()
 
 
 def _parse_sse_event(event_name: str | None, data_lines: list[str]) -> tuple[str | None, dict[str, Any]] | None:
@@ -598,11 +629,21 @@ def _parse_sse_event(event_name: str | None, data_lines: list[str]) -> tuple[str
         return None
 
     payload = json.loads(raw_data)
+    if not isinstance(payload, dict):
+        raise ProviderError(
+            kind=ProviderErrorKind.unknown,
+            message="provider stream parse error",
+        )
     return event_name, payload
 
 
+def _stream_payload_type(payload: dict[str, Any]) -> str | None:
+    payload_type = payload.get("type")
+    return payload_type if isinstance(payload_type, str) and payload_type else None
+
+
 def _extract_stream_delta(event_name: str | None, payload: dict[str, Any]) -> str:
-    event_type = event_name or payload.get("type")
+    event_type = event_name or _stream_payload_type(payload)
 
     if event_type == "response.output_text.delta":
         delta = payload.get("delta")
@@ -612,11 +653,47 @@ def _extract_stream_delta(event_name: str | None, payload: dict[str, Any]) -> st
 
 
 def _extract_stream_response_payload(event_name: str | None, payload: dict[str, Any]) -> dict[str, Any] | None:
-    event_type = event_name or payload.get("type")
+    event_type = event_name or _stream_payload_type(payload)
     if event_type == "response.completed":
         response = payload.get("response")
         return response if isinstance(response, dict) else None
     return None
+
+
+def _extract_stream_error(payload: dict[str, Any]) -> ProviderError | None:
+    error = payload.get("error")
+    if not isinstance(error, dict):
+        return None
+
+    message = error.get("message")
+    safe_message = message if isinstance(message, str) and message else "provider request failed"
+    status = _safe_int(error.get("status"))
+    error_type = error.get("type")
+    error_code = error.get("code")
+
+    kind = ProviderErrorKind.unknown
+    if status is not None:
+        kind = _map_http_status(status, provider="openai").kind
+    elif error_type in {"invalid_request_error"}:
+        kind = ProviderErrorKind.bad_request
+    elif error_type in {"authentication_error", "invalid_api_key"}:
+        kind = ProviderErrorKind.auth
+    elif error_type in {"rate_limit_error"}:
+        kind = ProviderErrorKind.rate_limit
+
+    retryable = kind in (
+        ProviderErrorKind.rate_limit,
+        ProviderErrorKind.upstream,
+        ProviderErrorKind.timeout,
+    )
+    return ProviderError(
+        kind=kind,
+        message=safe_message,
+        provider="openai",
+        http_status=status,
+        retryable=retryable,
+        error_code=error_code if isinstance(error_code, str) else None,
+    )
 
 
 def _extract_model_version(data: dict[str, Any], *, default: str) -> str:

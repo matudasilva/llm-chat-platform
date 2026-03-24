@@ -99,9 +99,8 @@ class ChatService:
     ) -> ChatServiceStreamSession:
         provider_in = ProviderInput(request_id=request_id, messages=messages)
 
-        try:
-            provider_session = await self._provider.stream(provider_in)
-        except AttributeError:
+        stream_fn = getattr(self._provider, "stream", None)
+        if not callable(stream_fn):
             result = await self.run(request_id=request_id, messages=messages)
 
             async def fallback_chunks() -> AsyncIterator[str]:
@@ -118,6 +117,8 @@ class ChatService:
                 chunks=fallback_chunks(),
                 get_final_result=fallback_final_result,
             )
+
+        provider_session = await stream_fn(provider_in)
 
         if provider_session is None:
             result = await self.run(request_id=request_id, messages=messages)
