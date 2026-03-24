@@ -655,6 +655,15 @@ This preserves atomicity for database writes while avoiding long-lived transacti
 
 Downstream layers do not reconstruct these values.
 
+#### Streaming failure handling (Day 27B fix)
+
+`ChatService.stream_chat(...)` must not swallow provider exceptions.
+
+Streaming fallback is only valid when a provider does not implement `stream()`.
+If a provider exposes streaming, `ProviderStreamSession` is authoritative and provider errors must propagate through the streaming path instead of falling back to non-stream execution.
+
+Streaming chunk size is not guaranteed and depends on upstream provider emission behavior.
+
 #### Important tradeoff
 
 The client may receive streamed tokens before the final DB transaction commits.
@@ -666,7 +675,7 @@ If final persistence fails:
 
 #### Fallback semantics
 
-`ChatService.stream_chat(...)` supports defensive fallback behavior for providers that do not implement valid streaming.
+`ChatService.stream_chat(...)` supports defensive fallback behavior only for providers that do not implement streaming.
 
 ---
 

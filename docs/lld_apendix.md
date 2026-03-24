@@ -1671,6 +1671,25 @@ Expected SSE events:
 
 Note: the stub provider supports simulated latency via `STUB_SIMULATED_LATENCY_MS`.
 
+### Streaming troubleshooting
+
+Symptom:
+
+- `event: error`
+- `data: {"error_kind":"internal"}` with `PROVIDER=openai`
+
+Cause:
+
+- incorrect streaming fallback masked provider errors and silently diverted execution to the non-stream path
+
+Resolution:
+
+- ensure the streaming path uses `ProviderStreamSession` when available and does not swallow provider exceptions
+
+Validation:
+
+- run the `curl -N` streaming test and confirm that `event: token` is emitted before `event: done`
+
 ### U.6 Artifacts / files
 
 * app/api/routes/chat.py — streaming branch and SSE generator

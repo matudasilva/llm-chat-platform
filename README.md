@@ -347,7 +347,9 @@ Day 26 — Provider configuration hardening completed.
 
 * `POST /chat` supports SSE streaming behind `stream=true`
 * Real OpenAI streaming is supported through the provider abstraction
+* OpenAI streaming is now stable in the validated runtime path
 * Streaming SSE emits `token`, `done`, and `error` events
+* Chunk granularity depends on provider emission behavior and may arrive as a single larger `token` event
 * Streaming usage metadata is provider-driven and remains consistent when persisted
 * Minimal demo UI at `GET /ui` (single static HTML)
 * Streaming smoke test: `tests/api/test_chat_streaming.py`
