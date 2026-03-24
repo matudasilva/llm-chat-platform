@@ -1,16 +1,27 @@
 from __future__ import annotations
 
+import asyncio
+import json
 import logging
 import time
 
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any, AsyncIterator, Optional
 
 import httpx
 
-from app.core.domain.provider import ProviderInput, ProviderPort, ProviderResult
+from app.core.domain.provider import (
+    ProviderInput,
+    ProviderPort,
+    ProviderResult,
+    ProviderStreamResult,
+    ProviderStreamSession,
+)
 from app.core.domain.provider_errors import ProviderError, ProviderErrorKind
 from app.core.utils.retry import RetryPolicy, retry_async
+
+
+_STREAM_END = object()
 
 def _map_httpx_exc(exc: Exception, *, provider: str) -> ProviderError:
     """
@@ -116,27 +127,8 @@ class OpenAIProvider(ProviderPort):
         start = time.monotonic()
         request_id = getattr(input, "request_id", None)
         messages_count = len(input.messages)
-
-        headers = {
-            "Authorization": f"Bearer {self._cfg.api_key}",
-            "Content-Type": "application/json",
-        }
-        payload = {
-            "model": self._cfg.model,
-            "input": [
-                {
-                    "role": m.role,
-                    "content": [{"type": "input_text", "text": m.content}],
-                }
-                for m in input.messages
-            ],
-        }
-
-        client = self._client or httpx.AsyncClient(
-            base_url=self._base_url,
-            headers=headers,
-            timeout=httpx.Timeout(self._cfg.timeout_s),
-        )
+        client = self._build_client()
+        payload = self._build_payload(input)
 
         try:
             provider_name = "openai"
@@ -273,20 +265,8 @@ class OpenAIProvider(ProviderPort):
             )
 
             data = r.json()
-            content = _extract_output_text(data)
-            usage = data.get("usage") or {}
             latency_ms = int((time.monotonic() - start) * 1000)
-
-            return ProviderResult(
-                content=content,
-                provider="openai",
-                model_version=self._cfg.model,
-                prompt_version="v1",
-                input_tokens=_safe_int(usage.get("input_tokens")),
-                output_tokens=_safe_int(usage.get("output_tokens")),
-                total_tokens=_safe_int(usage.get("total_tokens")),
-                latency_ms=latency_ms,
-            )               
+            return self._build_provider_result(data, latency_ms=latency_ms)
 
         except ProviderError:
             raise
@@ -298,6 +278,265 @@ class OpenAIProvider(ProviderPort):
         finally:
             if self._client is None:
                 await client.aclose()
+
+    async def stream(self, input: ProviderInput) -> ProviderStreamSession:
+        logger = logging.getLogger(__name__)
+        start = time.monotonic()
+        request_id = getattr(input, "request_id", None)
+        messages_count = len(input.messages)
+        client = self._build_client()
+        payload = self._build_payload(input)
+        payload["stream"] = True
+
+        stream_context = client.stream("POST", "/v1/responses", json=payload)
+        response = None
+
+        try:
+            logger.info(
+                "provider.request",
+                extra={
+                    "event": "provider.request",
+                    "provider": "openai",
+                    "model": self._cfg.model,
+                    "request_id": request_id,
+                    "messages_count": messages_count,
+                    "stream": True,
+                    "timeout_s": self._cfg.timeout_s,
+                },
+            )
+            response = await stream_context.__aenter__()
+
+            if response.status_code >= 400:
+                perr = _map_http_status(response.status_code, provider="openai")
+                latency_ms = int((time.monotonic() - start) * 1000)
+                logger.warning(
+                    "provider.error",
+                    extra={
+                        "event": "provider.error",
+                        "provider": "openai",
+                        "model": self._cfg.model,
+                        "request_id": request_id,
+                        "messages_count": messages_count,
+                        "status_code": response.status_code,
+                        "error_kind": perr.kind,
+                        "latency_ms": latency_ms,
+                        "stream": True,
+                        "retryable": perr.kind in (
+                            ProviderErrorKind.rate_limit,
+                            ProviderErrorKind.upstream,
+                            ProviderErrorKind.timeout,
+                        ),
+                    },
+                )
+                raise perr
+
+            logger.info(
+                "provider.response",
+                extra={
+                    "event": "provider.response",
+                    "provider": "openai",
+                    "model": self._cfg.model,
+                    "request_id": request_id,
+                    "messages_count": messages_count,
+                    "status_code": response.status_code,
+                    "stream": True,
+                },
+            )
+        except ProviderError:
+            await _close_stream_context(stream_context, self._client is None, client)
+            raise
+        except Exception as exc:
+            await _close_stream_context(stream_context, self._client is None, client)
+            if isinstance(exc, httpx.HTTPError):
+                raise _map_httpx_exc(exc, provider="openai") from exc
+            raise ProviderError(
+                kind=ProviderErrorKind.unknown,
+                message="provider unknown error",
+            ) from exc
+
+        queue: asyncio.Queue[object] = asyncio.Queue()
+        state = _OpenAIStreamState(queue=queue)
+
+        consume_task = asyncio.create_task(
+            self._consume_stream(
+                response=response,
+                stream_context=stream_context,
+                client=client,
+                close_client=self._client is None,
+                state=state,
+                start=start,
+                request_id=request_id,
+                messages_count=messages_count,
+            )
+        )
+
+        async def chunk_iterator() -> AsyncIterator[str]:
+            while True:
+                item = await queue.get()
+                if item is _STREAM_END:
+                    break
+                yield str(item)
+
+        async def get_final_result() -> ProviderStreamResult:
+            await consume_task
+            if state.error is not None:
+                raise state.error
+            if state.final_result is None:
+                raise ProviderError(
+                    kind=ProviderErrorKind.unknown,
+                    message="provider stream incomplete",
+                )
+            return state.final_result
+
+        return ProviderStreamSession(
+            chunks=chunk_iterator(),
+            get_final_result=get_final_result,
+        )
+
+    def _build_client(self) -> httpx.AsyncClient:
+        if self._client is not None:
+            return self._client
+        return httpx.AsyncClient(
+            base_url=self._base_url,
+            headers={
+                "Authorization": f"Bearer {self._cfg.api_key}",
+                "Content-Type": "application/json",
+            },
+            timeout=httpx.Timeout(self._cfg.timeout_s),
+        )
+
+    def _build_payload(self, input: ProviderInput) -> dict[str, Any]:
+        return {
+            "model": self._cfg.model,
+            "input": [
+                {
+                    "role": m.role,
+                    "content": [{"type": "input_text", "text": m.content}],
+                }
+                for m in input.messages
+            ],
+        }
+
+    def _build_provider_result(self, data: dict[str, Any], *, latency_ms: int) -> ProviderResult:
+        usage = data.get("usage") or {}
+        input_tokens = _safe_int(usage.get("input_tokens"))
+        output_tokens = _safe_int(usage.get("output_tokens"))
+        total_tokens = _safe_int(usage.get("total_tokens"))
+
+        if total_tokens is None and input_tokens is not None and output_tokens is not None:
+            total_tokens = input_tokens + output_tokens
+
+        return ProviderResult(
+            content=_extract_output_text(data),
+            provider="openai",
+            model_version=_extract_model_version(data, default=self._cfg.model),
+            prompt_version=_extract_prompt_version(data),
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
+            total_tokens=total_tokens,
+            latency_ms=latency_ms,
+        )
+
+    async def _consume_stream(
+        self,
+        *,
+        response: httpx.Response,
+        stream_context: Any,
+        client: httpx.AsyncClient,
+        close_client: bool,
+        state: "_OpenAIStreamState",
+        start: float,
+        request_id: Any,
+        messages_count: int,
+    ) -> None:
+        logger = logging.getLogger(__name__)
+        content_parts: list[str] = []
+        final_response_payload: dict[str, Any] | None = None
+
+        try:
+            async for event_name, payload in _iter_sse_events(response):
+                delta = _extract_stream_delta(event_name, payload)
+                if delta:
+                    content_parts.append(delta)
+                    await state.queue.put(delta)
+
+                response_payload = _extract_stream_response_payload(event_name, payload)
+                if response_payload is not None:
+                    final_response_payload = response_payload
+
+            latency_ms = int((time.monotonic() - start) * 1000)
+            final_payload = final_response_payload or {
+                "output": [
+                    {
+                        "type": "message",
+                        "role": "assistant",
+                        "content": [{"type": "output_text", "text": "".join(content_parts)}],
+                    }
+                ],
+                "model": self._cfg.model,
+            }
+            provider_result = self._build_provider_result(final_payload, latency_ms=latency_ms)
+            content = "".join(content_parts) or provider_result.content
+            state.final_result = ProviderStreamResult(
+                content=content,
+                provider_result=ProviderResult(
+                    content=content,
+                    provider=provider_result.provider,
+                    model_version=provider_result.model_version,
+                    prompt_version=provider_result.prompt_version,
+                    input_tokens=provider_result.input_tokens,
+                    output_tokens=provider_result.output_tokens,
+                    total_tokens=provider_result.total_tokens,
+                    latency_ms=provider_result.latency_ms,
+                    raw=provider_result.raw,
+                ),
+            )
+            logger.info(
+                "provider.stream.complete",
+                extra={
+                    "event": "provider.stream.complete",
+                    "provider": "openai",
+                    "model": state.final_result.provider_result.model_version,
+                    "request_id": request_id,
+                    "messages_count": messages_count,
+                    "latency_ms": latency_ms,
+                    "stream": True,
+                    "has_usage": any(
+                        value is not None
+                        for value in (
+                            state.final_result.provider_result.input_tokens,
+                            state.final_result.provider_result.output_tokens,
+                            state.final_result.provider_result.total_tokens,
+                        )
+                    ),
+                },
+            )
+        except Exception as exc:
+            error = exc if isinstance(exc, ProviderError) else _normalize_stream_error(exc)
+            state.error = error
+            logger.warning(
+                "provider.stream.error",
+                extra={
+                    "event": "provider.stream.error",
+                    "provider": "openai",
+                    "model": self._cfg.model,
+                    "request_id": request_id,
+                    "messages_count": messages_count,
+                    "latency_ms": int((time.monotonic() - start) * 1000),
+                    "stream": True,
+                    "error_kind": getattr(error, "kind", ProviderErrorKind.unknown),
+                },
+            )
+        finally:
+            await state.queue.put(_STREAM_END)
+            await _close_stream_context(stream_context, close_client, client)
+
+
+@dataclass(slots=True)
+class _OpenAIStreamState:
+    queue: asyncio.Queue[object]
+    final_result: ProviderStreamResult | None = None
+    error: ProviderError | None = None
 
 
 def _extract_output_text(data: dict[str, Any]) -> str:
@@ -320,3 +559,101 @@ def _safe_int(v: Any) -> int | None:
         return None if v is None else int(v)
     except Exception:
         return None
+
+
+async def _iter_sse_events(response: httpx.Response) -> AsyncIterator[tuple[str | None, dict[str, Any]]]:
+    event_name: str | None = None
+    data_lines: list[str] = []
+
+    async for raw_line in response.aiter_lines():
+        line = raw_line.strip()
+
+        if not line:
+            event = _parse_sse_event(event_name, data_lines)
+            if event is not None:
+                yield event
+            event_name = None
+            data_lines = []
+            continue
+
+        if line.startswith(":"):
+            continue
+        if line.startswith("event:"):
+            event_name = line.removeprefix("event:").strip() or None
+            continue
+        if line.startswith("data:"):
+            data_lines.append(line.removeprefix("data:").lstrip())
+
+    event = _parse_sse_event(event_name, data_lines)
+    if event is not None:
+        yield event
+
+
+def _parse_sse_event(event_name: str | None, data_lines: list[str]) -> tuple[str | None, dict[str, Any]] | None:
+    if not data_lines:
+        return None
+
+    raw_data = "\n".join(data_lines).strip()
+    if not raw_data or raw_data == "[DONE]":
+        return None
+
+    payload = json.loads(raw_data)
+    return event_name, payload
+
+
+def _extract_stream_delta(event_name: str | None, payload: dict[str, Any]) -> str:
+    event_type = event_name or payload.get("type")
+
+    if event_type == "response.output_text.delta":
+        delta = payload.get("delta")
+        return delta if isinstance(delta, str) else ""
+
+    return ""
+
+
+def _extract_stream_response_payload(event_name: str | None, payload: dict[str, Any]) -> dict[str, Any] | None:
+    event_type = event_name or payload.get("type")
+    if event_type == "response.completed":
+        response = payload.get("response")
+        return response if isinstance(response, dict) else None
+    return None
+
+
+def _extract_model_version(data: dict[str, Any], *, default: str) -> str:
+    model = data.get("model")
+    return model if isinstance(model, str) and model else default
+
+
+def _extract_prompt_version(data: dict[str, Any]) -> str:
+    prompt_version = data.get("prompt_version")
+    if isinstance(prompt_version, str) and prompt_version:
+        return prompt_version
+    return "v1"
+
+
+def _normalize_stream_error(exc: Exception) -> ProviderError:
+    if isinstance(exc, ProviderError):
+        return exc
+    if isinstance(exc, httpx.HTTPError):
+        return _map_httpx_exc(exc, provider="openai")
+    if isinstance(exc, json.JSONDecodeError):
+        return ProviderError(
+            kind=ProviderErrorKind.unknown,
+            message="provider stream parse error",
+        )
+    return ProviderError(
+        kind=ProviderErrorKind.unknown,
+        message="provider unknown error",
+    )
+
+
+async def _close_stream_context(
+    stream_context: Any,
+    close_client: bool,
+    client: httpx.AsyncClient,
+) -> None:
+    try:
+        await stream_context.__aexit__(None, None, None)
+    finally:
+        if close_client:
+            await client.aclose()

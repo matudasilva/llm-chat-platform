@@ -42,3 +42,32 @@ async def test_chat_service_propagates_provider_error() -> None:
 
     assert isinstance(exc.value.__cause__, RuntimeError)
     assert "simulated error" in str(exc.value.__cause__)
+
+
+@pytest.mark.asyncio
+async def test_chat_service_stream_chat_propagates_final_provider_result() -> None:
+    provider = StubProvider(simulated_latency_ms=0, mode="ok")
+    service = ChatService(provider, timeout_s=1.0)
+
+    request_id = uuid.uuid4()
+    messages = [ChatMessage(role="user", content="stream me")]
+
+    session = await service.stream_chat(request_id=request_id, messages=messages)
+
+    streamed = []
+    async for chunk in session.chunks:
+        streamed.append(chunk)
+
+    result = await session.get_final_result()
+
+    assert result.request_id == request_id
+    assert result.assistant_message.role == "assistant"
+    assert result.assistant_message.content == "".join(streamed).strip()
+    assert result.provider_result is not None
+    assert result.provider_result.provider_result.provider == "stub"
+    assert result.provider_result.provider_result.input_tokens is not None
+    assert result.provider_result.provider_result.output_tokens is not None
+    assert result.provider_result.provider_result.total_tokens == (
+        result.provider_result.provider_result.input_tokens
+        + result.provider_result.provider_result.output_tokens
+    )

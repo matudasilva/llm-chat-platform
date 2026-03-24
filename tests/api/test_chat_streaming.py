@@ -16,6 +16,7 @@ async def test_chat_streaming_sse_smoke(client: AsyncClient) -> None:
         assert r.headers.get("content-type", "").startswith("text/event-stream")
 
         current_event = None
+        stream_done = False
         async for line in r.aiter_lines():
             if not line:
                 continue
@@ -27,11 +28,14 @@ async def test_chat_streaming_sse_smoke(client: AsyncClient) -> None:
             if line.startswith("data: "):
                 data = line.removeprefix("data: ").strip()
 
+                if stream_done:
+                    continue
+
                 if current_event == "token":
                     tokens_seen += 1
                 elif current_event == "done":
                     done_payload = json.loads(data)
-                    break
+                    stream_done = True
                 elif current_event == "error":
                     err = json.loads(data)
                     pytest.fail(f"stream error: {err}")

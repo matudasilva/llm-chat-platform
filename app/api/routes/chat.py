@@ -129,12 +129,6 @@ async def chat(
                           else None
                       )
 
-                    def _as_int_or_zero(v: int | None) -> int:
-                          try:
-                              return max(0, int(v or 0))
-                          except Exception:
-                              return 0
-
                     try:
                           db.add(
                               UsageEvent(
@@ -144,13 +138,13 @@ async def chat(
                                   prompt_version=provider_result.prompt_version if provider_result else "unknown",
                                   status=ChatStatus.success.value,
                                   request_id=request_id,
-                                  latency_ms=latency_ms,
+                                  latency_ms=provider_result.latency_ms if provider_result and provider_result.latency_ms is not None else latency_ms,
                                   error_message=None,
                                   conversation_id=None,
                                   message_id=assistant_msg_id,
-                                  input_tokens=_as_int_or_zero(provider_result.input_tokens if provider_result else None),
-                                  output_tokens=_as_int_or_zero(provider_result.output_tokens if provider_result else None),
-                                  total_tokens=_as_int_or_zero(provider_result.total_tokens if provider_result else None),
+                                  input_tokens=provider_result.input_tokens if provider_result else None,
+                                  output_tokens=provider_result.output_tokens if provider_result else None,
+                                  total_tokens=provider_result.total_tokens if provider_result else None,
                               )
                           )
                           
