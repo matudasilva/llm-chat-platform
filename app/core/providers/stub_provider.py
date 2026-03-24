@@ -6,7 +6,13 @@ import time
 from dataclasses import dataclass
 from typing import AsyncIterator, Literal
 
-from app.core.domain.provider import ProviderInput, ProviderPort, ProviderResult
+from app.core.domain.provider import (
+    ProviderInput,
+    ProviderPort,
+    ProviderResult,
+    ProviderStreamResult,
+    ProviderStreamSession,
+)
 
 
 @dataclass(slots=True)
@@ -59,7 +65,24 @@ class StubProvider(ProviderPort):
             raw={"digest": digest, "mode": self.mode},
         )
         
-    async def stream(self, input: ProviderInput) -> AsyncIterator[str]:
+    async def stream(self, input: ProviderInput) -> ProviderStreamSession:
         result = await self.generate(input)
-        for part in result.content.split():
-            yield part + " "
+
+        parts = result.content.split()
+
+        async def chunk_iterator() -> AsyncIterator[str]:
+            for part in parts:
+                if self.simulated_latency_ms > 0:
+                    await asyncio.sleep(self.simulated_latency_ms / 1000)
+                yield part + " "
+
+        async def get_final_result() -> ProviderStreamResult:
+            return ProviderStreamResult(
+                content=result.content,
+                provider_result=result,
+            )
+
+        return ProviderStreamSession(
+            chunks=chunk_iterator(),
+            get_final_result=get_final_result,
+        )

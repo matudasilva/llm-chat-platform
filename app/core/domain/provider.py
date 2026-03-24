@@ -1,11 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, AsyncIterator, Protocol, Sequence
+from typing import Any, AsyncIterator, Awaitable, Callable, Protocol, Sequence
 from uuid import UUID
 
 from .types import ChatMessage
-from typing import AsyncIterator
 
 
 @dataclass(frozen=True, slots=True)
@@ -17,6 +16,7 @@ class ProviderInput:
     - Must not depend on FastAPI, SQLAlchemy, or DB models.
     - Designed to be stable across provider implementations.
     """
+
     request_id: UUID
     messages: Sequence[ChatMessage]
     temperature: float | None = None
@@ -33,8 +33,8 @@ class ProviderResult:
     - It intentionally does NOT include DB foreign keys (conversation_id, message_id).
     - status is NOT a provider concern; it is a request/write-path concern.
     """
-    content: str
 
+    content: str
     provider: str
     model_version: str
     prompt_version: str
@@ -48,6 +48,32 @@ class ProviderResult:
     raw: dict[str, Any] | None = None
 
 
+@dataclass(frozen=True, slots=True)
+class ProviderStreamResult:
+    """
+    Final result of a streaming provider call.
+
+    The provider yields text incrementally during streaming and returns this
+    object once the stream is fully completed.
+    """
+
+    content: str
+    provider_result: ProviderResult
+
+
+@dataclass(frozen=True, slots=True)
+class ProviderStreamSession:
+    """
+    Streaming session returned by a provider.
+
+    chunks exposes the incremental text stream.
+    get_final_result returns the final provider metadata once streaming completes.
+    """
+
+    chunks: AsyncIterator[str]
+    get_final_result: Callable[[], Awaitable[ProviderStreamResult]]
+
+
 class ProviderPort(Protocol):
     """
     Async-first port.
@@ -55,8 +81,9 @@ class ProviderPort(Protocol):
     Providers that are sync can be wrapped later via an adapter (e.g. asyncio.to_thread),
     without contaminating the domain contract.
     """
+
     async def generate(self, input: ProviderInput) -> ProviderResult:
         ...
-        
-    def stream(self, input: ProviderInput) -> AsyncIterator[str]:
+
+    async def stream(self, input: ProviderInput) -> ProviderStreamSession:
         ...

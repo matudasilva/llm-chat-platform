@@ -66,17 +66,23 @@ async def chat(
 
             try:
                 # 1) Stream from provider (no DB, no transaction)
-                async for chunk in chat_service.stream_chat(
+                stream_session = await chat_service.stream_chat(
                     request_id=request_id,
                     messages=[ChatMessage(role="user", content=payload.message)],
-                ):
-                    chunks.append(chunk)
+                )
+
+                async for chunk in stream_session.chunks:
                     yield _sse("token", chunk)
 
-                # 2) Persist AFTER provider finishes (single atomic transaction)
-                assistant_text = "".join(chunks)
-                assistant_content_final = truncate(assistant_text, settings.max_assistant_chars)
+                stream_result = await stream_session.get_final_result()
 
+                # 2) Persist AFTER provider finishes (single atomic transaction)
+                assistant_text = stream_result.assistant_message.content
+                assistant_content_final = truncate(
+                    assistant_text,
+                    settings.max_assistant_chars,
+                    )
+                
                 user_msg_id = uuid.uuid4()
                 assistant_msg_id = uuid.uuid4()
 
@@ -116,24 +122,38 @@ async def chat(
 
                     # Usage event best-effort (success)
                     latency_ms = max(0, int((time.perf_counter() - start_stream) * 1000))
+
+                    provider_result = (
+                          stream_result.provider_result.provider_result
+                          if stream_result.provider_result is not None
+                          else None
+                      )
+
+                    def _as_int_or_zero(v: int | None) -> int:
+                          try:
+                              return max(0, int(v or 0))
+                          except Exception:
+                              return 0
+
                     try:
-                        db.add(
-                            UsageEvent(
-                                id=uuid.uuid4(),
-                                provider="stub",
-                                model_version="local",
-                                prompt_version="v0",
-                                status=ChatStatus.success.value,
-                                request_id=request_id,
-                                latency_ms=latency_ms,
-                                error_message=None,
-                                conversation_id=None,
-                                message_id=assistant_msg_id,
-                                input_tokens=0,
-                                output_tokens=0,
-                                total_tokens=0,
-                            )
-                        )
+                          db.add(
+                              UsageEvent(
+                                  id=uuid.uuid4(),
+                                  provider=provider_result.provider if provider_result else "unknown",
+                                  model_version=provider_result.model_version if provider_result else "unknown",
+                                  prompt_version=provider_result.prompt_version if provider_result else "unknown",
+                                  status=ChatStatus.success.value,
+                                  request_id=request_id,
+                                  latency_ms=latency_ms,
+                                  error_message=None,
+                                  conversation_id=None,
+                                  message_id=assistant_msg_id,
+                                  input_tokens=_as_int_or_zero(provider_result.input_tokens if provider_result else None),
+                                  output_tokens=_as_int_or_zero(provider_result.output_tokens if provider_result else None),
+                                  total_tokens=_as_int_or_zero(provider_result.total_tokens if provider_result else None),
+                              )
+                          )
+                          
                     except Exception:
                         pass
 

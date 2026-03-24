@@ -2,18 +2,30 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from typing import AsyncIterator, Sequence
+from dataclasses import dataclass
+from typing import AsyncIterator, Awaitable, Callable, Sequence
 from uuid import UUID
 
 from .types import ChatMessage
 from .chat_types import ChatServiceResult
-from .provider import ProviderInput, ProviderPort
+from .provider import ProviderInput, ProviderPort, ProviderStreamResult
 from .errors import ProviderTimeoutError, ProviderExecutionError
 from .provider_errors import ProviderError, ProviderErrorKind
 
 
 logger = logging.getLogger(__name__)
 
+@dataclass(frozen=True, slots=True)
+class StreamChatResult:
+    request_id: UUID
+    assistant_message: ChatMessage
+    provider_result: ProviderStreamResult | None
+
+
+@dataclass(frozen=True, slots=True)
+class ChatServiceStreamSession:
+    chunks: AsyncIterator[str]
+    get_final_result: Callable[[], Awaitable[StreamChatResult]]
 
 class ChatService:
     """
@@ -84,25 +96,60 @@ class ChatService:
 
     async def stream_chat(
         self, *, request_id: UUID, messages: Sequence[ChatMessage]
-    ) -> AsyncIterator[str]:
+    ) -> ChatServiceStreamSession:
         provider_in = ProviderInput(request_id=request_id, messages=messages)
 
         try:
-            stream_iter = self._provider.stream(provider_in)
+            provider_session = await self._provider.stream(provider_in)
         except AttributeError:
             result = await self.run(request_id=request_id, messages=messages)
-            yield result.assistant_message.content
-            return
 
-        if stream_iter is None:
-            result = await self.run(request_id=request_id, messages=messages)
-            yield result.assistant_message.content
-            return
+            async def fallback_chunks() -> AsyncIterator[str]:
+                yield result.assistant_message.content
 
-        try:
-            async for chunk in stream_iter:
-                yield chunk
-        except TypeError:
+            async def fallback_final_result() -> StreamChatResult:
+                return StreamChatResult(
+                    request_id=request_id,
+                    assistant_message=result.assistant_message,
+                    provider_result=None,
+                )
+
+            return ChatServiceStreamSession(
+                chunks=fallback_chunks(),
+                get_final_result=fallback_final_result,
+            )
+
+        if provider_session is None:
             result = await self.run(request_id=request_id, messages=messages)
-            yield result.assistant_message.content
-            return
+
+            async def fallback_chunks() -> AsyncIterator[str]:
+                yield result.assistant_message.content
+
+            async def fallback_final_result() -> StreamChatResult:
+                return StreamChatResult(
+                    request_id=request_id,
+                    assistant_message=result.assistant_message,
+                    provider_result=None,
+                )
+
+            return ChatServiceStreamSession(
+                chunks=fallback_chunks(),
+                get_final_result=fallback_final_result,
+            )
+
+        async def final_result() -> StreamChatResult:
+            provider_stream_result = await provider_session.get_final_result()
+            assistant = ChatMessage(
+                role="assistant",
+                content=provider_stream_result.content,
+            )
+            return StreamChatResult(
+                request_id=request_id,
+                assistant_message=assistant,
+                provider_result=provider_stream_result,
+            )
+
+        return ChatServiceStreamSession(
+            chunks=provider_session.chunks,
+            get_final_result=final_result,
+        )
