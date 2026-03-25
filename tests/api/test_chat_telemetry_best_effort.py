@@ -1,15 +1,16 @@
 from __future__ import annotations
 
 import uuid
-from typing import Any, AsyncIterator, Dict, Tuple, Type
+from typing import Any, Dict, Tuple, Type
 
-import httpx
 import pytest
 
 import app.api.routes.chat as chat_routes
-from app.infra.db.session import get_db
-from app.main import app
+from app.core.domain.chat_service import ChatService
+from app.core.domain.disabled_provider import DisabledProvider
+from app.core.providers.stub_provider import StubProvider
 from app.models.conversation import Conversation
+from app.schemas.chat import ChatRequest
 
 
 class _BeginTx:
@@ -49,12 +50,8 @@ class FakeAsyncSession:
         return None
 
 
-async def _override_get_db() -> AsyncIterator[FakeAsyncSession]:
-    yield FakeAsyncSession()
-
-
 @pytest.mark.asyncio
-async def test_chat_telemetry_failure_does_not_break_chat(client: httpx.AsyncClient, monkeypatch) -> None:
+async def test_chat_telemetry_failure_does_not_break_chat(monkeypatch) -> None:
     """
     Telemetry (UsageEvent) is best-effort.
     If telemetry fails, /chat must still succeed.
@@ -65,18 +62,42 @@ async def test_chat_telemetry_failure_does_not_break_chat(client: httpx.AsyncCli
 
     monkeypatch.setattr(chat_routes, "UsageEvent", _boom, raising=True)
 
-    # Override DB dependency to avoid real Postgres in this test.
-    app.dependency_overrides[get_db] = _override_get_db
+    response = await chat_routes.chat(
+        ChatRequest(message="hello"),
+        db=FakeAsyncSession(),
+        chat_service=ChatService(StubProvider(simulated_latency_ms=0, mode="ok"), timeout_s=1.0),
+    )
 
-    try:
-        r = await client.post("/chat", json={"message": "hello"})
-        assert r.status_code == 200
+    assert response.status == chat_routes.ChatStatus.success
+    assert response.request_id is not None
+    assert response.conversation_id is not None
+    assert response.assistant_content is not None
 
-        body = r.json()
-        assert body["status"] == "success"
-        assert body["request_id"] is not None
-        assert body["conversation_id"] is not None
-        assert body["assistant_content"] is not None
 
-    finally:
-        app.dependency_overrides.clear()
+@pytest.mark.asyncio
+async def test_chat_error_telemetry_uses_active_provider(monkeypatch) -> None:
+    """
+    When /chat fails, the error UsageEvent should reflect the configured provider.
+    """
+
+    captured: dict[str, Any] = {}
+
+    def _capture_usage_event(**kwargs):
+        captured.update(kwargs)
+        return kwargs
+
+    monkeypatch.setattr(chat_routes, "UsageEvent", _capture_usage_event, raising=True)
+
+    response = await chat_routes.chat(
+        ChatRequest(message="hello"),
+        db=FakeAsyncSession(),
+        chat_service=ChatService(
+            DisabledProvider("openai", "OPENAI_API_KEY missing"),
+            timeout_s=1.0,
+        ),
+    )
+
+    assert response.status == chat_routes.ChatStatus.error
+    assert response.error_message
+    assert captured["provider"] == "openai"
+    assert captured["provider"] != "stub"

@@ -34,6 +34,16 @@ def _sse(event: str, data: str) -> str:
 def _sse_json(event: str, payload: dict) -> str:
     return _sse(event, json.dumps(payload, separators=(",", ":")))
 
+
+def _error_provider_name(chat_service: ChatService) -> str:
+    provider = getattr(chat_service, "_provider", None)
+    for attr in ("provider", "provider_name"):
+        value = getattr(provider, attr, None)
+        if isinstance(value, str) and value:
+            return value
+    return settings.provider
+
+
 @router.post("", response_model=ChatResponse)
 async def chat(
     payload: ChatRequest,
@@ -297,7 +307,7 @@ async def chat(
                 db.add(
                     UsageEvent(
                         id=uuid.uuid4(),
-                        provider="stub",
+                        provider=_error_provider_name(chat_service),
                         model_version="local",
                         prompt_version="v0",
                         status=ChatStatus.error.value,
@@ -342,7 +352,7 @@ async def chat(
                 db.add(
                     UsageEvent(
                         id=uuid.uuid4(),
-                        provider="stub",
+                        provider=_error_provider_name(chat_service),
                         model_version="local",
                         prompt_version="v0",
                         status=ChatStatus.error.value,
