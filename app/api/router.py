@@ -3,7 +3,6 @@ from fastapi import APIRouter
 from app.api.routes.chat import router as chat_router
 from app.api.routes.conversations import router as conversations_router
 from app.api.routes.usage_events import router as usage_events_router
-from app.api.routes.chat import router as chat_router
 from app.api.routes.ui import router as ui_router
 
 api_router = APIRouter()
