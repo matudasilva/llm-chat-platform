@@ -1698,4 +1698,70 @@ Validation:
 * tests/api/test_chat_streaming.py — streaming SSE smoke test
 ----
 
+## Appendix V — Day 28 (AWS Bedrock via Existing Provider Abstraction)
+
+### V.1 Goal
+
+Introduce AWS Bedrock as the second real provider without changing:
+
+- database schema
+- `ChatService` contract
+- `/chat` request/response schema
+- streaming persistence semantics
+
+### V.2 Configuration surface
+
+- `PROVIDER=bedrock`
+- `BEDROCK_REGION` (required)
+- `BEDROCK_MODEL` (required)
+- `BEDROCK_PROMPT_VERSION` (default: `v1`)
+- `BEDROCK_MAX_ATTEMPTS`
+- `BEDROCK_BACKOFF_BASE_MS`
+- `BEDROCK_BACKOFF_MAX_MS`
+- optional explicit AWS credentials:
+  - `AWS_ACCESS_KEY_ID`
+  - `AWS_SECRET_ACCESS_KEY`
+  - `AWS_SESSION_TOKEN`
+
+### V.3 Provider normalization
+
+`BedrockProvider` preserves the existing provider boundary:
+
+- `generate()` returns a normalized `ProviderResult`
+- `stream()` returns `ProviderStreamSession`
+- output text is normalized from Bedrock content blocks
+- usage is normalized from Bedrock usage metadata
+- `model_version` is the configured Bedrock model id
+- `prompt_version` is the configured Bedrock prompt version
+
+### V.4 Error and retry boundary
+
+Bedrock-specific failures are mapped into existing provider error kinds:
+
+- auth
+- rate_limit
+- bad_request
+- timeout
+- upstream
+- unknown
+
+Retry remains adapter-local and is only applied to retryable provider failures.
+No raw AWS payloads, request bodies, or secrets are propagated upstream.
+
+### V.5 Validation
+
+Focused regression command:
+
+```bash
+.venv/bin/pytest -q tests/core/test_bedrock_provider.py tests/core/test_provider_factory.py tests/core/test_settings_provider_config.py
+```
+
+Expected:
+
+- Bedrock provider generate normalization passes
+- Bedrock provider stream normalization passes
+- Bedrock error normalization passes
+- provider factory returns `BedrockProvider` only when required config is present
+- settings validation accepts/rejects Bedrock config as documented
+
 **End of appendix — complements the live LLD document**

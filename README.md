@@ -43,7 +43,7 @@ No partial persistence is allowed.
 Providers implement an async-first contract:
 
 - `ProviderPort.generate(input: ProviderInput) -> ProviderResult`
-- `ProviderPort.stream(input: ProviderInput) -> AsyncIterator[str]` (optional; used by `/chat` when `stream=true`)
+- `ProviderPort.stream(input: ProviderInput) -> ProviderStreamSession`
 
 `ChatService` orchestrates execution but:
 
@@ -273,6 +273,16 @@ OpenAI provider knobs:
 * `OPENAI_BACKOFF_BASE_MS`
 * `OPENAI_BACKOFF_MAX_MS`
 
+Bedrock provider knobs:
+
+* `BEDROCK_REGION` (required when `PROVIDER=bedrock`)
+* `BEDROCK_MODEL` (required when `PROVIDER=bedrock`)
+* `BEDROCK_PROMPT_VERSION`
+* `BEDROCK_MAX_ATTEMPTS`
+* `BEDROCK_BACKOFF_BASE_MS`
+* `BEDROCK_BACKOFF_MAX_MS`
+* `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` / `AWS_SESSION_TOKEN` (optional; standard AWS credential resolution also applies)
+
 Provider configuration is centralized in `app/core/settings.py`.
 
 ## Migrations
@@ -343,11 +353,11 @@ It is a correctness-first backend reference system.
 
 ## Current State
 
-Day 26 — Provider configuration hardening completed.
+Day 28 — Bedrock provider integration completed.
 
 * `POST /chat` supports SSE streaming behind `stream=true`
-* Real OpenAI streaming is supported through the provider abstraction
-* OpenAI streaming is now stable in the validated runtime path
+* OpenAI and Bedrock both fit through the same provider abstraction
+* Bedrock supports `generate()` and `stream()` without changing `/chat`, `ChatService`, or the DB schema
 * Streaming SSE emits `token`, `done`, and `error` events
 * Chunk granularity depends on provider emission behavior and may arrive as a single larger `token` event
 * Streaming usage metadata is provider-driven and remains consistent when persisted
@@ -355,7 +365,7 @@ Day 26 — Provider configuration hardening completed.
 * Streaming smoke test: `tests/api/test_chat_streaming.py`
 * Provider configuration is centralized in `app/core/settings.py`
 * Provider factory no longer reads environment variables directly
-* `.env.example` reflects the validated provider configuration surface
+* Structured provider retry/error normalization remains confined to provider adapters
 
 ---
 

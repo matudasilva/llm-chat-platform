@@ -76,7 +76,7 @@ This document evolves with the codebase.
 * Minimal demo UI served at `GET /ui`
 * Read-only inspection endpoints for conversations and usage events
 * Minimal LLMOps telemetry (`usage_events`)
-* Provider abstraction with validated stub and hardened OpenAI adapter
+* Provider abstraction with validated stub plus hardened OpenAI and Bedrock adapters
 
 ### Out-of-scope (explicit non-goals as of Day 25)
 
@@ -103,7 +103,7 @@ This document evolves with the codebase.
 * API layer (FastAPI routers) — request validation, HTTP semantics, streaming SSE
 * Domain layer — `ChatService` orchestration and provider contract
 * Infrastructure layer — SQLAlchemy async session lifecycle, persistence wiring, and DB models
-* Provider layer — validated stub provider and hardened OpenAI adapter
+* Provider layer — validated stub provider plus hardened OpenAI and Bedrock adapters
 * Observability layer — HTTP structured logs, provider structured logs, usage telemetry
 
 #### Request correlation
@@ -238,6 +238,13 @@ docs/
 * PROVIDER_TIMEOUT_S: provider execution timeout
 * OPENAI_API_KEY: required when PROVIDER=openai
 * OPENAI_MODEL: OpenAI model selection
+* BEDROCK_REGION: required when PROVIDER=bedrock
+* BEDROCK_MODEL: required when PROVIDER=bedrock
+* BEDROCK_PROMPT_VERSION: normalized prompt version for Bedrock metadata
+* BEDROCK_MAX_ATTEMPTS: Bedrock retry cap
+* BEDROCK_BACKOFF_BASE_MS: Bedrock retry base delay
+* BEDROCK_BACKOFF_MAX_MS: Bedrock retry max delay
+* AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_SESSION_TOKEN: optional explicit AWS credentials
 * STUB_PROVIDER_MODE: ok|error
 * STUB_SIMULATED_LATENCY_MS: deterministic stub latency
 
@@ -1315,6 +1322,31 @@ Day 24 → resilience + structured logging
 The Provider layer now acts as a hardened isolation boundary
 between external LLM APIs and core application logic.
 
+## Addendum — Day 28: Bedrock as Second Real Provider
+
+### Scope
+
+Day 28 validates provider extensibility by introducing AWS Bedrock through the existing provider abstraction,
+without modifying the database schema, `ChatService` contract, or `/chat` request/response schemas.
+
+### Changes
+
+* `PROVIDER=bedrock` is wired through `build_provider(...)`
+* `BedrockProvider.generate(...)` returns normalized `ProviderResult`
+* `BedrockProvider.stream(...)` returns `ProviderStreamSession`
+* Bedrock usage is normalized into `input_tokens`, `output_tokens`, `total_tokens`
+* `model_version` is derived from configured `BEDROCK_MODEL`
+* `prompt_version` is derived from configured `BEDROCK_PROMPT_VERSION`
+* Bedrock errors are normalized into existing `ProviderErrorKind` values
+* Structured provider logging remains safe and provider-local
+
+### Preserved invariants
+
+* No provider-specific logic leaked into domain or route layers
+* Streaming persistence still occurs after provider completion in one DB transaction
+* `/chat` and `UsageEvent` contracts remain unchanged
+* Retry behavior remains adapter-local and constrained to retryable provider failures
+
 ## Addendum — Day 25: Streaming SSE + Minimal UI
 
 ### Scope
@@ -1354,5 +1386,5 @@ This separation is intentional to keep the core LLD focused on architecture and 
 while allowing the appendix to evolve with operational learnings and real-world failures.
 
 
-**This document reflects the state of the system up to Day 25.**
+**This document reflects the state of the system up to Day 28.**
 **Execution-level details and debugging notes are tracked in the Appendix.**
