@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from app.core.domain.provider import ProviderPort
 from app.core.domain.disabled_provider import DisabledProvider
+from app.core.providers.bedrock_provider import BedrockProvider, BedrockProviderConfig
 from app.core.providers.stub_provider import StubProvider
 from app.core.providers.openai_provider import OpenAIProvider, OpenAIProviderConfig
 from app.core.settings import settings
@@ -32,6 +33,23 @@ def build_provider(_settings=None) -> ProviderPort:
         return OpenAIProvider(openai_cfg)
 
     if provider == "bedrock":
-        return DisabledProvider("bedrock", "not implemented yet")
+        if not cfg.bedrock_region:
+            return DisabledProvider("bedrock", "BEDROCK_REGION missing")
+        if not cfg.bedrock_model:
+            return DisabledProvider("bedrock", "BEDROCK_MODEL missing")
+
+        bedrock_cfg = BedrockProviderConfig(
+            region=cfg.bedrock_region,
+            model=cfg.bedrock_model,
+            prompt_version=cfg.bedrock_prompt_version,
+            timeout_s=cfg.provider_timeout_s,
+            max_attempts=cfg.bedrock_max_attempts,
+            backoff_base_ms=cfg.bedrock_backoff_base_ms,
+            backoff_max_ms=cfg.bedrock_backoff_max_ms,
+            aws_access_key_id=cfg.aws_access_key_id,
+            aws_secret_access_key=cfg.aws_secret_access_key,
+            aws_session_token=cfg.aws_session_token,
+        )
+        return BedrockProvider(bedrock_cfg)
 
     raise ValueError(f"Unsupported provider: {provider}")

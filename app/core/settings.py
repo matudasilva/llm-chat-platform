@@ -35,6 +35,17 @@ class Settings(BaseSettings):
     openai_backoff_base_ms: int = 200
     openai_backoff_max_ms: int = 2000
 
+    bedrock_region: str | None = None
+    bedrock_model: str | None = None
+    bedrock_prompt_version: str = "v1"
+    bedrock_max_attempts: int = 3
+    bedrock_backoff_base_ms: int = 200
+    bedrock_backoff_max_ms: int = 2000
+
+    aws_access_key_id: str | None = None
+    aws_secret_access_key: str | None = None
+    aws_session_token: str | None = None
+
     # Redis
     redis_host: str = "redis"
     redis_port: int = 6379
@@ -83,25 +94,25 @@ class Settings(BaseSettings):
             raise ValueError("stub_simulated_latency_ms must be >= 0")
         return value
 
-    @field_validator("openai_max_attempts")
+    @field_validator("openai_max_attempts", "bedrock_max_attempts")
     @classmethod
-    def validate_openai_max_attempts(cls, value: int) -> int:
+    def validate_provider_max_attempts(cls, value: int) -> int:
         if value < 1:
-            raise ValueError("openai_max_attempts must be >= 1")
+            raise ValueError("provider max attempts must be >= 1")
         return value
 
-    @field_validator("openai_backoff_base_ms")
+    @field_validator("openai_backoff_base_ms", "bedrock_backoff_base_ms")
     @classmethod
-    def validate_openai_backoff_base_ms(cls, value: int) -> int:
+    def validate_provider_backoff_base_ms(cls, value: int) -> int:
         if value < 0:
-            raise ValueError("openai_backoff_base_ms must be >= 0")
+            raise ValueError("provider backoff base ms must be >= 0")
         return value
 
-    @field_validator("openai_backoff_max_ms")
+    @field_validator("openai_backoff_max_ms", "bedrock_backoff_max_ms")
     @classmethod
-    def validate_openai_backoff_max_ms(cls, value: int) -> int:
+    def validate_provider_backoff_max_ms(cls, value: int) -> int:
         if value < 0:
-            raise ValueError("openai_backoff_max_ms must be >= 0")
+            raise ValueError("provider backoff max ms must be >= 0")
         return value
 
     @field_validator("max_request_bytes", "max_message_chars", "max_assistant_chars", "max_error_message_chars")
@@ -115,6 +126,8 @@ class Settings(BaseSettings):
     def validate_backoff_relationship(self) -> "Settings":
         if self.openai_backoff_max_ms < self.openai_backoff_base_ms:
             raise ValueError("openai_backoff_max_ms must be >= openai_backoff_base_ms")
+        if self.bedrock_backoff_max_ms < self.bedrock_backoff_base_ms:
+            raise ValueError("bedrock_backoff_max_ms must be >= bedrock_backoff_base_ms")
         return self
 
     @property
