@@ -885,15 +885,15 @@ test suite passes (warnings allowed)
 ```bash
 - `....................... [100%]`
 app/infra/schemas/conversations.py:8
-  /home/matias/Cursor/llm-chat-platform/app/infra/schemas/conversations.py:8: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+  /home/<redacted>/Cursor/llm-chat-platform/app/infra/schemas/conversations.py:8: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
     class ConversationSummary(BaseModel):
 
 app/infra/schemas/conversations.py:18
-  /home/matias/Cursor/llm-chat-platform/app/infra/schemas/conversations.py:18: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+  /home/<redacted>/Cursor/llm-chat-platform/app/infra/schemas/conversations.py:18: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
     class MessageOut(BaseModel):
 
 app/main.py:65
-  /home/matias/Cursor/llm-chat-platform/app/main.py:65: DeprecationWarning: 
+  /home/<redacted>/Cursor/llm-chat-platform/app/main.py:65: DeprecationWarning: 
           on_event is deprecated, use lifespan event handlers instead.
   
           Read more about it in the
@@ -902,7 +902,7 @@ app/main.py:65
     @app.on_event("startup")
 
 .venv/lib/python3.13/site-packages/fastapi/applications.py:4576
-  /home/matias/Cursor/llm-chat-platform/.venv/lib/python3.13/site-packages/fastapi/applications.py:4576: DeprecationWarning: 
+  /home/<redacted>/Cursor/llm-chat-platform/.venv/lib/python3.13/site-packages/fastapi/applications.py:4576: DeprecationWarning: 
           on_event is deprecated, use lifespan event handlers instead.
   
           Read more about it in the
