@@ -1,0 +1,10 @@
+repos:
+  - repo: local
+    hooks:
+      - id: guardrails-scan
+        name: guardrails-scan
+        entry: python -m app.scripts.guardrails_scan
+        language: system
+        pass_filenames: true
+        types_or:
+          - text
