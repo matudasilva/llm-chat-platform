@@ -1689,6 +1689,8 @@ Resolution:
 Validation:
 
 - run the `curl -N` streaming test and confirm that `event: token` is emitted before `event: done`
+- provider-to-provider fallback is valid only before the first emitted token
+- once any token has been emitted, the stream must terminate with `event:error` instead of switching providers
 
 ### U.6 Artifacts / files
 
@@ -1763,5 +1765,57 @@ Expected:
 - Bedrock error normalization passes
 - provider factory returns `BedrockProvider` only when required config is present
 - settings validation accepts/rejects Bedrock config as documented
+
+## Appendix W — Day 29 (Minimal Provider Resilience Layer)
+
+### W.1 Goal
+
+Add a minimal provider resilience layer for MVP hardening without changing:
+
+- database schema
+- `/chat` request/response contract
+- `ChatService` provider abstraction
+- streaming persistence semantics
+
+### W.2 Configuration surface
+
+- `PRIMARY_PROVIDER=stub|openai|bedrock`
+- `FALLBACK_PROVIDER=stub|openai|bedrock`
+- `PRIMARY_PROVIDER` takes precedence over `provider`
+- `FALLBACK_PROVIDER` takes precedence over `fallback_provider`
+
+### W.3 Retry and fallback boundary
+
+- retry remains confined to provider execution
+- retry applies only to transient normalized failures:
+  - `rate_limit`
+  - `upstream`
+  - `timeout`
+- auth and invalid-request failures are not retried and do not trigger fallback
+- fallback is single-hop only:
+  - primary provider -> fallback provider
+
+### W.4 Streaming constraint
+
+- fallback is allowed only if the active provider fails before the first emitted token
+- after any token has been emitted, fallback is not allowed
+- after partial emission, the stream must terminate with `event:error`
+
+### W.5 Validation
+
+Focused regression command:
+
+```bash
+.venv/bin/pytest -q tests/core/test_resilient_provider.py tests/core/test_provider_factory.py tests/core/test_settings_provider_config.py tests/core/test_bedrock_provider.py tests/core/test_retry.py tests/core/test_openai_provider_retry.py tests/core/test_chat_service_contract.py tests/api/test_chat_streaming.py
+```
+
+Expected:
+
+- retry coverage passes for transient provider failures
+- fallback coverage passes for retryable exhaustion
+- non-retryable failures do not trigger fallback
+- streaming fallback occurs only before first token
+- partial stream failures propagate terminal error without fallback
+- settings precedence matches documented primary/fallback behavior
 
 **End of appendix — complements the live LLD document**

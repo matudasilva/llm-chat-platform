@@ -61,6 +61,7 @@ Features:
 
 * Controlled retry with exponential backoff
 * Retry only for transient failures (429, 5xx, timeout)
+* Optional single-hop fallback between configured providers
 * No retry for auth or client errors
 * Full HTTP + transport error normalization into `ProviderError`
 * Structured provider logging events:
@@ -76,6 +77,9 @@ Guarantees:
 * No raw provider payloads propagated
 * No message content logged
 * No changes to `/chat` contract
+* Fallback remains provider-local and invisible to `ChatService`
+* Streaming fallback is allowed only before the first emitted token
+* No provider fallback occurs after partial stream emission
 
 ---
 
@@ -258,6 +262,8 @@ Then open: http://<IP>:8000/ui
 Provider selection:
 
 * `PROVIDER=stub|openai|bedrock`
+* `PRIMARY_PROVIDER=stub|openai|bedrock` (overrides `PROVIDER` / `provider`)
+* `FALLBACK_PROVIDER=stub|openai|bedrock` (overrides `fallback_provider`)
 
 Stub provider knobs:
 
@@ -284,6 +290,7 @@ Bedrock provider knobs:
 * `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` / `AWS_SESSION_TOKEN` (optional; standard AWS credential resolution also applies)
 
 Provider configuration is centralized in `app/core/settings.py`.
+Primary/fallback precedence is handled in settings validation and consumed by the provider factory.
 
 ## Migrations
 
@@ -353,16 +360,20 @@ It is a correctness-first backend reference system.
 
 ## Current State
 
-Day 28 — Bedrock provider integration completed.
+Day 29 — MVP hardening for minimal provider resilience completed.
 
 * `POST /chat` supports SSE streaming behind `stream=true`
 * OpenAI and Bedrock both fit through the same provider abstraction
 * Bedrock supports `generate()` and `stream()` without changing `/chat`, `ChatService`, or the DB schema
+* A minimal resilience wrapper at the `ProviderPort` boundary supports transient retry + single-hop fallback
+* Fallback is config-driven through `PRIMARY_PROVIDER` / `FALLBACK_PROVIDER`
 * Streaming SSE emits `token`, `done`, and `error` events
 * Chunk granularity depends on provider emission behavior and may arrive as a single larger `token` event
 * Streaming usage metadata is provider-driven and remains consistent when persisted
+* Provider-to-provider fallback is allowed only before the first emitted token
+* No fallback occurs after partial stream emission; the stream terminates with error
 * Minimal demo UI at `GET /ui` (single static HTML)
-* Streaming smoke test: `tests/api/test_chat_streaming.py`
+* Focused tests cover retry, fallback, streaming fallback boundaries, and config precedence
 * Provider configuration is centralized in `app/core/settings.py`
 * Provider factory no longer reads environment variables directly
 * Structured provider retry/error normalization remains confined to provider adapters

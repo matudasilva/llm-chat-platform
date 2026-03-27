@@ -235,6 +235,8 @@ docs/
 * DATABASE_URL: postgresql+asyncpg://...
 + REDIS_URL: redis://... (reserved)
 * PROVIDER: stub|openai|bedrock
+* PRIMARY_PROVIDER: optional primary provider override; takes precedence over `PROVIDER`
+* FALLBACK_PROVIDER: optional single-hop fallback provider override; takes precedence over `fallback_provider`
 * PROVIDER_TIMEOUT_S: provider execution timeout
 * OPENAI_API_KEY: required when PROVIDER=openai
 * OPENAI_MODEL: OpenAI model selection
@@ -668,6 +670,8 @@ Downstream layers do not reconstruct these values.
 
 Streaming fallback is only valid when a provider does not implement `stream()`.
 If a provider exposes streaming, `ProviderStreamSession` is authoritative and provider errors must propagate through the streaming path instead of falling back to non-stream execution.
+Provider-to-provider fallback is allowed only before the first emitted token.
+Once any stream chunk has been emitted, fallback is no longer allowed and the stream must terminate with error.
 
 Streaming chunk size is not guaranteed and depends on upstream provider emission behavior.
 
@@ -1346,6 +1350,41 @@ without modifying the database schema, `ChatService` contract, or `/chat` reques
 * Streaming persistence still occurs after provider completion in one DB transaction
 * `/chat` and `UsageEvent` contracts remain unchanged
 * Retry behavior remains adapter-local and constrained to retryable provider failures
+
+## Addendum — Day 29: Minimal Provider Resilience Layer
+
+### Scope
+
+Day 29 hardens provider execution with a minimal resilience layer, without changing the database schema,
+`/chat` contract, `ChatService` abstraction, or streaming persistence semantics.
+
+### Changes
+
+* Retry remains provider-local and is applied only to transient normalized failures
+* A minimal `ProviderPort` wrapper adds single-hop fallback between configured providers
+* Primary/fallback selection is configuration-driven through `PRIMARY_PROVIDER` / `FALLBACK_PROVIDER`
+* `PRIMARY_PROVIDER` takes precedence over `provider`
+* `FALLBACK_PROVIDER` takes precedence over `fallback_provider`
+* Streaming fallback is allowed only before the first emitted token
+* No fallback occurs after partial stream emission; the stream propagates an error instead
+
+### Preserved invariants
+
+* `ChatService` remains provider-agnostic
+* Provider-specific resilience logic remains outside routes and domain orchestration
+* Persistence remains single-write only after provider completion in stream mode
+* No new provider error kinds were introduced
+
+### Validation
+
+Focused tests cover:
+
+* retry behavior for transient provider failures
+* fallback after retryable failure exhaustion
+* no fallback for non-retryable failures
+* fallback before first stream token only
+* terminal error propagation after partial stream emission
+* configuration precedence for primary/fallback selection
 
 ## Addendum — Day 25: Streaming SSE + Minimal UI
 
