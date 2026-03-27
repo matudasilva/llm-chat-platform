@@ -183,7 +183,10 @@ class BedrockProvider(ProviderPort):
                     "timeout_s": self._cfg.timeout_s,
                 },
             )
-            response = client.converse_stream(**payload)
+            try:
+                response = client.converse_stream(**payload)
+            except Exception as exc:
+                raise _map_bedrock_exc(exc) from exc
             logger.info(
                 "provider.response",
                 extra={
@@ -708,6 +711,17 @@ def _map_bedrock_exc(exc: Exception) -> ProviderError:
     if isinstance(exc, TimeoutError):
         return _provider_error_from_code(code="TimeoutError", message=None, http_status=http_status)
     if isinstance(exc, ConnectionError):
+        return ProviderError(
+            kind=ProviderErrorKind.upstream,
+            message="provider upstream error",
+            provider="bedrock",
+            http_status=http_status,
+            retryable=True,
+        )
+    exc_name = type(exc).__name__.lower()
+    if "timeout" in exc_name:
+        return _provider_error_from_code(code="TimeoutError", message=None, http_status=http_status)
+    if "connection" in exc_name or "endpoint" in exc_name:
         return ProviderError(
             kind=ProviderErrorKind.upstream,
             message="provider upstream error",

@@ -6,6 +6,7 @@ from app.core.settings import Settings
 def test_settings_accept_valid_provider_config() -> None:
     settings = Settings(
         provider="stub",
+        fallback_provider="openai",
         provider_timeout_s=30.0,
         stub_provider_mode="ok",
         stub_simulated_latency_ms=0,
@@ -15,12 +16,36 @@ def test_settings_accept_valid_provider_config() -> None:
     )
 
     assert settings.provider == "stub"
+    assert settings.fallback_provider == "openai"
     assert settings.provider_timeout_s == 30.0
 
 
 def test_settings_reject_invalid_provider() -> None:
     with pytest.raises(ValueError, match="provider must be one of"):
         Settings(provider="invalid-provider")
+
+
+def test_settings_accept_primary_provider_alias() -> None:
+    settings = Settings(PRIMARY_PROVIDER="bedrock")
+
+    assert settings.provider == "bedrock"
+
+
+def test_settings_primary_provider_alias_takes_precedence() -> None:
+    settings = Settings(provider="stub", PRIMARY_PROVIDER="bedrock")
+
+    assert settings.provider == "bedrock"
+
+
+def test_settings_fallback_provider_alias_takes_precedence() -> None:
+    settings = Settings(
+        provider="stub",
+        fallback_provider="openai",
+        FALLBACK_PROVIDER="bedrock",
+    )
+
+    assert settings.provider == "stub"
+    assert settings.fallback_provider == "bedrock"
 
 
 def test_settings_reject_invalid_stub_mode() -> None:

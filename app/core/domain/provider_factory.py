@@ -3,6 +3,7 @@ from __future__ import annotations
 from app.core.domain.provider import ProviderPort
 from app.core.domain.disabled_provider import DisabledProvider
 from app.core.providers.bedrock_provider import BedrockProvider, BedrockProviderConfig
+from app.core.providers.resilient_provider import ResilientProvider
 from app.core.providers.stub_provider import StubProvider
 from app.core.providers.openai_provider import OpenAIProvider, OpenAIProviderConfig
 from app.core.settings import settings
@@ -10,8 +11,22 @@ from app.core.settings import settings
 
 def build_provider(_settings=None) -> ProviderPort:
     cfg = _settings or settings
-    provider = cfg.provider.lower()
+    primary_name = cfg.provider.lower()
+    primary = _build_single_provider(primary_name, cfg)
 
+    fallback_name = getattr(cfg, "fallback_provider", None)
+    if not isinstance(fallback_name, str) or not fallback_name.strip():
+        return primary
+
+    fallback_name = fallback_name.lower()
+    if fallback_name == primary_name:
+        return primary
+
+    fallback = _build_single_provider(fallback_name, cfg)
+    return ResilientProvider(primary=primary, fallback=fallback)
+
+
+def _build_single_provider(provider: str, cfg) -> ProviderPort:
     if provider == "stub":
         return StubProvider(
             mode=cfg.stub_provider_mode,

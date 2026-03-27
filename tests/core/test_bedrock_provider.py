@@ -25,6 +25,10 @@ class _FakeBedrockException(Exception):
         }
 
 
+class _FakeBedrockConnectTimeoutError(Exception):
+    pass
+
+
 @dataclass
 class _FakeBedrockClient:
     converse_responses: list[object] | None = None
@@ -203,3 +207,17 @@ async def test_bedrock_provider_maps_generate_and_stream_errors() -> None:
 
     assert stream_exc.value.kind == ProviderErrorKind.rate_limit
     assert stream_exc.value.error_code == "throttlingException"
+
+
+@pytest.mark.asyncio
+async def test_bedrock_provider_normalizes_stream_startup_timeout_for_runtime_client() -> None:
+    client = _FakeBedrockClient(
+        converse_stream_response=_FakeBedrockConnectTimeoutError("timed out"),
+    )
+    provider = BedrockProvider(_provider(), runtime_client=client)
+
+    with pytest.raises(ProviderError) as exc:
+        await provider.stream(_provider_input())
+
+    assert exc.value.kind == ProviderErrorKind.timeout
+    assert exc.value.retryable is True

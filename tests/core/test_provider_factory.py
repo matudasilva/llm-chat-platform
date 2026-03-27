@@ -6,6 +6,7 @@ from app.core.domain.disabled_provider import DisabledProvider
 from app.core.providers.openai_provider import OpenAIProvider
 from app.core.providers.bedrock_provider import BedrockProvider
 from app.core.domain.provider_factory import build_provider
+from app.core.providers.resilient_provider import ResilientProvider
 from app.core.providers.stub_provider import StubProvider
 
 
@@ -13,6 +14,7 @@ def make_settings(**overrides):
     base = {
         "provider": "stub",
         "provider_timeout_s": 30.0,
+        "fallback_provider": None,
         "stub_provider_mode": "ok",
         "stub_simulated_latency_ms": 0,
         "openai_api_key": None,
@@ -110,6 +112,18 @@ def test_build_provider_returns_disabled_bedrock_when_model_is_missing() -> None
     provider = build_provider(cfg)
 
     assert isinstance(provider, DisabledProvider)
+
+
+def test_build_provider_wraps_primary_when_fallback_is_configured() -> None:
+    cfg = make_settings(
+        provider="bedrock",
+        fallback_provider="openai",
+        openai_api_key="test-key",
+    )
+
+    provider = build_provider(cfg)
+
+    assert isinstance(provider, ResilientProvider)
 
 
 def test_build_provider_raises_for_unknown_provider() -> None:

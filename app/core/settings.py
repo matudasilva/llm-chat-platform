@@ -1,5 +1,5 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import AliasChoices, BaseModel, Field, field_validator, model_validator
 
 
 class TokenRates(BaseModel):
@@ -23,7 +23,8 @@ class Settings(BaseSettings):
     postgres_password: str = "__CHANGEME__"
 
     # Providers
-    provider: str = "stub"
+    provider: str = Field(default="stub", validation_alias=AliasChoices("PRIMARY_PROVIDER", "PROVIDER", "provider"))
+    fallback_provider: str | None = Field(default=None, validation_alias=AliasChoices("FALLBACK_PROVIDER", "fallback_provider"))
     provider_timeout_s: float = 30.0
 
     stub_provider_mode: str = "ok"
@@ -64,9 +65,11 @@ class Settings(BaseSettings):
         "stub": TokenRates(input_per_1k=0.0, output_per_1k=0.0),
     }
 
-    @field_validator("provider")
+    @field_validator("provider", "fallback_provider")
     @classmethod
-    def validate_provider(cls, value: str) -> str:
+    def validate_provider(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
         allowed = {"stub", "openai", "bedrock"}
         if value not in allowed:
             raise ValueError(f"provider must be one of: {sorted(allowed)}")
