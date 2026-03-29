@@ -1,0 +1,18 @@
+flowchart TD
+    CS["Chat Service"]
+    PF["Provider Factory"]
+    PC["Provider Contract<br/>ProviderPort"]
+
+    subgraph PROVIDERS["Concrete Providers"]
+        OP["OpenAI Provider"]
+        BP["Bedrock Provider"]
+        SP["Stub Provider"]
+    end
+
+    CS -->|uses| PF
+    CS -->|depends on| PC
+    PF -->|resolves| PC
+
+    OP -.implements .-> PC
+    BP -.implements .-> PC
+    SP -.implements .-> PC

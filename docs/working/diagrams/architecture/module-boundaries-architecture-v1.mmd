@@ -1,0 +1,36 @@
+flowchart TD
+    subgraph API["api"]
+        ROUTES["routes"]
+        SCHEMAS["schemas"]
+    end
+
+    subgraph DOMAIN["core/domain"]
+        CS["Chat Service"]
+        PF["Provider Factory"]
+        PC["Provider Contract"]
+    end
+
+    subgraph PROVIDERS["core/providers"]
+        CP["Concrete Providers"]
+    end
+
+    subgraph SERVICES["services"]
+        AS["Application Services"]
+    end
+
+    subgraph INFRA["infra"]
+        DB["DB / Redis / infra schemas"]
+    end
+
+    subgraph MODELS["models"]
+        M["Persistence Models"]
+    end
+
+    ROUTES --> CS
+    ROUTES --> AS
+    SCHEMAS --> ROUTES
+    CS --> PF
+    CS --> PC
+    PF --> CP
+    AS --> DB
+    DB --> M

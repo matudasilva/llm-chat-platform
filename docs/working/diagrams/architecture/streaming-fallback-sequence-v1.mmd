@@ -1,0 +1,42 @@
+sequenceDiagram
+    autonumber
+    actor U as User
+    participant API as /chat
+    participant CS as Chat Service
+    participant P1 as Primary Provider
+    participant P2 as Fallback Provider
+    participant DB as PostgreSQL
+
+    U->>API: POST /chat?stream=true
+    API->>CS: stream_chat(request)
+    CS->>P1: start stream
+
+    alt Primary provider does not support streaming
+        CS->>P2: fallback before first token
+        P2-->>CS: stream session
+        loop token events
+            CS-->>API: event: token
+            API-->>U: event: token
+        end
+        P2-->>CS: final result
+        CS->>DB: persist messages + usage
+        DB-->>CS: committed
+        CS-->>API: event: done
+        API-->>U: event: done
+    else Primary provider streams successfully
+        P1-->>CS: stream session
+        loop token events
+            CS-->>API: event: token
+            API-->>U: event: token
+        end
+        P1-->>CS: final result
+        CS->>DB: persist messages + usage
+        DB-->>CS: committed
+        CS-->>API: event: done
+        API-->>U: event: done
+    else Error after partial stream emission
+        P1-->>CS: streaming error
+        Note over CS,P2: No fallback allowed after first emitted token
+        CS-->>API: event: error
+        API-->>U: event: error
+    end

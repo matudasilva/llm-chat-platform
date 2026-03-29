@@ -1,0 +1,17 @@
+flowchart TD
+    U["User"] ==> API["/chat"]
+
+    subgraph APP["Application Flow"]
+        API ==> CS["Chat Service<br/>orchestrates chat request"]
+        CS ==> RL["Routing Layer<br/>selects provider path"]
+        RL ==> PF["Provider Factory<br/>resolves LLM provider"]
+        PF ==> LP["LLM Provider"]
+    end
+
+    subgraph STATE["Persistence and Cache"]
+        PG[("PostgreSQL")]
+        RD[("Redis")]
+    end
+
+    CS -->|persist / load chat data| PG
+    CS -->|cache / ephemeral state| RD

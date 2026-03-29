@@ -1,0 +1,8 @@
+flowchart TD
+    U["User"] --> API["/chat"]
+    API --> S["Chat Service"]
+    S --> R["Router"]
+    R --> P["Provider Factory"]
+    P --> LLM["LLM Provider"]
+    S --> DB[("PostgreSQL")]
+    S --> C[("Redis")]
