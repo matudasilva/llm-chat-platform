@@ -356,6 +356,14 @@ It is a correctness-first backend reference system.
 * `docs/lld_llm_chat_platform_live_doc.md` — live low-level design
 * `docs/lld_apendix.md` — deep technical appendices & reproducible evidence
 
+## Architecture diagram workflow
+
+Mermaid diagrams may exist under `docs/working/diagrams/` as design-time artifacts used for architectural context during implementation, refactoring, and documentation work.
+
+They are not product or runtime functionality unless explicitly stated.
+
+When architecture, request flow, provider behavior, streaming or fallback behavior, or persistence flow changes, the corresponding diagram should be reviewed and updated if needed.
+
 ---
 
 ## Current State
