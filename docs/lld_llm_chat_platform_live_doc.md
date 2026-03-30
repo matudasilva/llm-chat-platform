@@ -804,7 +804,12 @@ docker compose exec -T postgres psql -U llmchat -d llmchat -c \
   * `provider.response`
   * `provider.error`
   * `provider.total`
+  * `provider.fallback`
+  * `provider.final`
 * Logged metadata is intentionally safe and excludes user content, prompt payloads, raw provider responses, and secrets
+* Adapter-local lifecycle logs remain confined to concrete provider adapters
+* `ResilientProvider` emits the cross-provider operational summary via `provider.fallback` and `provider.final`
+* In streaming mode, `first_token_emitted` is included only in the final cross-provider summary when relevant
 
 #### Traceability
 
@@ -1385,6 +1390,46 @@ Focused tests cover:
 * fallback before first stream token only
 * terminal error propagation after partial stream emission
 * configuration precedence for primary/fallback selection
+
+## Addendum — Day 30: Provider Observability Hardening
+
+### Scope
+
+Day 30 hardens provider observability with a minimal additive scope, without changing database schema,
+`/chat`, `ChatService`, route behavior, retry semantics, or functional behavior.
+
+### Changes
+
+* Structured retry/fallback observability was extended in the provider layer
+* `ResilientProvider` now emits:
+  * `provider.fallback`
+  * `provider.final`
+* Cross-provider summaries may include:
+  * `fallback_used`
+  * `fallback_from`
+  * `fallback_to`
+  * `final_provider`
+  * `attempts_used`
+  * `failure_kind`
+  * `request_id` when already available
+  * `first_token_emitted` only in the final streaming summary
+* OpenAI and Bedrock adapter logs were enriched additively with `failure_kind`, `attempts_used`, `final_provider`, and `fallback_used=false` in adapter-local totals
+* Bedrock inline streaming now emits `provider.stream.complete` and `provider.stream.error` for parity with the main streaming path
+
+### Preserved invariants
+
+* Adapter-local lifecycle logs remain adapter-local
+* `provider.final` is the only cross-provider operational summary
+* Streaming fallback remains allowed only before the first emitted token
+* No provider-specific logic moved into `ChatService` or routes
+
+### Validation
+
+Focused Day 30 validation covered:
+
+* resilient provider observability
+* OpenAI provider logging
+* Bedrock provider logging
 
 ## Addendum — Day 25: Streaming SSE + Minimal UI
 

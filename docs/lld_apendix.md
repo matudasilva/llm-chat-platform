@@ -1818,4 +1818,59 @@ Expected:
 - partial stream failures propagate terminal error without fallback
 - settings precedence matches documented primary/fallback behavior
 
+## Appendix X — Day 30 (Provider Observability Hardening)
+
+### X.1 Goal
+
+Add minimal provider observability hardening for retry/fallback execution paths without changing:
+
+- database schema
+- `/chat`
+- `ChatService`
+- routes
+- retry semantics
+- functional behavior
+
+### X.2 Cross-provider observability
+
+`ResilientProvider` now emits:
+
+- `provider.fallback`
+- `provider.final`
+
+Cross-provider summary fields may include:
+
+- `fallback_used`
+- `fallback_from`
+- `fallback_to`
+- `final_provider`
+- `attempts_used`
+- `failure_kind`
+- `request_id` when already available
+- `first_token_emitted` only in the final streaming summary
+
+### X.3 Adapter-local enrichment
+
+OpenAI and Bedrock adapter logs were enriched additively with:
+
+- `failure_kind` alongside existing error classification
+- `attempts_used` in `provider.total`
+- `final_provider`
+- `fallback_used=false` in adapter-local totals
+
+### X.4 Bedrock streaming parity
+
+The Bedrock inline streaming path now emits:
+
+- `provider.stream.complete`
+- `provider.stream.error`
+
+### X.5 Focused validation
+
+Focused Day 30 tests covered:
+
+- resilient provider observability
+- OpenAI provider logging
+- Bedrock provider logging
+
 **End of appendix — complements the live LLD document**

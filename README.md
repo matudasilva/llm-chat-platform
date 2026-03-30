@@ -125,6 +125,8 @@ Events:
 * provider.response
 * provider.error
 * provider.total
+* provider.fallback
+* provider.final
 
 These logs include safe metadata only:
 
@@ -135,6 +137,20 @@ These logs include safe metadata only:
 - max_attempts
 - status_code
 - latency_ms
+
+Day 30 keeps `provider.request` through `provider.total` as adapter-local lifecycle events and adds
+cross-provider operational summaries in `ResilientProvider` via `provider.fallback` and `provider.final`.
+
+Additive Day 30 fields include:
+
+- attempts_used
+- failure_kind
+- final_provider
+- fallback_used
+
+`provider.total` remains adapter-local.
+`provider.final` is the cross-provider summary and may include `fallback_from`, `fallback_to`, and
+`first_token_emitted` for streaming when relevant.
 
 No user message content or secrets are logged.
 
@@ -393,6 +409,14 @@ Day 29 — MVP hardening for minimal provider resilience completed.
 * Provider configuration is centralized in `app/core/settings.py`
 * Provider factory no longer reads environment variables directly
 * Structured provider retry/error normalization remains confined to provider adapters
+
+Day 30 — Provider observability hardening completed.
+
+* Structured retry/fallback observability was extended with additive provider logging only
+* `ResilientProvider` now emits cross-provider operational summaries via `provider.fallback` and `provider.final`
+* Adapter-local totals remain distinct from cross-provider summaries
+* No behavioral, API, schema, `/chat`, `ChatService`, route, or retry-semantics changes were introduced
+* Focused Day 30 validation covered resilient provider observability plus OpenAI and Bedrock provider logging
 
 ---
 
