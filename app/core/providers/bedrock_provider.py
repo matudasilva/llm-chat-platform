@@ -60,9 +60,12 @@ class BedrockProvider(ProviderPort):
 
         try:
             start_total = time.monotonic()
+            attempts_used = 0
 
             async def _op(attempt: int) -> dict[str, Any]:
                 attempt_start = time.monotonic()
+                nonlocal attempts_used
+                attempts_used = attempt
                 logger.info(
                     "provider.request",
                     extra={
@@ -92,6 +95,7 @@ class BedrockProvider(ProviderPort):
                             "attempt": attempt,
                             "max_attempts": policy.max_attempts,
                             "error_kind": perr.kind,
+                            "failure_kind": perr.kind,
                             "status_code": perr.http_status,
                             "latency_ms": attempt_ms,
                             "retryable": perr.retryable,
@@ -141,6 +145,9 @@ class BedrockProvider(ProviderPort):
                     "request_id": request_id,
                     "messages_count": messages_count,
                     "max_attempts": policy.max_attempts,
+                    "attempts_used": attempts_used,
+                    "final_provider": "bedrock",
+                    "fallback_used": False,
                     "latency_ms": int((time.monotonic() - start_total) * 1000),
                 },
             )
@@ -186,7 +193,25 @@ class BedrockProvider(ProviderPort):
             try:
                 response = client.converse_stream(**payload)
             except Exception as exc:
-                raise _map_bedrock_exc(exc) from exc
+                perr = _map_bedrock_exc(exc)
+                logger.warning(
+                    "provider.error",
+                    extra={
+                        "event": "provider.error",
+                        "provider": "bedrock",
+                        "model": self._cfg.model,
+                        "request_id": request_id,
+                        "messages_count": messages_count,
+                        "attempt": 1,
+                        "max_attempts": 1,
+                        "error_kind": perr.kind,
+                        "failure_kind": perr.kind,
+                        "status_code": perr.http_status,
+                        "stream": True,
+                        "retryable": perr.retryable,
+                    },
+                )
+                raise perr from exc
             logger.info(
                 "provider.response",
                 extra={
@@ -206,6 +231,8 @@ class BedrockProvider(ProviderPort):
                 model=self._cfg.model,
                 prompt_version=self._cfg.prompt_version,
                 start=start,
+                request_id=request_id,
+                messages_count=messages_count,
             )
 
         try:
@@ -241,6 +268,7 @@ class BedrockProvider(ProviderPort):
                             "attempt": attempt,
                             "max_attempts": policy.max_attempts,
                             "error_kind": perr.kind,
+                            "failure_kind": perr.kind,
                             "status_code": perr.http_status,
                             "latency_ms": attempt_ms,
                             "stream": True,
@@ -494,6 +522,7 @@ def _consume_stream_sync(
                 "latency_ms": int((time.monotonic() - start) * 1000),
                 "stream": True,
                 "error_kind": getattr(error, "kind", ProviderErrorKind.unknown),
+                "failure_kind": getattr(error, "kind", ProviderErrorKind.unknown),
                 "stream_event": event_type,
                 "has_usage": isinstance(usage, dict),
             },
@@ -516,6 +545,8 @@ def _build_inline_stream_session(
     model: str,
     prompt_version: str,
     start: float,
+    request_id: Any | None = None,
+    messages_count: int | None = None,
 ) -> ProviderStreamSession:
     done = asyncio.Event()
     final_result: ProviderStreamResult | None = None
@@ -523,10 +554,12 @@ def _build_inline_stream_session(
 
     async def chunk_iterator() -> AsyncIterator[str]:
         nonlocal final_result, stream_error
+        logger = logging.getLogger(__name__)
 
         content_parts: list[str] = []
         usage: dict[str, Any] | None = None
         latency_ms: int | None = None
+        event_type: str | None = None
 
         try:
             for event in response.get("stream") or []:
@@ -534,6 +567,7 @@ def _build_inline_stream_session(
                 if maybe_error is not None:
                     raise maybe_error
 
+                event_type = next(iter(event.keys()), None)
                 delta = _extract_stream_delta(event)
                 if delta:
                     content_parts.append(delta)
@@ -560,8 +594,45 @@ def _build_inline_stream_session(
                     latency_ms=final_latency_ms,
                 ),
             )
+            logger.info(
+                "provider.stream.complete",
+                extra={
+                    "event": "provider.stream.complete",
+                    "provider": "bedrock",
+                    "model": final_result.provider_result.model_version,
+                    "request_id": request_id,
+                    "messages_count": messages_count,
+                    "latency_ms": final_latency_ms,
+                    "stream": True,
+                    "stream_event": event_type,
+                    "has_usage": any(
+                        value is not None
+                        for value in (
+                            final_result.provider_result.input_tokens,
+                            final_result.provider_result.output_tokens,
+                            final_result.provider_result.total_tokens,
+                        )
+                    ),
+                },
+            )
         except Exception as exc:
             stream_error = exc if isinstance(exc, ProviderError) else _map_bedrock_exc(exc)
+            logger.warning(
+                "provider.stream.error",
+                extra={
+                    "event": "provider.stream.error",
+                    "provider": "bedrock",
+                    "model": model,
+                    "request_id": request_id,
+                    "messages_count": messages_count,
+                    "latency_ms": int((time.monotonic() - start) * 1000),
+                    "stream": True,
+                    "error_kind": getattr(stream_error, "kind", ProviderErrorKind.unknown),
+                    "failure_kind": getattr(stream_error, "kind", ProviderErrorKind.unknown),
+                    "stream_event": event_type,
+                    "has_usage": isinstance(usage, dict),
+                },
+            )
         finally:
             done.set()
 

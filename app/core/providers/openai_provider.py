@@ -139,6 +139,7 @@ class OpenAIProvider(ProviderPort):
         try:
             provider_name = "openai"
             start_total = time.monotonic()
+            attempts_used = 0
 
             policy = RetryPolicy(
                 max_attempts=max(1, int(self._cfg.max_attempts)),
@@ -148,6 +149,8 @@ class OpenAIProvider(ProviderPort):
 
             async def _op(attempt: int) -> httpx.Response:
                 attempt_start = time.monotonic()
+                nonlocal attempts_used
+                attempts_used = attempt
 
                 logger.info(
                     "provider.request",
@@ -180,6 +183,7 @@ class OpenAIProvider(ProviderPort):
                             "attempt": attempt,
                             "max_attempts": policy.max_attempts,
                             "error_kind": perr.kind,
+                            "failure_kind": perr.kind,
                             "status_code": None,
                             "latency_ms": attempt_ms,
                             "retryable": perr.kind in (ProviderErrorKind.rate_limit, ProviderErrorKind.upstream, ProviderErrorKind.timeout),
@@ -203,6 +207,7 @@ class OpenAIProvider(ProviderPort):
                             "max_attempts": policy.max_attempts,
                             "status_code": r.status_code,
                             "error_kind": perr.kind,
+                            "failure_kind": perr.kind,
                             "latency_ms": attempt_ms,
                             "retryable": perr.kind in (
                                 ProviderErrorKind.rate_limit,
@@ -266,6 +271,9 @@ class OpenAIProvider(ProviderPort):
                     "request_id": request_id,
                     "messages_count": messages_count,
                     "max_attempts": policy.max_attempts,
+                    "attempts_used": attempts_used,
+                    "final_provider": provider_name,
+                    "fallback_used": False,
                     "latency_ms": total_ms,
                 },
             )
@@ -306,6 +314,8 @@ class OpenAIProvider(ProviderPort):
                     "model": self._cfg.model,
                     "request_id": request_id,
                     "messages_count": messages_count,
+                    "attempt": 1,
+                    "max_attempts": 1,
                     "stream": True,
                     "timeout_s": self._cfg.timeout_s,
                 },
@@ -323,8 +333,11 @@ class OpenAIProvider(ProviderPort):
                         "model": self._cfg.model,
                         "request_id": request_id,
                         "messages_count": messages_count,
+                        "attempt": 1,
+                        "max_attempts": 1,
                         "status_code": response.status_code,
                         "error_kind": perr.kind,
+                        "failure_kind": perr.kind,
                         "latency_ms": latency_ms,
                         "stream": True,
                         "retryable": perr.kind in (
@@ -344,6 +357,8 @@ class OpenAIProvider(ProviderPort):
                     "model": self._cfg.model,
                     "request_id": request_id,
                     "messages_count": messages_count,
+                    "attempt": 1,
+                    "max_attempts": 1,
                     "status_code": response.status_code,
                     "stream": True,
                 },
@@ -545,6 +560,7 @@ class OpenAIProvider(ProviderPort):
                     "latency_ms": int((time.monotonic() - start) * 1000),
                     "stream": True,
                     "error_kind": getattr(error, "kind", ProviderErrorKind.unknown),
+                    "failure_kind": getattr(error, "kind", ProviderErrorKind.unknown),
                     "stream_event": last_event_name,
                     "payload_keys": last_payload_keys,
                     "saw_response_completed": saw_response_completed,

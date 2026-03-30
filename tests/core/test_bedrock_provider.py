@@ -129,7 +129,7 @@ async def test_bedrock_provider_generate_normalizes_content_usage_and_payload() 
 
 
 @pytest.mark.asyncio
-async def test_bedrock_provider_stream_returns_session_and_final_metadata() -> None:
+async def test_bedrock_provider_stream_returns_session_and_final_metadata(caplog) -> None:
     client = _FakeBedrockClient(
         converse_stream_response={
             "stream": [
@@ -154,6 +154,7 @@ async def test_bedrock_provider_stream_returns_session_and_final_metadata() -> N
     )
     provider = BedrockProvider(_provider(), runtime_client=client)
 
+    caplog.set_level("INFO")
     session = await provider.stream(_provider_input())
 
     assert isinstance(session, ProviderStreamSession)
@@ -173,10 +174,15 @@ async def test_bedrock_provider_stream_returns_session_and_final_metadata() -> N
     assert final_result.provider_result.output_tokens == 7
     assert final_result.provider_result.total_tokens == 18
     assert final_result.provider_result.latency_ms == 33
+    complete_record = next(
+        record for record in caplog.records if getattr(record, "event", None) == "provider.stream.complete"
+    )
+    assert complete_record.provider == "bedrock"
+    assert complete_record.stream is True
 
 
 @pytest.mark.asyncio
-async def test_bedrock_provider_maps_generate_and_stream_errors() -> None:
+async def test_bedrock_provider_maps_generate_and_stream_errors(caplog) -> None:
     generate_client = _FakeBedrockClient(
         converse_responses=[
             _FakeBedrockException("AccessDeniedException", "forbidden", 403),
@@ -184,11 +190,19 @@ async def test_bedrock_provider_maps_generate_and_stream_errors() -> None:
     )
     generate_provider = BedrockProvider(_provider(), runtime_client=generate_client)
 
+    caplog.set_level("INFO")
     with pytest.raises(ProviderError) as generate_exc:
         await generate_provider.generate(_provider_input())
 
     assert generate_exc.value.kind == ProviderErrorKind.auth
     assert generate_exc.value.error_code == "AccessDeniedException"
+    generate_error_record = next(
+        record
+        for record in caplog.records
+        if getattr(record, "event", None) == "provider.error" and getattr(record, "stream", False) is False
+    )
+    assert generate_error_record.error_kind == "auth"
+    assert generate_error_record.failure_kind == "auth"
 
     stream_client = _FakeBedrockClient(
         converse_stream_response={
@@ -207,6 +221,11 @@ async def test_bedrock_provider_maps_generate_and_stream_errors() -> None:
 
     assert stream_exc.value.kind == ProviderErrorKind.rate_limit
     assert stream_exc.value.error_code == "throttlingException"
+    stream_error_record = next(
+        record for record in caplog.records if getattr(record, "event", None) == "provider.stream.error"
+    )
+    assert stream_error_record.error_kind == "rate_limit"
+    assert stream_error_record.failure_kind == "rate_limit"
 
 
 @pytest.mark.asyncio

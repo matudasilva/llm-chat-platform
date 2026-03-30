@@ -113,8 +113,36 @@ def _provider_result(*, provider: str, content: str) -> ProviderResult:
     )
 
 
+def _event_records(caplog, event: str) -> list:
+    return [record for record in caplog.records if getattr(record, "event", None) == event]
+
+
 @pytest.mark.asyncio
-async def test_resilient_provider_falls_back_after_retryable_failure_exhausts_retries() -> None:
+async def test_resilient_provider_logs_final_on_success_without_fallback(caplog) -> None:
+    primary = ScriptedProvider(
+        provider_name="bedrock",
+        generate_actions=[_provider_result(provider="bedrock", content="ok")],
+    )
+    fallback = ScriptedProvider(
+        provider_name="openai",
+        generate_actions=[_provider_result(provider="openai", content="unused")],
+    )
+    provider = ResilientProvider(primary=primary, fallback=fallback)
+
+    caplog.set_level("INFO")
+    result = await provider.generate(_provider_input())
+
+    assert result.provider == "bedrock"
+    final_record = _event_records(caplog, "provider.final")[-1]
+    assert final_record.provider == "bedrock"
+    assert final_record.final_provider == "bedrock"
+    assert final_record.fallback_used is False
+    assert final_record.attempts_used == 1
+    assert final_record.stream is False
+
+
+@pytest.mark.asyncio
+async def test_resilient_provider_falls_back_after_retryable_failure_exhausts_retries(caplog) -> None:
     primary = ScriptedProvider(
         provider_name="bedrock",
         generate_actions=[_retryable_error()],
@@ -125,16 +153,26 @@ async def test_resilient_provider_falls_back_after_retryable_failure_exhausts_re
     )
     provider = ResilientProvider(primary=primary, fallback=fallback)
 
+    caplog.set_level("INFO")
     result = await provider.generate(_provider_input())
 
     assert result.provider == "openai"
     assert result.content == "fallback ok"
     assert primary.generate_calls == 1
     assert fallback.generate_calls == 1
+    fallback_record = _event_records(caplog, "provider.fallback")[-1]
+    assert fallback_record.provider == "bedrock"
+    assert fallback_record.fallback_from == "bedrock"
+    assert fallback_record.fallback_to == "openai"
+    assert fallback_record.failure_kind == ProviderErrorKind.upstream
+    final_record = _event_records(caplog, "provider.final")[-1]
+    assert final_record.final_provider == "openai"
+    assert final_record.fallback_used is True
+    assert final_record.attempts_used == 2
 
 
 @pytest.mark.asyncio
-async def test_resilient_provider_does_not_fall_back_for_non_retryable_error() -> None:
+async def test_resilient_provider_does_not_fall_back_for_non_retryable_error(caplog) -> None:
     primary = ScriptedProvider(
         provider_name="bedrock",
         generate_actions=[_non_retryable_error()],
@@ -145,16 +183,23 @@ async def test_resilient_provider_does_not_fall_back_for_non_retryable_error() -
     )
     provider = ResilientProvider(primary=primary, fallback=fallback)
 
+    caplog.set_level("INFO")
     with pytest.raises(ProviderError) as exc:
         await provider.generate(_provider_input())
 
     assert exc.value.kind == ProviderErrorKind.auth
     assert primary.generate_calls == 1
     assert fallback.generate_calls == 0
+    assert _event_records(caplog, "provider.fallback") == []
+    final_record = _event_records(caplog, "provider.final")[-1]
+    assert final_record.final_provider == "bedrock"
+    assert final_record.fallback_used is False
+    assert final_record.attempts_used == 1
+    assert final_record.failure_kind == ProviderErrorKind.auth
 
 
 @pytest.mark.asyncio
-async def test_resilient_provider_stream_falls_back_before_first_token() -> None:
+async def test_resilient_provider_stream_falls_back_before_first_token(caplog) -> None:
     primary = ScriptedProvider(
         provider_name="bedrock",
         stream_actions=[
@@ -176,6 +221,7 @@ async def test_resilient_provider_stream_falls_back_before_first_token() -> None
     )
     provider = ResilientProvider(primary=primary, fallback=fallback)
 
+    caplog.set_level("INFO")
     session = await provider.stream(_provider_input())
     assert session is not None
 
@@ -188,10 +234,18 @@ async def test_resilient_provider_stream_falls_back_before_first_token() -> None
     assert final.provider_result.provider == "openai"
     assert primary.stream_calls == 1
     assert fallback.stream_calls == 1
+    fallback_record = _event_records(caplog, "provider.fallback")[-1]
+    assert fallback_record.stream is True
+    assert fallback_record.failure_kind == ProviderErrorKind.upstream
+    final_record = _event_records(caplog, "provider.final")[-1]
+    assert final_record.final_provider == "openai"
+    assert final_record.fallback_used is True
+    assert final_record.attempts_used == 2
+    assert final_record.first_token_emitted is False
 
 
 @pytest.mark.asyncio
-async def test_resilient_provider_stream_does_not_fall_back_after_first_token() -> None:
+async def test_resilient_provider_stream_does_not_fall_back_after_first_token(caplog) -> None:
     primary = ScriptedProvider(
         provider_name="bedrock",
         stream_actions=[
@@ -207,6 +261,7 @@ async def test_resilient_provider_stream_does_not_fall_back_after_first_token() 
     )
     provider = ResilientProvider(primary=primary, fallback=fallback)
 
+    caplog.set_level("INFO")
     session = await provider.stream(_provider_input())
     assert session is not None
 
@@ -221,3 +276,10 @@ async def test_resilient_provider_stream_does_not_fall_back_after_first_token() 
     assert exc.value.kind == ProviderErrorKind.upstream
     assert primary.stream_calls == 1
     assert fallback.stream_calls == 0
+    assert _event_records(caplog, "provider.fallback") == []
+    final_record = _event_records(caplog, "provider.final")[-1]
+    assert final_record.final_provider == "bedrock"
+    assert final_record.fallback_used is False
+    assert final_record.attempts_used == 1
+    assert final_record.failure_kind == ProviderErrorKind.upstream
+    assert final_record.first_token_emitted is True

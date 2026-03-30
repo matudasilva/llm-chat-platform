@@ -68,6 +68,10 @@ async def test_provider_logs_retry_and_response(caplog):
 
     assert any(("provider.retry" in (m or "")) for m in messages) or any(e == "provider.retry" for e in events)
     assert any(("provider.response" in (m or "")) for m in messages) or any(e == "provider.response" for e in events)
+    total_record = next(record for record in caplog.records if getattr(record, "event", None) == "provider.total")
+    assert total_record.attempts_used == 2
+    assert total_record.final_provider == "openai"
+    assert total_record.fallback_used is False
 
 
 @pytest.mark.asyncio
@@ -97,3 +101,6 @@ async def test_provider_logs_error_on_auth(caplog):
     events = [getattr(r, "event", None) for r in caplog.records]
 
     assert any(("provider.error" in (m or "")) for m in messages) or any(e == "provider.error" for e in events)
+    error_record = next(record for record in caplog.records if getattr(record, "event", None) == "provider.error")
+    assert error_record.error_kind == "auth"
+    assert error_record.failure_kind == "auth"
