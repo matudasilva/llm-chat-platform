@@ -364,6 +364,14 @@ They are not product or runtime functionality unless explicitly stated.
 
 When architecture, request flow, provider behavior, streaming or fallback behavior, or persistence flow changes, the corresponding diagram should be reviewed and updated if needed.
 
+## Local Mermaid rendering
+
+Mermaid source files under `docs/working/diagrams/` may be rendered locally into SVG artifacts for documentation and design review.
+
+Local rendering may require a user-specific `puppeteer-config.json`. The repository includes `puppeteer-config.example.json` as a template; copy it locally to `puppeteer-config.json` and adjust the browser path for your machine.
+
+`puppeteer-config.json` is intentionally ignored from version control and should remain a local-only file.
+
 ---
 
 ## Current State
