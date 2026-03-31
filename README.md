@@ -418,6 +418,12 @@ Day 30 — Provider observability hardening completed.
 * No behavioral, API, schema, `/chat`, `ChatService`, route, or retry-semantics changes were introduced
 * Focused Day 30 validation covered resilient provider observability plus OpenAI and Bedrock provider logging
 
+Day 31 — Conversation read-endpoint test reliability hardening completed.
+
+* `tests/api/test_conversations_read_endpoints.py` was stabilized with a strictly test-local change
+* The test now stubs `ConversationQueryService` instead of depending on environment-coupled DB/DNS behavior
+* No production route, domain, DB schema, provider, or streaming changes were made
+
 ---
 
 ### Read-only inspection endpoints (Day 23)

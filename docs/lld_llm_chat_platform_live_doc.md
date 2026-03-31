@@ -1431,6 +1431,16 @@ Focused Day 30 validation covered:
 * OpenAI provider logging
 * Bedrock provider logging
 
+## Addendum — Day 31: Read Endpoint Test Reliability Hardening
+
+Day 31 stabilizes `tests/api/test_conversations_read_endpoints.py` with a minimal test-local change.
+
+* Scope is limited to that test module
+* Test-local stubbing at the `ConversationQueryService` boundary removed the environment-coupled DB/DNS dependency from the test
+* No production code, route, domain, DB schema, provider, or streaming behavior changed
+* `./.venv/bin/pytest -q tests/api/test_conversations_read_endpoints.py` passed
+* `./.venv/bin/pytest -q tests/api` was attempted, but did not complete within the observed timeout window
+
 ## Addendum — Day 25: Streaming SSE + Minimal UI
 
 ### Scope

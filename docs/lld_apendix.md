@@ -1873,4 +1873,41 @@ Focused Day 30 tests covered:
 - OpenAI provider logging
 - Bedrock provider logging
 
+## Appendix Y — Day 31 (Conversation Read Endpoint Test Reliability)
+
+### Y.1 Goal
+
+- stabilize read-endpoint test reliability
+- remove environment-coupled DB/DNS dependency from the affected test module
+
+### Y.2 Scope
+
+- only `tests/api/test_conversations_read_endpoints.py`
+- test-local stubbing at the `ConversationQueryService` boundary
+- no production code changes
+
+### Y.3 Files changed
+
+- `tests/api/test_conversations_read_endpoints.py`
+
+### Y.4 Validation
+
+Commands:
+
+- `./.venv/bin/pytest -q tests/api/test_conversations_read_endpoints.py`
+- `./.venv/bin/pytest -q tests/api`
+
+Results:
+
+- focused module passed
+- broader API run did not complete within the observed timeout window
+
+### Y.5 Invariants preserved
+
+- no route changes
+- no domain changes
+- no DB schema changes
+- no provider changes
+- no streaming changes
+
 **End of appendix — complements the live LLD document**
