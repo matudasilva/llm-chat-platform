@@ -327,6 +327,26 @@ Canonical green command:
 docker compose -f docker-compose.dev.yml run --rm -e PROVIDER=stub api python -m pytest -q
 ```
 
+Minimal CI baseline (Day 32):
+
+* GitHub Actions workflow: `.github/workflows/ci.yml`
+* Narrowed deterministic pytest baseline:
+
+```bash
+python -m pytest -q \
+  tests/core \
+  tests/api/test_health_readyz.py \
+  tests/api/test_request_ids.py \
+  tests/api/test_request_size_limit.py \
+  tests/api/test_structured_logging.py
+```
+
+* Default Docker build validation:
+
+```bash
+docker build -t llm-chat-platform:ci .
+```
+
 Current coverage includes:
 
 * `/chat` non-stream regression
@@ -423,6 +443,12 @@ Day 31 — Conversation read-endpoint test reliability hardening completed.
 * `tests/api/test_conversations_read_endpoints.py` was stabilized with a strictly test-local change
 * The test now stubs `ConversationQueryService` instead of depending on environment-coupled DB/DNS behavior
 * No production route, domain, DB schema, provider, or streaming changes were made
+
+Day 32 — Minimal CI baseline added.
+
+* `.github/workflows/ci.yml` introduces a single `validate` job for push and pull request events
+* CI installs runtime and dev test dependencies, runs a narrowed deterministic pytest baseline, and validates the default Docker build path
+* No production code, Dockerfile, Makefile, runtime, provider, `/chat`, `ChatService`, DB schema, persistence, streaming, or telemetry behavior changed
 
 ---
 

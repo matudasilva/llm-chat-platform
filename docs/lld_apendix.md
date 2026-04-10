@@ -1910,4 +1910,35 @@ Results:
 - no provider changes
 - no streaming changes
 
+## Appendix Z — Day 32 (Minimal CI Baseline)
+
+### Z.1 Goal
+
+- add a minimal pre-merge and push quality signal
+- validate a narrowed deterministic pytest baseline
+- validate the default Docker image build path
+
+### Z.2 Scope
+
+- only `.github/workflows/ci.yml`
+- no production code changes
+- no Dockerfile changes
+- no Makefile changes
+
+### Z.3 Commands encoded in CI
+
+- `python -m pip install --upgrade pip`
+- `python -m pip install -r app/requirements.txt -r app/requirements-dev.txt`
+- `python -m pytest -q tests/core tests/api/test_health_readyz.py tests/api/test_request_ids.py tests/api/test_request_size_limit.py tests/api/test_structured_logging.py`
+- `docker build -t llm-chat-platform:ci .`
+
+### Z.4 Invariants preserved
+
+- no runtime architecture changes
+- no provider changes
+- no `/chat` changes
+- no `ChatService` changes
+- no DB schema or migration changes
+- no persistence, streaming, or telemetry behavior changes
+
 **End of appendix — complements the live LLD document**

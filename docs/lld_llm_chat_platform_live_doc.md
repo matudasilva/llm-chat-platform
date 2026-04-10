@@ -782,6 +782,29 @@ docker compose exec -T postgres psql -U llmchat -d llmchat -c \
 "select provider, status, conversation_id, message_id, timestamp from usage_events order by timestamp desc limit 5;"
 ```
 
+### 17.5 Minimal CI validation baseline (Day 32)
+
+GitHub Actions workflow:
+
+* `.github/workflows/ci.yml`
+
+Narrowed deterministic pytest baseline:
+
+```bash
+python -m pytest -q \
+  tests/core \
+  tests/api/test_health_readyz.py \
+  tests/api/test_request_ids.py \
+  tests/api/test_request_size_limit.py \
+  tests/api/test_structured_logging.py
+```
+
+Default Docker build validation:
+
+```bash
+docker build -t llm-chat-platform:ci .
+```
+
 ---
 
 ## 18. Current guarantees (post Day 25)
@@ -1440,6 +1463,18 @@ Day 31 stabilizes `tests/api/test_conversations_read_endpoints.py` with a minima
 * No production code, route, domain, DB schema, provider, or streaming behavior changed
 * `./.venv/bin/pytest -q tests/api/test_conversations_read_endpoints.py` passed
 * `./.venv/bin/pytest -q tests/api` was attempted, but did not complete within the observed timeout window
+
+## Addendum — Day 32: Minimal CI Baseline
+
+Day 32 adds a minimal GitHub Actions CI baseline through `.github/workflows/ci.yml`.
+
+* Scope is limited to repository automation only
+* A single `validate` job runs on push and pull request events
+* CI installs `app/requirements.txt` and `app/requirements-dev.txt`
+* CI runs a narrowed deterministic pytest baseline instead of the full suite
+* CI validates the default Docker build path with `docker build -t llm-chat-platform:ci .`
+* No production code, Dockerfile, Makefile, runtime behavior, provider behavior, `/chat`, `ChatService`, DB schema, persistence, streaming, or telemetry behavior changed
+* GitHub-hosted execution is defined by the workflow; observed CI results depend on GitHub Actions runs
 
 ## Addendum — Day 25: Streaming SSE + Minimal UI
 
