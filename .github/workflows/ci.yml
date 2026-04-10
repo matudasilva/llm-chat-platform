@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r app/requirements.txt -r app/requirements-dev.txt
+
+      - name: Run narrowed pytest baseline
+        run: |
+          python -m pytest -q \
+            tests/core \
+            tests/api/test_health_readyz.py \
+            tests/api/test_request_ids.py \
+            tests/api/test_request_size_limit.py \
+            tests/api/test_structured_logging.py
+
+      - name: Validate Docker build
+        run: docker build -t llm-chat-platform:ci .
