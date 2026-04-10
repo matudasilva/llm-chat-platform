@@ -52,6 +52,7 @@ class Settings(BaseSettings):
     redis_port: int = 6379
     redis_db: int = 0
     redis_password: str | None = None
+    chat_response_cache_ttl_s: int = 60
 
     # Defensive limits (hardening)
     max_request_bytes: int = 64 * 1024
@@ -118,7 +119,13 @@ class Settings(BaseSettings):
             raise ValueError("provider backoff max ms must be >= 0")
         return value
 
-    @field_validator("max_request_bytes", "max_message_chars", "max_assistant_chars", "max_error_message_chars")
+    @field_validator(
+        "max_request_bytes",
+        "max_message_chars",
+        "max_assistant_chars",
+        "max_error_message_chars",
+        "chat_response_cache_ttl_s",
+    )
     @classmethod
     def validate_positive_limits(cls, value: int) -> int:
         if value <= 0:

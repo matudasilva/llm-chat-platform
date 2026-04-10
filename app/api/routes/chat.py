@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.deps import get_chat_service
 from app.core.domain.chat_service import ChatService
 from app.core.domain.errors import ProviderExecutionError, ProviderTimeoutError
+from app.core.domain.chat_types import ChatServiceResult
 from app.core.domain.types import ChatMessage
 from app.core.settings import settings
 from app.core.utils.limits import sanitize_error_message, truncate
@@ -21,6 +22,7 @@ from app.models.message import Message, MessageRole
 from app.models.usage_event import UsageEvent
 from app.schemas.chat import ChatRequest, ChatResponse, ChatStatus
 from app.core.domain.provider_errors import ProviderError
+from app.services.chat_response_cache import get_chat_response_cache
 
 logger = logging.getLogger(__name__)
 
@@ -61,8 +63,10 @@ async def chat(
     user_message_id: uuid.UUID | None = None
     assistant_message_id: uuid.UUID | None = None
     assistant_content: str | None = None
+    cache = get_chat_response_cache()
     
     if getattr(payload, "stream", False):
+        cache.log_bypass(reason="streaming")
 
         async def event_generator() -> AsyncIterator[str]:
             logger.info(
@@ -196,6 +200,7 @@ async def chat(
 
 
     try:
+        cache_write_result: ChatServiceResult | None = None
         # Single transaction: either everything is persisted, or nothing is.
         async with db.begin():
             # 1) Conversation: create or validate
@@ -220,10 +225,13 @@ async def chat(
             user_message_id = user_msg.id
 
             # 3) Execute model (via ChatService)
-            service_result = await chat_service.run(
-                request_id=request_id,
-                messages=[ChatMessage(role="user", content=payload.message)],
-            )
+            service_result = await cache.get(request_id=request_id, message=payload.message)
+            if service_result is None:
+                service_result = await chat_service.run(
+                    request_id=request_id,
+                    messages=[ChatMessage(role="user", content=payload.message)],
+                )
+                cache_write_result = service_result
 
             assistant_content = truncate(
                 service_result.assistant_message.content,
@@ -279,6 +287,9 @@ async def chat(
                 pass
 
         # commit OK (exit db.begin)
+        if cache_write_result is not None:
+            await cache.set(message=payload.message, result=cache_write_result)
+
         return ChatResponse(
             request_id=request_id,
             conversation_id=conversation_id,
