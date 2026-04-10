@@ -120,7 +120,7 @@ This document evolves with the codebase.
 
 * FastAPI (async)
 * PostgreSQL
-* Redis (reserved for ephemeral / future use)
+* Redis (best-effort response cache for non-streaming `/chat`)
 * SQLAlchemy 2.0 async
 * Alembic
 * Docker + Docker Compose
@@ -907,6 +907,7 @@ docker build -t llm-chat-platform:ci .
 
 * `/chat` non-stream regression
 * Streaming SSE smoke test (`token` + `done`)
+* Non-streaming `/chat` cache hit, miss, bypass, and graceful Redis failure behavior
 * Conversations read endpoints
 * Health and readiness endpoints
 * Request ID propagation
@@ -1475,6 +1476,18 @@ Day 32 adds a minimal GitHub Actions CI baseline through `.github/workflows/ci.y
 * CI validates the default Docker build path with `docker build -t llm-chat-platform:ci .`
 * No production code, Dockerfile, Makefile, runtime behavior, provider behavior, `/chat`, `ChatService`, DB schema, persistence, streaming, or telemetry behavior changed
 * GitHub-hosted execution is defined by the workflow; observed CI results depend on GitHub Actions runs
+
+## Addendum — Day 33: Minimal Redis Response Cache
+
+Day 33 adds a minimal best-effort Redis response cache for non-streaming `POST /chat`.
+
+* Scope is limited to non-streaming `/chat`
+* Streaming requests bypass cache reads and writes explicitly
+* Cache lookup failures and cache write failures are non-fatal
+* Only successful non-streaming executions are eligible for cache writes
+* Cache writes occur only after successful transaction commit
+* Cache payload is intentionally minimal and only reconstructs the data required by the existing non-streaming write-path
+* No DB schema, provider implementation, `ChatService`, `ResilientProvider`, retry/fallback semantics, or streaming semantics changes were introduced
 
 ## Addendum — Day 25: Streaming SSE + Minimal UI
 

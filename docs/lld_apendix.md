@@ -1941,4 +1941,45 @@ Results:
 - no DB schema or migration changes
 - no persistence, streaming, or telemetry behavior changes
 
+## Appendix AA — Day 33 (Minimal Redis Response Cache)
+
+### AA.1 Goal
+
+- add a minimal Redis response cache for non-streaming `/chat`
+- preserve the existing transactional write-path
+- keep streaming behavior unchanged
+- keep Redis degradation best-effort
+
+### AA.2 Scope
+
+- non-streaming `/chat` requests only
+- explicit cache bypass for `stream=true`
+- minimal TTL-based cache behavior only
+- no invalidation strategy beyond TTL
+- no provider-specific cache branching
+
+### AA.3 Effective behavior
+
+- cache lookup occurs only in the non-streaming `/chat` path
+- cache hits reuse only the minimum data required by the existing write-path
+- cache misses fall through to normal provider execution
+- successful non-streaming executions are written to cache only after successful transaction commit
+
+### AA.4 Failure behavior
+
+- Redis read failures are non-fatal
+- Redis write failures are non-fatal
+- request execution continues normally when Redis operations fail
+
+### AA.5 Invariants preserved
+
+- `/chat` remains the only write-path
+- persistence remains atomic and consistent
+- domain services remain provider-agnostic
+- no provider-specific logic was added to routes or domain services
+- no DB schema or migration changes were introduced
+- no retry/fallback semantic changes were introduced
+- streaming behavior remains unchanged
+- telemetry remains best-effort
+
 **End of appendix — complements the live LLD document**

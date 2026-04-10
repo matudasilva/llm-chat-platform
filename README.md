@@ -351,6 +351,7 @@ Current coverage includes:
 
 * `/chat` non-stream regression
 * Streaming SSE smoke test (`token`, `done`, `error`)
+* Non-streaming `/chat` Redis cache hit, miss, bypass, and failure behavior
 * Read-only conversation inspection endpoints
 * Health and readiness endpoints
 * Request ID propagation
@@ -449,6 +450,15 @@ Day 32 — Minimal CI baseline added.
 * `.github/workflows/ci.yml` introduces a single `validate` job for push and pull request events
 * CI installs runtime and dev test dependencies, runs a narrowed deterministic pytest baseline, and validates the default Docker build path
 * No production code, Dockerfile, Makefile, runtime, provider, `/chat`, `ChatService`, DB schema, persistence, streaming, or telemetry behavior changed
+
+Day 33 — Minimal Redis response cache for non-streaming `/chat` completed.
+
+* Cache applies only to non-streaming `/chat` requests
+* Streaming requests bypass cache reads and writes explicitly
+* Redis cache reads and writes are best-effort and never fail the request
+* Only successful non-streaming executions are written to cache
+* Cache writes happen only after successful transaction commit
+* No DB schema, provider, `ChatService`, retry/fallback, or streaming semantics changes were introduced
 
 ---
 
