@@ -15,6 +15,31 @@ This project models how AI-powered workloads should be integrated and operated i
 
 ---
 
+## Current State
+
+The current implemented V1.1 runtime surface is:
+
+* `POST /chat` as the single authoritative write-path
+* Transactional persistence for non-streaming requests
+* SSE streaming with post-stream atomic persistence
+* Provider-agnostic execution across OpenAI and Bedrock
+* Additive provider resilience and observability
+* Read-only conversation inspection endpoints
+* Minimal Redis response cache for non-streaming `/chat`
+
+Two design choices are worth calling out explicitly for technical review:
+
+* Redis was initially kept **reserved** in the original blueprint to protect a minimal, deterministic transactional baseline before introducing cache semantics. After the `/chat` write-path, streaming boundaries, and observability guarantees were stable, Redis was added as a **best-effort** optimization for successful non-streaming requests only.
+* The original V1 blueprint also reserved **ML-based routing** as an architectural direction, including a logistic-regression baseline for cheap-vs-smart model selection. That routing layer is **not part of the current implemented V1.1 runtime surface** and is therefore documented as blueprint intent rather than shipped behavior.
+
+---
+
+## Architecture Diagram
+
+![LLM Chat Platform architecture](docs/rendered/architecture/module-boundaries-architecture-v1.svg)
+
+---
+
 ## Core Principles
 
 ### 1. Transactional Integrity First
@@ -222,7 +247,7 @@ Nullable foreign keys allow error telemetry without breaking atomicity.
 * SQLAlchemy 2.0 (async)
 * Alembic
 * Docker / Docker Compose
-* Redis (reserved)
+* Redis (implemented as a best-effort response cache for non-streaming `/chat`; initially reserved in the blueprint until the transactional baseline stabilized)
 
 ---
 
@@ -411,7 +436,9 @@ Local rendering may require a user-specific `puppeteer-config.json`. The reposit
 
 ---
 
-## Current State
+## Implementation History
+
+The current implemented state is summarized above. The timeline below preserves the incremental evolution of the platform.
 
 Day 29 — MVP hardening for minimal provider resilience completed.
 
