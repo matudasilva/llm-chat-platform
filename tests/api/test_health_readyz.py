@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import httpx
 import pytest
+from sqlalchemy.ext.asyncio import create_async_engine
+
 from app.main import app
 
 
@@ -45,3 +47,17 @@ async def test_readyz_503_with_mocked_checker(client: httpx.AsyncClient) -> None
         assert body["status"] == "error"
     finally:
         app.dependency_overrides.clear()
+
+
+@pytest.mark.asyncio
+async def test_readyz_ok_with_initialized_app_engine(client: httpx.AsyncClient) -> None:
+    engine = create_async_engine("sqlite+aiosqlite:///:memory:")
+    client.app.state.db_engine = engine  # type: ignore[attr-defined]
+    try:
+        r = await client.get("/readyz")
+        assert r.status_code == 200
+        body = r.json()
+        assert body["status"] == "ok"
+        assert body["checks"]["db"] == "ok"
+    finally:
+        await engine.dispose()

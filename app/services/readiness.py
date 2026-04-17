@@ -4,9 +4,9 @@ import asyncio
 from dataclasses import dataclass
 from typing import Protocol
 
+from fastapi import Request
 from sqlalchemy import text
-
-from app.infra.db import session as db_session
+from sqlalchemy.ext.asyncio import AsyncEngine
 
 
 class ReadinessChecker(Protocol):
@@ -15,13 +15,14 @@ class ReadinessChecker(Protocol):
 
 @dataclass(frozen=True)
 class DefaultReadinessChecker:
+    app: object
     db_timeout_s: float = 0.5
 
     async def check(self) -> dict:
         checks: dict[str, str] = {}
 
         try:
-            await asyncio.wait_for(_check_db(), timeout=self.db_timeout_s)
+            await asyncio.wait_for(_check_db(self.app), timeout=self.db_timeout_s)
             checks["db"] = "ok"
         except Exception:
             checks["db"] = "error"
@@ -31,11 +32,13 @@ class DefaultReadinessChecker:
         return {"status": "ok", "checks": checks}
 
 
-async def _check_db() -> None:
-    engine = db_session.engine
+async def _check_db(app: object) -> None:
+    engine = getattr(app.state, "db_engine", None)
+    if engine is None or not isinstance(engine, AsyncEngine):
+        raise RuntimeError("DB engine not initialized")
     async with engine.connect() as conn:
         await conn.execute(text("SELECT 1"))
 
 
-def get_readiness_checker() -> ReadinessChecker:
-    return DefaultReadinessChecker()
+def get_readiness_checker(request: Request) -> ReadinessChecker:
+    return DefaultReadinessChecker(app=request.app)
