@@ -2,7 +2,7 @@
 
 ## LLM Chat Platform
 
-**Status:** Stable baseline — validated up to Day 25 (Streaming SSE + Minimal UI + Stable async tests)
+**Status:** Stable baseline — validated up to Day 33 (Minimal Redis Response Cache)
 
 ---
 
@@ -49,7 +49,7 @@ endpoint smoke evidence (success + rollback)
 
 ## 1. Purpose of this document
 
-This Low Level Design (LLD) documents the **actual implemented architecture** of the LLM Chat Platform up to **Day 25**.
+This Low Level Design (LLD) documents the **actual implemented V1.1 baseline** of the LLM Chat Platform.
 
 It is intentionally:
 
@@ -78,7 +78,7 @@ This document evolves with the codebase.
 * Minimal LLMOps telemetry (`usage_events`)
 * Provider abstraction with validated stub plus hardened OpenAI and Bedrock adapters
 
-### Out-of-scope (explicit non-goals as of Day 25)
+### Out-of-scope (explicit non-goals for the current baseline)
 
 * Full frontend application / SPA / build pipeline
 * Background workers / queues
@@ -216,7 +216,6 @@ tests/
 
 docs/
   lld_llm_chat_platform_live_doc.md
-  lld_llm_chat_platform_live_doc_v2.md
   lld_apendix.md
 
 ---
@@ -233,7 +232,7 @@ docs/
 * APP_ENV: development|production
 * LOG_LEVEL: INFO|DEBUG|...
 * DATABASE_URL: postgresql+asyncpg://...
-+ REDIS_URL: redis://... (reserved)
+* REDIS_URL: redis://... (best-effort non-streaming response cache)
 * PROVIDER: stub|openai|bedrock
 * PRIMARY_PROVIDER: optional primary provider override; takes precedence over `PROVIDER`
 * FALLBACK_PROVIDER: optional single-hop fallback provider override; takes precedence over `fallback_provider`
@@ -928,7 +927,7 @@ The test suite validates runtime invariants without weakening the architecture-f
 
 ---
 
-## 21. Day 10 — Read-path, Auditing, and End-to-End Traceability
+## 21. Read-path, Auditing, and End-to-End Traceability
 
 ### 21.1 Objective
 
@@ -1000,7 +999,7 @@ Results:
 * Explicit coherence checks
 * Warnings only in best-effort scenarios
 
-### 21.6 Day 10 Closing Status
+### 21.6 Closing Status
 
 * Conversations are readable and fully reconstructible
 * UsageEvents are queryable and auditable
@@ -1010,7 +1009,7 @@ Results:
 
 ---
 
-**Document updated incrementally through Day 25.**
+**Document updated incrementally through Day 33.**
 
 
 ---
@@ -1355,6 +1354,33 @@ Day 24 → resilience + structured logging
 The Provider layer now acts as a hardened isolation boundary
 between external LLM APIs and core application logic.
 
+## Addendum — Day 25: Streaming SSE + Minimal UI
+
+### Scope
+
+Day 25 introduced opt-in SSE streaming on `POST /chat` and a minimal static demo UI,
+without modifying database schema, Alembic migrations, or the default non-stream JSON contract.
+
+### Changes
+
+* `POST /chat` now supports `stream=true`
+* Streaming emits SSE events:
+  * `token`
+  * `done`
+  * `error`
+* Streaming provider execution occurs outside the DB transaction
+* Final persistence happens in a single DB transaction after provider completion
+* Minimal demo UI added at `GET /ui`
+* Streaming smoke test added
+
+### Preserved invariants
+
+* `/chat` remains the only write-path
+* Non-stream mode preserves single-transaction semantics
+* Streaming does not require schema changes
+* Provider orchestration remains DB-agnostic
+* Observability remains non-invasive
+
 ## Addendum — Day 28: Bedrock as Second Real Provider
 
 ### Scope
@@ -1489,34 +1515,6 @@ Day 33 adds a minimal best-effort Redis response cache for non-streaming `POST /
 * Cache payload is intentionally minimal and only reconstructs the data required by the existing non-streaming write-path
 * No DB schema, provider implementation, `ChatService`, `ResilientProvider`, retry/fallback semantics, or streaming semantics changes were introduced
 
-## Addendum — Day 25: Streaming SSE + Minimal UI
-
-### Scope
-
-Day 25 introduced opt-in SSE streaming on `POST /chat` and a minimal static demo UI,
-without modifying database schema, Alembic migrations, or the default non-stream JSON contract.
-
-### Changes
-
-* `POST /chat` now supports `stream=true`
-* Streaming emits SSE events:
-  * `token`
-  * `done`
-  * `error`
-* Streaming provider execution occurs outside the DB transaction
-* Final persistence happens in a single DB transaction after provider completion
-* Minimal demo UI added at `GET /ui`
-* Streaming smoke test added
-
-### Preserved invariants
-
-* `/chat` remains the only write-path
-* Non-stream mode preserves single-transaction semantics
-* Streaming does not require schema changes
-* Provider orchestration remains DB-agnostic
-* Observability remains non-invasive
-
-
 ## Appendices
 
 Detailed execution-level documentation, debugging playbooks, and deep technical references
@@ -1528,5 +1526,5 @@ This separation is intentional to keep the core LLD focused on architecture and 
 while allowing the appendix to evolve with operational learnings and real-world failures.
 
 
-**This document reflects the state of the system up to Day 28.**
+**This document reflects the state of the system up to Day 33.**
 **Execution-level details and debugging notes are tracked in the Appendix.**

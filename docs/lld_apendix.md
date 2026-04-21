@@ -4,13 +4,13 @@
 
 **Scope:** Deep technical appendices, debugging playbooks, and execution-level details
 
-**Validity:** Up to Day 16 (Appendix L)
+**Validity:** Up to Day 33 (Appendix AA)
 
 
 > Note:
 > Appendices A–E describe the effective system state up to Day 9.
 > Appendix F documents the Day 10 traceability layer (read-only reconstruction).
-> Later appendices record incremental architectural and operational changes through Day 16.
+> Later appendices record incremental architectural and operational changes through Day 33.
 
 
 
@@ -1076,35 +1076,6 @@ Day bucketing is derived from the event timestamp field.
 The canonical temporal column in the DB is timestamp (previously verified).
 The report generator remains defensive and can fall back to created_at if present in JSONL exports.
 
-
----
-
-## 3) Checklist resumido para Notion (Day 18)
-
-- [ ] Update `scripts/run_cost_report.py` to generate CSV artifacts under `reports/`
-- [ ] Add canonical status mapping for aggregation (`ok -> success`, unknown -> `other`)
-- [ ] Enforce deterministic ordering:
-  - [ ] providers alphabetical
-  - [ ] statuses alphabetical
-  - [ ] days ascending
-- [ ] Keep console output + add `[OK] wrote ...` confirmations
-- [ ] Document Appendix N (commands + CSV schemas + normalization rules)
-- [ ] Run:
-  - [ ] `docker compose exec ... export_usage_events.py --limit 2000`
-  - [ ] `docker compose exec ... run_cost_report.py --in reports/usage_events.jsonl`
-- [ ] Ensure `pytest -q` still passes (no runtime changes)
-
----
-
-## 4) Commit message sugerido (EN)
-
-**Technical commit**
-- `feat(cost-analytics): generate deterministic CSV artifacts in offline cost report`
-
-**Docs commit**
-- `docs(appendix): add Appendix N for Day 18 cost analytics artifacts`
-
---- 
 
 ## Appendix O — Day 19 (Dev Ergonomics: Bind Mount + Pytest)
 
