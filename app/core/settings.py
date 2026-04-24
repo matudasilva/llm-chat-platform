@@ -25,6 +25,12 @@ class Settings(BaseSettings):
     # Providers
     provider: str = Field(default="stub", validation_alias=AliasChoices("PRIMARY_PROVIDER", "PROVIDER", "provider"))
     fallback_provider: str | None = Field(default=None, validation_alias=AliasChoices("FALLBACK_PROVIDER", "fallback_provider"))
+    routing_policy: str = "static"
+    routing_shadow_policy: str | None = None
+    routing_shadow_mode_enabled: bool = False
+    routing_shadow_timeout_ms: int = 25
+    routing_message_length_cheap_max: int = 80
+    routing_estimated_tokens_smart_min: int = 120
     provider_timeout_s: float = 30.0
 
     stub_provider_mode: str = "ok"
@@ -76,6 +82,24 @@ class Settings(BaseSettings):
             raise ValueError(f"provider must be one of: {sorted(allowed)}")
         return value
 
+    @field_validator("routing_policy")
+    @classmethod
+    def validate_routing_policy(cls, value: str) -> str:
+        allowed = {"static", "heuristic"}
+        if value not in allowed:
+            raise ValueError(f"routing_policy must be one of: {sorted(allowed)}")
+        return value
+
+    @field_validator("routing_shadow_policy")
+    @classmethod
+    def validate_routing_shadow_policy(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        allowed = {"static", "heuristic"}
+        if value not in allowed:
+            raise ValueError(f"routing_shadow_policy must be one of: {sorted(allowed)}")
+        return value
+
     @field_validator("provider_timeout_s")
     @classmethod
     def validate_provider_timeout_s(cls, value: float) -> float:
@@ -125,6 +149,9 @@ class Settings(BaseSettings):
         "max_assistant_chars",
         "max_error_message_chars",
         "chat_response_cache_ttl_s",
+        "routing_shadow_timeout_ms",
+        "routing_message_length_cheap_max",
+        "routing_estimated_tokens_smart_min",
     )
     @classmethod
     def validate_positive_limits(cls, value: int) -> int:

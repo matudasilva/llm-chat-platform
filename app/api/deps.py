@@ -1,8 +1,9 @@
 # app/api/deps.py
 from app.core.domain.provider import ProviderPort
-from app.core.domain.provider_factory import build_provider
+from app.core.domain.provider_factory import build_provider, build_provider_resolver
 from app.core.domain.chat_service import ChatService
 from app.core.settings import settings
+from app.services.routing_signals import build_routing_context_builder
 
 
 def get_provider() -> ProviderPort:
@@ -10,4 +11,8 @@ def get_provider() -> ProviderPort:
 
 
 def get_chat_service() -> ChatService:
-    return ChatService(provider=get_provider(), timeout_s=settings.provider_timeout_s)
+    return ChatService(
+        provider_resolver=build_provider_resolver(settings),
+        routing_context_builder=build_routing_context_builder(settings),
+        timeout_s=settings.provider_timeout_s,
+    )

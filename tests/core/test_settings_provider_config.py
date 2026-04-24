@@ -7,6 +7,7 @@ def test_settings_accept_valid_provider_config() -> None:
     settings = Settings(
         provider="stub",
         fallback_provider="openai",
+        routing_policy="static",
         provider_timeout_s=30.0,
         stub_provider_mode="ok",
         stub_simulated_latency_ms=0,
@@ -17,6 +18,7 @@ def test_settings_accept_valid_provider_config() -> None:
 
     assert settings.provider == "stub"
     assert settings.fallback_provider == "openai"
+    assert settings.routing_policy == "static"
     assert settings.provider_timeout_s == 30.0
 
 
@@ -46,6 +48,44 @@ def test_settings_fallback_provider_alias_takes_precedence() -> None:
 
     assert settings.provider == "stub"
     assert settings.fallback_provider == "bedrock"
+
+
+def test_settings_default_routing_policy_is_static() -> None:
+    settings = Settings()
+
+    assert settings.routing_policy == "static"
+
+
+def test_settings_accept_heuristic_routing_policy() -> None:
+    settings = Settings(routing_policy="heuristic")
+
+    assert settings.routing_policy == "heuristic"
+
+
+def test_settings_accept_valid_shadow_routing_config() -> None:
+    settings = Settings(
+        routing_shadow_mode_enabled=True,
+        routing_shadow_policy="heuristic",
+        routing_shadow_timeout_ms=50,
+        routing_message_length_cheap_max=64,
+        routing_estimated_tokens_smart_min=160,
+    )
+
+    assert settings.routing_shadow_mode_enabled is True
+    assert settings.routing_shadow_policy == "heuristic"
+    assert settings.routing_shadow_timeout_ms == 50
+    assert settings.routing_message_length_cheap_max == 64
+    assert settings.routing_estimated_tokens_smart_min == 160
+
+
+def test_settings_reject_invalid_routing_policy() -> None:
+    with pytest.raises(ValueError, match="routing_policy must be one of"):
+        Settings(routing_policy="ml")
+
+
+def test_settings_reject_invalid_shadow_routing_policy() -> None:
+    with pytest.raises(ValueError, match="routing_shadow_policy must be one of"):
+        Settings(routing_shadow_policy="ml")
 
 
 def test_settings_reject_invalid_stub_mode() -> None:
