@@ -45,6 +45,15 @@ ProviderPort/StubProvider/ChatService
 
 endpoint smoke evidence (success + rollback)
 
+### Day 34 (Signal-based routing hardening)
+
+* `RoutingContext` narrowed to provider-agnostic MVP signals
+* Routing signal extraction moved out of domain orchestration into application wiring
+* `HeuristicRoutingPolicy` converted from free-text parsing to deterministic signal thresholds
+* `routing.decision` extended with signal metadata
+* Best-effort shadow routing comparison added via `routing.shadow_divergence`
+* `StaticRoutingPolicy` remains the default activation path
+
 ---
 
 ## 1. Purpose of this document
@@ -77,6 +86,7 @@ This document evolves with the codebase.
 * Read-only inspection endpoints for conversations and usage events
 * Minimal LLMOps telemetry (`usage_events`)
 * Provider abstraction with validated stub plus hardened OpenAI and Bedrock adapters
+* Config-gated routing seam with static default, signal-based heuristic policy, and best-effort shadow observability
 
 ### Out-of-scope (explicit non-goals for the current baseline)
 
@@ -105,6 +115,9 @@ This document evolves with the codebase.
 * Infrastructure layer — SQLAlchemy async session lifecycle, persistence wiring, and DB models
 * Provider layer — validated stub provider plus hardened OpenAI and Bedrock adapters
 * Observability layer — HTTP structured logs, provider structured logs, usage telemetry
+* Routing signal preparation layer — application-wired extraction of `message_length`, `estimated_tokens`, and `primary_provider_available` before policy evaluation
+  * `estimated_tokens` is a best-effort, provider-agnostic proxy used only for routing heuristics
+  * it does not represent exact tokenization for OpenAI, Bedrock, or any other provider
 
 #### Request correlation
 

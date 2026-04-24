@@ -1953,4 +1953,92 @@ Results:
 - streaming behavior remains unchanged
 - telemetry remains best-effort
 
+## Appendix AB — Day 34 (Signal-Based Routing Hardening)
+
+### AB.1 Goal
+
+- harden the existing routing seam without changing the `/chat` contract
+- remove free-text parsing from domain routing decisions
+- keep heuristic activation reversible and shadow evaluation isolated
+
+### AB.2 Scope
+
+- `RoutingContext` reduced to provider-agnostic MVP signals
+- application-wired signal extraction for `message_length`, `estimated_tokens`, and `primary_provider_available`
+- deterministic `HeuristicRoutingPolicy` thresholds
+- best-effort shadow comparison with `routing.shadow_divergence`
+- additive settings and test coverage only
+
+### AB.3 Explicit non-goals
+
+- no ML routing
+- no synchronous historical reads in the routing critical path
+- no DB writes for routing or routing outcome collection
+- no streaming contract changes
+- no public `/chat` API changes
+
+### AB.4 Outcome contract
+
+The routing outcome contract is defined as a post-request shape with:
+
+- `final_status`
+- `failure_kind`
+- `stream_completed`
+- `latency_bucket`
+- `final_provider`
+- `fallback_used`
+
+This contract is intentionally kept out of synchronous routing decisions and out of the write-path.
+
+### AB.5 Validation evidence
+
+Commands executed:
+
+- `pytest -q tests/core/test_static_routing_policy.py tests/core/test_heuristic_routing_policy.py tests/core/test_provider_factory_routing.py tests/core/test_chat_service_routing.py tests/core/test_settings_provider_config.py tests/core/test_routing_signals.py`
+
+Observed result:
+
+- `29 passed`
+
+### AB.6 Invariants preserved
+
+- `StaticRoutingPolicy` remains the default routing mode
+- no provider-specific logic was added to routes or domain services
+- no DB schema or migration changes were introduced
+- no transactional write-path changes were introduced
+- streaming behavior remains unchanged
+- shadow routing is best-effort and log-and-discard on failure
+
+## Appendix AC — Day 34.5 (Routing MVP Audit Fixes)
+
+### AC.1 Goal
+
+- resolve the post-audit MVP cleanup required before ORQ-4 closure
+- remove unused routing contract fields from the MVP surface
+- make `estimated_tokens` semantics explicit and defensible
+
+### AC.2 Effective fixes
+
+- removed `timeout_budget_s` from `RoutingContext` because it had no assigned value and no runtime use
+- removed `message_count` from `RoutingContext` because it did not participate in routing decisions
+- documented `estimated_tokens` as a best-effort, provider-agnostic proxy
+
+### AC.3 Validation evidence
+
+Commands executed:
+
+- `pytest -q tests/core/test_static_routing_policy.py tests/core/test_heuristic_routing_policy.py tests/core/test_provider_factory_routing.py tests/core/test_chat_service_routing.py tests/core/test_routing_signals.py`
+
+Observed result:
+
+- `14 passed`
+
+### AC.4 Invariants preserved
+
+- no `/chat` public contract changes
+- no streaming changes
+- no DB reads or writes were added to routing
+- no provider-specific logic was added to routes or domain services
+- `StaticRoutingPolicy` remains the safe default
+
 **End of appendix — complements the live LLD document**

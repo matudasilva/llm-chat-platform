@@ -24,13 +24,14 @@ The current implemented V1.1 runtime surface is:
 * SSE streaming with post-stream atomic persistence
 * Provider-agnostic execution across OpenAI and Bedrock
 * Additive provider resilience and observability
+* Config-gated routing seam with static default, signal-based heuristic mode, and best-effort shadow divergence logging
 * Read-only conversation inspection endpoints
 * Minimal Redis response cache for non-streaming `/chat`
 
 Two design choices are worth calling out explicitly for technical review:
 
 * Redis was initially kept **reserved** in the original blueprint to protect a minimal, deterministic transactional baseline before introducing cache semantics. After the `/chat` write-path, streaming boundaries, and observability guarantees were stable, Redis was added as a **best-effort** optimization for successful non-streaming requests only.
-* The original V1 blueprint also reserved **ML-based routing** as an architectural direction, including a logistic-regression baseline for cheap-vs-smart model selection. That routing layer is **not part of the current implemented V1.1 runtime surface** and is therefore documented as blueprint intent rather than shipped behavior.
+* The original V1 blueprint also reserved **ML-based routing** as an architectural direction, including a logistic-regression baseline for cheap-vs-smart model selection. That ML routing layer is **not part of the current implemented V1.1 runtime surface**. The current runtime includes only a **feature-flagged heuristic routing seam** based on provider-agnostic signals, with `static` remaining the default policy.
 
 ---
 
