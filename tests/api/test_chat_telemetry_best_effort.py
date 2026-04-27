@@ -50,6 +50,17 @@ class FakeAsyncSession:
         return None
 
 
+class NoopCache:
+    async def get(self, *, request_id, message):
+        return None
+
+    async def set(self, *, message, result) -> None:
+        return None
+
+    def log_bypass(self, *, reason: str) -> None:
+        return None
+
+
 @pytest.mark.asyncio
 async def test_chat_telemetry_failure_does_not_break_chat(monkeypatch) -> None:
     """
@@ -61,6 +72,7 @@ async def test_chat_telemetry_failure_does_not_break_chat(monkeypatch) -> None:
         raise RuntimeError("telemetry down")
 
     monkeypatch.setattr(chat_routes, "UsageEvent", _boom, raising=True)
+    monkeypatch.setattr(chat_routes, "get_chat_response_cache", lambda: NoopCache(), raising=True)
 
     response = await chat_routes.chat(
         ChatRequest(message="hello"),
@@ -87,6 +99,7 @@ async def test_chat_error_telemetry_uses_active_provider(monkeypatch) -> None:
         return kwargs
 
     monkeypatch.setattr(chat_routes, "UsageEvent", _capture_usage_event, raising=True)
+    monkeypatch.setattr(chat_routes, "get_chat_response_cache", lambda: NoopCache(), raising=True)
 
     response = await chat_routes.chat(
         ChatRequest(message="hello"),

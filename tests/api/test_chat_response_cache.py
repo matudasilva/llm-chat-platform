@@ -56,6 +56,22 @@ class FakeAsyncSession:
 
 
 @dataclass
+class FakeRedisClient:
+    get_error: Exception | None = None
+    set_error: Exception | None = None
+
+    async def get(self, key: str) -> str | None:
+        if self.get_error is not None:
+            raise self.get_error
+        return None
+
+    async def set(self, key: str, value: str, ex: int | None = None) -> bool:
+        if self.set_error is not None:
+            raise self.set_error
+        return True
+
+
+@dataclass
 class FakeCache:
     hit_result: ChatServiceResult | None = None
     read_error: Exception | None = None
@@ -222,11 +238,12 @@ async def test_chat_streaming_bypasses_cache(monkeypatch) -> None:
 async def test_chat_cache_read_failure_is_non_fatal(monkeypatch) -> None:
     chat_service = FakeChatService(content="read fallback")
     monkeypatch.setattr(chat_routes, "get_chat_response_cache", lambda: ChatResponseCache(), raising=True)
-
-    async def _boom_get(*args, **kwargs):
-        raise RuntimeError("redis down")
-
-    monkeypatch.setattr(cache_module.redis_client, "get", _boom_get)
+    monkeypatch.setattr(
+        cache_module,
+        "redis_client",
+        FakeRedisClient(get_error=RuntimeError("redis down")),
+        raising=True,
+    )
 
     response = await chat_routes.chat(
         ChatRequest(message="hello"),
@@ -243,11 +260,12 @@ async def test_chat_cache_read_failure_is_non_fatal(monkeypatch) -> None:
 async def test_chat_cache_write_failure_is_non_fatal(monkeypatch) -> None:
     chat_service = FakeChatService(content="write fallback")
     monkeypatch.setattr(chat_routes, "get_chat_response_cache", lambda: ChatResponseCache(), raising=True)
-
-    async def _boom(*args, **kwargs) -> None:
-        raise RuntimeError("redis write down")
-
-    monkeypatch.setattr(cache_module.redis_client, "set", _boom)
+    monkeypatch.setattr(
+        cache_module,
+        "redis_client",
+        FakeRedisClient(set_error=RuntimeError("redis write down")),
+        raising=True,
+    )
 
     response = await chat_routes.chat(
         ChatRequest(message="hello"),

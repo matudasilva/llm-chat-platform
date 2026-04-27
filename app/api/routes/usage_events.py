@@ -23,19 +23,19 @@ async def list_usage_events(
     offset: int = Query(0, ge=0),
     order: Literal["asc", "desc"] = Query("desc"),
 
-    # filtros
+    # Filters
     from_dt: Optional[datetime] = Query(None, alias="from"),
     to_dt: Optional[datetime] = Query(None, alias="to"),
 
     provider: Optional[str] = Query(None),
     model_version: Optional[str] = Query(None),
-    request_id: Optional[UUID] = Query(None),          # <- FIX
+    request_id: Optional[UUID] = Query(None),
     conversation_id: Optional[UUID] = Query(None),
     status: Optional[Literal["success", "error"]] = Query(None),
 ) -> List[UsageEventOut]:
     """
-    Read-path de auditoría: lista UsageEvents con filtros.
-    Orden determinista por timestamp (+ id).
+    Audit read-path: list UsageEvents with filters.
+    Deterministic ordering by timestamp (+ id).
     """
     if from_dt is not None and to_dt is not None and from_dt > to_dt:
         raise HTTPException(status_code=422, detail="'from' must be <= 'to'")

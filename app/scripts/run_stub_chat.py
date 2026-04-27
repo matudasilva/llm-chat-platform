@@ -12,7 +12,7 @@ async def run_ok() -> None:
     provider = StubProvider(simulated_latency_ms=50, mode="ok")
     service = ChatService(provider)
 
-    messages = [ChatMessage(role="user", content="Hola, probando el stub.")]
+    messages = [ChatMessage(role="user", content="Hello, testing the stub.")]
 
     result = await service.run(request_id=request_id, messages=messages)
 
@@ -34,7 +34,7 @@ async def run_error() -> None:
     provider = StubProvider(simulated_latency_ms=10, mode="error")
     service = ChatService(provider)
 
-    messages = [ChatMessage(role="user", content="Esto debería fallar.")]
+    messages = [ChatMessage(role="user", content="This should fail.")]
 
     print("\n=== ERROR PATH ===")
     try:
