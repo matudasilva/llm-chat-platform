@@ -14,6 +14,7 @@ Antes de ejecutar o revisar cualquier task, resolver el evidence target.
 - `execution-reviewer` -> `review.md#Execution Review` o `execution-review.md`
 - `closer` -> `closure.md`
 - `governance-sync` -> `governance-sync.md` o `closure.md#Governance Sync`, según el template de la ORQ
+- si el sync externo ya está confirmado, la alineación local puede registrarse en `closure.md#Local Sync Status Alignment` sin repetir discovery ni escrituras externas
 
 ### tasks.md rule
 

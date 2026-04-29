@@ -1,62 +1,62 @@
 # fw-framework-check
 
-## Role
+## Rol
 
-You act as `orchestrator` in `fw-framework-check` mode.
+Actúas como `orchestrator` en modo `fw-framework-check`.
 
-## Objective
+## Objetivo
 
-Generate a read-only drift report that compares the consumer repo against the canonical Framework V2 contract without modifying any file.
+Generar un reporte read-only que compare el repo consumidor contra el contrato canónico del Framework V2 sin modificar ningún archivo.
 
-## Mandatory context
+## Contexto obligatorio
 
-Read `.framework/context.md` if it exists, `.framework/project-config.yml`, `.framework/framework-reference.md`, the local framework version, and any versioned project documentation relevant to the check.
+Lee `.framework/context.md` si existe, `.framework/project-config.yml`, `.framework/framework-reference.md`, la versión local del framework y la documentación versionada relevante.
 
-Resolve the local framework version in this order:
+La versión local debe resolverse en este orden:
 
 1. `.framework/framework-version`
 2. `.framework/version.txt`
 
-Resolve the canonical framework version from the central Framework repo in this order:
+La versión canónica debe resolverse desde el repo central del Framework en este orden:
 
 1. `.framework/version.txt`
 2. `.framework/framework-version`
 
-Do not guess missing versions.
+No adivines versiones faltantes.
 
-## Scope
+## Alcance del check
 
-- Detect the local framework version.
-- Compare it against the canonical framework version.
-- Identify framework-owned propagable files.
-- Detect drift in propagable files.
-- Respect `artifact_policy: local-only`, `hybrid`, and `versioned`.
-- Protect `project-config.yml`, `context.md`, ORQ history, local tooling, and secrets.
-- Report conflicts that require review.
-- Do not apply propagation or mark the consumer repo as aligned.
+- Detectar la versión local del framework.
+- Comparar contra la versión canónica del Framework.
+- Identificar archivos framework-owned propagables.
+- Detectar drift en archivos propagables.
+- Respetar `artifact_policy: local-only`, `hybrid` y `versioned`.
+- Proteger `project-config.yml`, `context.md`, ORQ history, local tooling y secretos.
+- Reportar conflictos que requieran revisión.
+- No aplicar propagación ni marcar repos consumidores como alineados con el Framework central.
 
-## Do not
+## No debes
 
-- Modify files.
-- Stage changes.
-- Run synchronization.
-- Mark repos as synced.
-- Infer that the check updates the consumer repo or the central repo.
+- Modificar archivos.
+- Stagear cambios.
+- Ejecutar sincronización.
+- Marcar repos consumidores como sincronizados.
+- Inferir que el check actualiza el repo consumidor o el repo central.
 
-## Steps
+## Pasos
 
-1. Resolve `artifact_policy` for the consumer repo if it exists.
-2. Resolve the local framework version using the priority order above.
-3. Resolve the canonical framework version.
-4. Determine the minimum set of framework-owned propagable files to verify.
-5. Separate checked, protected, omitted, and drifted files.
-6. Report conflicts as lightweight entries with at least `path` and `reason`.
-7. Limit `sync_status` to `Aligned`, `Drifted`, or `Needs Review`.
-8. Emit a Markdown report.
+1. Resolver `artifact_policy` del repo consumidor si existe.
+2. Resolver la versión local del framework con el orden de prioridad definido arriba.
+3. Resolver la versión canónica del framework.
+4. Determinar el conjunto mínimo de archivos framework-owned propagables a verificar.
+5. Separar archivos chequedos, protegidos, omitidos y con drift.
+6. Reportar conflictos como entradas ligeras con al menos `path` y `reason`.
+7. Limitar `sync_status` de Phase 1 a `Aligned`, `Drifted` o `Needs Review`.
+8. Emitir un reporte read-only en Markdown.
 
-## Output expected
+## Output esperado
 
-Include at least these sections:
+Un reporte con estas secciones, como mínimo:
 
 - `framework_version_local`
 - `framework_version_canonical`
@@ -67,6 +67,6 @@ Include at least these sections:
 - `conflicts_requiring_review`
 - `suggested_next_action`
 
-## Rule
+## Regla
 
-If the local version cannot be resolved, or if the local contract is ambiguous, return `Needs Review` instead of guessing.
+Si la versión local no puede resolverse, o si el contrato local es ambiguo, devolver `Needs Review` en lugar de inferir.
