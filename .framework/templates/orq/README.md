@@ -1,0 +1,36 @@
+# ORQ Artifact Guide
+
+Redactar el contenido narrativo de esta ORQ en el idioma definido por `orq_language` o por la decisión explícita del operador.
+
+## Evidence Target Contract
+
+Antes de ejecutar o revisar cualquier task, resolver el evidence target.
+
+### Role to artifact map
+
+- `orchestrator` / `pre-reviewer` -> `review.md` o `pre-review.md`
+- `design-reviewer` -> `review.md#Design Review`
+- `executor` -> `execution.md`
+- `execution-reviewer` -> `review.md#Execution Review` o `execution-review.md`
+- `closer` -> `closure.md`
+- `governance-sync` -> `governance-sync.md` o `closure.md#Governance Sync`, según el template de la ORQ
+
+### tasks.md rule
+
+- `tasks.md` es solo tablero liviano.
+- Contiene estado, rol, dependencias y referencias de evidencia.
+- No contiene logs largos de ejecución.
+- No duplica evidencia de review, execution ni closure.
+
+### Ambiguity rule
+
+Si el evidence target es ambiguo:
+
+- detenerse antes de editar;
+- reportar la ambigüedad;
+- recomendar el target correcto;
+- no inventar un artifact nuevo.
+
+## ORQ routing note
+
+Para ORQs activas, el `README.md` de la ORQ puede incluir una sección breve de routing de evidencia para dejar visible el target esperado por task.
