@@ -66,6 +66,14 @@ class Settings(BaseSettings):
     max_assistant_chars: int = 8_000
     max_error_message_chars: int = 512
 
+    # Controlled Web Read (MVP): read-only, bounded external fetch surface.
+    web_read_enabled: bool = True
+    web_read_allow_http: bool = False
+    web_read_allowed_domains: list[str] = []
+    web_read_timeout_s: float = 5.0
+    web_read_max_bytes: int = 32 * 1024
+    web_read_max_chars: int = 4_000
+
     # Cost Awareness (MVP): provider-agnostic token pricing table (no external calls).
     # Unknown providers should be treated as 0.0 cost by the estimator.
     cost_rates_by_provider: dict[str, TokenRates] = {
@@ -106,6 +114,25 @@ class Settings(BaseSettings):
         if value <= 0:
             raise ValueError("provider_timeout_s must be > 0")
         return value
+
+    @field_validator("web_read_timeout_s")
+    @classmethod
+    def validate_web_read_timeout_s(cls, value: float) -> float:
+        if value <= 0:
+            raise ValueError("web_read_timeout_s must be > 0")
+        return value
+
+    @field_validator("web_read_allowed_domains", mode="before")
+    @classmethod
+    def validate_web_read_allowed_domains(cls, value):
+        if value is None or value == "":
+            return []
+        if isinstance(value, str):
+            parts = [item.strip().lower() for item in value.split(",")]
+            return [item for item in parts if item]
+        if isinstance(value, list):
+            return [str(item).strip().lower() for item in value if str(item).strip()]
+        raise ValueError("web_read_allowed_domains must be a list or comma-separated string")
 
     @field_validator("stub_provider_mode")
     @classmethod
@@ -148,6 +175,8 @@ class Settings(BaseSettings):
         "max_message_chars",
         "max_assistant_chars",
         "max_error_message_chars",
+        "web_read_max_bytes",
+        "web_read_max_chars",
         "chat_response_cache_ttl_s",
         "routing_shadow_timeout_ms",
         "routing_message_length_cheap_max",
