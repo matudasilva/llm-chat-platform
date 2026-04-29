@@ -103,9 +103,9 @@ If the learning sync target is unavailable, leave `pending: true` with `sync_sta
 
 ```yaml
 learning_sync:
-  pending: true
+  pending: false
   items: 2
-  sync_status: pending
+  sync_status: synced
   items_detail:
     - title: Keep local-intentional framework prompts when the central repo has no canonical counterpart
       type: project-local
@@ -131,6 +131,8 @@ learning_sync:
       status: Captured
 ```
 
+Evidence: Learning Sync completed externally in Notion, and 2 entries were created in `Framework Learning / Insights`.
+
 ## Dashboard Sync Payload
 
 Fill this block with the real sync state.
@@ -141,8 +143,8 @@ If the dashboard sync target is unavailable, leave `pending: true` with `sync_st
 
 ```yaml
 dashboard_sync:
-  pending: true
-  sync_status: pending
+  pending: false
+  sync_status: synced
   target: ORQ Dashboard
   source_orq: ORQ-10
   source_closure: .framework/orqs/ORQ-10/closure.md
@@ -160,12 +162,14 @@ dashboard_sync:
     command_profile: local-tooling-alignment
     learning_count: 2
     reusable_learning_count: 1
-    learning_sync_pending: true
-    dashboard_sync_pending: true
-    last_sync_status: Pending
+    learning_sync_pending: false
+    dashboard_sync_pending: false
+    last_sync_status: Synced
     learning_debt: Medium
-  status: pending
+  status: synced
 ```
+
+Evidence: ORQ-10 dashboard entry was created in Notion and marked as synced.
 
 ## Evidence
 
@@ -193,7 +197,7 @@ dashboard_sync:
 ## Governance sync review
 
 ### Does this closure require a governance sync update?
-[ ] Yes
+[x] Yes
 [ ] No
 
 ### Update type
@@ -201,7 +205,7 @@ dashboard_sync:
 
 ### Reason
 
-This closure records a local tooling alignment and a reusable read-only drift-check pattern. It is useful for human-memory persistence, but no external sync was performed in this environment.
+This closure records a local tooling alignment and a reusable read-only drift-check pattern. The external sync was performed in Notion, and the repository copy is now aligned with that completed state.
 
 ### If the configured governance sync targets are available, include:
 - brief executive summary
