@@ -201,3 +201,31 @@ From consumer repo:
 ### Recommendation
 
 The helper is ready for production use. It can be executed before any manual framework alignment task to automate drift detection and controlled propagation without touching product runtime or local project artifacts.
+
+## Controlled Framework Sync Helper Evidence
+
+Implemented `.framework/local-tools/fw-framework-sync.sh` with `check`, `plan`, and `apply` modes.
+
+Validated result:
+
+- Canonical Framework version: 2.0.1
+- Consumer Framework version: 2.0.1
+- Final sync status: Aligned
+- Drift detected: false
+- Propagables covered:
+  - prompts
+  - templates/orq
+  - output-contracts
+- Local-only prompts preserved:
+  - `fw-execute.md`
+  - `fw-execution-review.md`
+- Protected artifacts preserved:
+  - `.framework/context.md`
+  - `.framework/project-config.yml`
+  - `.framework/orqs/**`
+  - product runtime files
+  - tests
+  - scripts
+  - secrets
+
+The helper does not stage, commit, push, run governance sync, or mark external sync targets as completed.
