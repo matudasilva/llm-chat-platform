@@ -90,9 +90,12 @@ class ControlledNotionReadClient:
                 cwd=self.cwd,
             )
 
-            # Start the context manager
+            # Start the context manager and get the session
             self._cm = stdio_client(params)
             self._session = await self._cm.__aenter__()
+
+            # Initialize the MCP session (handshake with server)
+            await self._session.initialize()
 
             logger.info("notion-mcp-read subprocess started and connected")
             self._started = True
