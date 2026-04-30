@@ -14,6 +14,8 @@ from app.http.middleware.request_context import RequestContextMiddleware
 from app.http.middleware.request_size_limit import RequestSizeLimitMiddleware
 from app.http.middleware.structured_logging import StructuredJsonLoggingMiddleware
 from app.infra.db.session import init_db, close_db
+from app.services.notion_read import NotionReadService
+from app.services.notion_read_client import ControlledNotionReadClient
 
 
 def _get_env(name: str, default: str) -> str:
@@ -54,9 +56,37 @@ logger = logging.getLogger("app")
 async def lifespan(app: FastAPI):
     logger.info("app starting application")
     init_db(app)          # <-- crea engine + sessionmaker en app.state
+
+    # Initialize Notion Read service (optional, MVP)
+    notion_mcp_client = None
+    if settings.notion_mcp_enabled:
+        try:
+            logger.info("initializing Notion Read service")
+            notion_mcp_client = ControlledNotionReadClient(
+                command=settings.notion_mcp_server_command,
+                args=settings.notion_mcp_server_args,
+                cwd=settings.notion_mcp_server_cwd,
+                timeout_s=settings.notion_mcp_timeout_s,
+            )
+            await notion_mcp_client.start()
+            service = NotionReadService(notion_mcp_client, settings)
+            app.state.notion_read_service = service
+            logger.info("Notion Read service initialized")
+        except Exception as e:
+            logger.error(f"Failed to initialize Notion Read service: {e}")
+            notion_mcp_client = None
+
     try:
         yield
     finally:
+        # Shutdown Notion Read service
+        if notion_mcp_client:
+            try:
+                logger.info("shutting down Notion Read service")
+                await notion_mcp_client.stop()
+            except Exception as e:
+                logger.error(f"Error during Notion Read service shutdown: {e}")
+
         await close_db(app)  # <-- dispose engine
 
 
