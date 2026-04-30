@@ -74,6 +74,15 @@ class Settings(BaseSettings):
     web_read_max_bytes: int = 32 * 1024
     web_read_max_chars: int = 4_000
 
+    # Controlled Notion Read via MCP (MVP): read-only, bounded context fetch via external MCP server.
+    notion_read_enabled: bool = False
+    notion_mcp_enabled: bool = False
+    notion_mcp_server_command: str = "notion-mcp-read"
+    notion_mcp_server_args: list[str] = []
+    notion_mcp_server_cwd: str | None = None
+    notion_mcp_timeout_s: float = 10.0
+    notion_allowed_page_ids: list[str] = []
+
     # Cost Awareness (MVP): provider-agnostic token pricing table (no external calls).
     # Unknown providers should be treated as 0.0 cost by the estimator.
     cost_rates_by_provider: dict[str, TokenRates] = {
@@ -121,6 +130,33 @@ class Settings(BaseSettings):
         if value <= 0:
             raise ValueError("web_read_timeout_s must be > 0")
         return value
+
+    @field_validator("notion_mcp_timeout_s")
+    @classmethod
+    def validate_notion_mcp_timeout_s(cls, value: float) -> float:
+        if value <= 0:
+            raise ValueError("notion_mcp_timeout_s must be > 0")
+        return value
+
+    @field_validator("notion_mcp_server_command")
+    @classmethod
+    def validate_notion_mcp_server_command(cls, value: str) -> str:
+        if not value or not value.strip():
+            raise ValueError("notion_mcp_server_command must not be empty")
+        return value.strip()
+
+    @field_validator("notion_allowed_page_ids", mode="before")
+    @classmethod
+    def validate_notion_allowed_page_ids(cls, value):
+        if value is None or value == "":
+            return []
+        if isinstance(value, str):
+            # Parse CSV, normalize IDs (remove dashes for comparison)
+            parts = [item.strip().replace("-", "") for item in value.split(",")]
+            return [item for item in parts if item]
+        if isinstance(value, list):
+            return [str(item).strip().replace("-", "") for item in value if str(item).strip()]
+        raise ValueError("notion_allowed_page_ids must be a list or comma-separated string")
 
     @field_validator("web_read_allowed_domains", mode="before")
     @classmethod
