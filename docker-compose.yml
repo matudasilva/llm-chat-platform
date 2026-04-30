@@ -51,6 +51,21 @@ services:
     ports:
       - "6380:6379"
 
+  notion-mcp-server:
+    build:
+      context: ./external/notion-mcp-read
+      dockerfile: Dockerfile
+    container_name: llm-chat-notion-mcp
+    environment:
+      - NOTION_API_TOKEN=${NOTION_API_TOKEN}
+      - NOTION_ROOT_PAGE_ID=${NOTION_ROOT_PAGE_ID}
+      - NOTION_ALLOWED_PAGE_IDS=${NOTION_ALLOWED_PAGE_IDS}
+      - NOTION_ENABLE_WRITE=${NOTION_ENABLE_WRITE:-false}
+    networks:
+      - llmnet
+    # MCP server communicates via stdio to parent process
+    # No exposed ports needed (communicates via stdin/stdout)
+
 networks:
   llmnet:
 
