@@ -27,6 +27,7 @@ The current implemented V1.1 runtime surface is:
 * Config-gated routing seam with static default, signal-based heuristic mode, and best-effort shadow divergence logging
 * Read-only conversation inspection endpoints
 * Minimal Redis response cache for non-streaming `/chat`
+* **Optional** controlled Notion Read via MCP: metadata-only, allowlist-enforced (MVP)
 
 Two design choices are worth calling out explicitly for technical review:
 
@@ -297,6 +298,66 @@ If not, use the API container IP:
 docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' llm-chat-platform-dev-api-1
 ```
 Then open: http://<IP>:8000/ui
+
+---
+
+## Controlled Notion Read via MCP (MVP)
+
+Optional read-only capability for accessing Notion page metadata via the Model Context Protocol (MCP).
+
+**Endpoint:** `GET /notion-read/page?page_id=<id>`
+
+**Capabilities (MVP):**
+
+* Read Notion page metadata only (page_id, title, url, created_time, last_edited_time)
+* Allowlist enforcement: only configured page IDs are readable
+* ID normalization: dashes removed for consistent comparison
+* Response sanitization: no page text, blocks, or internal Notion fields
+
+**Setup (requires external notion-mcp-read subprocess):**
+
+```bash
+# Clone with submodule
+git clone --recursive <repo>
+
+# Configure in .env
+NOTION_READ_ENABLED=true
+NOTION_MCP_ENABLED=true
+NOTION_API_TOKEN=<notion_integration_token>
+NOTION_ROOT_PAGE_ID=<root_page_id>
+NOTION_ALLOWED_PAGE_IDS=<comma-separated-ids>
+NOTION_MCP_SERVER_COMMAND=notion-mcp-read
+NOTION_MCP_TIMEOUT_S=10
+
+# Start services
+docker compose up -d
+```
+
+**HTTP Status Codes:**
+
+* 200: Success (metadata returned)
+* 422: Missing or invalid query params
+* 403: Page ID not in allowlist
+* 502: MCP protocol or upstream Notion API error
+* 504: MCP request timeout
+* 503: MCP subprocess unavailable
+* 500: Unexpected error
+
+**Design Principles:**
+
+* Separate read-only endpoint (never modifies `/chat` or persistence)
+* Process-level singleton MCP client (initialized at app startup via `app.lifespan()`)
+* Hardcoded tool allowlist (notion_get_page only, no dynamic discovery)
+* Error separation by layer (client/service/route for observability)
+* Graceful degradation: endpoint unavailable does not affect `/readyz` or `/chat`
+
+**Deferred (Phase 2):**
+
+* Page text extraction (requires block reading)
+* Database queries
+* Pagination
+* Readiness includes MCP health check
+
 ---
 
 ## Provider Configuration
