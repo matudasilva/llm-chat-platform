@@ -15,7 +15,10 @@ from app.http.middleware.request_size_limit import RequestSizeLimitMiddleware
 from app.http.middleware.structured_logging import StructuredJsonLoggingMiddleware
 from app.infra.db.session import init_db, close_db
 from app.services.notion_read import NotionReadService
-from app.services.notion_read_client import ControlledNotionReadClient
+from app.services.notion_read_client import (
+    ControlledNotionReadClient,
+    build_notion_mcp_child_env,
+)
 
 
 def _get_env(name: str, default: str) -> str:
@@ -66,6 +69,10 @@ async def lifespan(app: FastAPI):
                 command=settings.notion_mcp_server_command,
                 args=settings.notion_mcp_server_args,
                 cwd=settings.notion_mcp_server_cwd,
+                env=build_notion_mcp_child_env(
+                    os.environ,
+                    settings.notion_allowed_page_ids,
+                ),
                 timeout_s=settings.notion_mcp_timeout_s,
             )
             await notion_mcp_client.start()

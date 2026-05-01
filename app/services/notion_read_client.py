@@ -17,12 +17,69 @@ MCP SDK wiring (mcp>=1.27.0):
 import asyncio
 import json
 import logging
+from collections.abc import Mapping
 from typing import Any
 
 from mcp import ClientSession
 from mcp.client.stdio import StdioServerParameters, stdio_client
 
 logger = logging.getLogger(__name__)
+
+
+def _normalize_csv_ids(values: list[str] | None) -> str:
+    if not values:
+        return ""
+    return ",".join(
+        item.strip().replace("-", "")
+        for item in values
+        if item and item.strip()
+    )
+
+
+def _normalize_env_ids(value: str | list[str] | None) -> str:
+    if value is None or value == "":
+        return ""
+
+    if isinstance(value, list):
+        return _normalize_csv_ids(value)
+
+    raw_value = value.strip()
+    if not raw_value:
+        return ""
+
+    if raw_value.startswith("["):
+        try:
+            parsed = json.loads(raw_value)
+        except json.JSONDecodeError:
+            parsed = None
+        if isinstance(parsed, list):
+            return _normalize_csv_ids([str(item) for item in parsed])
+
+    return _normalize_csv_ids(raw_value.split(","))
+
+
+def build_notion_mcp_child_env(
+    host_env: Mapping[str, str],
+    allowed_page_ids: list[str],
+    allowed_database_ids: list[str] | None = None,
+    enable_write: bool = False,
+) -> dict[str, str]:
+    """
+    Build a child-process environment for the external Notion MCP server.
+
+    The host process keeps its own env model intact. The child receives a copy
+    of the host env with Notion-specific values normalized to the server's
+    expected contract.
+    """
+    child_env = dict(host_env)
+    child_env["NOTION_ALLOWED_PAGE_IDS"] = _normalize_csv_ids(allowed_page_ids)
+    child_env["NOTION_ALLOWED_DATABASE_IDS"] = _normalize_env_ids(
+        host_env.get("NOTION_ALLOWED_DATABASE_IDS")
+        if allowed_database_ids is None
+        else allowed_database_ids
+    )
+    child_env["NOTION_ENABLE_WRITE"] = "true" if enable_write else "false"
+    return child_env
 
 
 class NotionMCPError(Exception):
@@ -63,11 +120,13 @@ class ControlledNotionReadClient:
         command: str,
         args: list[str] | None = None,
         cwd: str | None = None,
+        env: Mapping[str, str] | None = None,
         timeout_s: float = 10.0,
     ):
         self.command = command
         self.args = args or []
         self.cwd = cwd
+        self.env = dict(env) if env is not None else None
         self.timeout_s = timeout_s
         self._stdio_cm = None   # stdio_client context manager
         self._session_cm: ClientSession | None = None  # ClientSession (also a ctx mgr)
@@ -95,6 +154,7 @@ class ControlledNotionReadClient:
                 command=self.command,
                 args=self.args,
                 cwd=self.cwd,
+                env=self.env if self.env is not None else None,
             )
 
             # Step 1: enter stdio_client → get (read_stream, write_stream)

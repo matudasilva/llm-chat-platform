@@ -21,6 +21,7 @@ from app.services.notion_read_client import (
     NotionMCPExecutionError,
     NotionMCPProtocolError,
     NotionMCPTimeoutError,
+    build_notion_mcp_child_env,
 )
 
 
@@ -70,19 +71,58 @@ async def test_client_start_success():
     ClientSession(rs, ws).__aenter__ starts receive_loop and returns session;
     session.initialize() is called for MCP handshake.
     """
-    client = ControlledNotionReadClient(command="notion-mcp-read", timeout_s=10.0)
+    child_env = build_notion_mcp_child_env(
+        {"PATH": "/usr/bin", "NOTION_API_TOKEN": "host-token"},
+        ["abc-123", "def456"],
+    )
+    client = ControlledNotionReadClient(
+        command="notion-mcp-read",
+        timeout_s=10.0,
+        env=child_env,
+    )
     stdio_cm, _, _ = _make_stdio_cm()
     mock_session = _make_session()
 
     with (
         patch("app.services.notion_read_client.stdio_client", return_value=stdio_cm),
         patch("app.services.notion_read_client.ClientSession", return_value=mock_session),
+        patch("app.services.notion_read_client.StdioServerParameters") as params_cls,
     ):
         await client.start()
 
     assert client._started is True
     assert client._session is mock_session
+    params_cls.assert_called_once_with(
+        command="notion-mcp-read",
+        args=[],
+        cwd=None,
+        env=child_env,
+    )
     mock_session.initialize.assert_awaited_once()
+
+
+def test_build_notion_mcp_child_env_maps_csv_values():
+    base_env = {
+        "PATH": "/usr/bin",
+        "NOTION_API_TOKEN": "token",
+        "NOTION_ROOT_PAGE_ID": "root",
+        "NOTION_ALLOWED_PAGE_IDS": '["json", "list"]',
+        "NOTION_ALLOWED_DATABASE_IDS": '["db"]',
+        "NOTION_ENABLE_WRITE": "true",
+    }
+
+    child_env = build_notion_mcp_child_env(
+        base_env,
+        ["abc-123", "def456"],
+    )
+
+    assert child_env["PATH"] == "/usr/bin"
+    assert child_env["NOTION_API_TOKEN"] == "token"
+    assert child_env["NOTION_ROOT_PAGE_ID"] == "root"
+    assert child_env["NOTION_ALLOWED_PAGE_IDS"] == "abc123,def456"
+    assert child_env["NOTION_ALLOWED_DATABASE_IDS"] == "db"
+    assert child_env["NOTION_ENABLE_WRITE"] == "false"
+    assert base_env["NOTION_ALLOWED_PAGE_IDS"] == '["json", "list"]'
 
 
 @pytest.mark.asyncio
