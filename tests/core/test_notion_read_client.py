@@ -218,7 +218,7 @@ async def test_get_page_success():
 
     assert result == response_data
     mock_session.call_tool.assert_awaited_once_with(
-        "notion_get_page", {"page_id": "abc123"}
+        "notion_get_page", {"pageId": "abc123"}
     )
 
 

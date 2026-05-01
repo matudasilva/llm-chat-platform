@@ -235,7 +235,7 @@ class ControlledNotionReadClient:
         try:
             logger.debug("Calling notion_get_page page_id=%s", page_id)
             result = await asyncio.wait_for(
-                self._session.call_tool("notion_get_page", {"page_id": page_id}),
+                self._session.call_tool("notion_get_page", {"pageId": page_id}),
                 timeout=self.timeout_s,
             )
 
