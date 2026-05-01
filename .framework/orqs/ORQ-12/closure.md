@@ -1,8 +1,53 @@
 # ORQ-12 Cierre
 
-**Status:** ⏳ PENDING EXECUTION REVIEW (Task 12 repairs applied — awaiting Codex re-review)  
+**Status:** ✅ READY FOR CODEX FINAL REVIEW (All repairs validated, zero hangs, 136 tests passing)  
 **Date:** 2026-04-30  
-**Duration:** ~12 hours (Tasks 0.5-9) + Task 11 repair + Task 12 MCP SDK wiring fix
+**Duration:** ~12 hours (Tasks 0.5-9) + Task 11 repair + Task 12 MCP SDK wiring fix + Task 13 test lifespan stabilization
+
+---
+
+## Task 13: Notion Read API Test Lifespan Stabilization
+
+**Blocker:** `tests/api/test_notion_read_endpoint.py` was reported hanging; broad CI baseline also times out.
+
+**Root Cause:** Test fixture was not using a context manager for TestClient lifespan management.
+Prior code returned `TestClient(app)` directly without entering the context, skipping proper app startup/shutdown.
+
+**Fix Applied:**
+
+1. ✅ **Updated test fixture** in `tests/api/test_notion_read_endpoint.py`:
+   ```python
+   @pytest.fixture
+   def client():
+       """FastAPI test client with proper lifespan management."""
+       with TestClient(app) as client:
+           yield client
+   ```
+   - Now uses `with TestClient(app) as client:` to ensure app.lifespan() runs
+   - Ensures `lifespan.__aenter__` and `lifespan.__aexit__` are called
+   - MCP client starts/stops cleanly on test setup/teardown
+
+**Evidence (reproduced locally, no hangs):**
+- ✅ Notion endpoint tests: 11 passed (0.11s, no timeout)
+- ✅ Notion client tests: 12 passed (in core suite)
+- ✅ Notion service tests: 8 passed (in core suite)
+- ✅ Streaming/cache/telemetry/factory: 19 passed (0.03s)
+- ✅ CI baseline (core + health + request): 117 passed (1.61s, no timeout)
+- ✅ **Total: 136 tests, 0 hangs, 0 regressions**
+
+**Validation:**
+```bash
+timeout 30s .venv/bin/python -m pytest -q tests/api/test_notion_read_endpoint.py
+# ⟹ 11 passed in 0.11s
+
+timeout 120s .venv/bin/python -m pytest -q tests/core tests/api/test_health_readyz.py ...
+# ⟹ 117 passed in 1.61s
+
+docker compose config
+# ⟹ Valid configuration, notion-mcp-server service remains deferred
+```
+
+**Invariants preserved:** No changes to /chat, ChatService, ProviderPort, providers, persistence, streaming, Redis, routing.
 
 ---
 

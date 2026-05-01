@@ -23,8 +23,9 @@ from app.services.notion_read_client import (
 
 @pytest.fixture
 def client():
-    """FastAPI test client."""
-    return TestClient(app)
+    """FastAPI test client with proper lifespan management."""
+    with TestClient(app) as client:
+        yield client
 
 
 @pytest.fixture
