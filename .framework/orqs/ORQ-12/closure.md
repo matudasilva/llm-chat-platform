@@ -1,39 +1,52 @@
 # ORQ-12 Cierre
 
-**Status:** 🔧 REPAIR IN PROGRESS (Task 11: MCP Runtime Boundary Repair)  
+**Status:** ⏳ PENDING EXECUTION REVIEW (Task 12 repairs applied — awaiting Codex re-review)  
 **Date:** 2026-04-30  
-**Duration:** ~12 hours (Tasks 0.5-9) + repair work (Task 11)
+**Duration:** ~12 hours (Tasks 0.5-9) + Task 11 repair + Task 12 MCP SDK wiring fix
 
 ---
 
-## Task 11: MCP Runtime Boundary Repair (Codex Execution Review Findings)
+## Task 12: MCP SDK Wiring Fix (Codex Re-Review Findings)
 
-**Critical Issues Fixed:**
+**Root Cause Found:** `stdio_client().__aenter__()` yields `(read_stream, write_stream)`, not a `ClientSession`.
+Prior code stored the stream tuple in `self._session` and called `.initialize()` and `.call_tool()` on it.
+This only worked at test time because mocks masked the type error.
 
-1. ✅ **MCP SDK Initialization:** Added missing `await self._session.initialize()` call in ControlledNotionReadClient.start()
-   - Was missing the handshake with MCP server before calling tools
-   - Fixes potential hanging or incomplete initialization
+**Fixes Applied:**
 
-2. ✅ **Docker/Submodule Wiring:** Deferred docker-compose notion-mcp-server service
-   - stdio doesn't work with docker container (requires network/socket changes)
-   - MVP uses local subprocess via `StdioServerParameters(command="notion-mcp-read")`
-   - Documented future work for docker/HTTP wrapper pattern
+1. ✅ **Correct MCP SDK wiring** in `app/services/notion_read_client.py`:
+   - `stdio_client(params)` → `__aenter__` → `(read_stream, write_stream)` (streams)
+   - `ClientSession(read_stream, write_stream)` → `__aenter__` → session (starts receive_loop)
+   - `await session.initialize()` → MCP handshake
+   - `stop()` exits both session and stdio contexts in reverse order
+   - `self._stdio_cm` / `self._session_cm` / `self._session` are now distinct objects
 
-3. ✅ **Test Reproducibility:** All 30 tests verified passing locally
-   - No hangs on API tests (fixed by mocking service in app.state)
-   - Core tests: 11 passing
-   - Service tests: 8 passing
-   - API tests: 11 passing
-   - CI baseline: 116 passing (zero regression)
+2. ✅ **Tests updated** in `tests/core/test_notion_read_client.py`:
+   - Mocks now correctly simulate `stdio_client` → `(rs, ws)` and `ClientSession(rs, ws)` → session
+   - Added `test_client_start_initialize_failure` (was missing)
+   - 12 tests passing, reflecting actual SDK wiring
 
-4. ✅ **ORQ Documentation Corrections:**
-   - Updated acceptance.md to reflect metadata-only MVP (no database, no text/blocks, no 400 status)
-   - Marked database/query/search as Phase 2 candidates
-   - Corrected response schema expectations
+3. ✅ **acceptance.md corrected** (residues removed):
+   - Removed `denied database_id → NotionBlockedError`
+   - Removed `truncation: text > max_chars`
+   - Changed `missing page_id → 400` to `→ 422`
 
-5. ⏳ **Documentation Updates Pending:**
-   - execution.md: Verify evidence matches corrected scope
-   - closure.md: Final status after all repairs verified
+4. ✅ **closure.md status** updated to PENDING EXECUTION REVIEW (not CLOSED)
+
+**Evidence (verified with .venv/bin/python):**
+- Core notion tests: 20 passed (12 client + 8 service)
+- API notion tests: 11 passed
+- Chat / streaming / cache / telemetry / factory: 19 passed
+- CI baseline: 117 passed, 1 warning (zero regression)
+
+**NOT CLOSED:** ORQ-12 requires Codex execution re-review before closure.
+
+---
+
+## Task 11: MCP Subprocess + Docker Alignment (Previous Repair)
+
+1. ✅ Deferred docker-compose notion-mcp-server service (stdio ≠ container network)
+2. ✅ MVP uses local subprocess via `StdioServerParameters(command="notion-mcp-read")`
 
 ---
 
@@ -45,15 +58,17 @@ Preparar, validar e implementar una nueva capability `read-only` acotada que per
 
 ---
 
-## Criterios de Aceptación: ALL MET
+## Criterios de Aceptación: PENDING CODEX RE-REVIEW
 
-- ✅ ControlledNotionReadClient implementado (Task 2)
+Implementation completed; MCP SDK wiring corrected in Task 12. Awaiting re-review.
+
+- ✅ ControlledNotionReadClient implementado (Task 2, corrected Task 12)
 - ✅ NotionReadService implementado (Task 3)
 - ✅ GET /notion-read/page endpoint funcional (Task 5)
-- ✅ Tests pasan: 30 new + zero regression in existing (Task 7-8)
+- ✅ Tests pasan: 31 new (Task 12 added 1) + zero regression — 117 CI baseline
 - ✅ Invariantes AGENTS.md preservados (zero changes to /chat, providers, persistence)
 - ✅ Documentación actualizada (README, .env.example, docstrings) (Task 9)
-- ✅ Evidence reproducible documentada (execution.md)
+- ⏳ Evidence reproducible documentada — pending Codex re-review sign-off
 
 ---
 
@@ -133,20 +148,29 @@ Deferred to Phase 2 (Tasks 10+) or future ORQs:
 | Timeout without isolation | Per-request asyncio.wait_for() with configurable timeout_s | ✅ Implemented |
 | Scope creep | Hardcoded tool allowlist, architecture enforces MVP boundary | ✅ Reviewed |
 
-**No residual risks identified.** All identified risks from design phase have been mitigated.
+**Residual risks after Task 12:**
+- ⚠️ **MCP subprocess availability:** `notion-mcp-read` binary must be in PATH at runtime.
+  If absent, `start()` raises `NotionMCPProtocolError`; app gracefully degrades (503).
+- ⚠️ **No integration test against real MCP server:** all tests use mocks.
+  A future task should validate against the actual notion-mcp-read subprocess.
+- ⚠️ **docker/submodule wiring deferred:** docker-compose service is commented out.
+  Future operational packaging will require a transport change (socket/HTTP wrapper).
+
+**Mitigations in place:** graceful degradation (503), safe defaults (features off by default),
+hardcoded tool allowlist, response sanitization, error taxonomy by layer.
 
 ---
 
 ## Estado de Cierre
 
-✅ **CLOSED ORQ**
+⏳ **PENDING EXECUTION REVIEW** (not closed — awaiting Codex re-review after Task 12)
 
 - ✅ All Phase 2 MVP tasks completed (0.5-6)
 - ✅ All Phase 3 testing tasks completed (7-9)
-- ✅ All acceptance criteria met (Phase 1-4)
-- ✅ Evidence reproducible documented (execution.md)
-- ✅ Invariants preserved (zero regression)
-- ✅ Learnings captured (below)
+- ✅ Task 11: Docker/submodule alignment
+- ✅ Task 12: MCP SDK wiring corrected, tests updated
+- ⏳ Acceptance criteria: implementation verified locally, pending Codex sign-off
+- ⏳ Evidence: reproducible locally (117 tests pass), pending Codex re-run confirmation
 
 ---
 
@@ -262,18 +286,17 @@ learning_sync:
 
 - **Duration:** ~12 hours (Tasks 0.5-9)
 - **Commits:** 8 commits (Task 0.5-Task 9)
-- **Tests:** 30 new tests + zero regression on existing (~50 tests)
-- **Files Modified:** 12 files (settings, 2 services, schema, route, router, main, README, .env.example, execution.md)
-- **Files Created:** 6 files (notion_read_client.py, notion_read.py, notion_read.py, test files, docs)
+- **Tests:** 31 new tests (Task 12 added 1 lifecycle test) + 117 CI baseline passing
+- **Files Modified:** 14 files (+ notion_read_client.py corrected, + test_notion_read_client.py corrected)
 - **Invariants:** All preserved (no changes to /chat, providers, persistence, streaming)
-- **Documentation:** Complete (spec.md, acceptance.md, execution.md, closure.md, README.md)
+- **Documentation:** acceptance.md corrected, closure.md updated — pending Codex re-review
 
-**Ready for:** Phase 2 (database queries, text extraction, search support) or production deployment with NOTION_READ_ENABLED=false (default safe)
+**NOT ready for production:** Awaiting Codex execution re-review sign-off.
 
-**Learnings:** 5 captured + documented for Framework Learning
+**Learnings:** 5 captured + documented for Framework Learning (see below)
 
 ---
 
-**Last Updated:** 2026-04-30 (Closed by executor)  
-**Verified By:** execution.md evidence + test results  
-**Status:** ✅ CLOSED
+**Last Updated:** 2026-04-30 (Task 12 repair applied — PENDING CODEX RE-REVIEW)  
+**Verified By:** .venv/bin/python -m pytest (all commands listed in scope passed)  
+**Status:** ⏳ PENDING EXECUTION REVIEW
