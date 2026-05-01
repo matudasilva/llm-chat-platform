@@ -1,14 +1,16 @@
 """
 Tests for GET /notion-read/page endpoint with error mapping and validation.
 
-Strategy: Test endpoint integration with service, error code mapping, validation.
+Strategy: Test endpoint integration with the Notion read router only, using a
+small FastAPI app to avoid unrelated startup behavior from the full application.
 """
 
 import pytest
-from fastapi.testclient import TestClient
-from unittest.mock import AsyncMock, MagicMock
+from fastapi import FastAPI
+import httpx
+from unittest.mock import AsyncMock
 
-from app.main import app
+from app.api.routes.notion_read import router as notion_read_router
 from app.services.notion_read import (
     NotionReadBlockedError,
     NotionReadError,
@@ -21,68 +23,70 @@ from app.services.notion_read_client import (
 )
 
 
-@pytest.fixture
-def client():
-    """FastAPI test client with proper lifespan management."""
-    with TestClient(app) as client:
-        yield client
+app = FastAPI()
+app.include_router(notion_read_router)
 
 
-@pytest.fixture
-def setup_service(monkeypatch):
-    """Setup mock service in app state."""
-
-    async def mock_service():
-        return AsyncMock()
-
-    return mock_service
+def make_client():
+    """Create an async HTTP client against the router-only test app."""
+    return httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app),
+        base_url="http://test",
+    )
 
 
-def test_get_page_success(client, monkeypatch):
+@pytest.mark.asyncio
+async def test_get_page_success():
     """Test successful page fetch returns 200 with NotionPageOut."""
-    # Setup mock service
     mock_service = AsyncMock(spec=NotionReadService)
     mock_service.get_page.return_value = {
-        "page_id": "abc123",
         "title": "Test Page",
         "url": "https://notion.so/test",
         "created_time": "2026-01-01T00:00:00Z",
         "last_edited_time": "2026-01-02T00:00:00Z",
     }
-
-    # Inject service into app state
     app.state.notion_read_service = mock_service
 
-    response = client.get("/notion-read/page?page_id=abc123")
+    async with make_client() as client:
+        response = await client.get("/notion-read/page?page_id=abc123")
 
     assert response.status_code == 200
     data = response.json()
     assert data["page_id"] == "abc123"
     assert data["title"] == "Test Page"
     assert data["url"] == "https://notion.so/test"
+    assert data["created_time"] == "2026-01-01T00:00:00Z"
+    assert data["last_edited_time"] == "2026-01-02T00:00:00Z"
+    assert set(data.keys()) == {
+        "page_id",
+        "title",
+        "url",
+        "created_time",
+        "last_edited_time",
+    }
+    mock_service.get_page.assert_awaited_once_with("abc123")
 
 
-def test_get_page_missing_query_param(client, monkeypatch):
+@pytest.mark.asyncio
+async def test_get_page_missing_query_param():
     """Test missing page_id returns 422 (FastAPI validation)."""
-    mock_service = AsyncMock(spec=NotionReadService)
-    app.state.notion_read_service = mock_service
-
-    response = client.get("/notion-read/page")
+    async with make_client() as client:
+        response = await client.get("/notion-read/page")
 
     assert response.status_code == 422
 
 
-def test_get_page_empty_query_param(client, monkeypatch):
+@pytest.mark.asyncio
+async def test_get_page_empty_query_param():
     """Test empty page_id returns 422 (FastAPI validation)."""
-    mock_service = AsyncMock(spec=NotionReadService)
-    app.state.notion_read_service = mock_service
-
-    response = client.get("/notion-read/page?page_id=")
+    async with make_client() as client:
+        response = await client.get("/notion-read/page?page_id=")
 
     assert response.status_code == 422
 
 
-def test_get_page_blocked_returns_403(client, monkeypatch):
+@pytest.mark.asyncio
+async def test_get_page_blocked_returns_403():
     """Test blocked page returns 403 Forbidden."""
     mock_service = AsyncMock(spec=NotionReadService)
     mock_service.get_page.side_effect = NotionReadBlockedError(
@@ -90,25 +94,29 @@ def test_get_page_blocked_returns_403(client, monkeypatch):
     )
     app.state.notion_read_service = mock_service
 
-    response = client.get("/notion-read/page?page_id=blocked-page")
+    async with make_client() as client:
+        response = await client.get("/notion-read/page?page_id=blocked-page")
 
     assert response.status_code == 403
     assert "denied" in response.json()["detail"].lower()
 
 
-def test_get_page_timeout_returns_504(client, monkeypatch):
+@pytest.mark.asyncio
+async def test_get_page_timeout_returns_504():
     """Test MCP timeout returns 504 Gateway Timeout."""
     mock_service = AsyncMock(spec=NotionReadService)
     mock_service.get_page.side_effect = NotionMCPTimeoutError("Timeout")
     app.state.notion_read_service = mock_service
 
-    response = client.get("/notion-read/page?page_id=abc123")
+    async with make_client() as client:
+        response = await client.get("/notion-read/page?page_id=abc123")
 
     assert response.status_code == 504
     assert "timeout" in response.json()["detail"].lower()
 
 
-def test_get_page_protocol_error_returns_502(client, monkeypatch):
+@pytest.mark.asyncio
+async def test_get_page_protocol_error_returns_502():
     """Test MCP protocol error returns 502 Bad Gateway."""
     mock_service = AsyncMock(spec=NotionReadService)
     mock_service.get_page.side_effect = NotionMCPProtocolError(
@@ -116,13 +124,15 @@ def test_get_page_protocol_error_returns_502(client, monkeypatch):
     )
     app.state.notion_read_service = mock_service
 
-    response = client.get("/notion-read/page?page_id=abc123")
+    async with make_client() as client:
+        response = await client.get("/notion-read/page?page_id=abc123")
 
     assert response.status_code == 502
     assert "protocol" in response.json()["detail"].lower()
 
 
-def test_get_page_execution_error_returns_502(client, monkeypatch):
+@pytest.mark.asyncio
+async def test_get_page_execution_error_returns_502():
     """Test MCP execution error returns 502 Bad Gateway."""
     mock_service = AsyncMock(spec=NotionReadService)
     mock_service.get_page.side_effect = NotionMCPExecutionError(
@@ -130,59 +140,70 @@ def test_get_page_execution_error_returns_502(client, monkeypatch):
     )
     app.state.notion_read_service = mock_service
 
-    response = client.get("/notion-read/page?page_id=abc123")
+    async with make_client() as client:
+        response = await client.get("/notion-read/page?page_id=abc123")
 
     assert response.status_code == 502
     assert "error" in response.json()["detail"].lower()
 
 
-def test_get_page_service_error_returns_500(client, monkeypatch):
+@pytest.mark.asyncio
+async def test_get_page_service_error_returns_500():
     """Test service error returns 500 Internal Server Error."""
     mock_service = AsyncMock(spec=NotionReadService)
     mock_service.get_page.side_effect = NotionReadError("Unexpected error")
     app.state.notion_read_service = mock_service
 
-    response = client.get("/notion-read/page?page_id=abc123")
+    async with make_client() as client:
+        response = await client.get("/notion-read/page?page_id=abc123")
 
     assert response.status_code == 500
 
 
-def test_get_page_unexpected_error_returns_500(client, monkeypatch):
+@pytest.mark.asyncio
+async def test_get_page_unexpected_error_returns_500():
     """Test unexpected exception returns 500."""
     mock_service = AsyncMock(spec=NotionReadService)
     mock_service.get_page.side_effect = RuntimeError("Unexpected")
     app.state.notion_read_service = mock_service
 
-    response = client.get("/notion-read/page?page_id=abc123")
+    async with make_client() as client:
+        response = await client.get("/notion-read/page?page_id=abc123")
 
     assert response.status_code == 500
 
 
-def test_get_page_no_service_returns_503(client, monkeypatch):
+@pytest.mark.asyncio
+async def test_get_page_no_service_returns_503():
     """Test missing service returns 503 Service Unavailable."""
-    # Don't set the service in app state
     if hasattr(app.state, "notion_read_service"):
         delattr(app.state, "notion_read_service")
 
-    response = client.get("/notion-read/page?page_id=abc123")
+    async with make_client() as client:
+        response = await client.get("/notion-read/page?page_id=abc123")
 
     assert response.status_code == 503
     assert "unavailable" in response.json()["detail"].lower()
 
 
-def test_get_page_response_schema_validation(client, monkeypatch):
+@pytest.mark.asyncio
+async def test_get_page_response_schema_validation():
     """Test response is validated against NotionPageOut schema."""
     mock_service = AsyncMock(spec=NotionReadService)
-    # Return minimal response (only required fields)
     mock_service.get_page.return_value = {
-        "page_id": "abc123",
         "url": "https://notion.so/test",
     }
     app.state.notion_read_service = mock_service
 
-    response = client.get("/notion-read/page?page_id=abc123")
+    async with make_client() as client:
+        response = await client.get("/notion-read/page?page_id=abc123")
 
     assert response.status_code == 200
     data = response.json()
-    assert "page_id" in data
-    assert "url" in data
+    assert data == {
+        "page_id": "abc123",
+        "url": "https://notion.so/test",
+        "title": None,
+        "created_time": None,
+        "last_edited_time": None,
+    }

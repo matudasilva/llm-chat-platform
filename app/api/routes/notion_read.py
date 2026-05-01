@@ -65,7 +65,7 @@ async def get_notion_page(
         page_data = await service.get_page(page_id)
 
         # Validate response against schema
-        return NotionPageOut(**page_data)
+        return NotionPageOut(**{**page_data, "page_id": page_id})
 
     except NotionReadBlockedError as e:
         # Page ID not in allowlist
