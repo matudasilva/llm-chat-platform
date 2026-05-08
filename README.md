@@ -27,8 +27,8 @@ The current implemented V1.1 runtime surface is:
 * Config-gated routing seam with static default, signal-based heuristic mode, and best-effort shadow divergence logging
 * Read-only conversation inspection endpoints
 * Minimal Redis response cache for non-streaming `/chat`
-* **Optional** controlled Web Read: `GET /web-read` for fetching and parsing web page content (MVP)
-* **Optional** controlled Notion Read: `GET /notion-read/page` for fetching Notion page metadata via MCP (MVP)
+* Consolidated read-only Web Read: `GET /web-read` for fetching and parsing web page content (locally validated, operator-ready)
+* Consolidated read-only Notion Read: `GET /notion-read/page` for fetching Notion page metadata via MCP (locally validated, operator-ready)
 
 Two design choices are worth calling out explicitly for technical review:
 
@@ -505,6 +505,47 @@ This project intentionally does not:
 * Implement billing
 
 It is a correctness-first backend reference system.
+
+---
+
+## Completed Work & Strategic Roadmap
+
+### External Read Capabilities (Completed)
+
+✅ **Consolidated via ORQ-14 (Closure: 2026-05-08)**
+
+- Web Read (`GET /web-read`): Operator-ready read-only capability for fetching web page content
+- Notion Read (`GET /notion-read/page`): Operator-ready read-only capability for fetching Notion page metadata via MCP
+- Notion MCP Runtime: Evidence of subprocess initialization and Notion API access (ORQ-13, validated 2026-05-08)
+- Documentation: Unified endpoint guide, troubleshooting runbook, error decision table, executable Jupyter demo
+
+**Key Facts:**
+- Both endpoints remain completely separate from `/chat`
+- `/chat` remains the only authoritative write-path
+- Zero changes to ChatService, ProviderPort, providers, persistence, streaming, or routing
+- All invariants preserved; zero regression
+
+### Planned Future Work (Not Yet Started)
+
+**ORQ-15 Candidate — Controlled Notion Write Safety Contract**
+- Static read-only validation of potential write patterns
+- Safety analysis before any write implementation
+- No execution of writes
+
+**Later (Sequenced)**
+- Controlled Notion Write MVP (implementation phase, depends on ORQ-15 safety contract)
+- Internal Docs Retrieval / RAG Baseline Design (ingestion and retrieval patterns)
+- Routing Evidence Dataset (prerequisite for ML routing)
+- Offline ML Routing Baseline (depends on evidence dataset)
+
+### Explicitly Not Implemented
+
+- `/chat` tool integration (read endpoints remain separate)
+- Notion Write capability (safety analysis phase planned, not MVP)
+- RAG / embeddings / vector search
+- Generic MCP tools runtime (read/write endpoints remain specific)
+- Browser automation
+- Real-time collaboration
 
 ---
 
