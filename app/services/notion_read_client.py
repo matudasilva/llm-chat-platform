@@ -72,6 +72,8 @@ def build_notion_mcp_child_env(
     expected contract.
     """
     child_env = dict(host_env)
+    if "NOTION_API_TOKEN" not in child_env and "NOTION_API_KEY" in child_env:
+        child_env["NOTION_API_TOKEN"] = child_env["NOTION_API_KEY"]
     child_env["NOTION_ALLOWED_PAGE_IDS"] = _normalize_csv_ids(allowed_page_ids)
     child_env["NOTION_ALLOWED_DATABASE_IDS"] = _normalize_env_ids(
         host_env.get("NOTION_ALLOWED_DATABASE_IDS")

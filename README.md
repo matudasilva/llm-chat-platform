@@ -27,7 +27,8 @@ The current implemented V1.1 runtime surface is:
 * Config-gated routing seam with static default, signal-based heuristic mode, and best-effort shadow divergence logging
 * Read-only conversation inspection endpoints
 * Minimal Redis response cache for non-streaming `/chat`
-* **Optional** controlled Notion Read via MCP: metadata-only, allowlist-enforced (MVP)
+* **Optional** controlled Web Read: `GET /web-read` for fetching and parsing web page content (MVP)
+* **Optional** controlled Notion Read: `GET /notion-read/page` for fetching Notion page metadata via MCP (MVP)
 
 Two design choices are worth calling out explicitly for technical review:
 
@@ -301,6 +302,34 @@ Then open: http://<IP>:8000/ui
 
 ---
 
+## External Read Capabilities Demo
+
+Two read-only endpoints are available for operator exploration and integration:
+
+- **Web Read:** `GET /web-read?url=<url>` — Fetch and parse web page content
+- **Notion Read:** `GET /notion-read/page?page_id=<page_id>` — Fetch Notion page metadata
+
+**Try the demo:**
+
+```bash
+# Start Jupyter notebook
+jupyter notebook demo_read_capabilities.ipynb
+```
+
+Then open the notebook and execute cells to:
+- Explore both endpoints interactively
+- See request/response shapes
+- Test error handling
+- Verify endpoint health
+
+**Documentation:**
+
+- Endpoint guide and configuration: `docs/external_read_capabilities.md`
+- Troubleshooting common errors: `docs/troubleshooting_external_read.md`
+- Error decision table and runbook: `docs/error_decision_table.md`
+
+---
+
 ## Controlled Notion Read via MCP (MVP)
 
 Optional read-only capability for accessing Notion page metadata via the Model Context Protocol (MCP).
@@ -326,12 +355,16 @@ NOTION_MCP_ENABLED=true
 NOTION_API_TOKEN=<notion_integration_token>
 NOTION_ROOT_PAGE_ID=<root_page_id>
 NOTION_ALLOWED_PAGE_IDS=<comma-separated-ids>
-NOTION_MCP_SERVER_COMMAND=notion-mcp-read
+NOTION_MCP_SERVER_COMMAND=node
+NOTION_MCP_SERVER_ARGS=["/notion-mcp-server/dist/server.js"]
+NOTION_MCP_SERVER_CWD=/notion-mcp-server
 NOTION_MCP_TIMEOUT_S=10
 
 # Start services
 docker compose up -d
 ```
+
+When running the API in Docker, the image includes Node.js and mounts the local `notion-mcp-read` checkout at `/notion-mcp-server` so the subprocess can be spawned inside the API container.
 
 **HTTP Status Codes:**
 

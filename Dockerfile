@@ -8,6 +8,7 @@ WORKDIR /app
 # Minimal system deps
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
+    nodejs \
   && rm -rf /var/lib/apt/lists/*
 
 # Install runtime dependencies first (cache-friendly)

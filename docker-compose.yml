@@ -13,6 +13,8 @@ services:
         condition: service_started
     networks:
       - llmnet
+    volumes:
+      - ../notion-mcp-test:/notion-mcp-server
     # NO construir DATABASE_URL acá. Que venga en .env
     environment:
         - STUB_PROVIDER_MODE=${STUB_PROVIDER_MODE:-ok}
