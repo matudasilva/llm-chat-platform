@@ -4,13 +4,13 @@
 
 **Scope:** Deep technical appendices, debugging playbooks, and execution-level details
 
-**Validity:** Up to Day 33 (Appendix AA)
+**Validity:** Up to Appendix AD
 
 
 > Note:
 > Appendices A–E describe the effective system state up to Day 9.
 > Appendix F documents the Day 10 traceability layer (read-only reconstruction).
-> Later appendices record incremental architectural and operational changes through Day 33.
+> Later appendices record incremental architectural, operational, and validation evidence through Appendix AD.
 
 
 
@@ -2040,5 +2040,77 @@ Observed result:
 - no DB reads or writes were added to routing
 - no provider-specific logic was added to routes or domain services
 - `StaticRoutingPolicy` remains the safe default
+
+## Appendix AD — Bedrock Runtime Validation
+
+### AD.1 Purpose
+
+Document the successful AWS Bedrock runtime validation performed after AWS restored model access for the account.
+
+### AD.2 Scope
+
+This section records reproducible evidence for the Bedrock runtime path only. It does not introduce new behavior and it preserves:
+
+- `/chat` as the only write-path
+- provider-agnostic domain services
+- streaming SSE behavior
+- atomic persistence
+- best-effort telemetry
+- no provider-specific logic in routes or domain services
+
+### AD.3 Configuration used
+
+- AWS CLI identity: `arn:aws:iam::545009831299:user/cli-bedrock`
+- Region: `us-east-1`
+- Model: `nvidia.nemotron-nano-12b-v2`
+- Bedrock configuration was passed to the dev API container via `docker-compose.dev.yml`
+- `BEDROCK_REGION` and `BEDROCK_MODEL` were also set in the local environment
+
+### AD.4 Reproducible commands
+
+```bash
+docker compose -f docker-compose.dev.yml ps
+aws bedrock list-foundation-models --region us-east-1
+aws bedrock-runtime converse --region us-east-1 --model-id nvidia.nemotron-nano-12b-v2 --messages '[{"role":"user","content":[{"text":"hello"}]}]'
+curl -sS -X POST http://localhost:8001/chat -H "Content-Type: application/json" -d '{"message":"hello from Bedrock"}' | jq
+curl -N --no-buffer -X POST http://localhost:8001/chat -H "Content-Type: application/json" -d '{"message":"hello from Bedrock streaming","stream":true}'
+docker compose -f docker-compose.dev.yml exec -T postgres psql -U llmchat -d llmchat -c "select provider, status, model_version, input_tokens, output_tokens, total_tokens from usage_events order by timestamp desc limit 10;"
+```
+
+### AD.5 Expected results
+
+- `aws bedrock list-foundation-models` confirms model visibility only
+- `aws bedrock-runtime converse` succeeds and validates real non-streaming inference
+- `/chat` non-streaming returns `status=success`
+- `/chat` streaming emits SSE `token` events followed by `done`
+- `messages` contains balanced user and assistant records
+- `usage_events` records successful Bedrock telemetry with populated token counts
+
+### AD.6 Evidence summary
+
+Observed Bedrock telemetry fields in `usage_events`:
+
+- `provider=bedrock`
+- `status=success`
+- `model_version=nvidia.nemotron-nano-12b-v2`
+- `input_tokens`
+- `output_tokens`
+- `total_tokens`
+
+The earlier platform error was `bedrock provider not configured`. The root cause was missing `BEDROCK_REGION` and `BEDROCK_MODEL` in the dev API container environment. After adding those values to `docker-compose.dev.yml` and `.env`, Bedrock worked end-to-end.
+
+### AD.7 Troubleshooting notes
+
+- `aws bedrock list-foundation-models --region us-east-1` only confirms availability metadata and does not validate inference
+- AWS CLI `converse-stream` was not available in this environment, so streaming validation was performed through the platform `/chat` SSE path
+
+### AD.8 Invariants preserved
+
+- `/chat` remained the only write-path
+- persistence remained atomic and consistent
+- the provider layer remained provider-agnostic at the domain boundary
+- streaming behavior remained intact
+- telemetry remained best-effort even on failure
+- no provider-specific logic was added to routes or domain services
 
 **End of appendix — complements the live LLD document**
