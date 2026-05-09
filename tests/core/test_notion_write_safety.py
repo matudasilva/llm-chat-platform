@@ -147,6 +147,13 @@ def test_validate_field_value_select_pass(validator):
     assert result.is_valid is True
 
 
+def test_validate_field_value_status_pass(validator):
+    """Valid status value."""
+    field_config = {"type": "status", "options": ["todo", "in_progress", "done"]}
+    result = validator.validate_field_value("status", "done", field_config)
+    assert result.is_valid is True
+
+
 def test_validate_field_value_select_fail_invalid_value(validator):
     """Invalid select value."""
     field_config = {"type": "select", "options": ["todo", "in_progress", "done"]}

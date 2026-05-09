@@ -1,4 +1,7 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
+import json
+from typing import Any
+
 from pydantic import AliasChoices, BaseModel, Field, field_validator, model_validator
 
 
@@ -83,6 +86,16 @@ class Settings(BaseSettings):
     notion_mcp_timeout_s: float = 10.0
     notion_allowed_page_ids: list[str] = []
 
+    # Controlled Notion Write (MVP): allowlisted writes with static validation.
+    notion_write_enabled: bool = False
+    notion_api_token: str | None = None
+    notion_api_base_url: str = "https://api.notion.com/v1"
+    notion_api_version: str = "2026-03-11"
+    notion_write_timeout_s: float = 10.0
+    notion_allowed_database_ids: list[str] = []
+    notion_editable_fields: dict[str, dict[str, Any]] = {}
+    notion_database_templates: dict[str, dict[str, Any]] = {}
+
     # Cost Awareness (MVP): provider-agnostic token pricing table (no external calls).
     # Unknown providers should be treated as 0.0 cost by the estimator.
     cost_rates_by_provider: dict[str, TokenRates] = {
@@ -157,6 +170,67 @@ class Settings(BaseSettings):
         if isinstance(value, list):
             return [str(item).strip().replace("-", "") for item in value if str(item).strip()]
         raise ValueError("notion_allowed_page_ids must be a list or comma-separated string")
+
+    @field_validator("notion_api_token")
+    @classmethod
+    def validate_notion_api_token(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        cleaned = value.strip()
+        return cleaned or None
+
+    @field_validator("notion_api_base_url")
+    @classmethod
+    def validate_notion_api_base_url(cls, value: str) -> str:
+        if not value or not value.strip():
+            raise ValueError("notion_api_base_url must not be empty")
+        return value.strip().rstrip("/")
+
+    @field_validator("notion_api_version")
+    @classmethod
+    def validate_notion_api_version(cls, value: str) -> str:
+        if not value or not value.strip():
+            raise ValueError("notion_api_version must not be empty")
+        return value.strip()
+
+    @field_validator("notion_allowed_database_ids", mode="before")
+    @classmethod
+    def validate_notion_allowed_database_ids(cls, value):
+        if value is None or value == "":
+            return []
+        if isinstance(value, str):
+            parts = [item.strip().replace("-", "") for item in value.split(",")]
+            return [item for item in parts if item]
+        if isinstance(value, list):
+            return [str(item).strip().replace("-", "") for item in value if str(item).strip()]
+        raise ValueError("notion_allowed_database_ids must be a list or comma-separated string")
+
+    @field_validator("notion_editable_fields", "notion_database_templates", mode="before")
+    @classmethod
+    def validate_notion_mappings(cls, value):
+        if value is None or value == "":
+            return {}
+        if isinstance(value, dict):
+            return value
+        if isinstance(value, str):
+            cleaned = value.strip()
+            if not cleaned:
+                return {}
+            try:
+                parsed = json.loads(cleaned)
+            except json.JSONDecodeError as exc:
+                raise ValueError("mapping fields must be valid JSON") from exc
+            if not isinstance(parsed, dict):
+                raise ValueError("mapping fields must be JSON objects")
+            return parsed
+        raise ValueError("mapping fields must be a dict or JSON object string")
+
+    @field_validator("notion_write_timeout_s")
+    @classmethod
+    def validate_notion_write_timeout_s(cls, value: float) -> float:
+        if value <= 0:
+            raise ValueError("notion_write_timeout_s must be > 0")
+        return value
 
     @field_validator("web_read_allowed_domains", mode="before")
     @classmethod

@@ -29,6 +29,7 @@ The current implemented V1.1 runtime surface is:
 * Minimal Redis response cache for non-streaming `/chat`
 * Consolidated read-only Web Read: `GET /web-read` for fetching and parsing web page content (locally validated, operator-ready)
 * Consolidated read-only Notion Read: `GET /notion-read/page` for fetching Notion page metadata via MCP (locally validated, operator-ready)
+* Controlled Notion Write MVP: `POST /notion-write/page` and `POST /notion-write/row` for allowlisted Notion writes with static validation and best-effort audit logging
 
 Two design choices are worth calling out explicitly for technical review:
 
@@ -533,7 +534,6 @@ It is a correctness-first backend reference system.
 - No execution of writes
 
 **Later (Sequenced)**
-- Controlled Notion Write MVP (implementation phase, depends on ORQ-15 safety contract)
 - Internal Docs Retrieval / RAG Baseline Design (ingestion and retrieval patterns)
 - Routing Evidence Dataset (prerequisite for ML routing)
 - Offline ML Routing Baseline (depends on evidence dataset)
@@ -541,7 +541,6 @@ It is a correctness-first backend reference system.
 ### Explicitly Not Implemented
 
 - `/chat` tool integration (read endpoints remain separate)
-- Notion Write capability (safety analysis phase planned, not MVP)
 - RAG / embeddings / vector search
 - Generic MCP tools runtime (read/write endpoints remain specific)
 - Browser automation
