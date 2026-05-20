@@ -2,57 +2,49 @@
 
 ## LLM Chat Platform
 
-**Status:** Stable baseline — validated up to Day 33 (Minimal Redis Response Cache)
+**Status:** Stable baseline — LLM Chat Platform V1.1 implementation
 
 ---
 
-## 0. Change log (high level)
+## 0. Implementation Summary
 
-### Day 5–6 (Persistence foundations)
+The LLM Chat Platform implements the following core capabilities:
 
-* PostgreSQL connectivity stabilized
-* SQLAlchemy 2.0 async engine/session baseline
-* Alembic env configured for async SQLAlchemy
-* Docker Compose baseline established
+### Persistence Foundations
 
-### Day 7 (Core persistence models)
+* PostgreSQL connectivity and SQLAlchemy 2.0 async engine/session baseline
+* Alembic configured for async migrations with deterministic chain integrity
+* Docker Compose environment for development and production
 
-* `conversations` + `messages` introduced
-* Message role enum stabilized (`user|assistant|system`)
-* Ordering/index strategy defined
+### Data Models
 
-### Day 8 (Minimal telemetry)
+* `conversations` + `messages` table structure with ordered message persistence
+* Message role enum (`user|assistant|system`)
+* `usage_events` table for best-effort telemetry and cost tracking
 
-* `usage_events` introduced and stabilized
-* Best-effort usage logging pattern validated
-* Alembic chain integrity preserved (no multiple active heads)
+### Transactional Chat Write Path
 
-### Day 9 (Transactional chat write path)
+The `/chat` endpoint implements a fully transactional write-path:
+* Persists user message
+* Invokes provider via `ChatService`
+* Persists assistant message
+* Persists `UsageEvent`
+* All writes execute atomically within a single database transaction
 
-* `/chat` upgraded from stub-only to full write path:
+### Traceability and Provider Abstraction
 
-As of Day 9, the `/chat` endpoint implements a fully transactional write-path,
-persisting conversations, messages, and usage events atomically.
+* Request ID propagation end-to-end for trace reconstruction
+* `ProviderPort` abstraction with validated Stub, OpenAI, and Bedrock adapters
+* `ChatService` orchestration layer with no database coupling
+* `/chat` delegates to `ChatService` while preserving transaction semantics
 
+### Signal-Based Routing
 
-### Day 10–12 (Traceability + Provider abstraction + /chat integration)
-
-request_id end-to-end
-
-ProviderPort/StubProvider/ChatService
-
-/chat delegates to ChatService (atomicity preserved)
-
-endpoint smoke evidence (success + rollback)
-
-### Day 34 (Signal-based routing hardening)
-
-* `RoutingContext` narrowed to provider-agnostic MVP signals
-* Routing signal extraction moved out of domain orchestration into application wiring
-* `HeuristicRoutingPolicy` converted from free-text parsing to deterministic signal thresholds
-* `routing.decision` extended with signal metadata
-* Best-effort shadow routing comparison added via `routing.shadow_divergence`
-* `StaticRoutingPolicy` remains the default activation path
+* `RoutingContext` captures provider-agnostic MVP signals (message length, estimated tokens, provider availability)
+* `HeuristicRoutingPolicy` uses deterministic signal thresholds for model selection
+* `routing.decision` events include signal metadata for observability
+* Best-effort shadow divergence logging for comparative routing analysis
+* `StaticRoutingPolicy` remains the default activation mode
 
 ---
 
@@ -482,7 +474,7 @@ Runtime checks remain explicit and read-only.
 
 ---
 
-## 15. `/chat` endpoint (evolved through Day 25)
+## 15. `/chat` endpoint
 
 ### 15.1 Responsibilities
 
@@ -549,7 +541,7 @@ Rationale:
 
 
 
-#### Input guardrails and execution boundaries (Day 12)
+#### Input guardrails and execution boundaries
 
 The `/chat` write-path enforces **early guardrails** and **explicit execution boundaries**
 to protect both persistence integrity and provider isolation.
@@ -611,7 +603,7 @@ This preserves a clean execution boundary between:
 * provider orchestration
 
 
-### 15.7 Streaming mode (Day 27B)
+### 15.7 Streaming mode
 
 Streaming is opt-in via `stream=true`.
 
@@ -676,7 +668,7 @@ This preserves atomicity for database writes while avoiding long-lived transacti
 
 Downstream layers do not reconstruct these values.
 
-#### Streaming failure handling (Day 27B fix)
+#### Streaming failure handling
 
 `ChatService.stream_chat(...)` must not swallow provider exceptions.
 
@@ -794,7 +786,7 @@ docker compose exec -T postgres psql -U llmchat -d llmchat -c \
 "select provider, status, conversation_id, message_id, timestamp from usage_events order by timestamp desc limit 5;"
 ```
 
-### 17.5 Minimal CI validation baseline (Day 32)
+### 17.5 Minimal CI validation baseline
 
 GitHub Actions workflow:
 
@@ -819,7 +811,7 @@ docker build -t llm-chat-platform:ci .
 
 ---
 
-## 18. Current guarantees (post Day 25)
+## 18. Current guarantees
 
 ### 18.1 Observability
 
@@ -862,7 +854,7 @@ docker build -t llm-chat-platform:ci .
 * Persisted `usage_events` support read-only offline export and aggregation
 * Cost estimation remains provider-agnostic and decoupled from runtime execution
 
-### 18.1 Current guarantees (post Day 25)
+### 18.1 Current guarantees
 
 * `/chat` remains the only authoritative write-path
 * Non-stream mode persists business data inside one transaction
@@ -1022,12 +1014,12 @@ Results:
 
 ---
 
-**Document updated incrementally through Day 33.**
+**Document reflects the stable V1.1 baseline implementation.**
 
 
 ---
 
-## 22. Provider Abstraction & DB-agnostic Orchestration (Day 11)
+## 22. Provider Abstraction & DB-agnostic Orchestration
 
 ### 22.1 Objective
 
@@ -1144,9 +1136,9 @@ Later validated integration evidence includes:
 
 ---
 
-## Addendum — Day 14: Operational hardening & evidence
+## Addendum — Operational Hardening & Evidence
 
-Day 14 focused on strengthening operational robustness and reproducibility
+Operational robustness and reproducibility have been strengthened
 without modifying architectural invariants or public contracts.
 
 ### Scope
@@ -1178,7 +1170,7 @@ Reproducible evidence and verification commands are documented in
 * Telemetry best-effort behavior under failure
 * Request size limit enforcement
 
-## Addendum — Day 16: Structured JSON Logging
+## Addendum — Structured JSON Logging
 
 ### Scope
 
@@ -1195,9 +1187,9 @@ runtime semantics or transactional guarantees.
 ### Evidence
 
 Reproducible commands and expected output shape are documented in `lld_apendix.md`
-(Appendix L — Day 16).
+(Appendix L).
 
-## Addendum — Day 17: Offline Cost Analytics Pipeline
+## Addendum — Offline Cost Analytics Pipeline
 
 ### Scope
 
@@ -1225,15 +1217,15 @@ to enable cost exploration without modifying runtime semantics.
 ### Evidence
 
 Reproducible commands and expected output are documented in
-`lld_apendix.md` (Appendix M — Day 17).
+`lld_apendix.md` (Appendix M).
 
 
-## Addendum — Day 24: Provider Hardening (Resilience & Structured Logging)
+## Addendum — Provider Hardening (Resilience & Structured Logging)
 
-Scope
+### Scope
 
-Day 24 introduced resilience mechanisms and structured observability
-to the real OpenAI provider implementation, without modifying:
+Resilience mechanisms and structured observability have been integrated
+into the real OpenAI provider implementation, without modifying:
 
 /chat transactional semantics
 
@@ -1354,24 +1346,22 @@ Maintain strict data safety guarantees
 
 Avoid logging sensitive content
 
-Architectural Impact
+### Architectural Impact
 
-Day 24 completes the provider evolution:
+The provider layer evolution has completed with the following progression:
 
-Day 11 → abstraction introduced
-
-Day 14 → operational guardrails
-
-Day 24 → resilience + structured logging
+* Foundation → abstraction introduced
+* Hardening → operational guardrails added
+* Resilience → resilience mechanisms + structured logging integrated
 
 The Provider layer now acts as a hardened isolation boundary
 between external LLM APIs and core application logic.
 
-## Addendum — Day 25: Streaming SSE + Minimal UI
+## Addendum — Streaming SSE & Minimal UI
 
 ### Scope
 
-Day 25 introduced opt-in SSE streaming on `POST /chat` and a minimal static demo UI,
+Opt-in SSE streaming on `POST /chat` and a minimal static demo UI have been implemented,
 without modifying database schema, Alembic migrations, or the default non-stream JSON contract.
 
 ### Changes
@@ -1394,11 +1384,11 @@ without modifying database schema, Alembic migrations, or the default non-stream
 * Provider orchestration remains DB-agnostic
 * Observability remains non-invasive
 
-## Addendum — Day 28: Bedrock as Second Real Provider
+## Addendum — Bedrock as Second Real Provider
 
 ### Scope
 
-Day 28 validates provider extensibility by introducing AWS Bedrock through the existing provider abstraction,
+Provider extensibility has been validated by introducing AWS Bedrock through the existing provider abstraction,
 without modifying the database schema, `ChatService` contract, or `/chat` request/response schemas.
 
 ### Changes
@@ -1419,11 +1409,11 @@ without modifying the database schema, `ChatService` contract, or `/chat` reques
 * `/chat` and `UsageEvent` contracts remain unchanged
 * Retry behavior remains adapter-local and constrained to retryable provider failures
 
-## Addendum — Day 29: Minimal Provider Resilience Layer
+## Addendum — Minimal Provider Resilience Layer
 
 ### Scope
 
-Day 29 hardens provider execution with a minimal resilience layer, without changing the database schema,
+Provider execution has been hardened with a minimal resilience layer, without changing the database schema,
 `/chat` contract, `ChatService` abstraction, or streaming persistence semantics.
 
 ### Changes
@@ -1454,11 +1444,11 @@ Focused tests cover:
 * terminal error propagation after partial stream emission
 * configuration precedence for primary/fallback selection
 
-## Addendum — Day 30: Provider Observability Hardening
+## Addendum — Provider Observability Hardening
 
 ### Scope
 
-Day 30 hardens provider observability with a minimal additive scope, without changing database schema,
+Provider observability has been hardened with a minimal additive scope, without changing database schema,
 `/chat`, `ChatService`, route behavior, retry semantics, or functional behavior.
 
 ### Changes
@@ -1488,15 +1478,15 @@ Day 30 hardens provider observability with a minimal additive scope, without cha
 
 ### Validation
 
-Focused Day 30 validation covered:
+Validation covered:
 
 * resilient provider observability
 * OpenAI provider logging
 * Bedrock provider logging
 
-## Addendum — Day 31: Read Endpoint Test Reliability Hardening
+## Addendum — Read Endpoint Test Reliability Hardening
 
-Day 31 stabilizes `tests/api/test_conversations_read_endpoints.py` with a minimal test-local change.
+The `tests/api/test_conversations_read_endpoints.py` test has been stabilized with a minimal test-local change:
 
 * Scope is limited to that test module
 * Test-local stubbing at the `ConversationQueryService` boundary removed the environment-coupled DB/DNS dependency from the test
@@ -1504,9 +1494,9 @@ Day 31 stabilizes `tests/api/test_conversations_read_endpoints.py` with a minima
 * `./.venv/bin/pytest -q tests/api/test_conversations_read_endpoints.py` passed
 * `./.venv/bin/pytest -q tests/api` was attempted, but did not complete within the observed timeout window
 
-## Addendum — Day 32: Minimal CI Baseline
+## Addendum — Minimal CI Baseline
 
-Day 32 adds a minimal GitHub Actions CI baseline through `.github/workflows/ci.yml`.
+A minimal GitHub Actions CI baseline has been added through `.github/workflows/ci.yml`:
 
 * Scope is limited to repository automation only
 * A single `validate` job runs on push and pull request events
@@ -1516,9 +1506,9 @@ Day 32 adds a minimal GitHub Actions CI baseline through `.github/workflows/ci.y
 * No production code, Dockerfile, Makefile, runtime behavior, provider behavior, `/chat`, `ChatService`, DB schema, persistence, streaming, or telemetry behavior changed
 * GitHub-hosted execution is defined by the workflow; observed CI results depend on GitHub Actions runs
 
-## Addendum — Day 33: Minimal Redis Response Cache
+## Addendum — Minimal Redis Response Cache
 
-Day 33 adds a minimal best-effort Redis response cache for non-streaming `POST /chat`.
+A minimal best-effort Redis response cache has been implemented for non-streaming `POST /chat`:
 
 * Scope is limited to non-streaming `/chat`
 * Streaming requests bypass cache reads and writes explicitly
@@ -1539,5 +1529,5 @@ This separation is intentional to keep the core LLD focused on architecture and 
 while allowing the appendix to evolve with operational learnings and real-world failures.
 
 
-**This document reflects the state of the system up to Day 33.**
+**This document reflects the stable V1.1 implementation baseline.**
 **Execution-level details and debugging notes are tracked in the Appendix.**

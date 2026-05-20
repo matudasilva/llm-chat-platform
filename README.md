@@ -15,29 +15,6 @@ This project models how AI-powered workloads should be integrated and operated i
 
 ---
 
-## Current State
-
-The current implemented V1.1 runtime surface is:
-
-* `POST /chat` as the single authoritative write-path
-* Transactional persistence for non-streaming requests
-* SSE streaming with post-stream atomic persistence
-* Provider-agnostic execution across OpenAI and Bedrock
-* Additive provider resilience and observability
-* Config-gated routing seam with static default, signal-based heuristic mode, and best-effort shadow divergence logging
-* Read-only conversation inspection endpoints
-* Minimal Redis response cache for non-streaming `/chat`
-* Consolidated read-only Web Read: `GET /web-read` for fetching and parsing web page content (locally validated, operator-ready)
-* Consolidated read-only Notion Read: `GET /notion-read/page` for fetching Notion page metadata via MCP (locally validated, operator-ready)
-* Controlled Notion Write MVP: `POST /notion-write/page` and `POST /notion-write/row` for allowlisted Notion writes with static validation and best-effort audit logging
-
-Two design choices are worth calling out explicitly for technical review:
-
-* Redis was initially kept **reserved** in the original blueprint to protect a minimal, deterministic transactional baseline before introducing cache semantics. After the `/chat` write-path, streaming boundaries, and observability guarantees were stable, Redis was added as a **best-effort** optimization for successful non-streaming requests only.
-* The original V1 blueprint also reserved **ML-based routing** as an architectural direction, including a logistic-regression baseline for cheap-vs-smart model selection. That ML routing layer is **not part of the current implemented V1.1 runtime surface**. The current runtime includes only a **feature-flagged heuristic routing seam** based on provider-agnostic signals, with `static` remaining the default policy.
-
----
-
 ## Architecture Diagram
 
 ![LLM Chat Platform architecture](docs/rendered/architecture/module-boundaries-architecture-v1.svg)
@@ -82,7 +59,7 @@ Providers implement an async-first contract:
 
 This preserves strict separation between domain orchestration and persistence.
 
-#### Provider Resilience Boundary (Day 24)
+#### Provider Resilience Boundary
 
 The provider layer acts as a hardened isolation boundary between external LLM APIs and core domain logic.
 
@@ -125,7 +102,7 @@ The API process lifecycle remains deterministic.
 
 ## Observability & Traceability
 
-### Structured JSON Logging (Day 16)
+### Structured JSON Logging
 
 One JSON log line is emitted per HTTP request:
 
@@ -143,7 +120,7 @@ Characteristics:
 
 ---
 
-### Structured Provider Logging (Day 24)
+### Structured Provider Logging
 
 In addition to HTTP-level logs, the provider adapter emits structured JSON events for operational diagnostics:
 
@@ -167,10 +144,10 @@ These logs include safe metadata only:
 - status_code
 - latency_ms
 
-Day 30 keeps `provider.request` through `provider.total` as adapter-local lifecycle events and adds
-cross-provider operational summaries in `ResilientProvider` via `provider.fallback` and `provider.final`.
+`provider.request` through `provider.total` are adapter-local lifecycle events. `ResilientProvider` adds
+cross-provider operational summaries via `provider.fallback` and `provider.final`.
 
-Additive Day 30 fields include:
+Additional fields available in cross-provider events include:
 
 - attempts_used
 - failure_kind
@@ -187,7 +164,7 @@ This enables production-grade observability without compromising data safety.
 
 ---
 
-### Deterministic Trace Reconstruction (Day 10)
+### Deterministic Trace Reconstruction
 
 Every `/chat` execution can be reconstructed from a `request_id`:
 
@@ -201,7 +178,7 @@ This is implemented as a **read-only analysis layer**, without modifying the wri
 
 ---
 
-### Offline Cost Analytics (Day 15–17)
+### Offline Cost Analytics
 
 The platform includes:
 
@@ -251,7 +228,7 @@ Nullable foreign keys allow error telemetry without breaking atomicity.
 * SQLAlchemy 2.0 (async)
 * Alembic
 * Docker / Docker Compose
-* Redis (implemented as a best-effort response cache for non-streaming `/chat`; initially reserved in the blueprint until the transactional baseline stabilized)
+* Redis (best-effort response cache for non-streaming `/chat` requests)
 
 ---
 
@@ -300,6 +277,23 @@ If not, use the API container IP:
 docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' llm-chat-platform-dev-api-1
 ```
 Then open: http://<IP>:8000/ui
+
+---
+
+## Conversation Inspection Endpoints
+
+The platform exposes read-only endpoints to inspect persisted conversations:
+
+- `GET /conversations?limit=20&offset=0`
+  - Returns conversation metadata plus `message_count` (no message content).
+- `GET /conversations/{conversation_id}`
+  - Returns conversation metadata plus ordered messages (`created_at ASC`).
+
+Constraints:
+
+- No write operations
+- `/chat` remains the single authoritative write-path
+- No database schema changes
 
 ---
 
@@ -394,6 +388,26 @@ When running the API in Docker, the image includes Node.js and mounts the local 
 
 ---
 
+## Controlled Notion Write MVP
+
+Write-only capability for allowlisted Notion write operations via MCP.
+
+**Endpoints:**
+
+* `POST /notion-write/page` — Create or update Notion page content
+* `POST /notion-write/row` — Add or update row in a Notion database
+
+**Design Principles:**
+
+* Allowlist-based access control (configured via environment)
+* Static validation of write patterns before execution
+* Best-effort audit logging of write operations
+* Separate endpoints remain isolated from `/chat` and core persistence
+* `/chat` remains the single authoritative write-path
+* All write operations follow static safety analysis
+
+---
+
 ## Provider Configuration
 
 Provider selection:
@@ -429,6 +443,16 @@ Bedrock provider knobs:
 Provider configuration is centralized in `app/core/settings.py`.
 Primary/fallback precedence is handled in settings validation and consumed by the provider factory.
 
+### Routing Policy
+
+The platform includes a config-gated routing seam with multiple modes:
+
+* `static` (default): All requests use the primary provider
+* `heuristic`: Signal-based model selection based on provider-agnostic request signals
+* Shadow divergence logging: Best-effort logging of routing signal divergence for observability
+
+**Note:** ML-based routing (logistic regression for cheap-vs-smart model selection) is deferred. The current runtime uses only the heuristic routing seam with `static` as the default policy.
+
 ## Migrations
 
 ```bash
@@ -448,7 +472,7 @@ Canonical green command:
 docker compose -f docker-compose.dev.yml run --rm -e PROVIDER=stub api python -m pytest -q
 ```
 
-Minimal CI baseline (Day 32):
+Minimal CI baseline:
 
 * GitHub Actions workflow: `.github/workflows/ci.yml`
 * Narrowed deterministic pytest baseline:
@@ -540,6 +564,7 @@ It is a correctness-first backend reference system.
 
 ### Explicitly Not Implemented
 
+- ML-based routing (logistic regression for cheap-vs-smart model selection; deferred for later implementation)
 - `/chat` tool integration (read endpoints remain separate)
 - RAG / embeddings / vector search
 - Generic MCP tools runtime (read/write endpoints remain specific)
@@ -570,74 +595,5 @@ Local rendering may require a user-specific `puppeteer-config.json`. The reposit
 `puppeteer-config.json` is intentionally ignored from version control and should remain a local-only file.
 
 ---
-
-## Implementation History
-
-The current implemented state is summarized above. The timeline below preserves the incremental evolution of the platform.
-
-Day 29 — MVP hardening for minimal provider resilience completed.
-
-* `POST /chat` supports SSE streaming behind `stream=true`
-* OpenAI and Bedrock both fit through the same provider abstraction
-* Bedrock supports `generate()` and `stream()` without changing `/chat`, `ChatService`, or the DB schema
-* A minimal resilience wrapper at the `ProviderPort` boundary supports transient retry + single-hop fallback
-* Fallback is config-driven through `PRIMARY_PROVIDER` / `FALLBACK_PROVIDER`
-* Streaming SSE emits `token`, `done`, and `error` events
-* Chunk granularity depends on provider emission behavior and may arrive as a single larger `token` event
-* Streaming usage metadata is provider-driven and remains consistent when persisted
-* Provider-to-provider fallback is allowed only before the first emitted token
-* No fallback occurs after partial stream emission; the stream terminates with error
-* Minimal demo UI at `GET /ui` (single static HTML)
-* Focused tests cover retry, fallback, streaming fallback boundaries, and config precedence
-* Provider configuration is centralized in `app/core/settings.py`
-* Provider factory no longer reads environment variables directly
-* Structured provider retry/error normalization remains confined to provider adapters
-
-Day 30 — Provider observability hardening completed.
-
-* Structured retry/fallback observability was extended with additive provider logging only
-* `ResilientProvider` now emits cross-provider operational summaries via `provider.fallback` and `provider.final`
-* Adapter-local totals remain distinct from cross-provider summaries
-* No behavioral, API, schema, `/chat`, `ChatService`, route, or retry-semantics changes were introduced
-* Focused Day 30 validation covered resilient provider observability plus OpenAI and Bedrock provider logging
-
-Day 31 — Conversation read-endpoint test reliability hardening completed.
-
-* `tests/api/test_conversations_read_endpoints.py` was stabilized with a strictly test-local change
-* The test now stubs `ConversationQueryService` instead of depending on environment-coupled DB/DNS behavior
-* No production route, domain, DB schema, provider, or streaming changes were made
-
-Day 32 — Minimal CI baseline added.
-
-* `.github/workflows/ci.yml` introduces a single `validate` job for push and pull request events
-* CI installs runtime and dev test dependencies, runs a narrowed deterministic pytest baseline, and validates the default Docker build path
-* No production code, Dockerfile, Makefile, runtime, provider, `/chat`, `ChatService`, DB schema, persistence, streaming, or telemetry behavior changed
-
-Day 33 — Minimal Redis response cache for non-streaming `/chat` completed.
-
-* Cache applies only to non-streaming `/chat` requests
-* Streaming requests bypass cache reads and writes explicitly
-* Redis cache reads and writes are best-effort and never fail the request
-* Only successful non-streaming executions are written to cache
-* Cache writes happen only after successful transaction commit
-* No DB schema, provider, `ChatService`, retry/fallback, or streaming semantics changes were introduced
-
----
-
-### Read-only inspection endpoints (Day 23)
-
-The platform exposes read-only endpoints to inspect persisted conversations:
-
-- `GET /conversations?limit=20&offset=0`
-  - Returns conversation metadata plus `message_count` (no message content).
-- `GET /conversations/{conversation_id}`
-  - Returns conversation metadata plus ordered messages (`created_at ASC`).
-
-Constraints:
-- No write operations
-- `/chat` remains the single authoritative write-path
-- No database schema changes
-
-
 
 **This repository is designed as a production-minded LLM backend reference system.**

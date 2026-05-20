@@ -8,9 +8,8 @@
 
 
 > Note:
-> Appendices A–E describe the effective system state up to Day 9.
-> Appendix F documents the Day 10 traceability layer (read-only reconstruction).
-> Later appendices record incremental architectural, operational, and validation evidence through Appendix AD.
+> This appendix collection documents the technical evidence, debugging playbooks, and validation artifacts
+> for the LLM Chat Platform V1.1 baseline implementation across multiple domains (schema, traceability, providers, observability).
 
 
 
@@ -315,7 +314,7 @@ Trigger points observed:
 
 ---
 
-## Appendix F — End-to-End Traceability (Day 10)
+## Appendix F — End-to-End Traceability
 
 ### F.1 Purpose
 
@@ -450,11 +449,11 @@ The result is a trace system that is **auditable, debuggable, and safe for produ
 
 ---
 
-## Appendix G — Provider Abstraction & Determinism Evidence (Day 11)
+## Appendix G — Provider Abstraction & Determinism Evidence
 
 ### G.1 Purpose
 
-This appendix documents the **provider abstraction layer** introduced in Day 11 and the deterministic validation artifacts associated with it.
+This appendix documents the **provider abstraction layer** and the deterministic validation artifacts associated with it.
 
 Scope and constraints:
 
@@ -502,7 +501,7 @@ PYTHONPATH=app python -c "import core; print(core.__file__)"
 
 ---
 
-### G.3 Provider abstraction (Day 11)
+### G.3 Provider abstraction
 
 A provider is modeled via an **async-first port**, fully decoupled from HTTP and persistence concerns.
 
@@ -626,15 +625,15 @@ Test coverage includes:
 
 ---
 
-**End of Appendix G (Day 11)**
+**End of Appendix G**
 
 ---
 
-## Appendix H — Day 12: `/chat` integration evidence
+## Appendix H — `/chat` Integration Evidence
 
 ### H.1 Purpose
 
-This appendix documents the reproducible evidence for the Day 12 integration of
+This appendix documents the reproducible evidence for the integration of
 `ChatService` into the `/chat` write-path.
 
 The goal of this iteration was **integration without feature expansion**:
@@ -728,7 +727,7 @@ Expected output includes:
 ```
 ### H.4 Regression gates
 
-The following regression checks must pass after Day 12 integration:
+The following regression checks must pass after integration:
 
 - **Core contract tests (DB-agnostic):**
 
@@ -740,7 +739,7 @@ The following regression checks must pass after Day 12 integration:
   - read-path endpoints (`/conversations`, `/usage-events`) remain unchanged
   - OpenAPI schema is preserved
 
-Successful execution of these checks confirms that the Day 12 integration
+Successful execution of these checks confirms that the integration
 introduced no regressions and preserved all architectural invariants.
 
 ### H.5 Guardrails & provider-boundary regression gates (A2/A3)
@@ -793,7 +792,7 @@ This check is intentionally contract-level and DB-agnostic.
 
 ---
 
-## Appendix J — Day 14 (Operational hardening & evidence)
+## Appendix J — Operational Hardening & Evidence
 
 ### J.1 Internal provider diagnostics logging
 Evidence:
@@ -824,7 +823,7 @@ Notes:
 
 ---
 
-## Appendix K — Day 15 (Cost Awareness / MVP)
+## Appendix K — Cost Awareness / MVP
 
 ### K.1 Purpose
 
@@ -913,7 +912,7 @@ app/main.py:65
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
 ```
 
-## Appendix L — Day 16: Structured JSON Logging
+## Appendix L — Structured JSON Logging
 
 ### L.1 Purpose
 
@@ -938,7 +937,7 @@ Example:
 {"request_id":"...","path":"/health","method":"GET","status":200,"latency_ms":1,"app_env":"development"}
 ```
 
-## Appendix M — Day 17 (Offline Cost Analytics Pipeline)
+## Appendix M — Offline Cost Analytics Pipeline
 
 ### M.1 Evidence
 
@@ -979,7 +978,7 @@ M.3 Notes
 * DB column is timestamp (verified via \d+ usage_events)
 * Output files are written under /app/app/reports/ (gitignored).
 
-## Appendix N — Day 18 (Cost Analytics Artifacts)
+## Appendix N — Cost Analytics Artifacts
 
 ### N.1 Purpose
 
@@ -1077,7 +1076,7 @@ The canonical temporal column in the DB is timestamp (previously verified).
 The report generator remains defensive and can fall back to created_at if present in JSONL exports.
 
 
-## Appendix O — Day 19 (Dev Ergonomics: Bind Mount + Pytest)
+## Appendix O — Dev Ergonomics: Bind Mount + Pytest
 
 ### O.1 Purpose
 
@@ -1123,11 +1122,11 @@ Run test suite inside the dev container:
 ```bash
 docker compose -p "$DEV_PROJECT" --env-file .env.dev -f docker-compose.dev.yml exec -T -w /app/app api pytest -q
 ```
-## Appendix P — Day 20 (Offline Cost Pipeline Tests: Quality + Determinism)
+## Appendix P — Offline Cost Pipeline Tests: Quality + Determinism
 
 ### P.1 Purpose
 
-Add unit tests to harden the Day 17–18 offline cost analytics pipeline:
+Add unit tests to harden the offline cost analytics pipeline:
 
 - canonical status mapping (ok -> success, unknown -> other)
 - deterministic ordering (provider/status/day)
@@ -1156,7 +1155,7 @@ pytest.ini is bind-mounted into the dev container at /app/pytest.ini to keep tes
 
 ---
 
-## Appendix Q — Day 21 (Runtime Observability: Request/Correlation IDs + Health/Readiness)
+## Appendix Q — Runtime Observability: Request/Correlation IDs + Health/Readiness
 
 ### Goal
 Improve runtime operability (SRE/Platform vibes) without modifying DB schema or the `/chat` write-path.
@@ -1237,7 +1236,7 @@ GET /readyz returns 200/503 using mocked readiness checker
 
 ---
 
-## Appendix R — Day 22 (Real Provider MVP: OpenAI behind feature flag, no streaming)
+## Appendix R — Real Provider MVP: OpenAI behind feature flag, no streaming
 
 ### R.1 Goal
 Integrate a real LLM provider without changing the `/chat` public contract or breaking write-path atomicity.
@@ -1321,7 +1320,7 @@ Provider errors are normalized and sanitized; secrets and upstream payloads are 
 Note: If your OpenAI account has no active billing/quota, calls may return rate-limit/quota errors (handled as `status=error` with a sanitized message).
 
 
-## Appendix S — Day 23 (Read-only Conversation Inspection Endpoints)
+## Appendix S — Read-only Conversation Inspection Endpoints
 
 ### S.1 Purpose
 
@@ -1375,7 +1374,7 @@ Read-only endpoints do not affect atomicity or telemetry behavior
 Structured logging and request_id propagation remain unchanged (middleware-based)
 
 
-## Appendix T — Day 24 (Provider Hardening: Retry & Structured Provider Logging)
+## Appendix T — Provider Hardening: Retry & Structured Provider Logging
 
 T.1 Purpose
 
@@ -1536,11 +1535,11 @@ provider.total
 
 T.6 Architectural Impact
 
-Day 24 completes the provider evolution:
-Day 11 → abstraction introduced
-Day 14 → operational guardrails
-Day 22 → real provider (MVP)
-Day 24 → resilience + structured logging hardening
+The provider layer evolution has progressed through multiple stages:
+* Foundation → abstraction introduced
+* Hardening → operational guardrails added
+* Real Provider → OpenAI MVP implementation
+* Resilience → resilience mechanisms + structured logging hardening
 
 The Provider layer now acts as a hardened isolation boundary
 between external LLM APIs and core application logic.
@@ -1551,7 +1550,7 @@ No write-path changes.
 
 ----
 
-## Appendix U — Day 25 (Streaming SSE + Minimal UI)
+## Appendix U — Streaming SSE & Minimal UI
 
 ### U.1 Goal
 
@@ -1671,7 +1670,7 @@ Validation:
 * tests/api/test_chat_streaming.py — streaming SSE smoke test
 ----
 
-## Appendix V — Day 28 (AWS Bedrock via Existing Provider Abstraction)
+## Appendix V — AWS Bedrock via Existing Provider Abstraction
 
 ### V.1 Goal
 
@@ -1737,7 +1736,7 @@ Expected:
 - provider factory returns `BedrockProvider` only when required config is present
 - settings validation accepts/rejects Bedrock config as documented
 
-## Appendix W — Day 29 (Minimal Provider Resilience Layer)
+## Appendix W — Minimal Provider Resilience Layer
 
 ### W.1 Goal
 
@@ -1789,7 +1788,7 @@ Expected:
 - partial stream failures propagate terminal error without fallback
 - settings precedence matches documented primary/fallback behavior
 
-## Appendix X — Day 30 (Provider Observability Hardening)
+## Appendix X — Provider Observability Hardening
 
 ### X.1 Goal
 
@@ -1838,13 +1837,13 @@ The Bedrock inline streaming path now emits:
 
 ### X.5 Focused validation
 
-Focused Day 30 tests covered:
+Validation tests covered:
 
 - resilient provider observability
 - OpenAI provider logging
 - Bedrock provider logging
 
-## Appendix Y — Day 31 (Conversation Read Endpoint Test Reliability)
+## Appendix Y — Conversation Read Endpoint Test Reliability
 
 ### Y.1 Goal
 
@@ -1881,7 +1880,7 @@ Results:
 - no provider changes
 - no streaming changes
 
-## Appendix Z — Day 32 (Minimal CI Baseline)
+## Appendix Z — Minimal CI Baseline
 
 ### Z.1 Goal
 
@@ -1912,7 +1911,7 @@ Results:
 - no DB schema or migration changes
 - no persistence, streaming, or telemetry behavior changes
 
-## Appendix AA — Day 33 (Minimal Redis Response Cache)
+## Appendix AA — Minimal Redis Response Cache
 
 ### AA.1 Goal
 
@@ -1953,7 +1952,7 @@ Results:
 - streaming behavior remains unchanged
 - telemetry remains best-effort
 
-## Appendix AB — Day 34 (Signal-Based Routing Hardening)
+## Appendix AB — Signal-Based Routing Hardening
 
 ### AB.1 Goal
 
@@ -2009,7 +2008,7 @@ Observed result:
 - streaming behavior remains unchanged
 - shadow routing is best-effort and log-and-discard on failure
 
-## Appendix AC — Day 34.5 (Routing MVP Audit Fixes)
+## Appendix AC — Routing MVP Audit Fixes
 
 ### AC.1 Goal
 
