@@ -1,0 +1,67 @@
+name: Governance Reconciliation
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  adr-presence:
+    name: ADR directory and baseline check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Verify docs/adr/ exists and contains ADR-001
+        # This check enforces the minimum viable anti-drift guarantee:
+        # the ADR directory must exist and the first retroactive ADR must be present.
+        #
+        # WHY THE FULL VALIDATION IS DEFERRED:
+        #
+        # (a) Framework-version consistency check:
+        #     .framework/framework-version (framework_version=2.0.3) and
+        #     .framework/project-config.yml (framework_version: v2.0-structural) currently
+        #     use different version strings for the same release. Automating this check
+        #     requires first normalising one of the two files, which is a governance change
+        #     outside the scope of this PR. Deferred to a dedicated ORQ.
+        #
+        # (b) ORQ-close commit → ADR existence check:
+        #     Detecting commits matching /ORQ-\d+.*clos(e|ed|ure)/i and verifying that a
+        #     corresponding docs/adr/NNN-*.md exists requires scanning the full git history.
+        #     In a standard GitHub Actions checkout (depth=1 for push events, depth=0 for
+        #     PRs with fetch-depth=0), this is unreliable and would retroactively fail on
+        #     all ORQ-10 through ORQ-16 closures (which predate this ADR system).
+        #     The correct approach is to enforce this rule prospectively only, starting from
+        #     the commit that introduces this workflow. That logic requires a baseline
+        #     commit SHA stored in a sentinel file, which is left for a future ORQ.
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo "--- Checking docs/adr/ directory ---"
+          if [ ! -d "docs/adr" ]; then
+            echo "ERROR: docs/adr/ directory does not exist."
+            echo "All significant architectural decisions must be recorded as ADRs."
+            echo "See docs/adr/README.md for the convention."
+            exit 1
+          fi
+          echo "OK: docs/adr/ exists."
+
+          echo "--- Checking ADR-001 baseline ---"
+          if [ ! -f "docs/adr/001-capabilities-first-over-execution-orchestrator.md" ]; then
+            echo "ERROR: docs/adr/001-capabilities-first-over-execution-orchestrator.md not found."
+            echo "The baseline retroactive ADR must be present."
+            exit 1
+          fi
+          echo "OK: ADR-001 baseline present."
+
+          echo "--- Checking docs/adr/README.md ---"
+          if [ ! -f "docs/adr/README.md" ]; then
+            echo "ERROR: docs/adr/README.md not found."
+            echo "The ADR index must exist alongside the ADR files."
+            exit 1
+          fi
+          echo "OK: docs/adr/README.md present."
+
+          echo "--- Reconciliation checks passed ---"
