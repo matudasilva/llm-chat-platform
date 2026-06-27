@@ -176,6 +176,16 @@ class NotionWriteValidator:
                     explanation=f"Allowed values: {allowed_values}",
                 )
 
+        # Notion native status type: validate against options (distinct from select)
+        elif field_type == "status":
+            allowed_options = field_config.get("options", [])
+            if allowed_options and value not in allowed_options:
+                return ValidationResult(
+                    False,
+                    errors=[f"Invalid value '{value}' for status field '{field_name}'"],
+                    explanation=f"Allowed values: {allowed_options}",
+                )
+
         return ValidationResult(True, explanation=f"Field value valid for type '{field_type}'")
 
     # ========== Rule 5: Page Write Validation ==========
