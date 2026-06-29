@@ -31,6 +31,10 @@ jobs:
               for node in ast.walk(ast.parse(p.read_text())):
                   if isinstance(node, ast.ImportFrom) and (node.module or '').startswith('core.'):
                       bad.append(f'{p}: bare core.* import (should be app.core.*): from {node.module}')
+                  if isinstance(node, ast.Import):
+                      for alias in node.names:
+                          if alias.name.startswith('core.'):
+                              bad.append(f'{p}: bare core.* import (should be app.core.*): import {alias.name}')
           if bad:
               print('\n'.join(bad)); sys.exit(1)
           print('OK - no bare core.* imports in app/scripts/')

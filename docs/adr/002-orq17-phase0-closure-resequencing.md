@@ -1,76 +1,76 @@
 # ADR-002: ORQ-17 Phase 0 Closure — Technical Debt Resolution and ORQ Resequencing
 
-**Fecha:** 2026-06-29  
-**Estado:** Aceptada  
-**ORQ de referencia:** ORQ-17
+**Date:** 2026-06-29  
+**Status:** Accepted  
+**ORQ reference:** ORQ-17
 
 ---
 
-## Contexto
+## Context
 
-Al inicio del sprint de cierre de Fase 0, se realizó una auditoría técnica del estado del repositorio que identificó tres hallazgos de deuda técnica (F1–F3) heredados de la V1.1:
+At the start of the Phase 0 closure sprint, a technical audit of the repository identified three technical debt findings (F1–F3) inherited from V1.1:
 
-- **F1:** `tree.md` no existía en la raíz del repositorio (referenciado en AGENTS.md como artefacto de orientación).
-- **F2:** `app/scripts/run_stub_chat.py:7` tenía un import bare (`from core.providers.stub_provider`) en lugar del path calificado completo (`from app.core.providers.stub_provider`), lo que causaba un `ModuleNotFoundError` al ejecutar el script desde la raíz del repo. Ningún check de CI detectaba este tipo de regresión.
-- **F3:** `tests/test_cost_report_pipeline.py` tenía un `pytest.skip` hardcodeado con el comentario "script not present". El script `run_cost_report.py` sí existía en `app/scripts/` pero el resolver de rutas del test no incluía ese path como candidato, por lo que el test nunca corría.
+- **F1:** `tree.md` did not exist at the repository root (referenced in AGENTS.md as an orientation artifact).
+- **F2:** `app/scripts/run_stub_chat.py` had a bare import (`from core.providers.stub_provider`) instead of the fully-qualified path (`from app.core.providers.stub_provider`), causing `ModuleNotFoundError` when running scripts from the repo root. The same issue was found in `export_usage_events.py` and `run_stub_determinism.py`. No CI check detected this class of regression.
+- **F3:** `tests/test_cost_report_pipeline.py` had a hardcoded `pytest.skip` with the message "script not present". The script `run_cost_report.py` did exist at `app/scripts/` but the test's path resolver did not include that path as a candidate, so the test never ran.
 
-Adicionalmente, el número ORQ-17 estaba reservado en documentación histórica para "RAG Baseline". Se tomó la decisión de resecuenciar deliberadamente para priorizar el cierre de Fase 0.
-
----
-
-## Decisión
-
-### Resecuenciación ORQ-17
-
-Decidimos reasignar ORQ-17 al cierre de Fase 0 (deuda técnica V1.1 + tag de estabilidad) y mover RAG Baseline a ORQ-18. La Fase 0 debe cerrarse antes de introducir features nuevas para mantener la integridad del baseline de estabilidad.
-
-### F1 — Regenerar tree.md
-
-Decidimos generar `tree.md` en la raíz del repo con `tree -I '__pycache__|*.pyc|.git'`. No se modifica AGENTS.md porque la línea 18 ya establece explícitamente que `tree.md` no es fuente autoritaria.
-
-### F2 — Corregir import y agregar smoke check CI
-
-Decidimos corregir el import en `run_stub_chat.py` al path calificado completo y agregar un step de smoke check en `.github/workflows/ci.yml` que hace un AST scan sobre todos los scripts en `app/scripts/`, fallando si detecta imports con prefijo `core.` sin `app.`. Esto previene la regresión a futuro sin requerir ejecución real de los scripts.
-
-### F3 — Rehabilitar el test (Opción A)
-
-Decidimos rehabilitar `tests/test_cost_report_pipeline.py` en lugar de eliminarlo. El script `run_cost_report.py` existe y los 4 tests del archivo son válidos. El fix es agregar el candidato de ruta faltante (`{repo_root}/app/scripts/run_cost_report.py`) y eliminar el `pytest.skip`. El test se incorpora al baseline de CI.
+Additionally, the number ORQ-17 was historically reserved for "RAG Baseline". A deliberate decision was made to resequence it to prioritize Phase 0 closure.
 
 ---
 
-## Consecuencias
+## Decision
 
-### Positivas
+### ORQ-17 Resequencing
 
-- El repo queda en estado limpio y auditable como Fase 0 cerrada.
-- El smoke check de CI previene regresiones futuras en imports de scripts.
-- Los 4 tests del cost report pipeline quedan activos y en CI.
-- El tag `v1.1-stable` marca el baseline de estabilidad de manera formal.
-- La resecuenciación ORQ-17→Fase0 / ORQ-18→RAG está documentada y trazable.
+We reassigned ORQ-17 to Phase 0 closure (V1.1 technical debt + stability tag) and moved RAG Baseline to ORQ-18. Phase 0 must be closed before introducing new features to preserve the integrity of the stability baseline.
 
-### Negativas / Trade-offs
+### F1 — Regenerate tree.md
 
-- El número ORQ-17 queda consumido por un ORQ de mantenimiento, no por una feature. Esto es intencional y deliberado.
-- El smoke check de CI agrega un step liviano pero no reemplaza tests de integración reales para scripts.
+We generate `tree.md` at the repo root using `tree -I '__pycache__|*.pyc|.git'`. AGENTS.md is not modified because line 18 already states explicitly that `tree.md` is not treated as an authoritative source of truth.
 
----
+### F2 — Fix imports and add CI smoke check
 
-## Alternativas Consideradas
+We fix the bare imports across all affected scripts in `app/scripts/` and add a smoke check step to `.github/workflows/ci.yml`. The step performs an AST scan over all `app/scripts/*.py` files, failing if it detects any import with a bare `core.` prefix (both `from core.*` and `import core.*` forms). This prevents the regression in the future without requiring actual script execution in CI.
 
-### Alternativa A (F3): Eliminar test_cost_report_pipeline.py
+### F3 — Rehabilitate the test (Option A)
 
-Descartar el archivo de test porque el skip lo tenía efectivamente muerto. Se descartó porque el script existe, los tests son válidos y eliminarlos sería pérdida de cobertura sin beneficio.
-
-### Alternativa B (ORQ-17): Mantener reserva para RAG Baseline
-
-No resecuenciar y abrir un nuevo número para el cierre de Fase 0. Se descartó porque la resecuenciación tiene un costo de documentación menor que la deuda de mantener el repo en estado sucio antes de avanzar con features nuevas.
+We rehabilitate `tests/test_cost_report_pipeline.py` instead of deleting it. The script `run_cost_report.py` exists and the 4 tests are valid. The fix is to add the missing path candidate (`{repo_root}/app/scripts/run_cost_report.py`) as candidate 2 in `_resolve_script_path()` and remove the `pytest.skip`. The test is added to the CI baseline.
 
 ---
 
-## Evidencia
+## Consequences
 
-- Hallazgos F1–F3: auditoría técnica pre-ORQ-17 (2026-06-29)
-- Script roto: `app/scripts/run_stub_chat.py:7` (import `core.providers.stub_provider`)
-- Script existente pero no encontrado: `app/scripts/run_cost_report.py`
-- Framework version confirmada: `.framework/framework-version` = `v2.0.3`
-- Tag creado: `v1.1-stable` (post-commit de este ORQ)
+### Positive
+
+- The repository is in a clean and auditable state as Phase 0 closed.
+- The CI smoke check prevents future regressions in script import paths.
+- All 4 cost report pipeline tests are active and running in CI.
+- The `v1.1-stable` tag formally marks the stability baseline.
+- The ORQ-17→Phase0 / ORQ-18→RAG resequencing is documented and traceable.
+
+### Negative / Trade-offs
+
+- The ORQ-17 number is consumed by a maintenance ORQ rather than a feature. This is intentional and deliberate.
+- The AST smoke check only detects static bare imports, not dynamic or conditional imports. Accepted: the failure pattern that occurred (static bare import) is fully covered.
+
+---
+
+## Alternatives Considered
+
+### Alternative A (F3): Delete test_cost_report_pipeline.py
+
+Discard the test file because the skip had it effectively dead. Rejected because the script exists, the tests are valid, and removing them would lose coverage with no benefit.
+
+### Alternative B (ORQ-17): Keep the reservation for RAG Baseline
+
+Do not resequence and open a new number for Phase 0 closure. Rejected because the resequencing has a lower documentation cost than the debt of keeping the repo in a dirty state before advancing with new features.
+
+---
+
+## Evidence
+
+- Findings F1–F3: technical audit pre-ORQ-17 (2026-06-29)
+- Broken scripts: `app/scripts/run_stub_chat.py`, `app/scripts/export_usage_events.py`, `app/scripts/run_stub_determinism.py` (bare `core.*` imports)
+- Existing but unreachable script: `app/scripts/run_cost_report.py`
+- Framework version confirmed: `.framework/framework-version` = `v2.0.3`
+- Stability tag: `v1.1-stable`

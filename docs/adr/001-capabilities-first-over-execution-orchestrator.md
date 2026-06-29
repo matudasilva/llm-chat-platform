@@ -1,33 +1,33 @@
-# ADR-001: Capabilities-First Antes del Execution Orchestrator
+# ADR-001: Capabilities-First Before the Execution Orchestrator
 
-**Fecha:** 2026-04-29 (decisión retroactiva; documentada 2026-06-26)  
-**Estado:** Aceptada  
-**ORQ de referencia:** ORQ-10 a ORQ-16 (ejecución), Documento Maestro de Continuidad (plan original)  
-**Superada por / Supera a:** —
+**Date:** 2026-04-29 (retroactive decision; documented 2026-06-26)  
+**Status:** Accepted  
+**ORQ reference:** ORQ-10 to ORQ-16 (execution), Master Continuity Document (original plan)  
+**Superseded by / Supersedes:** —
 
 ---
 
-## Contexto
+## Context
 
-Al cierre de V1.1 (2026-04-17, `docs/v1_1_closure.md`), el proyecto tenía estabilizado:
+At the V1.1 closure (2026-04-17, `docs/v1_1_closure.md`), the project had stabilized:
 
-- El core de `/chat` con persistencia atómica de 4 pasos
-- La abstracción `ProviderPort` con adapters para OpenAI, Bedrock y Stub
-- `ResilientProvider` (primary/fallback, sin retry al mismo proveedor)
-- Caché Redis best-effort para respuestas no-streaming
-- Structured JSON logging y propagación de `request_id`
+- The `/chat` core with 4-step atomic persistence
+- The `ProviderPort` abstraction with adapters for OpenAI, Bedrock, and Stub
+- `ResilientProvider` (primary/fallback, no retry to the same provider)
+- Best-effort Redis cache for non-streaming responses
+- Structured JSON logging and `request_id` propagation
 
-El **Documento Maestro de Continuidad** (planificación en Notion, referencia "Proyecto LLM Chat Platform ES") contemplaba como siguiente fase una secuencia de ORQs (ORQ-5 a ORQ-9 en la numeración original) orientada a implementar un **Execution Orchestrator V2.1**: un runtime de orquestación de herramientas y tool-calling sobre el dominio de chat existente.
+The **Master Continuity Document** (Notion planning, reference "Proyecto LLM Chat Platform ES") contemplated as the next phase a sequence of ORQs (ORQ-5 to ORQ-9 in the original numbering) aimed at implementing an **Execution Orchestrator V2.1**: a tool-calling and orchestration runtime on top of the existing chat domain.
 
-Con la adopción de Framework V2 (ORQ-10, 2026-04-27 a 2026-04-29), se estableció la infraestructura de gobernanza operacional. En ese punto se tomó la decisión de no proceder con el Execution Orchestrator sino con capacidades externas controladas (web read, Notion read, Notion write). Esta decisión nunca fue registrada explícitamente en el momento; el drift entre el plan y el código fue la motivación para crear este ADR retroactivamente.
+With the adoption of Framework V2 (ORQ-10, 2026-04-27 to 2026-04-29), the operational governance infrastructure was established. At that point the decision was made not to proceed with the Execution Orchestrator but instead with controlled external capabilities (web read, Notion read, Notion write). This decision was never explicitly recorded at the time; the drift between plan and code was the motivation for creating this ADR retroactively.
 
-### Evidencia git del orden real de ejecución
+### Git evidence of the actual execution order
 
 ```
 96f9619  2026-04-29  Close ORQ-10 framework tooling alignment
-f5924ba  2026-04-29  Add controlled web read MVP                      ← primera capacidad externa
+f5924ba  2026-04-29  Add controlled web read MVP                      ← first external capability
 333476a  2026-04-30  Close ORQ-11 controlled web read hardening
-afefc31  2026-04-30  Add Notion Read configuration and MCP dependency  ← segunda capacidad
+afefc31  2026-04-30  Add Notion Read configuration and MCP dependency  ← second capability
 e7f3636  2026-04-30  Implement ControlledNotionReadClient (ORQ-12)
 b8f5162  2026-04-30  Implement NotionReadService with allowlist enforcement
 ...
@@ -37,71 +37,70 @@ f0d316d  2026-05-08  ORQ-14 Closure: External Read Capabilities Consolidation
 bf6fd50  2026-05-09  ORQ-16: Implement Notion Write MVP with static validation
 ```
 
-El Execution Orchestrator no aparece en ningún commit del período ORQ-10 a ORQ-16.
+The Execution Orchestrator does not appear in any commit from the ORQ-10 to ORQ-16 period.
 
 ---
 
-## Decisión
+## Decision
 
-Decidimos implementar capacidades de lectura y escritura externa controlada (Web Read, Notion Read, Notion Write MVP) **antes** del Execution Orchestrator V2.1, divergiendo del orden planificado en el Documento Maestro de Continuidad.
+We decided to implement controlled external read and write capabilities (Web Read, Notion Read, Notion Write MVP) **before** the Execution Orchestrator V2.1, diverging from the order planned in the Master Continuity Document.
 
-Las capacidades implementadas en este período son:
+The capabilities implemented in this period are:
 
-| ORQ | Capacidad | Endpoint / Artefacto |
+| ORQ | Capability | Endpoint / Artifact |
 |-----|-----------|---------------------|
 | ORQ-11 | Controlled Web Read | `GET /web-read` |
 | ORQ-12 | Controlled Notion Read (MCP) | `GET /notion-read/page` |
 | ORQ-13 | Notion Read hardening | — |
 | ORQ-14 | External Read Consolidation | `docs/external_read_capabilities.md` |
 | ORQ-15 | Notion Write Safety Contract | `docs/notion_write_safety_contract.md` |
-| ORQ-16 | Notion Write MVP (validación estática) | `POST /notion-write/page` |
+| ORQ-16 | Notion Write MVP (static validation) | `POST /notion-write/page` |
 
-Estas capacidades son endpoints **stateless, read-only o write-controlled**, separados del write-path `/chat`. No modifican `ProviderPort`, `ChatService`, ni la capa de persistencia.
-
----
-
-## Consecuencias
-
-### Positivas
-
-- Las capacidades externas (web read, Notion read/write) son pre-requisitos prácticos para el diseño del Execution Orchestrator: el orchestrator necesita saber qué herramientas existen antes de diseñar el runtime.
-- Cada capacidad externa entregó valor observable independiente, sin bloquear en el diseño del orchestrator completo.
-- El contrato de seguridad de Notion Write (`docs/notion_write_safety_contract.md`) provee una base sólida para la integración futura con el orchestrator.
-- Se mantuvo el principio de minimal-diff: cada ORQ fue un cambio acotado y verificable.
-
-### Negativas / Trade-offs
-
-- La decisión generó drift entre el plan documentado en Notion y el código, ya que el Documento Maestro de Continuidad no fue actualizado al momento del pivote. Ese drift fue el motivador directo de la auditoría de estado 2026-06-25 (`docs/private/ANALISIS_ESTADO_PROYECTO_2026-06-25.md`).
-- El Execution Orchestrator V2.1 queda pendiente sin fecha. Depende del cierre limpio de ORQ-16 (bloqueador TEST 4, documentado en `docs/private/ORQ-16-BLOCKER-REPORT.md`) antes de avanzar a ORQ-17.
-- Al no documentar la decisión en el momento, fue necesario reconstruirla retroactivamente desde git history, lo cual es el anti-patrón que este sistema de ADRs busca prevenir.
+These capabilities are **stateless, read-only or write-controlled** endpoints, separate from the `/chat` write-path. They do not modify `ProviderPort`, `ChatService`, or the persistence layer.
 
 ---
 
-## Alternativas Consideradas
+## Consequences
 
-### Alternativa A: Implementar Execution Orchestrator V2.1 primero (plan original)
+### Positive
 
-El Documento Maestro de Continuidad planificaba un runtime de orquestación de herramientas como siguiente paso natural después de V1.1. Fue descartada porque:
+- External capabilities (web read, Notion read/write) are practical prerequisites for designing the Execution Orchestrator: the orchestrator needs to know what tools exist before designing the runtime.
+- Each external capability delivered independent observable value without blocking on the full orchestrator design.
+- The Notion Write safety contract (`docs/notion_write_safety_contract.md`) provides a solid foundation for future orchestrator integration.
+- The minimal-diff principle was maintained: each ORQ was a bounded and verifiable change.
 
-- El orchestrator requiere definir qué herramientas (tools) existirán. Sin las capacidades externas implementadas, el diseño del orchestrator habría sido especulativo.
-- El scope del orchestrator es significativamente mayor (implica tool-calling, estado de ejecución, posiblemente RAG). Las capacidades externas son más acotadas y entregables de forma incremental.
+### Negative / Trade-offs
 
-### Alternativa B: Implementar capacidades externas Y orchestrator en paralelo
-
-Descartada por violar el principio de minimal-diff y la restricción de scope de Framework V2. Un cambio paralelo de esa magnitud aumenta el riesgo de regresión en el core.
-
-### Alternativa C: Deferir todas las capacidades externas y esperar una decisión de roadmap formal
-
-Descartada porque las capacidades de lectura externa (web, Notion) tienen valor independiente como herramientas de contexto para el operador, sin necesitar el orchestrator.
+- The decision created drift between the plan documented in Notion and the code, since the Master Continuity Document was not updated at the time of the pivot. That drift was the direct motivator for the 2026-06-25 state audit (`docs/private/ANALISIS_ESTADO_PROYECTO_2026-06-25.md`).
+- The Execution Orchestrator V2.1 remains pending with no set date.
+- By not documenting the decision at the time, it had to be reconstructed retroactively from git history — which is the anti-pattern this ADR system is designed to prevent.
 
 ---
 
-## Evidencia
+## Alternatives Considered
 
-- Commits ORQ-10 a ORQ-16: ver sección Contexto arriba
-- `docs/external_read_capabilities.md` — documentación de endpoints /web-read y /notion-read
-- `docs/notion_write_safety_contract.md` — contrato de seguridad ORQ-15, base para ORQ-16
-- `docs/private/ORQ-16-BLOCKER-REPORT.md` — estado actual del bloqueador TEST 4
-- `docs/private/ANALISIS_ESTADO_PROYECTO_2026-06-25.md` — auditoría de estado que reveló el drift
-- `docs/v1_1_closure.md` — baseline V1.1 que precede a esta secuencia de ORQs
-- `.framework/context.md` — adopción Framework V2 (ORQ-10), punto de partida del período
+### Alternative A: Implement Execution Orchestrator V2.1 first (original plan)
+
+The Master Continuity Document planned a tool orchestration runtime as the natural next step after V1.1. Rejected because:
+
+- The orchestrator requires defining which tools (capabilities) will exist. Without the external capabilities implemented, the orchestrator design would have been speculative.
+- The orchestrator scope is significantly larger (tool-calling, execution state, possibly RAG). External capabilities are more bounded and deliverable incrementally.
+
+### Alternative B: Implement external capabilities AND orchestrator in parallel
+
+Rejected for violating the minimal-diff principle and the Framework V2 scope restriction. A parallel change of that magnitude increases regression risk in the core.
+
+### Alternative C: Defer all external capabilities and wait for a formal roadmap decision
+
+Rejected because external read capabilities (web, Notion) have independent value as context tools for the operator, without requiring the orchestrator.
+
+---
+
+## Evidence
+
+- Commits ORQ-10 to ORQ-16: see Context section above
+- `docs/external_read_capabilities.md` — documentation for /web-read and /notion-read endpoints
+- `docs/notion_write_safety_contract.md` — ORQ-15 safety contract, foundation for ORQ-16
+- `docs/private/ANALISIS_ESTADO_PROYECTO_2026-06-25.md` — state audit that revealed the drift
+- `docs/v1_1_closure.md` — V1.1 baseline preceding this ORQ sequence
+- `.framework/context.md` — Framework V2 adoption (ORQ-10), starting point of the period
