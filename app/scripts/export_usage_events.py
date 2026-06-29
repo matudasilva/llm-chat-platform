@@ -9,7 +9,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine
 
 # NOTE: adjust these imports only if your paths differ
-from core.settings import settings
+from app.core.settings import settings
 
 
 def _parse_dt(value: Optional[str]) -> Optional[datetime]:

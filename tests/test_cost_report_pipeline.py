@@ -8,29 +8,31 @@ import sys
 from pathlib import Path
 
 
-pytest.skip("cost report script not present in this environment", allow_module_level=True)
-
-
 def _resolve_script_path() -> Path:
-    # Candidate 1: repo root = tests/.. (common)
+    # Candidate 1: repo root = tests/.. (common local layout)
     root1 = Path(__file__).resolve().parents[1]
     cand1 = root1 / "scripts" / "run_cost_report.py"
     if cand1.exists():
         return cand1
 
-    # Candidate 2: repo root = tests/../.. (when tests live under /app/app/tests)
-    root2 = Path(__file__).resolve().parents[2]
-    cand2 = root2 / "scripts" / "run_cost_report.py"
+    # Candidate 2: app/scripts/ under repo root (standard layout — script lives here)
+    cand2 = root1 / "app" / "scripts" / "run_cost_report.py"
     if cand2.exists():
         return cand2
 
-    # Candidate 3: explicit path under /app/app (dev container layout)
-    cand3 = Path("/app/app/scripts/run_cost_report.py")
+    # Candidate 3: repo root = tests/../.. (when tests live under /app/app/tests)
+    root2 = Path(__file__).resolve().parents[2]
+    cand3 = root2 / "scripts" / "run_cost_report.py"
     if cand3.exists():
         return cand3
 
+    # Candidate 4: explicit path under /app/app (dev container layout)
+    cand4 = Path("/app/app/scripts/run_cost_report.py")
+    if cand4.exists():
+        return cand4
+
     raise FileNotFoundError(
-        f"run_cost_report.py not found. Tried: {cand1}, {cand2}, {cand3}"
+        f"run_cost_report.py not found. Tried: {cand1}, {cand2}, {cand3}, {cand4}"
     )
 
 SCRIPT = _resolve_script_path()

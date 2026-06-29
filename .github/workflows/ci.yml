@@ -22,6 +22,20 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r app/requirements.txt -r app/requirements-dev.txt
 
+      - name: Smoke-check script import paths
+        run: |
+          python -c "
+          import ast, pathlib, sys
+          bad = []
+          for p in pathlib.Path('app/scripts').glob('*.py'):
+              for node in ast.walk(ast.parse(p.read_text())):
+                  if isinstance(node, ast.ImportFrom) and (node.module or '').startswith('core.'):
+                      bad.append(f'{p}: bare core.* import (should be app.core.*): from {node.module}')
+          if bad:
+              print('\n'.join(bad)); sys.exit(1)
+          print('OK - no bare core.* imports in app/scripts/')
+          "
+
       - name: Run narrowed pytest baseline
         run: |
           python -m pytest -q \
@@ -29,7 +43,8 @@ jobs:
             tests/api/test_health_readyz.py \
             tests/api/test_request_ids.py \
             tests/api/test_request_size_limit.py \
-            tests/api/test_structured_logging.py
+            tests/api/test_structured_logging.py \
+            tests/test_cost_report_pipeline.py
 
       - name: Validate Docker build
         run: docker build -t llm-chat-platform:ci .

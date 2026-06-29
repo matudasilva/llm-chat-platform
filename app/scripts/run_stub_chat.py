@@ -3,7 +3,7 @@ import uuid
 
 from app.core.domain.chat_service import ChatService
 from app.core.domain.chat_types import ChatMessage
-from core.providers.stub_provider import StubProvider
+from app.core.providers.stub_provider import StubProvider
 
 
 async def run_ok() -> None:
