@@ -16,31 +16,20 @@ jobs:
       - name: Verify .framework-public.yml matches repository variables
         # .framework/ is gitignored and never present on a fresh CI checkout.
         # Instead we compare the committed .framework-public.yml against two
-        # repository variables (Settings → Variables) that are the authoritative
+        # repository variables (Settings -> Variables) that are the authoritative
         # source of the current framework version and ref:
         #   vars.FRAMEWORK_VERSION  e.g. "2.0.3"
         #   vars.FRAMEWORK_REF      e.g. "main"
         # To update: change the variables in Settings AND run
-        # `python scripts/sync_framework_public.py` locally to regenerate the file.
+        # `python scripts/sync_framework_public.py` locally and commit the result.
         env:
           EXPECTED_VERSION: ${{ vars.FRAMEWORK_VERSION }}
           EXPECTED_REF: ${{ vars.FRAMEWORK_REF }}
         run: |
           set -euo pipefail
 
-          ACTUAL_VERSION=$(python3 -c "
-          import re, pathlib
-          content = pathlib.Path('.framework-public.yml').read_text()
-          m = re.search(r'^framework_version:\s*[\"\'"]?([^\s\"\']+)[\"\'"]?', content, re.MULTILINE)
-          print(m.group(1) if m else '')
-          ")
-
-          ACTUAL_REF=$(python3 -c "
-          import re, pathlib
-          content = pathlib.Path('.framework-public.yml').read_text()
-          m = re.search(r'^ref:\s*[\"\'"]?([^\s\"\']+)[\"\'"]?', content, re.MULTILINE)
-          print(m.group(1) if m else '')
-          ")
+          ACTUAL_VERSION=$(grep '^framework_version:' .framework-public.yml | sed 's/framework_version:[[:space:]]*//' | tr -d '"')
+          ACTUAL_REF=$(grep '^ref:' .framework-public.yml | sed 's/ref:[[:space:]]*//' | tr -d '"')
 
           echo "Expected: framework_version=${EXPECTED_VERSION}  ref=${EXPECTED_REF}"
           echo "Actual:   framework_version=${ACTUAL_VERSION}  ref=${ACTUAL_REF}"
@@ -56,10 +45,8 @@ jobs:
           fi
 
           if [ "$FAIL" = "1" ]; then
-            echo ""
-            echo "To fix: update vars.FRAMEWORK_VERSION / vars.FRAMEWORK_REF in GitHub"
-            echo "Settings → Secrets and variables → Actions → Variables, then run"
-            echo "'python scripts/sync_framework_public.py' locally and commit the result."
+            echo "To fix: update FRAMEWORK_VERSION / FRAMEWORK_REF in GitHub Settings"
+            echo "then run 'python scripts/sync_framework_public.py' locally and commit."
             exit 1
           fi
 
