@@ -1,4 +1,8 @@
 flowchart TD
+    subgraph HTTP["http"]
+        MW["middleware<br/>(TenantMiddleware)"]
+    end
+
     subgraph API["api"]
         ROUTES["routes"]
         SCHEMAS["schemas"]
@@ -11,7 +15,7 @@ flowchart TD
     end
 
     subgraph PROVIDERS["core/providers"]
-        CP["Concrete Providers"]
+        CP["Concrete Providers<br/>+ ResilientProvider"]
     end
 
     subgraph SERVICES["services"]
@@ -26,6 +30,7 @@ flowchart TD
         M["Persistence Models"]
     end
 
+    MW --> ROUTES
     ROUTES --> CS
     ROUTES --> AS
     SCHEMAS --> ROUTES
