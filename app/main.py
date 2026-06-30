@@ -13,7 +13,7 @@ from app.core.settings import settings
 from app.http.middleware.request_context import RequestContextMiddleware
 from app.http.middleware.request_size_limit import RequestSizeLimitMiddleware
 from app.http.middleware.structured_logging import StructuredJsonLoggingMiddleware
-from app.http.middleware.tenant import TenantMiddleware
+from app.http.middleware.tenant import TenantContextFilter, TenantMiddleware
 from app.infra.db.session import init_db, close_db
 from app.services.notion_read import NotionReadService
 from app.services.notion_read_client import (
@@ -32,10 +32,12 @@ def _configure_logging(app_env: str, log_level: str) -> None:
 
     handler = logging.StreamHandler(sys.stdout)
     formatter = logging.Formatter(
-        fmt="%(asctime)s %(levelname)s %(name)s %(message)s",
+        fmt="%(asctime)s %(levelname)s %(name)s %(message)s tenant_id=%(tenant_id)s",
         datefmt="%Y-%m-%dT%H:%M:%S%z",
     )
     handler.setFormatter(formatter)
+
+    handler.addFilter(TenantContextFilter())
 
     root = logging.getLogger()
     root.handlers = []
@@ -106,10 +108,10 @@ app = FastAPI(
 
 app.include_router(runtime_ops_router)
 
-app.add_middleware(TenantMiddleware)
 app.add_middleware(RequestContextMiddleware)
 app.add_middleware(RequestSizeLimitMiddleware, max_bytes=settings.max_request_bytes)
 app.add_middleware(StructuredJsonLoggingMiddleware, app_env=str(getattr(settings, "app_env", "unknown")))
+app.add_middleware(TenantMiddleware)  # outermost — sets ContextVar before all inner middleware
 
 app.include_router(ops_router, prefix="/ops")
 app.include_router(api_router)

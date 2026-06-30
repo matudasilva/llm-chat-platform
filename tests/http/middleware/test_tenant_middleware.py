@@ -8,6 +8,8 @@ from httpx import ASGITransport, AsyncClient
 from starlette.applications import Starlette
 from starlette.middleware import Middleware
 from starlette.requests import Request
+from starlette.responses import StreamingResponse
+from starlette.routing import Route as _Route
 from starlette.responses import PlainTextResponse
 from starlette.routing import Route
 
@@ -91,3 +93,50 @@ async def test_tenant_id_too_long_falls_back(client: AsyncClient) -> None:
 async def test_malformed_jwt_falls_back(client: AsyncClient) -> None:
     r = await client.get("/", headers={"Authorization": "Bearer not.a.valid.jwt.here"})
     assert r.text == "default"
+
+
+# ---------------------------------------------------------------------------
+# Task 4 corrections
+# ---------------------------------------------------------------------------
+
+def test_validate_rejects_non_string_values() -> None:
+    from app.http.middleware.tenant import _validate
+
+    assert _validate(42) == "default"
+    assert _validate(None) == "default"
+    assert _validate(["acme"]) == "default"
+    assert _validate({"tenant_id": "acme"}) == "default"
+    assert _validate(True) == "default"
+
+
+@pytest.mark.asyncio
+async def test_jwt_non_string_tenant_id_claim_falls_back(client: AsyncClient) -> None:
+    token = _make_bearer({"tenant_id": 99})
+    r = await client.get("/", headers={"Authorization": token})
+    assert r.text == "default"
+
+
+@pytest.mark.asyncio
+async def test_context_var_preserved_during_streaming() -> None:
+    from app.http.middleware.tenant import TenantMiddleware, get_tenant_id
+
+    observed: list[str] = []
+
+    async def streaming_handler(request: Request) -> StreamingResponse:
+        async def body():
+            for _ in range(3):
+                observed.append(get_tenant_id())
+                yield b"chunk"
+
+        return StreamingResponse(body(), media_type="text/plain")
+
+    stream_app = Starlette(
+        routes=[_Route("/", streaming_handler)],
+        middleware=[Middleware(TenantMiddleware)],
+    )
+    async with AsyncClient(transport=ASGITransport(app=stream_app), base_url="http://test") as c:
+        r = await c.get("/", headers={"X-Tenant-ID": "stream-tenant"})
+
+    assert r.status_code == 200
+    assert len(observed) == 3
+    assert all(v == "stream-tenant" for v in observed)
