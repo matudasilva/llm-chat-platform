@@ -1518,6 +1518,22 @@ A minimal best-effort Redis response cache has been implemented for non-streamin
 * Cache payload is intentionally minimal and only reconstructs the data required by the existing non-streaming write-path
 * No DB schema, provider implementation, `ChatService`, `ResilientProvider`, retry/fallback semantics, or streaming semantics changes were introduced
 
+## Addendum — Multitenancy Foundation (ORQ-18, Closed 2026-06-30)
+
+`tenant_id` was introduced as a first-class dimension across all layers. The V1.1 baseline is extended but otherwise unchanged.
+
+**Data models:** `tenant_id VARCHAR(64) NOT NULL DEFAULT 'default'` added to `conversations` and `messages`; composite index `(tenant_id, created_at)` on each. Migration `a1b2c3d4e5f6` is reversible (downgrade drops index then column). `UsageEvent` is excluded — deferred pending cost-pipeline analysis.
+
+**Request context:** `TenantMiddleware` implemented as a pure ASGI class (not `BaseHTTPMiddleware`). The `BaseHTTPMiddleware` approach was ruled out because its `dispatch()` `finally` block resets the ContextVar before the SSE response body is consumed by the client. Pure ASGI `await self.app(scope, receive, send)` does not return until the full body is sent, keeping the ContextVar valid for the lifetime of any streaming response. Extraction priority: `X-Tenant-ID` request header → JWT Bearer `tenant_id` claim (best-effort, no signature verification) → fallback `"default"`. Middleware is registered last in `app/main.py` (Starlette LIFO ordering → outermost layer).
+
+**Cache isolation:** Cache key format changed from `chat:response:{sha256}` to `chat:response:{tenant_id}:{sha256}`. Fingerprint now covers the full message list (previously only the last message — bug fixed in this ORQ).
+
+**Telemetry:** `TenantContextFilter` (a `logging.Filter` subclass) attached to the root `StreamHandler`. Python's `callHandlers()` applies handler-level filters to propagated records from all child loggers, so `provider.*`, `chat.*`, and `cache.*` events receive `tenant_id` automatically without modifying those modules.
+
+**Cross-tenant enforcement:** App-layer check — `conv.tenant_id != tenant_id → 404` in both streaming and non-streaming paths of `/chat`.
+
+**Deferred:** PostgreSQL RLS, JWT signature verification, `UsageEvent.tenant_id`. Full decision record: [ADR-003](../adr/003-multitenancy-transversal-foundation.md).
+
 ## Appendices
 
 Detailed execution-level documentation, debugging playbooks, and deep technical references

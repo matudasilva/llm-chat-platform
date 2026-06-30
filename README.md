@@ -443,6 +443,10 @@ Bedrock provider knobs:
 Provider configuration is centralized in `app/core/settings.py`.
 Primary/fallback precedence is handled in settings validation and consumed by the provider factory.
 
+### Tenant Selection
+
+Pass the `X-Tenant-ID: <tenant>` request header to scope the request to a specific tenant. Omitting the header (or sending an invalid value) silently falls back to `"default"`. JWT-based extraction (`tenant_id` claim in a Bearer token) is also supported as a second priority.
+
 ### Routing Policy
 
 The platform includes a config-gated routing seam with multiple modes:
@@ -550,17 +554,28 @@ It is a correctness-first backend reference system.
 - Zero changes to ChatService, ProviderPort, providers, persistence, streaming, or routing
 - All invariants preserved; zero regression
 
-### Planned Future Work (Not Yet Started)
+### Closed ORQs — Governance Phase (V1.x)
 
-**ORQ-15 Candidate — Controlled Notion Write Safety Contract**
-- Static read-only validation of potential write patterns
-- Safety analysis before any write implementation
-- No execution of writes
+✅ **ORQ-15 — Notion Write Safety Contract:** Static validation of potential write patterns; safety analysis before execution; no live writes.
+✅ **ORQ-16 — Controlled Notion Write MVP:** Live `POST /notion-write/page` + `POST /notion-write/row` endpoints; allowlist-gated, best-effort audit logging.
+✅ **ORQ-16.1 — Notion Write Validator Fix:** Status type validation blocker (TEST 4) fixed in `NotionWriteValidator`; unblocked ORQ-16 closure.
+✅ **ORQ-17 — Phase 0 Closure:** Final baseline audit, AGENTS.md governance invariants, tag `v1.1-stable`.
+
+### Multitenancy Foundation (ORQ-18, Closed 2026-06-30)
+
+`tenant_id` is now a first-class dimension across the entire write path:
+
+- **Data models:** `tenant_id VARCHAR(64) NOT NULL DEFAULT 'default'` on `conversations` and `messages`; composite index `(tenant_id, created_at)`.
+- **Request context:** `TenantMiddleware` (pure ASGI — *not* `BaseHTTPMiddleware`, which resets ContextVars before SSE body is consumed) runs as the outermost middleware layer. Extraction priority: `X-Tenant-ID` header → JWT Bearer claim `tenant_id` → fallback `"default"`.
+- **Cache isolation:** Redis key format is `chat:response:{tenant_id}:{sha256}`; fingerprint covers the full message history (not just the last message).
+- **Telemetry:** `TenantContextFilter` on the root log handler injects `tenant_id` into every `provider.*`, `chat.*`, and `cache.*` log record without touching those modules.
+- **Cross-tenant enforcement:** App-layer guard — `conv.tenant_id != tenant_id → 404` in both streaming and non-streaming paths.
+- **Deferred:** Full RLS enforcement and corpus scoping (ORQ-21). See [ADR-003](docs/adr/003-multitenancy-transversal-foundation.md).
 
 **Later (Sequenced)**
-- Internal Docs Retrieval / RAG Baseline Design (ingestion and retrieval patterns)
-- Routing Evidence Dataset (prerequisite for ML routing)
-- Offline ML Routing Baseline (depends on evidence dataset)
+- Frontend tenant-aware layer (ORQ-19)
+- Deploy pipeline (ORQ-20)
+- Internal Docs Retrieval / RAG Baseline with per-tenant corpus scoping (ORQ-21)
 
 ### Explicitly Not Implemented
 
@@ -577,6 +592,18 @@ It is a correctness-first backend reference system.
 
 * `docs/lld_llm_chat_platform_live_doc.md` — live low-level design
 * `docs/lld_apendix.md` — deep technical appendices & reproducible evidence
+
+## Architecture Decisions
+
+Non-trivial architecture decisions are recorded as ADRs in `docs/adr/`:
+
+| ADR | Title | Status |
+|-----|-------|--------|
+| [001](docs/adr/001-capabilities-first-over-execution-orchestrator.md) | Capabilities-first over execution-orchestrator | Accepted |
+| [002](docs/adr/002-orq17-phase0-closure-resequencing.md) | ORQ-17 Phase 0 closure resequencing | Accepted |
+| [003](docs/adr/003-multitenancy-transversal-foundation.md) | Multitenancy transversal foundation | Accepted |
+
+See `docs/adr/README.md` for the full ADR workflow and template.
 
 ## Architecture diagram workflow
 

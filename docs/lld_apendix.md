@@ -27,8 +27,12 @@ CREATE TABLE conversations (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   title TEXT NULL,
-  metadata JSONB NULL
+  metadata JSONB NULL,
+  tenant_id VARCHAR(64) NOT NULL DEFAULT 'default'
 );
+
+CREATE INDEX ix_conversations_tenant_id_created_at
+  ON conversations(tenant_id, created_at);
 ```
 
 **Semantics**
@@ -36,6 +40,7 @@ CREATE TABLE conversations (
 * Acts as aggregation root for messages
 * Created lazily on first `/chat` request
 * No hard deletes assumed
+* `tenant_id` added by migration `a1b2c3d4e5f6` (ORQ-18); existing rows backfilled to `'default'`
 
 ---
 
@@ -47,11 +52,15 @@ CREATE TABLE messages (
   conversation_id UUID NOT NULL REFERENCES conversations(id),
   role TEXT NOT NULL CHECK (role IN ('user','assistant','system')),
   content TEXT NOT NULL,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  tenant_id VARCHAR(64) NOT NULL DEFAULT 'default'
 );
 
 CREATE INDEX idx_messages_conversation_created
   ON messages(conversation_id, created_at);
+
+CREATE INDEX ix_messages_tenant_id_created_at
+  ON messages(tenant_id, created_at);
 ```
 
 **Semantics**
@@ -59,6 +68,7 @@ CREATE INDEX idx_messages_conversation_created
 * Ordering guaranteed by `(conversation_id, created_at)`
 * FK enforces existence of conversation
 * `system` role reserved for orchestration
+* `tenant_id` added by migration `a1b2c3d4e5f6` (ORQ-18); existing rows backfilled to `'default'`
 
 ---
 
