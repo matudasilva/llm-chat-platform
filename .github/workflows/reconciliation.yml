@@ -5,6 +5,32 @@ on:
   pull_request:
 
 jobs:
+  framework-public-drift:
+    name: .framework-public.yml drift check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Generate .framework-public.yml from internal metadata
+        run: python scripts/sync_framework_public.py
+
+      - name: Fail if .framework-public.yml differs from committed version
+        run: |
+          if ! git diff --exit-code .framework-public.yml; then
+            echo ""
+            echo "ERROR: .framework-public.yml is out of sync with .framework/ metadata."
+            echo "Run 'python scripts/sync_framework_public.py' locally and commit the result."
+            exit 1
+          fi
+          echo "OK: .framework-public.yml is in sync."
+
   adr-presence:
     name: ADR directory and baseline check
     runs-on: ubuntu-latest
