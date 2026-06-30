@@ -170,11 +170,23 @@ The fingerprint replaces the `"message"` string key with a `"messages"` list:
 
 All provider-configuration fields are **preserved** in the fingerprint. The Redis key prefix changes to `chat:response:{tenant_id}:{sha256}`. The `ChatResponseCache` API changes from `message: str` to `messages: list[ChatMessage]` + `tenant_id: str` to match.
 
-### 8. Telemetry propagation — ContextVar approach
+### 8. Telemetry propagation — TenantContextFilter on root handler
 
-`tenant_id` is added to log events by reading the `ContextVar` at log time — not by modifying providers. The structured logging middleware reads `get_tenant_id()` in its `finally` block (after the request handler runs). The `/chat` route adds `tenant_id` to its `extra={}` dicts in `logger.info` calls.
+`tenant_id` is propagated to all log events centrally, without modifying any provider, adapter, or route logger call.
 
-Provider adapters (`ProviderPort`, `ResilientProvider`) are **not touched**.
+**Implementation:**
+- `TenantContextFilter(logging.Filter)` is defined in `app/http/middleware/tenant.py`. Its `filter()` method injects `record.tenant_id = get_tenant_id()` into any `LogRecord` that does not already have the field.
+- The filter is attached to the root `StreamHandler` (not the root logger) via `handler.addFilter(TenantContextFilter())` in `_configure_logging()`. This ensures it runs for all records that reach the handler — both direct calls to root and propagated records from child loggers (`provider.*`, `chat.*`, `cache.*`).
+- The root handler formatter includes `tenant_id=%(tenant_id)s`.
+- The structured logging middleware reads `get_tenant_id()` directly to include `"tenant_id"` in the access log JSON payload.
+
+**Why the filter is on the handler, not the logger:** Python's `callHandlers()` calls `hdlr.handle(record)` for each handler in the propagation chain, which applies that handler's filters. Root-logger-level filters are not applied to propagated records — they only run when `Logger.handle()` is called directly. Attaching to the handler ensures coverage for all child loggers without modifying them.
+
+**TenantMiddleware lifecycle:** The middleware is implemented as a pure ASGI class (not `BaseHTTPMiddleware`). Its `__call__` method does `await self.app(scope, receive, send)`, which does not return until the full response body — including SSE chunks — has been consumed. The `finally` block that resets the ContextVar therefore runs after streaming is complete. Provider log events emitted during SSE token generation see the correct tenant.
+
+**Scope handling:** Only `scope["type"] == "http"` scopes are processed. All other scope types (lifespan, websocket) are passed through without setting the ContextVar.
+
+Provider adapters (`ProviderPort`, `ResilientProvider`, `OpenAIProvider`, `BedrockProvider`) are **not touched**.
 
 ### 9. Migration path and downgrade
 
