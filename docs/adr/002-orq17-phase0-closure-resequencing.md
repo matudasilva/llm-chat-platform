@@ -74,3 +74,34 @@ Do not resequence and open a new number for Phase 0 closure. Rejected because th
 - Existing but unreachable script: `app/scripts/run_cost_report.py`
 - Framework version confirmed: `.framework/framework-version` = `v2.0.3`
 - Stability tag: `v1.1-stable`
+
+---
+
+## Amendment (2026-06-27)
+
+**Status:** Accepted (supersedes the ORQ-18 assignment in the Decision section above)
+
+### Context
+
+At the time ADR-002 was written (2026-06-29), the resequencing decision stated that RAG Baseline would move to ORQ-18. A planning session on 2026-06-27 extended the roadmap with additional foundational ORQs that must precede RAG to avoid structural rewrites.
+
+### Updated ORQ Sequence
+
+The full vigent sequence from ORQ-18 onward is:
+
+| ORQ | Scope |
+|-----|-------|
+| ORQ-17 | Phase 0 closure — technical debt V1.1 + stability tag ✅ closed |
+| ORQ-18 | Multitenancy foundation |
+| ORQ-19 | Minimal chat frontend (React/Vite) |
+| ORQ-20 | Dev→Prod Option A |
+| ORQ-21 | RAG baseline (previously "ORQ-17" in historical docs, then "ORQ-18" in this ADR) |
+| ORQ-22 | Routing evidence dataset |
+| ORQ-23 | Offline ML Routing Baseline |
+| ORQ-24 | AI Green |
+
+### Rationale
+
+Multitenancy (ORQ-18), frontend (ORQ-19), and deploy (ORQ-20) are prioritized before RAG (ORQ-21) for the following reason: if the frontend and deploy pipeline are built without a tenant-aware foundation, they would need to be rewritten when multitenancy is introduced later. Building multitenancy first ensures that every subsequent layer — UI, deploy, RAG, routing — is tenant-aware from inception.
+
+The minimal-diff principle applies: each ORQ in the sequence delivers independent observable value while laying the foundation for the next.
