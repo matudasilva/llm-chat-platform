@@ -13,6 +13,7 @@ from app.core.settings import settings
 from app.http.middleware.request_context import RequestContextMiddleware
 from app.http.middleware.request_size_limit import RequestSizeLimitMiddleware
 from app.http.middleware.structured_logging import StructuredJsonLoggingMiddleware
+from app.http.middleware.tenant import TenantMiddleware
 from app.infra.db.session import init_db, close_db
 from app.services.notion_read import NotionReadService
 from app.services.notion_read_client import (
@@ -105,6 +106,7 @@ app = FastAPI(
 
 app.include_router(runtime_ops_router)
 
+app.add_middleware(TenantMiddleware)
 app.add_middleware(RequestContextMiddleware)
 app.add_middleware(RequestSizeLimitMiddleware, max_bytes=settings.max_request_bytes)
 app.add_middleware(StructuredJsonLoggingMiddleware, app_env=str(getattr(settings, "app_env", "unknown")))

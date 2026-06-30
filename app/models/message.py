@@ -4,7 +4,7 @@ import enum
 import uuid
 from typing import Any
 
-from sqlalchemy import DateTime, Enum, ForeignKey, Index, Text, func
+from sqlalchemy import DateTime, Enum, ForeignKey, Index, String, Text, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -37,6 +37,12 @@ class Message(Base):
     role: Mapped[MessageRole] = mapped_column(
         Enum(MessageRole, name="message_role"),
         nullable=False,
+    )
+
+    tenant_id: Mapped[str] = mapped_column(
+        String(64),
+        nullable=False,
+        server_default="default",
     )
 
     content: Mapped[str] = mapped_column(Text, nullable=False)

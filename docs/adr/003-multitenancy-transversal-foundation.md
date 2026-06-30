@@ -102,3 +102,83 @@ Add `tenant_id` to models and filter at the application layer, with no roadmap c
 - V1.1 audit: cache fingerprint bug documented in `docs/lld_llm_chat_platform_live_doc.md` §3.3
 - `AGENTS.md` invariants: ProviderPort, streaming, and persistence atomicity must not be modified
 - RLS target: ORQ-21 (RAG baseline) — tenant-scoped corpus requires DB-level isolation
+
+---
+
+## Amendment — 2026-06-30 (post Design Review)
+
+Design Review (Codex, 2026-06-30) identified eight gaps that required resolution before execution. This amendment closes them.
+
+### 1. Middleware path
+
+The middleware is created at `app/http/middleware/tenant.py`, consistent with the existing middleware tree (`app/http/middleware/{request_context,request_size_limit,structured_logging}.py`). The original reference to `app/middleware/tenant.py` in `spec.md` was incorrect.
+
+### 2. JWT parsing contract — explicitly NOT authentication
+
+JWT parsing is **best-effort claim extraction only**. The implementation:
+- Splits `Authorization: Bearer <token>` on `.`
+- Base64-decodes the payload section (index 1), padding as needed
+- Extracts the `tenant_id` JSON key
+- **Does not verify the signature, algorithm, issuer, expiry, or any other claim**
+
+A JWT accepted this way **does not constitute identity or isolation**. It is a routing hint with the same trust level as the `X-Tenant-ID` header. Hardening belongs in a dedicated auth ORQ. If parsing fails at any step, the middleware falls through to `"default"`.
+
+### 3. Trust model
+
+Both `X-Tenant-ID` header and JWT claim are untrusted client inputs in the current system. Priority `header → JWT → "default"` is applied consistently with no security implication. A future auth ORQ may restrict header trust to infrastructure-controlled ingress.
+
+### 4. tenant_id validation
+
+The extracted value is canonicalized before use:
+- Strip leading/trailing whitespace
+- Accept only `[a-zA-Z0-9_-]{1,64}`
+- Any value that is empty or does not match → fall back to `"default"`
+
+This prevents Redis key injection, log injection, and accidental namespace collisions from malformed input.
+
+### 5. ChatService stays pure
+
+`ChatService` does **not** receive `tenant_id` as a parameter. Its documented boundary (no DB, no HTTP semantics) is preserved. The route reads `tenant_id` from a `contextvars.ContextVar` set by `TenantMiddleware` and assigns it to ORM objects directly at the persistence step.
+
+A module-level `ContextVar[str]` (`default="default"`) is exported from the middleware module. Tests that call the route handler directly (bypassing middleware) receive `"default"` without any setup.
+
+### 6. Tenant-scoped lookup
+
+The existing-conversation lookup is implemented as:
+```python
+conv = await db.get(Conversation, conversation_id)
+if conv is None or conv.tenant_id != tenant_id:
+    raise HTTPException(status_code=404, ...)  # or SSE error in streaming branch
+```
+
+This is application-layer enforcement. A direct DB connection or compromised application can still cross tenant boundaries — that is the documented debt resolved by RLS in ORQ-21.
+
+### 7. Cache fingerprint — corrected contract
+
+The fingerprint replaces the `"message"` string key with a `"messages"` list:
+```python
+{
+    "messages": [{"role": m.role, "content": m.content} for m in messages],
+    "provider": ...,
+    "fallback_provider": ...,
+    "openai_model": ...,
+    "bedrock_model": ...,
+    "bedrock_prompt_version": ...,
+    "stub_provider_mode": ...,
+}
+```
+
+All provider-configuration fields are **preserved** in the fingerprint. The Redis key prefix changes to `chat:response:{tenant_id}:{sha256}`. The `ChatResponseCache` API changes from `message: str` to `messages: list[ChatMessage]` + `tenant_id: str` to match.
+
+### 8. Telemetry propagation — ContextVar approach
+
+`tenant_id` is added to log events by reading the `ContextVar` at log time — not by modifying providers. The structured logging middleware reads `get_tenant_id()` in its `finally` block (after the request handler runs). The `/chat` route adds `tenant_id` to its `extra={}` dicts in `logger.info` calls.
+
+Provider adapters (`ProviderPort`, `ResilientProvider`) are **not touched**.
+
+### 9. Migration path and downgrade
+
+Migration file lives in `app/alembic/versions/` (not `alembic/versions/`). The `down_revision` is `"d4dd07072605"` (current chain head). Explicit `downgrade()` sequence:
+1. `DROP INDEX IF EXISTS ix_conversations_tenant_id_created_at`
+2. `DROP COLUMN tenant_id FROM conversations`
+3. `DROP COLUMN tenant_id FROM messages`

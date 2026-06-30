@@ -15,6 +15,7 @@ from app.core.domain.chat_types import ChatServiceResult
 from app.core.domain.types import ChatMessage
 from app.core.settings import settings
 from app.core.utils.limits import sanitize_error_message, truncate
+from app.http.middleware.tenant import get_tenant_id
 from app.http.request_context import get_request_id
 from app.infra.db.session import get_db
 from app.models.conversation import Conversation
@@ -55,6 +56,7 @@ async def chat(
     start = time.perf_counter()
     rid = get_request_id()
     request_id = uuid.UUID(rid) if rid else uuid.uuid4()
+    tenant_id = get_tenant_id()
 
     status = ChatStatus.error
     error_message: str | None = None
@@ -101,14 +103,14 @@ async def chat(
                 assistant_msg_id = uuid.uuid4()
 
                 async with db.begin():
-                    # Conversation: create or validate
+                    # Conversation: create or validate (tenant-scoped)
                     if is_new_conversation:
-                        conv = Conversation(id=conversation_id)
+                        conv = Conversation(id=conversation_id, tenant_id=tenant_id)
                         db.add(conv)
                         await db.flush()
                     else:
                         conv = await db.get(Conversation, conversation_id)
-                        if conv is None:
+                        if conv is None or conv.tenant_id != tenant_id:
                             yield _sse_json("error", {"error_kind": "not_found"})
                             return
 
@@ -117,6 +119,7 @@ async def chat(
                         Message(
                             id=user_msg_id,
                             conversation_id=conversation_id,
+                            tenant_id=tenant_id,
                             role=MessageRole.user,
                             content=payload.message,
                         )
@@ -128,6 +131,7 @@ async def chat(
                         Message(
                             id=assistant_msg_id,
                             conversation_id=conversation_id,
+                            tenant_id=tenant_id,
                             role=MessageRole.assistant,
                             content=assistant_content_final,
                         )
@@ -202,21 +206,23 @@ async def chat(
     try:
         cache_write_result: ChatServiceResult | None = None
         # Single transaction: either everything is persisted, or nothing is.
+        _messages = [ChatMessage(role="user", content=payload.message)]
         async with db.begin():
-            # 1) Conversation: create or validate
+            # 1) Conversation: create or validate (tenant-scoped)
             if is_new_conversation:
-                conv = Conversation(id=conversation_id)
+                conv = Conversation(id=conversation_id, tenant_id=tenant_id)
                 db.add(conv)
                 await db.flush()
             else:
                 conv = await db.get(Conversation, conversation_id)
-                if conv is None:
+                if conv is None or conv.tenant_id != tenant_id:
                     raise HTTPException(status_code=404, detail="conversation_id not found")
 
             # 2) Persist user message
             user_msg = Message(
                 id=uuid.uuid4(),
                 conversation_id=conversation_id,
+                tenant_id=tenant_id,
                 role=MessageRole.user,
                 content=payload.message,
             )
@@ -225,11 +231,13 @@ async def chat(
             user_message_id = user_msg.id
 
             # 3) Execute model (via ChatService)
-            service_result = await cache.get(request_id=request_id, message=payload.message)
+            service_result = await cache.get(
+                request_id=request_id, messages=_messages, tenant_id=tenant_id
+            )
             if service_result is None:
                 service_result = await chat_service.run(
                     request_id=request_id,
-                    messages=[ChatMessage(role="user", content=payload.message)],
+                    messages=_messages,
                 )
                 cache_write_result = service_result
 
@@ -243,6 +251,7 @@ async def chat(
             assistant_msg = Message(
                 id=uuid.uuid4(),
                 conversation_id=conversation_id,
+                tenant_id=tenant_id,
                 role=MessageRole.assistant,
                 content=assistant_content,
             )
@@ -288,7 +297,7 @@ async def chat(
 
         # commit OK (exit db.begin)
         if cache_write_result is not None:
-            await cache.set(message=payload.message, result=cache_write_result)
+            await cache.set(messages=_messages, result=cache_write_result, tenant_id=tenant_id)
 
         return ChatResponse(
             request_id=request_id,

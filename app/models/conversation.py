@@ -3,7 +3,7 @@ from __future__ import annotations
 import uuid
 from typing import Any
 
-from sqlalchemy import DateTime, String, func
+from sqlalchemy import DateTime, Index, String, func
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -33,6 +33,12 @@ class Conversation(Base):
         onupdate=func.now(),
     )
 
+    tenant_id: Mapped[str] = mapped_column(
+        String(64),
+        nullable=False,
+        server_default="default",
+    )
+
     title: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     # Nota: evitamos llamar al atributo "metadata" para no confundir con SQLAlchemy metadata.
@@ -47,4 +53,8 @@ class Conversation(Base):
         back_populates="conversation",
         cascade="all, delete-orphan",
         passive_deletes=True,
+    )
+
+    __table_args__ = (
+        Index("ix_conversations_tenant_id_created_at", "tenant_id", "created_at"),
     )

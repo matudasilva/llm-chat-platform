@@ -11,6 +11,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
 
+from app.http.middleware.tenant import get_tenant_id
 from app.http.request_context import get_correlation_id, get_request_id
 
 
@@ -63,6 +64,7 @@ class StructuredJsonLoggingMiddleware(BaseHTTPMiddleware):
             payload = {
                 "request_id": str(rid),
                 "correlation_id": str(cid),
+                "tenant_id": get_tenant_id(),
                 "path": request.url.path,
                 "method": request.method,
                 "status": int(status_code or 0),

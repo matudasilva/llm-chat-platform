@@ -80,7 +80,7 @@ class FakeCache:
     writes: int = 0
     bypasses: list[str] = field(default_factory=list)
 
-    async def get(self, *, request_id: uuid.UUID, message: str) -> ChatServiceResult | None:
+    async def get(self, *, request_id: uuid.UUID, messages: list, tenant_id: str) -> ChatServiceResult | None:
         self.reads += 1
         if self.read_error is not None:
             raise self.read_error
@@ -92,7 +92,7 @@ class FakeCache:
             provider_result=self.hit_result.provider_result,
         )
 
-    async def set(self, *, message: str, result: ChatServiceResult) -> None:
+    async def set(self, *, messages: list, result: ChatServiceResult, tenant_id: str) -> None:
         self.writes += 1
         if self.write_error is not None:
             raise self.write_error

@@ -51,10 +51,10 @@ class FakeAsyncSession:
 
 
 class NoopCache:
-    async def get(self, *, request_id, message):
+    async def get(self, *, request_id, messages, tenant_id):
         return None
 
-    async def set(self, *, message, result) -> None:
+    async def set(self, *, messages, result, tenant_id) -> None:
         return None
 
     def log_bypass(self, *, reason: str) -> None:
