@@ -32,12 +32,15 @@ class ConversationQueryService:
     def __init__(self, db: AsyncSession) -> None:
         self._db = db
 
-    async def get_conversation(self, conversation_id: UUID) -> Conversation | None:
+    async def get_conversation(self, conversation_id: UUID, tenant_id: str) -> Conversation | None:
         stmt = select(Conversation).where(Conversation.id == conversation_id)
         res = await self._db.execute(stmt)
-        return res.scalar_one_or_none()
+        conv = res.scalar_one_or_none()
+        if conv is not None and conv.tenant_id != tenant_id:
+            return None
+        return conv
 
-    async def list_messages_for_conversation(self, conversation_id: UUID) -> list[Message]:
+    async def list_messages_for_conversation(self, conversation_id: UUID, tenant_id: str) -> list[Message]:
         stmt = (
             select(Message)
             .where(Message.conversation_id == conversation_id)
@@ -46,8 +49,7 @@ class ConversationQueryService:
         res = await self._db.execute(stmt)
         return list(res.scalars().all())
 
-    async def list_conversations(self, limit: int, offset: int) -> list[ConversationListRow]:
-        # Efficient aggregation, avoids loading message content
+    async def list_conversations(self, *, limit: int, offset: int, tenant_id: str) -> list[ConversationListRow]:
         stmt = (
             select(
                 Conversation.id.label("conversation_id"),
@@ -56,6 +58,7 @@ class ConversationQueryService:
                 func.count(Message.id).label("message_count"),
             )
             .select_from(Conversation)
+            .where(Conversation.tenant_id == tenant_id)
             .outerjoin(Message, Message.conversation_id == Conversation.id)
             .group_by(Conversation.id)
             .order_by(Conversation.created_at.desc(), Conversation.id.desc())

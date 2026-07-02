@@ -60,6 +60,7 @@ async def test_get_conversation_404(
     async def fake_get_conversation(
         self,
         conversation_id: UUID,
+        tenant_id: str,
     ) -> None:
         return None
 
@@ -81,6 +82,7 @@ async def test_get_conversation_includes_messages(
     async def fake_get_conversation(
         self,
         conversation_id: UUID,
+        tenant_id: str,
     ) -> SimpleNamespace:
         assert conversation_id == CONVERSATION_ID
         return _conversation()
@@ -88,6 +90,7 @@ async def test_get_conversation_includes_messages(
     async def fake_list_messages_for_conversation(
         self,
         conversation_id: UUID,
+        tenant_id: str,
     ) -> list[SimpleNamespace]:
         assert conversation_id == CONVERSATION_ID
         return _messages()
@@ -130,6 +133,7 @@ async def test_list_conversations_pagination_and_count(
         *,
         limit: int,
         offset: int,
+        tenant_id: str,
     ) -> list[ConversationListRow]:
         assert limit == 20
         assert offset == 0
@@ -160,3 +164,73 @@ async def test_list_conversations_pagination_and_count(
     assert data["items"][0]["message_count"] == 4
     assert data["items"][0]["created_at"] == CREATED_AT.isoformat().replace("+00:00", "Z")
     assert data["items"][0]["updated_at"] == UPDATED_AT.isoformat().replace("+00:00", "Z")
+
+
+@pytest.mark.asyncio
+async def test_list_conversations_tenant_isolation(
+    client: httpx.AsyncClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    received: dict = {}
+
+    async def fake_list_conversations(
+        self,
+        *,
+        limit: int,
+        offset: int,
+        tenant_id: str,
+    ) -> list[ConversationListRow]:
+        received["tenant_id"] = tenant_id
+        return []
+
+    monkeypatch.setattr(ConversationQueryService, "list_conversations", fake_list_conversations)
+
+    resp = await client.get("/conversations", headers={"X-Tenant-ID": "tenant-b"})
+    assert resp.status_code == 200
+    assert resp.json()["items"] == []
+    assert received["tenant_id"] == "tenant-b"
+
+
+@pytest.mark.asyncio
+async def test_get_conversation_cross_tenant_returns_404(
+    client: httpx.AsyncClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def fake_get_conversation(
+        self,
+        conversation_id: UUID,
+        tenant_id: str,
+    ) -> None:
+        return None
+
+    monkeypatch.setattr(ConversationQueryService, "get_conversation", fake_get_conversation)
+
+    resp = await client.get(
+        f"/conversations/{CONVERSATION_ID}",
+        headers={"X-Tenant-ID": "tenant-b"},
+    )
+    assert resp.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_list_conversations_default_tenant_scoped(
+    client: httpx.AsyncClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    received: dict = {}
+
+    async def fake_list_conversations(
+        self,
+        *,
+        limit: int,
+        offset: int,
+        tenant_id: str,
+    ) -> list[ConversationListRow]:
+        received["tenant_id"] = tenant_id
+        return []
+
+    monkeypatch.setattr(ConversationQueryService, "list_conversations", fake_list_conversations)
+
+    resp = await client.get("/conversations")
+    assert resp.status_code == 200
+    assert received["tenant_id"] == "default"

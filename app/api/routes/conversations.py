@@ -5,6 +5,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.http.middleware.tenant import get_tenant_id
 from app.infra.db.session import get_db
 from app.schemas.conversations import (
     ConversationDetailOut,
@@ -34,11 +35,12 @@ async def list_conversations(
     offset: int = Query(0, description="default 0"),
 ) -> ConversationListOut:
     qs = ConversationQueryService(db)
+    tenant_id = get_tenant_id()
 
     limit_c = _clamp_limit(limit)
     offset_c = _clamp_offset(offset)
 
-    rows = await qs.list_conversations(limit=limit_c, offset=offset_c)
+    rows = await qs.list_conversations(limit=limit_c, offset=offset_c, tenant_id=tenant_id)
 
     return ConversationListOut(
         items=[
@@ -61,12 +63,13 @@ async def get_conversation_detail(
     db: AsyncSession = Depends(get_db),
 ) -> ConversationDetailOut:
     qs = ConversationQueryService(db)
+    tenant_id = get_tenant_id()
 
-    convo = await qs.get_conversation(conversation_id)
+    convo = await qs.get_conversation(conversation_id, tenant_id)
     if convo is None:
         raise HTTPException(status_code=404, detail="Conversation not found")
 
-    messages = await qs.list_messages_for_conversation(conversation_id)
+    messages = await qs.list_messages_for_conversation(conversation_id, tenant_id)
 
     return ConversationDetailOut(
         id=convo.id,
