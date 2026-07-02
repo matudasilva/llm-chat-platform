@@ -202,3 +202,30 @@ Unless explicitly requested otherwise:
 - prefer reliability over new features
 - prefer testability over cleverness
 - prefer additive hardening over redesign
+
+## Governance sources (AI Together Framework V2)
+
+This project is governed under **AI Together Framework V2**. Before starting
+any session, planning, or ORQ, consult these two Notion pages as the sources
+of truth:
+
+- **Framework (rules, ORQ lifecycle, prompt library, learnings):**
+  https://www.notion.so/AI-Together-Framework-340af1d176828000b754c52208cfac96
+
+- **Project documentation hub (LLM Chat Platform):**
+  https://www.notion.so/LLM-Chat-Platform-2d9af1d176828052ae4bf89d35c6c111
+
+Within the project hub, the single source of truth for current state and
+roadmap is:
+
+- **Master Project Document (state + roadmap, v1.1+):**
+  https://app.notion.com/p/38baf1d17682817e93f4ddb31e4e868f
+
+Rules:
+- Code, commits, and repo docs stay in English. Notion orchestration stays in Spanish.
+- ADRs live in `docs/adr/` in this repo, one per architectural decision, same PR as the implementation.
+- Do not write project-status updates to any Notion page marked `[HISTÓRICO]` —
+  those are superseded. Always update the Master Project Document above.
+- An ORQ is not closed until it has evidence in the repo (commits/tests/CI)
+  AND a corresponding Notion artifact (Prompt Library entry, ORQ Dashboard
+  entry, and — for state changes — the Master Project Document).
