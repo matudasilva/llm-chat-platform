@@ -1,5 +1,6 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 import json
+import os
 from typing import Any
 
 from pydantic import AliasChoices, BaseModel, Field, field_validator, model_validator
@@ -322,4 +323,5 @@ class Settings(BaseSettings):
         return f"redis://{self.redis_host}:{self.redis_port}/{self.redis_db}"
 
 
-settings = Settings()
+_settings_env_file = os.getenv("APP_SETTINGS_ENV_FILE", ".env")
+settings = Settings(_env_file=_settings_env_file or None)
