@@ -1,31 +1,73 @@
 # tests/conftest.py
 from __future__ import annotations
 
-import os
 from contextlib import AbstractAsyncContextManager
+import os
 from typing import Any
-
-# Test configuration must be set before importing app modules. An empty
-# APP_SETTINGS_ENV_FILE disables the developer's .env completely.
-os.environ.update(
-    {
-        "APP_ENV": "test",
-        "APP_SETTINGS_ENV_FILE": "",
-        "DATABASE_URL": "sqlite+aiosqlite:///:memory:",
-        "PRIMARY_PROVIDER": "stub",
-        "STUB_PROVIDER_MODE": "ok",
-        "NOTION_MCP_ENABLED": "false",
-        "NOTION_READ_ENABLED": "false",
-        "NOTION_WRITE_ENABLED": "false",
-        "WEB_READ_ENABLED": "false",
-    }
-)
 
 import httpx
 import pytest
 import uvloop
 from httpx import ASGITransport
 from asgi_lifespan import LifespanManager
+from pydantic import AliasChoices
+from pydantic_settings import PydanticBaseSettingsSource
+
+# Prevent the module-level production singleton from reading .env during this
+# import. The Settings class is then made dotenv-free for direct constructions
+# performed by unit tests.
+os.environ["APP_SETTINGS_ENV_FILE"] = ""
+import app.core.settings as settings_module
+
+settings_module.Settings.model_config["env_file"] = None
+
+
+def _clear_exported_settings() -> None:
+    for field_name, field in settings_module.Settings.model_fields.items():
+        names = {field_name, field_name.upper()}
+        alias = field.validation_alias
+        if isinstance(alias, str):
+            names.add(alias)
+        elif isinstance(alias, AliasChoices):
+            names.update(choice for choice in alias.choices if isinstance(choice, str))
+
+        for name in names:
+            os.environ.pop(name, None)
+
+
+_clear_exported_settings()
+
+
+class _TestSettings(settings_module.Settings):
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls: type[settings_module.Settings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
+        return (init_settings,)
+
+
+# Replace the settings singleton before importing app.main. _TestSettings only
+# accepts direct init values, so neither .env nor exported shell variables can
+# affect pytest.
+settings_module.settings = _TestSettings(
+    app_env="test",
+    DATABASE_URL="sqlite+aiosqlite:///:memory:",
+    PRIMARY_PROVIDER="stub",
+    FALLBACK_PROVIDER=None,
+    routing_policy="static",
+    routing_shadow_policy=None,
+    routing_shadow_mode_enabled=False,
+    stub_provider_mode="ok",
+    notion_mcp_enabled=False,
+    notion_read_enabled=False,
+    notion_write_enabled=False,
+    web_read_enabled=False,
+)
 
 from app.infra.db.session import get_db
 from app.main import app

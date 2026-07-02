@@ -1,7 +1,7 @@
 # Pre-ORQ-19 Multitenancy Revalidation
 
-Date: 2026-07-02  
-Branch: `main`  
+Date: 2026-07-02
+Branch: `main`
 Validated HEAD: `c548ecfcceaa2d14bfa6fa01998578e784dab8a1`
 
 ## Global verdict

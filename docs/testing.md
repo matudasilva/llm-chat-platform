@@ -2,10 +2,11 @@
 
 The pytest suite is hermetic and must not depend on a developer's `.env`.
 
-`tests/conftest.py` establishes test configuration before importing the
-application:
+`tests/conftest.py` replaces the settings singleton with a test-only settings
+class before importing the application. That class accepts direct init values
+only, so neither dotenv nor exported shell variables are configuration sources:
 
-- `.env` loading is disabled with `APP_SETTINGS_ENV_FILE=""`;
+- `.env` and exported shell settings are ignored;
 - the provider is the deterministic Stub provider;
 - database access is replaced by an in-memory fake session;
 - Redis access is replaced by an in-memory no-op fake;
