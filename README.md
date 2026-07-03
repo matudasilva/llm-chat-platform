@@ -577,16 +577,27 @@ It is a correctness-first backend reference system.
 `tenant_id` is now a first-class dimension across the entire write path:
 
 - **Data models:** `tenant_id VARCHAR(64) NOT NULL DEFAULT 'default'` on `conversations` and `messages`; composite index `(tenant_id, created_at)`.
-- **Request context:** `TenantMiddleware` (pure ASGI — *not* `BaseHTTPMiddleware`, which resets ContextVars before SSE body is consumed) runs as the outermost middleware layer. Extraction priority: `X-Tenant-ID` header → JWT Bearer claim `tenant_id` → fallback `"default"`.
+- **Request context:** `TenantMiddleware` (pure ASGI — *not* `BaseHTTPMiddleware`, which resets ContextVars before SSE body is consumed). Extraction priority: `X-Tenant-ID` header → JWT Bearer claim `tenant_id` → fallback `"default"`. At the time of this ORQ it was the outermost middleware layer; as of ORQ-19.6, `CORSMiddleware` is now outermost (see below) — `TenantMiddleware` is unaffected otherwise.
 - **Cache isolation:** Redis key format is `chat:response:{tenant_id}:{sha256}`; fingerprint covers the full message history (not just the last message).
 - **Telemetry:** `TenantContextFilter` on the root log handler injects `tenant_id` into every `provider.*`, `chat.*`, and `cache.*` log record without touching those modules.
 - **Cross-tenant enforcement:** App-layer guard — `conv.tenant_id != tenant_id → 404` in both streaming and non-streaming paths.
 - **Deferred:** Full RLS enforcement and corpus scoping (ORQ-21). See [ADR-003](docs/adr/003-multitenancy-transversal-foundation.md).
 
+### Frontend Tenant-Aware Layer (ORQ-19, Closed 2026-07-03)
+
+Minimal chat frontend delivered in the separate [`llm-chat-platform-web`](../llm-chat-platform-web) repo (React + Vite + TypeScript), consuming this backend's existing `/chat` and `/conversations` contracts unmodified:
+
+- Tenant-aware chat with token-by-token streaming, sanitized markdown rendering, cancellation, and distinct handling for SSE-level errors, pre-stream HTTP errors, and network/CORS failures.
+- Tenant selector (persisted in `localStorage`) that clears in-memory conversation state and reloads history on switch — verified cross-tenant isolation manually with two tenants in two browser tabs sharing the same profile.
+- Conversation history sidebar (`GET /conversations`) with load/continue an existing conversation and "New conversation".
+- Backend-side change (ORQ-19.6, this repo): `CORSMiddleware` added — see [CORS section](#cors-frontend-consumption-orq-196) above — and `GET /ui` marked deprecated (see [Local streaming demo UI](#local-streaming-demo-ui-deprecated)).
+- Verified end-to-end in a real (headless) browser against this backend, not just unit tests. `llm-chat-platform-web` ships 66 frontend tests; this repo gained 13 backend tests for CORS/tenant-order and settings parsing (265 total).
+- Deferred: real auth/JWT verification, deploy (ORQ-20), the routing/classifier side panel from the design mockup (ORQ-22/23).
+
 **Later (Sequenced)**
-- Frontend tenant-aware layer (ORQ-19)
 - Deploy pipeline (ORQ-20)
 - Internal Docs Retrieval / RAG Baseline with per-tenant corpus scoping (ORQ-21)
+- Routing/classifier panel (ORQ-22/23)
 
 ### Explicitly Not Implemented
 
