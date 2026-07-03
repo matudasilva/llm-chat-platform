@@ -70,6 +70,11 @@ class Settings(BaseSettings):
     max_assistant_chars: int = 8_000
     max_error_message_chars: int = 512
 
+    # CORS (ORQ-19.6): comma-separated allowed origins for the frontend.
+    # Unset or blank falls back to the local dev default — there is no
+    # "block all origins" mode via this variable.
+    cors_allow_origins: list[str] = Field(default_factory=lambda: ["http://localhost:5173"])
+
     # Controlled Web Read (MVP): read-only, bounded external fetch surface.
     web_read_enabled: bool = True
     web_read_allow_http: bool = False
@@ -244,6 +249,20 @@ class Settings(BaseSettings):
         if isinstance(value, list):
             return [str(item).strip().lower() for item in value if str(item).strip()]
         raise ValueError("web_read_allowed_domains must be a list or comma-separated string")
+
+    @field_validator("cors_allow_origins", mode="before")
+    @classmethod
+    def validate_cors_allow_origins(cls, value):
+        default = ["http://localhost:5173"]
+        if value is None or value == "":
+            return default
+        if isinstance(value, str):
+            parts = [item.strip() for item in value.split(",") if item.strip()]
+            return parts or default
+        if isinstance(value, list):
+            parts = [str(item).strip() for item in value if str(item).strip()]
+            return parts or default
+        raise ValueError("cors_allow_origins must be a list or comma-separated string")
 
     @field_validator("stub_provider_mode")
     @classmethod

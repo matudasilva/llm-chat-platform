@@ -1524,7 +1524,7 @@ A minimal best-effort Redis response cache has been implemented for non-streamin
 
 **Data models:** `tenant_id VARCHAR(64) NOT NULL DEFAULT 'default'` added to `conversations` and `messages`; composite index `(tenant_id, created_at)` on each. Migration `a1b2c3d4e5f6` is reversible (downgrade drops index then column). `UsageEvent` is excluded — deferred pending cost-pipeline analysis.
 
-**Request context:** `TenantMiddleware` implemented as a pure ASGI class (not `BaseHTTPMiddleware`). The `BaseHTTPMiddleware` approach was ruled out because its `dispatch()` `finally` block resets the ContextVar before the SSE response body is consumed by the client. Pure ASGI `await self.app(scope, receive, send)` does not return until the full body is sent, keeping the ContextVar valid for the lifetime of any streaming response. Extraction priority: `X-Tenant-ID` request header → JWT Bearer `tenant_id` claim (best-effort, no signature verification) → fallback `"default"`. Middleware is registered last in `app/main.py` (Starlette LIFO ordering → outermost layer).
+**Request context:** `TenantMiddleware` implemented as a pure ASGI class (not `BaseHTTPMiddleware`). The `BaseHTTPMiddleware` approach was ruled out because its `dispatch()` `finally` block resets the ContextVar before the SSE response body is consumed by the client. Pure ASGI `await self.app(scope, receive, send)` does not return until the full body is sent, keeping the ContextVar valid for the lifetime of any streaming response. Extraction priority: `X-Tenant-ID` request header → JWT Bearer `tenant_id` claim (best-effort, no signature verification) → fallback `"default"`. At the time of this ORQ, `TenantMiddleware` was registered last in `app/main.py` (Starlette LIFO ordering → outermost layer). **Superseded by ORQ-19.6:** `CORSMiddleware` is now registered after it and is the new outermost layer — see the CORS addendum below.
 
 **Cache isolation:** Cache key format changed from `chat:response:{sha256}` to `chat:response:{tenant_id}:{sha256}`. Fingerprint now covers the full message list (previously only the last message — bug fixed in this ORQ).
 
@@ -1533,6 +1533,30 @@ A minimal best-effort Redis response cache has been implemented for non-streamin
 **Cross-tenant enforcement:** App-layer check — `conv.tenant_id != tenant_id → 404` in both streaming and non-streaming paths of `/chat`.
 
 **Deferred:** PostgreSQL RLS, JWT signature verification, `UsageEvent.tenant_id`. Full decision record: [ADR-003](../adr/003-multitenancy-transversal-foundation.md).
+
+## Addendum — CORS for Frontend Consumption (ORQ-19.6)
+
+`CORSMiddleware` (`fastapi.middleware.cors`) was added so the `llm-chat-platform-web` frontend (browser, dev server on `:5173`) can call the API cross-origin, including the streaming `POST /chat` and `GET /conversations`/`GET /conversations/{id}`.
+
+**Final middleware order in `app/main.py`** (`add_middleware()` is LIFO — the last one registered runs outermost/first):
+
+```
+CORSMiddleware            (outermost — added last)
+  -> TenantMiddleware
+    -> StructuredJsonLoggingMiddleware
+      -> RequestSizeLimitMiddleware
+        -> RequestContextMiddleware   (innermost — added first)
+```
+
+**Why this order:** `OPTIONS` preflight requests (triggered by the custom `X-Tenant-ID` header on every frontend request) must be answered without ever touching tenant-resolution logic — Starlette's `CORSMiddleware` short-circuits and returns a response directly for preflight requests without calling into the wrapped app, so putting it outermost means `TenantMiddleware` never runs for a preflight. Real requests (`GET`, `POST`, including the SSE stream) pass through `CORSMiddleware` first (which only adds response headers, it doesn't block the actual request server-side) and then into `TenantMiddleware`, which keeps the tenant `ContextVar` set for the lifetime of the streamed response exactly as before. This reuses the LIFO ordering understanding already documented for `TenantMiddleware` in the addendum above — no new ADR was needed for this ordering.
+
+**Configuration (`Settings.cors_allow_origins`, env `CORS_ALLOW_ORIGINS`):** comma-separated list of allowed origins, parsed via `split(",")` + `strip()` per entry, empty entries dropped. Unset or blank falls back to `["http://localhost:5173"]` — there is intentionally no "block all origins" mode reachable through this variable.
+
+**Fixed, not configurable via env:** `allow_credentials=False` (the tenant travels via the `X-Tenant-ID` header, not browser credentials/cookies — no session state to protect); `allow_methods=["GET", "POST", "OPTIONS"]`; `allow_headers=["Content-Type", "X-Tenant-ID"]` (no `Authorization` — real auth/JWT signature verification remains explicit deferred debt from ORQ-18, unrelated to this addition).
+
+**Deprecation:** `GET /ui` (the single-file demo UI) is marked deprecated as of this ORQ — it now logs a `deprecated_endpoint_used` warning on every request. It is not removed; removal is tracked for ORQ-20 once the new frontend is the sole runtime surface.
+
+**Unaffected:** `/chat` contract and SSE event semantics, `ChatService`, `ProviderPort`/`ResilientProvider`, persistence/transaction boundaries, and `TenantMiddleware`'s own extraction/fallback logic are all unchanged by this addition.
 
 ## Appendices
 

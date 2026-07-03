@@ -5,6 +5,7 @@ import sys
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.ops import router as ops_router
 from app.api.router import api_router
@@ -111,7 +112,20 @@ app.include_router(runtime_ops_router)
 app.add_middleware(RequestContextMiddleware)
 app.add_middleware(RequestSizeLimitMiddleware, max_bytes=settings.max_request_bytes)
 app.add_middleware(StructuredJsonLoggingMiddleware, app_env=str(getattr(settings, "app_env", "unknown")))
-app.add_middleware(TenantMiddleware)  # outermost — sets ContextVar before all inner middleware
+app.add_middleware(TenantMiddleware)
+# CORSMiddleware is added last, making it outermost (add_middleware is LIFO —
+# see ORQ-18 learning): OPTIONS preflights are answered here directly and
+# never reach TenantMiddleware, while real requests (including SSE) still
+# pass through TenantMiddleware, which keeps the ContextVar set for the
+# whole streamed response. See ORQ-19.6 design review — this order reuses
+# the LIFO understanding from ADR-003, no new ADR required.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.cors_allow_origins,
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "X-Tenant-ID"],
+)
 
 app.include_router(ops_router, prefix="/ops")
 app.include_router(api_router)

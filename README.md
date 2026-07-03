@@ -265,7 +265,9 @@ Health check:
 ```
 GET /health
 ```
-### Local streaming demo UI
+### Local streaming demo UI (deprecated)
+
+**Deprecated as of ORQ-19.6** — superseded by the `llm-chat-platform-web` frontend (React + Vite, see that repo's README). `GET /ui` still works and logs a `deprecated_endpoint_used` warning on each request; removal is tracked for ORQ-20.
 
 After starting the API container, open:
 
@@ -277,6 +279,14 @@ If not, use the API container IP:
 docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' llm-chat-platform-dev-api-1
 ```
 Then open: http://<IP>:8000/ui
+
+### CORS (frontend consumption, ORQ-19.6)
+
+`CORSMiddleware` is enabled for browser-based frontends (e.g. `llm-chat-platform-web`, dev server on `:5173`).
+
+- **`CORS_ALLOW_ORIGINS`** — comma-separated list of allowed origins. Default `http://localhost:5173` when unset or blank; there is no "block all origins" mode via this variable.
+- Fixed (not configurable via env): `allow_credentials=False` (the tenant travels via the `X-Tenant-ID` header, not cookies), `allow_methods=["GET", "POST", "OPTIONS"]`, `allow_headers=["Content-Type", "X-Tenant-ID"]` (no `Authorization` — real auth is out of scope, see ORQ-19 non-goals).
+- **Middleware order matters:** `CORSMiddleware` is registered *after* `TenantMiddleware` in `app/main.py` (`add_middleware()` is LIFO, so the last one registered runs outermost). This makes `CORSMiddleware` the outermost layer: `OPTIONS` preflights are answered directly and never reach `TenantMiddleware`, while actual requests — including SSE streaming — still pass through `TenantMiddleware` first, which keeps the tenant `ContextVar` set for the whole streamed response. This order reuses the LIFO learning documented for ORQ-18 (see ADR-003); no new ADR was needed for ORQ-19.6.
 
 ---
 
@@ -526,8 +536,9 @@ Current coverage includes:
 
 This project intentionally does not:
 
-* Provide a frontend application or build pipeline
-  * A minimal single-file demo UI is available at `GET /ui` for local streaming demos
+* Provide a frontend application or build pipeline in this repo
+  * The frontend lives in the separate `llm-chat-platform-web` repo (ORQ-19)
+  * `GET /ui`, the old single-file demo UI, is deprecated as of ORQ-19.6 (still functional, removal tracked for ORQ-20)
 * Optimize model quality
 * Provide frontend components
 * Act as a SaaS product
