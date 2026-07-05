@@ -71,7 +71,7 @@ def test_sse_empty_payload_round_trips_exactly() -> None:
     assert _reference_parse(wire) == ("token", "")
 
 
-def test_sse_json_is_observably_unchanged_for_done_and_error() -> None:
+def test_sse_json_is_observably_unchanged_for_done() -> None:
     """_sse_json() (used only for `done`/`error`) must remain a no-op
     change from this fix: json.dumps(..., separators=(",", ":")) never
     produces a raw embedded newline, so it always yields exactly one
@@ -85,4 +85,20 @@ def test_sse_json_is_observably_unchanged_for_done_and_error() -> None:
 
     event, data = _reference_parse(wire)
     assert event == "done"
+    assert json.loads(data) == payload
+
+
+def test_sse_json_is_observably_unchanged_for_error() -> None:
+    """Same guarantee as the `done` case, exercised directly for `error`
+    (Execution Review F1) since it is the other real call site of
+    _sse_json() and has its own payload shape."""
+    payload = {"error_kind": "internal"}
+    wire = _sse_json("error", payload)
+
+    expected_data = json.dumps(payload, separators=(",", ":"))
+    assert "\n" not in expected_data
+    assert wire == f"event: error\ndata: {expected_data}\n\n"
+
+    event, data = _reference_parse(wire)
+    assert event == "error"
     assert json.loads(data) == payload
