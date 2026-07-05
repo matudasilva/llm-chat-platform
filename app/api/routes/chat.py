@@ -30,8 +30,12 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["chat"])
 
 def _sse(event: str, data: str) -> str:
-    # SSE format: event + data lines + blank line
-    return f"event: {event}\ndata: {data}\n\n"
+    # SSE format: event + one "data:" line per line of the payload + blank
+    # line. split("\n") (not splitlines()) preserves an embedded blank line
+    # and a trailing newline as their own "data:" line, both of which are
+    # required for the client to reconstruct the payload exactly.
+    data_lines = "\n".join(f"data: {line}" for line in data.split("\n"))
+    return f"event: {event}\n{data_lines}\n\n"
 
 
 def _sse_json(event: str, payload: dict) -> str:
