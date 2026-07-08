@@ -75,4 +75,4 @@ Ver [`template.md`](template.md) para la estructura mínima de un nuevo ADR.
 | [002](002-orq17-phase0-closure-resequencing.md) | ORQ-17 Phase 0 closure resequencing | Aceptada | 2026-06-29 |
 | [003](003-multitenancy-transversal-foundation.md) | Multitenancy Transversal Foundation — Row-Level with Deferred RLS | Aceptada | 2026-06-30 |
 | [004](004-tenant-scoping-read-endpoints.md) | Tenant Scoping for Read Endpoints — Application-Layer Filter | Aceptada | 2026-07-01 |
-| [005](005-paas-provider.md) | PaaS Provider for Staging Deployment | Aceptada | 2026-07-06 |
+| [005](005-paas-provider.md) | PaaS Provider for Staging Deployment | Aceptada | 2026-07-06 (rev. 2026-07-08) |
