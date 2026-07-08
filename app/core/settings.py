@@ -70,6 +70,12 @@ class Settings(BaseSettings):
     max_assistant_chars: int = 8_000
     max_error_message_chars: int = 512
 
+    # Staging protection (security follow-up, not a formal ORQ): shared-secret
+    # header gate for public staging deploys. Empty default disables the
+    # guard entirely (safe for local/dev). No alias needed — pydantic-settings
+    # already maps this field to env var STAGING_KEY by default.
+    staging_key: str = Field(default="")
+
     # CORS (ORQ-19.6): comma-separated allowed origins for the frontend.
     # Unset or blank falls back to the local dev default — there is no
     # "block all origins" mode via this variable.

@@ -13,6 +13,7 @@ from app.api.runtime_ops import router as runtime_ops_router
 from app.core.settings import settings
 from app.http.middleware.request_context import RequestContextMiddleware
 from app.http.middleware.request_size_limit import RequestSizeLimitMiddleware
+from app.http.middleware.staging_guard import StagingGuardMiddleware
 from app.http.middleware.structured_logging import StructuredJsonLoggingMiddleware
 from app.http.middleware.tenant import TenantContextFilter, TenantMiddleware
 from app.infra.db.session import init_db, close_db
@@ -124,8 +125,15 @@ app.add_middleware(
     allow_origins=settings.cors_allow_origins,
     allow_credentials=False,
     allow_methods=["GET", "POST", "OPTIONS"],
-    allow_headers=["Content-Type", "X-Tenant-ID"],
+    allow_headers=["Content-Type", "X-Tenant-ID", "X-Staging-Key"],
 )
+# StagingGuardMiddleware is added last, making it outermost — even outside
+# CORSMiddleware. It is pure ASGI (not BaseHTTPMiddleware, same reasoning as
+# TenantMiddleware/ADR-003) so it doesn't disrupt the /chat SSE response,
+# and it unconditionally bypasses OPTIONS so CORS preflights (which never
+# carry X-Staging-Key) still reach CORSMiddleware instead of getting 401'd
+# here first. Disabled by default (empty STAGING_KEY) for local/dev.
+app.add_middleware(StagingGuardMiddleware, staging_key=settings.staging_key)
 
 app.include_router(ops_router, prefix="/ops")
 app.include_router(api_router)
