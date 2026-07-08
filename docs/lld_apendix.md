@@ -1589,11 +1589,6 @@ When `stream=true`, `POST /chat` returns `Content-Type: text/event-stream` and e
   - usage event (best-effort)
 - If `conversation_id` is invalid, streaming emits `event:error` (cannot switch to an HTTP 404 after streaming begins).
 
-### U.4 Demo UI
-
-A minimal HTML page is served at `GET /ui` (excluded from OpenAPI schema).
-The page performs a streaming `POST /chat` request using `fetch()` and parses SSE lines from the response body.
-
 ### U.5 Repro commands
 
 Canonical green test command:
@@ -1609,15 +1604,6 @@ Run the API:
 ```bash
 docker compose -f docker-compose.dev.yml up -d --build api
 ```
-Open the UI:
-
-http://localhost:8001/ui (if port publishing works on your host)
-
-Otherwise, use container IP:
-```bash
-docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' llm-chat-platform-dev-api-1
-```
-Then open: http://<IP>:8000/ui
 
 Optional manual SSE smoke:
 ```bash
@@ -1675,7 +1661,7 @@ Validation:
 ### U.6 Artifacts / files
 
 * app/api/routes/chat.py — streaming branch and SSE generator
-* app/api/routes/ui.py — serves the UI page
+* app/api/routes/ui.py — serves the UI page (removed in ORQ-20)
 * app/static/chat.html — minimal UI
 * tests/api/test_chat_streaming.py — streaming SSE smoke test
 ----

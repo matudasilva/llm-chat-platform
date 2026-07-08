@@ -265,21 +265,6 @@ Health check:
 ```
 GET /health
 ```
-### Local streaming demo UI (deprecated)
-
-**Deprecated as of ORQ-19.6** — superseded by the `llm-chat-platform-web` frontend (React + Vite, see that repo's README). `GET /ui` still works and logs a `deprecated_endpoint_used` warning on each request; removal is tracked for ORQ-20.
-
-After starting the API container, open:
-
-- `http://localhost:8001/ui` (if port publishing works on your host)
-
-If not, use the API container IP:
-
-```bash
-docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' llm-chat-platform-dev-api-1
-```
-Then open: http://<IP>:8000/ui
-
 ### CORS (frontend consumption, ORQ-19.6)
 
 `CORSMiddleware` is enabled for browser-based frontends (e.g. `llm-chat-platform-web`, dev server on `:5173`).
@@ -538,7 +523,7 @@ This project intentionally does not:
 
 * Provide a frontend application or build pipeline in this repo
   * The frontend lives in the separate `llm-chat-platform-web` repo (ORQ-19)
-  * `GET /ui`, the old single-file demo UI, is deprecated as of ORQ-19.6 (still functional, removal tracked for ORQ-20)
+  * `GET /ui`, the old single-file demo UI, was removed in ORQ-20 (deprecated since ORQ-19.6); the frontend lives in the separate `llm-chat-platform-web` repo
 * Optimize model quality
 * Provide frontend components
 * Act as a SaaS product
@@ -590,7 +575,7 @@ Minimal chat frontend delivered in the separate [`llm-chat-platform-web`](../llm
 - Tenant-aware chat with token-by-token streaming, sanitized markdown rendering, cancellation, and distinct handling for SSE-level errors, pre-stream HTTP errors, and network/CORS failures.
 - Tenant selector (persisted in `localStorage`) that clears in-memory conversation state and reloads history on switch — verified cross-tenant isolation manually with two tenants in two browser tabs sharing the same profile.
 - Conversation history sidebar (`GET /conversations`) with load/continue an existing conversation and "New conversation".
-- Backend-side change (ORQ-19.6, this repo): `CORSMiddleware` added — see [CORS section](#cors-frontend-consumption-orq-196) above — and `GET /ui` marked deprecated (see [Local streaming demo UI](#local-streaming-demo-ui-deprecated)).
+- Backend-side change (ORQ-19.6, this repo): `CORSMiddleware` added — see [CORS section](#cors-frontend-consumption-orq-196) above — and `GET /ui` was marked deprecated (removed later in ORQ-20).
 - Verified end-to-end in a real (headless) browser against this backend, not just unit tests. `llm-chat-platform-web` ships 66 frontend tests; this repo gained 13 backend tests for CORS/tenant-order and settings parsing (265 total).
 - Deferred: real auth/JWT verification, deploy (ORQ-20), the routing/classifier side panel from the design mockup (ORQ-22/23).
 

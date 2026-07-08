@@ -74,7 +74,6 @@ This document evolves with the codebase.
 * Liveness and readiness endpoints
 * `/chat` endpoint with transactional persistence semantics
 * Streaming SSE on `POST /chat` behind `stream=true`
-* Minimal demo UI served at `GET /ui`
 * Read-only inspection endpoints for conversations and usage events
 * Minimal LLMOps telemetry (`usage_events`)
 * Provider abstraction with validated stub plus hardened OpenAI and Bedrock adapters
@@ -414,7 +413,6 @@ docker compose exec -T -w /app/app api alembic upgrade head
 * `/conversations`
 * `/conversations/{conversation_id}`
 * `/usage-events`
-* `/ui` (minimal local demo UI; excluded from OpenAPI schema)
 
 Routers are:
 
