@@ -16,7 +16,7 @@ class ReadinessChecker(Protocol):
 @dataclass(frozen=True)
 class DefaultReadinessChecker:
     app: object
-    db_timeout_s: float = 0.5
+    db_timeout_s: float = 5.0
 
     async def check(self) -> dict:
         checks: dict[str, str] = {}
