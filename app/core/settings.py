@@ -1,7 +1,7 @@
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 import json
 import os
-from typing import Any
+from typing import Annotated, Any
 
 from pydantic import AliasChoices, BaseModel, Field, field_validator, model_validator
 
@@ -73,7 +73,12 @@ class Settings(BaseSettings):
     # CORS (ORQ-19.6): comma-separated allowed origins for the frontend.
     # Unset or blank falls back to the local dev default — there is no
     # "block all origins" mode via this variable.
-    cors_allow_origins: list[str] = Field(default_factory=lambda: ["http://localhost:5173"])
+    # NoDecode: without it, pydantic-settings tries to JSON-decode this env var
+    # before the comma-separated-string validator below ever runs, crashing
+    # startup the first time CORS_ALLOW_ORIGINS is set as a real OS env var
+    # (found in ORQ-20.4 — existing tests only exercised the constructor-kwarg
+    # path, not the real EnvSettingsSource path).
+    cors_allow_origins: Annotated[list[str], NoDecode] = Field(default_factory=lambda: ["http://localhost:5173"])
 
     # Controlled Web Read (MVP): read-only, bounded external fetch surface.
     web_read_enabled: bool = True
