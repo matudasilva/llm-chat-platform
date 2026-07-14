@@ -133,7 +133,11 @@ app.add_middleware(
 # and it unconditionally bypasses OPTIONS so CORS preflights (which never
 # carry X-Staging-Key) still reach CORSMiddleware instead of getting 401'd
 # here first. Disabled by default (empty STAGING_KEY) for local/dev.
-app.add_middleware(StagingGuardMiddleware, staging_key=settings.staging_key)
+app.add_middleware(
+    StagingGuardMiddleware,
+    staging_key=settings.staging_key,
+    allowed_origins=settings.cors_allow_origins,
+)
 
 app.include_router(ops_router, prefix="/ops")
 app.include_router(api_router)

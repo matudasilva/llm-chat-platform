@@ -15,7 +15,7 @@ async def _echo(request: Request) -> PlainTextResponse:
     return PlainTextResponse("ok")
 
 
-def _make_client(staging_key: str) -> AsyncClient:
+def _make_client(staging_key: str, allowed_origins: list[str] | None = None) -> AsyncClient:
     app = Starlette(
         routes=[
             Route("/", _echo),
@@ -23,7 +23,9 @@ def _make_client(staging_key: str) -> AsyncClient:
             Route("/healthz", _echo),
             Route("/readyz", _echo),
         ],
-        middleware=[Middleware(StagingGuardMiddleware, staging_key=staging_key)],
+        middleware=[
+            Middleware(StagingGuardMiddleware, staging_key=staging_key, allowed_origins=allowed_origins)
+        ],
     )
     return AsyncClient(transport=ASGITransport(app=app), base_url="http://test")
 
@@ -72,6 +74,33 @@ async def test_guard_enabled_bypasses_options_preflight_without_header() -> None
     async with _make_client(staging_key="secret123") as client:
         r = await client.options("/")
     assert r.status_code != 401
+
+
+@pytest.mark.asyncio
+async def test_guard_rejection_includes_cors_headers_for_allowed_origin() -> None:
+    # Without this, a cross-origin fetch() from the real frontend can't read
+    # the 401 body at all (browser blocks it as a CORS failure) and the
+    # frontend shows a generic network error instead of "incorrect key".
+    async with _make_client(
+        staging_key="secret123", allowed_origins=["https://example.vercel.app"]
+    ) as client:
+        r = await client.get(
+            "/", headers={"X-Staging-Key": "wrong", "Origin": "https://example.vercel.app"}
+        )
+    assert r.status_code == 401
+    assert r.headers["access-control-allow-origin"] == "https://example.vercel.app"
+
+
+@pytest.mark.asyncio
+async def test_guard_rejection_omits_cors_headers_for_disallowed_origin() -> None:
+    async with _make_client(
+        staging_key="secret123", allowed_origins=["https://example.vercel.app"]
+    ) as client:
+        r = await client.get(
+            "/", headers={"X-Staging-Key": "wrong", "Origin": "https://evil.example"}
+        )
+    assert r.status_code == 401
+    assert "access-control-allow-origin" not in r.headers
 
 
 @pytest.mark.asyncio
