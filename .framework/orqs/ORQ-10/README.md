@@ -8,15 +8,16 @@ La decisión tomada antes de abrir esta ORQ es evitar un refresh masivo. En su l
 
 ## Estado
 
-**Open**
+**✅ FULLY SYNCED — 2026-07-16**
 
 - ✅ Drift detectado por `fw-framework-check`
 - ✅ Pre-review completado con clasificación inicial de artefactos
-- ⏳ Pending: design review de la alineación mínima
+- ✅ Design review de la alineación mínima (Codex, 2026-05-08)
 - ✅ Refresh controlado del artefacto canónico disponible
-- ⏳ Pending: decisión explícita sobre `artifact_policy`
+- ✅ Decisión explícita sobre `artifact_policy: local-only`
 - ✅ Re-ejecución read-only de `fw-framework-check`
-- ✅ Cierre local de la ORQ
+- ✅ Cierre local de la ORQ (2026-05-09)
+- ✅ Governance Sync: 2 learnings → Framework Learning / Insights, ORQ Dashboard entry created
 
 ## Contenidos
 
