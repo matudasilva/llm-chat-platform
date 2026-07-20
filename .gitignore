@@ -37,6 +37,17 @@ docs/private/*
 *.ipynb_checkpoints
 
 # Local AI / Framework tooling
+.codex/
+
+# AI Together Framework - local/private orchestration
 .framework/
 .claude/
-.codex/
+CLAUDE.md
+*.local.md
+*.local.yml
+*.local.json
+
+# AI Together Framework - migrate-mode carryover (ORQ-13)
+.claude/commands/
+.framework/v2-legacy/
+.framework/v2-markers-backup/
