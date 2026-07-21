@@ -622,6 +622,10 @@ There is no Mermaid source behind them: each SVG is its own source of truth, edi
 
 When architecture, request flow, provider behavior, streaming or fallback behavior, or persistence flow changes, the corresponding diagram should be reviewed and updated if needed. See `docs/rendered/architecture/README.md` for the full rules.
 
+## License
+
+Released under the [MIT License](LICENSE). Copyright (c) 2026 Matias Da Silva.
+
 ---
 
 **This repository is designed as a production-minded LLM backend reference system.**
