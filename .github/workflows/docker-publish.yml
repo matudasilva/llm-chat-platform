@@ -3,6 +3,15 @@ name: Docker Publish
 on:
   push:
     branches: [main]
+    # Documentation-only commits produce a byte-identical runtime: the Dockerfile
+    # copies app/ and nothing else. Skip them so `latest` and the sha- tags only
+    # move when the image can actually differ.
+    # paths-ignore does not apply to tag pushes, so v* releases always build.
+    paths-ignore:
+      - "docs/**"
+      - ".framework/**"
+      - "**.md"
+      - "LICENSE"
     tags: ["v*"]
 
 jobs:
