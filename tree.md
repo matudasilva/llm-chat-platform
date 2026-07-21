@@ -13,6 +13,7 @@
 │   │       ├── 742cef87b944_create_conversations_and_messages.py
 │   │       ├── 8cb367cad8b4_init.py
 │   │       ├── 9bc36b28b8eb_describe_change.py
+│   │       ├── a1b2c3d4e5f6_add_tenant_id.py
 │   │       ├── d4dd07072605_create_usage_events.py
 │   │       ├── eee251fdccda_preserve_chain_noop.py
 │   │       └── ef64dc6ccefd_create_usage_events.py
@@ -28,7 +29,6 @@
 │   │   │   ├── __init__.py
 │   │   │   ├── notion_read.py
 │   │   │   ├── notion_write.py
-│   │   │   ├── ui.py
 │   │   │   ├── usage_events.py
 │   │   │   └── web_read.py
 │   │   └── runtime_ops.py
@@ -66,7 +66,9 @@
 │   │   ├── middleware
 │   │   │   ├── request_context.py
 │   │   │   ├── request_size_limit.py
-│   │   │   └── structured_logging.py
+│   │   │   ├── staging_guard.py
+│   │   │   ├── structured_logging.py
+│   │   │   └── tenant.py
 │   │   └── request_context.py
 │   ├── infra
 │   │   ├── db
@@ -117,8 +119,6 @@
 │   │   ├── usage_events.py
 │   │   ├── usage_logger.py
 │   │   └── web_read.py
-│   ├── static
-│   │   └── chat.html
 │   └── tests
 │       └── core
 ├── CLAUDE.md
@@ -132,14 +132,19 @@
 │   ├── adr
 │   │   ├── 001-capabilities-first-over-execution-orchestrator.md
 │   │   ├── 002-orq17-phase0-closure-resequencing.md
+│   │   ├── 003-multitenancy-transversal-foundation.md
+│   │   ├── 004-tenant-scoping-read-endpoints.md
+│   │   ├── 005-paas-provider.md
 │   │   ├── README.md
 │   │   └── template.md
+│   ├── ai-together.md
 │   ├── error_decision_table.md
 │   ├── external_read_capabilities.md
 │   ├── lld_apendix.md
 │   ├── lld_llm_chat_platform_live_doc.md
 │   ├── notion_write_safety_analysis.md
 │   ├── notion_write_safety_contract.md
+│   ├── pre-orq-19-multitenancy-revalidation.md
 │   ├── private
 │   │   ├── ANALISIS_ESTADO_PROYECTO_2026-06-25.md
 │   │   ├── ORQ-16-BLOCKER-REPORT.md
@@ -147,26 +152,16 @@
 │   │   └── Proyecto_LLM_Chat_Platform_V1.1.pdf
 │   ├── rendered
 │   │   └── architecture
-│   │       ├── module-boundaries-architecture-v1.svg
-│   │       ├── provider-abstraction-architecture-v1.svg
+│   │       ├── chat-request-flow-v2.svg
+│   │       ├── module-boundaries-v2.svg
+│   │       ├── provider-abstraction-v1.svg
+│   │       ├── README.md
 │   │       └── streaming-fallback-sequence-v1.svg
+│   ├── testing.md
 │   ├── troubleshooting_external_read.md
-│   ├── v1_1_closure.md
-│   └── working
-│       └── diagrams
-│           ├── AGENTS.md
-│           ├── architecture
-│           │   ├── chat-flow-architecture-v1.mmd
-│           │   ├── chat-flow-architecture-v2.mmd
-│           │   ├── module-boundaries-architecture-v1.mmd
-│           │   ├── provider-abstraction-architecture-v1.mmd
-│           │   └── streaming-fallback-sequence-v1.mmd
-│           ├── runtime
-│           └── sequences
+│   └── v1_1_closure.md
 ├── external
 ├── Makefile
-├── puppeteer-config.example.json
-├── puppeteer-config.json
 ├── pyproject.toml
 ├── pytest.ini
 ├── README.md
@@ -176,19 +171,23 @@
 │   ├── dev_status.py
 │   ├── dev_up.py
 │   ├── smoke_read_endpoints.py
+│   ├── sync_framework_public.py
 │   └── trace_request.py
 ├── tests
 │   ├── api
+│   │   ├── test_chat_cors.py
 │   │   ├── test_chat_guardrails.py
 │   │   ├── test_chat_response_cache.py
 │   │   ├── test_chat_streaming.py
 │   │   ├── test_chat_telemetry_best_effort.py
+│   │   ├── test_chat_tenant.py
 │   │   ├── test_conversations_read_endpoints.py
 │   │   ├── test_health_readyz.py
 │   │   ├── test_notion_read_endpoint.py
 │   │   ├── test_notion_write_endpoint.py
 │   │   ├── test_request_ids.py
 │   │   ├── test_request_size_limit.py
+│   │   ├── test_sse_framing.py
 │   │   ├── test_structured_logging.py
 │   │   └── test_web_read_endpoint.py
 │   ├── conftest.py
@@ -214,12 +213,20 @@
 │   │   ├── test_resilient_provider.py
 │   │   ├── test_retry.py
 │   │   ├── test_routing_signals.py
+│   │   ├── test_settings_cors.py
 │   │   ├── test_settings_provider_config.py
 │   │   ├── test_static_routing_policy.py
 │   │   ├── test_stub_provider_contract.py
 │   │   └── test_web_read_service.py
+│   ├── http
+│   │   ├── middleware
+│   │   │   ├── test_cors_tenant_order.py
+│   │   │   ├── test_staging_guard.py
+│   │   │   └── test_tenant_middleware.py
+│   │   └── test_tenant_telemetry.py
 │   ├── test_cost_report_pipeline.py
-│   └── test_guardrails_scan.py
+│   ├── test_guardrails_scan.py
+│   └── test_test_environment_contract.py
 └── tree.md
 
-40 directories, 183 files
+36 directories, 194 files

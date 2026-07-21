@@ -28,8 +28,8 @@ existing diagram.
 
 ## Relationship to `docs/rendered/architecture/`
 
-Those are product documentation diagrams rendered from Mermaid sources under
-`docs/working/diagrams/`, governed by `AGENTS.md` §Diagram maintenance. They are a
-different artifact class and remain the detailed LLD-level view. The diagrams in this
-directory sit one altitude above and are governed by the AIT diagram gate. They
-reference, they do not duplicate.
+Those are hand-authored product documentation diagrams, governed by `AGENTS.md`
+§Diagram maintenance — four of them, one per concern: request flow, module boundaries,
+provider abstraction and the streaming sequence. They are a different artifact class and
+remain the detailed LLD-level view. The diagrams in this directory sit one altitude above
+and are governed by the AIT diagram gate. They reference, they do not duplicate.

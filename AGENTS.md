@@ -162,7 +162,7 @@ Rules:
 - do not bundle unrelated changes in one commit
 
 ## Diagram maintenance
-Mermaid diagrams under `docs/working/diagrams/` are design artifacts and architectural context.
+Hand-authored SVG diagrams under `docs/rendered/architecture/` are design artifacts and architectural context. Each SVG is its own source of truth — there is no Mermaid source to regenerate from.
 
 When changing:
 - architecture
@@ -172,13 +172,15 @@ When changing:
 - streaming or fallback behavior
 - persistence flow
 
-update the corresponding Mermaid diagram if it becomes stale.
+update the corresponding diagram if it becomes stale.
 
 Rules:
 - prefer minimal updates to existing diagrams instead of creating new ones
 - keep diagram names stable unless the scope changes materially
-- do not implement Mermaid tooling as a product feature unless explicitly requested
-- render diagrams only when local Mermaid rendering is available and explicitly requested
+- keep each diagram focused on one concern; do not let two diagrams describe the same flow
+- every diagram carries a `<title>` and a `<desc>`
+- validate the XML after editing and check that no arrow ends without touching its target
+- see `docs/rendered/architecture/README.md` for the full rules
 
 ## What to include in task responses
 Before implementation, provide:
