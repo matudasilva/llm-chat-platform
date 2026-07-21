@@ -40,12 +40,16 @@ docs/private/*
 .codex/
 
 # AI Together Framework - local/private orchestration
-.framework/
+.framework/*
 .claude/
 CLAUDE.md
 *.local.md
 *.local.yml
 *.local.json
+
+# AIT V3 Constitution is explicitly versioned (fw-init, 2026-07-21).
+# Public repo: keep these free of secrets, hostnames and project identifiers.
+!.framework/constitution/
 
 # AI Together Framework - migrate-mode carryover (ORQ-13)
 .claude/commands/
