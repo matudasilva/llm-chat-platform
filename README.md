@@ -611,6 +611,8 @@ Non-trivial architecture decisions are recorded as ADRs in `docs/adr/`:
 | [001](docs/adr/001-capabilities-first-over-execution-orchestrator.md) | Capabilities-first over execution-orchestrator | Accepted |
 | [002](docs/adr/002-orq17-phase0-closure-resequencing.md) | ORQ-17 Phase 0 closure resequencing | Accepted |
 | [003](docs/adr/003-multitenancy-transversal-foundation.md) | Multitenancy transversal foundation | Accepted |
+| [004](docs/adr/004-tenant-scoping-read-endpoints.md) | Tenant scoping for read endpoints — application-layer filter | Accepted |
+| [005](docs/adr/005-paas-provider.md) | PaaS provider for staging deployment | Accepted |
 
 See `docs/adr/README.md` for the full ADR workflow and template.
 
