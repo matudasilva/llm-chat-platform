@@ -17,7 +17,9 @@ This project models how AI-powered workloads should be integrated and operated i
 
 ## Architecture Diagram
 
-![LLM Chat Platform architecture](docs/rendered/architecture/module-boundaries-architecture-v1.svg)
+![LLM Chat Platform architecture](docs/rendered/architecture/module-boundaries-v2.svg)
+
+See [`docs/rendered/architecture/`](docs/rendered/architecture/) for the request flow, provider abstraction and streaming sequence diagrams.
 
 ---
 
@@ -614,19 +616,11 @@ See `docs/adr/README.md` for the full ADR workflow and template.
 
 ## Architecture diagram workflow
 
-Mermaid diagrams may exist under `docs/working/diagrams/` as design-time artifacts used for architectural context during implementation, refactoring, and documentation work.
+Architecture diagrams live under `docs/rendered/architecture/` as hand-authored SVGs, one per concern. They are design-time artifacts used for architectural context during implementation, refactoring, and documentation work, not product or runtime functionality.
 
-They are not product or runtime functionality unless explicitly stated.
+There is no Mermaid source behind them: each SVG is its own source of truth, edited directly. This removes the render step where the previous diagrams silently drifted from the code.
 
-When architecture, request flow, provider behavior, streaming or fallback behavior, or persistence flow changes, the corresponding diagram should be reviewed and updated if needed.
-
-## Local Mermaid rendering
-
-Mermaid source files under `docs/working/diagrams/` may be rendered locally into SVG artifacts for documentation and design review.
-
-Local rendering may require a user-specific `puppeteer-config.json`. The repository includes `puppeteer-config.example.json` as a template; copy it locally to `puppeteer-config.json` and adjust the browser path for your machine.
-
-`puppeteer-config.json` is intentionally ignored from version control and should remain a local-only file.
+When architecture, request flow, provider behavior, streaming or fallback behavior, or persistence flow changes, the corresponding diagram should be reviewed and updated if needed. See `docs/rendered/architecture/README.md` for the full rules.
 
 ---
 
