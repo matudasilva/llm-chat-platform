@@ -20,6 +20,8 @@ def test_pytest_environment_is_hermetic() -> None:
     assert settings.notion_read_enabled is False
     assert settings.notion_write_enabled is False
     assert settings.web_read_enabled is False
+    assert settings.rag_enabled is False
+    assert settings.database_url_app is None
 
 
 def test_exported_environment_cannot_override_test_settings() -> None:

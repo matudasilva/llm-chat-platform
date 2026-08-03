@@ -111,6 +111,21 @@ class _TestRedis:
         return None
 
 
+def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
+    # ORQ-21: RLS/migration tests need a real Postgres with pgvector, which the
+    # hermetic sqlite suite above cannot provide. They opt in via the
+    # `postgres` marker (registered in pytest.ini) and skip unless
+    # RAG_TEST_DATABASE_URL is set — a real DSN, read directly from the
+    # ambient environment rather than through the sandboxed Settings above,
+    # since these tests are explicitly outside the hermetic contract.
+    if os.environ.get("RAG_TEST_DATABASE_URL"):
+        return
+    skip_postgres = pytest.mark.skip(reason="RAG_TEST_DATABASE_URL not set: no real Postgres reachable")
+    for item in items:
+        if "postgres" in item.keywords:
+            item.add_marker(skip_postgres)
+
+
 @pytest.fixture(scope="session")
 def event_loop_policy():
     return uvloop.EventLoopPolicy()

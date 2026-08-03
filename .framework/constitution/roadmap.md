@@ -41,12 +41,26 @@ the `v1.1-stable` tag.
 RAG enters as a **separate read capability**; it does not touch the `/chat`
 invariant.
 
-1. **RAG baseline** — pgvector on the existing Postgres behind a `VectorStorePort`;
-   API-first embeddings behind an interface; generation reuses
-   `ProviderPort`/`ResilientProvider` with retrieved context in
-   `ProviderInput.metadata`; reproducible evaluation harness with MLflow tracking;
-   OpenTelemetry-ready spans; tenant-scoped corpus and Postgres RLS (settles the
-   ADR-004 deferral).
+1. **RAG baseline** — split by the operator across two ORQs (see ORQ-21 §Scope):
+   - ✅ done (ORQ-21, closed locally 2026-08-03): pgvector on the existing
+     Postgres behind a `VectorStorePort`; API-first `EmbeddingPort`
+     (OpenAI `text-embedding-3-small`, 1536 dims); hybrid retrieval (semantic +
+     keyword, RRF fusion); tenant-scoped corpus and Postgres RLS against a
+     genuinely unprivileged role (settles the ADR-004 §5 deferral for the RAG
+     corpus specifically — `conversations`/`messages` RLS is still open, see
+     `docs/adr/004-tenant-scoping-read-endpoints.md`).
+   - Open (ORQ-22, not yet started): query rewriting via `ProviderPort`,
+     cross-encoder reranking via Bedrock, reproducible evaluation harness with
+     MLflow tracking, golden dataset, OpenTelemetry-ready spans. Prerequisite:
+     a working AWS credential pair (revoked in ORQ-20, not yet replaced).
+   - **Not yet scoped in any ORQ** (drift flagged by `fw-replan`, 2026-08-03):
+     the actual answer-generation step — reusing `ProviderPort`/
+     `ResilientProvider` with retrieved context in `ProviderInput.metadata` to
+     produce a synthesized answer, including the system prompt that step would
+     run under. ORQ-21 shipped retrieval only; ORQ-22 as currently scoped
+     covers retrieval *quality* (rewriting, reranking, evaluation), not
+     synthesis. Needs its own ORQ or an explicit scope addition before this
+     roadmap item can be marked done.
 2. **Routing evidence dataset** — `RoutingPolicy` interface with heuristic and
    static implementations by default; collect real signal before any model.
 3. **Offline ML routing baseline** — a simple, explainable model, only if the
@@ -72,9 +86,15 @@ CO2e) this phase depends on.
 
 ## Open decisions
 
-- Final embedding provider and dimension.
 - Energy/CO2e estimation methodology per request.
 - Default model and routing escalation thresholds.
+
+## Decisions closed by ORQ
+
+- **Embedding provider and dimension** (ORQ-21, 2026-07-29): OpenAI
+  `text-embedding-3-small` at 1536 dimensions, a corpus-level constant
+  independent of each tenant's chat provider. Full rationale:
+  `docs/adr/006-rag-corpus-embeddings-and-rls.md` §1.
 
 ## Related
 
