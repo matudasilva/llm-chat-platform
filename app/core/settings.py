@@ -86,6 +86,13 @@ class Settings(BaseSettings):
     # path, not the real EnvSettingsSource path).
     cors_allow_origins: Annotated[list[str], NoDecode] = Field(default_factory=lambda: ["http://localhost:5173"])
 
+    # RAG corpus (ORQ-21 / ADR-006): inert defaults so the hermetic test suite
+    # is unaffected unless a test explicitly opts in. No alias/fallback to
+    # database_url — see validate_rag_app_database_url below.
+    rag_enabled: bool = False
+    database_url_app: str | None = Field(default=None, alias="DATABASE_URL_APP")
+    rag_embedding_dimensions: int = 1536
+
     # Controlled Web Read (MVP): read-only, bounded external fetch surface.
     web_read_enabled: bool = True
     web_read_allow_http: bool = False
@@ -345,6 +352,15 @@ class Settings(BaseSettings):
             f"postgresql+asyncpg://{self.postgres_user}:{self.postgres_password}"
             f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
         )
+
+    @model_validator(mode="after")
+    def validate_rag_app_database_url(self) -> "Settings":
+        # ADR-006 §2 / spec.md §Design decisions 4: DATABASE_URL_APP must never
+        # silently fall back to the superuser database_url — that would make
+        # every RLS policy inert without anything failing loudly.
+        if self.rag_enabled and not self.database_url_app:
+            raise ValueError("DATABASE_URL_APP is required when RAG_ENABLED=true")
+        return self
 
     @property
     def redis_url(self) -> str:

@@ -88,7 +88,9 @@ the implementation (see `AGENTS.md`, `docs/adr/README.md`).
 
 ## Known debt (not invariant)
 
-- Row-Level Security in Postgres — deferred (ADR-004), due with the RAG corpus.
+- Row-Level Security on `conversations`/`messages` — deferred (ADR-004 §5). RLS on the RAG corpus
+  itself ships with ORQ-21 (ADR-006); this line covers only the original ADR-004 tables, and is
+  re-targeted to a future ORQ that applies the same role-split pattern to them, not resolved here.
 - JWT signature verification — the system is declared no-auth today.
 - `UsageEvent.tenant_id` — deferred pending cost-pipeline analysis.
 - No IaC; deployment is manual. CI validates build and guardrails only.

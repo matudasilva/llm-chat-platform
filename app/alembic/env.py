@@ -26,7 +26,12 @@ config.set_main_option("sqlalchemy.url", db_url)
 
 
 if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
+    # disable_existing_loggers=False (non-default): Config.upgrade/downgrade
+    # can run in-process (tests/core/test_rag_migration.py, ORQ-21), and the
+    # default True wipes out every already-configured logger -- including
+    # pytest's caplog handler on the root logger and the app's own
+    # structured-logging setup -- for the rest of that pytest session.
+    fileConfig(config.config_file_name, disable_existing_loggers=False)
 
 
 target_metadata = Base.metadata

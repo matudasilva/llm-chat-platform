@@ -4,7 +4,9 @@ import base64
 import json
 import logging
 import re
+from contextlib import contextmanager
 from contextvars import ContextVar
+from typing import Iterator
 
 from starlette.requests import Request
 from starlette.types import ASGIApp, Receive, Scope, Send
@@ -14,11 +16,66 @@ logger = logging.getLogger(__name__)
 _TENANT_ID_PATTERN = re.compile(r"^[a-zA-Z0-9_-]{1,64}$")
 _DEFAULT_TENANT = "default"
 
-_tenant_id_ctx: ContextVar[str] = ContextVar("tenant_id", default=_DEFAULT_TENANT)
+# `None` is the "never set" sentinel — distinct from the string "default",
+# which TenantMiddleware/tenant_scope() set explicitly when no tenant was
+# supplied. This lets get_tenant_id_strict() tell "nobody scoped this
+# context" apart from "scoped to the default tenant on purpose" (ORQ-21 R1).
+_tenant_id_ctx: ContextVar[str | None] = ContextVar("tenant_id", default=None)
+
+
+class TenantContextError(RuntimeError):
+    """Raised when tenant-scoped DB access runs without an explicitly set tenant context."""
 
 
 def get_tenant_id() -> str:
-    return _tenant_id_ctx.get()
+    value = _tenant_id_ctx.get()
+    return value if value is not None else _DEFAULT_TENANT
+
+
+def get_tenant_id_strict() -> str:
+    """
+    Like get_tenant_id(), but raises instead of silently falling back to
+    "default" when the ContextVar was never set.
+
+    Used by TenantScopedSession.after_begin (app/infra/db/session.py) so
+    that RAG DB access outside TenantMiddleware/tenant_scope() fails closed
+    at transaction-begin instead of writing/reading under a "default"
+    tenant nobody chose (ORQ-21 R1 — the fallback previously masked a
+    missing tenant_scope() call as if it were a real, if generic, tenant).
+    """
+    value = _tenant_id_ctx.get()
+    if value is None:
+        raise TenantContextError(
+            "tenant_id context not set — call tenant_scope(...) (offline/script code) "
+            "or ensure TenantMiddleware is installed (HTTP requests) before opening a "
+            "TenantScopedSession"
+        )
+    return value
+
+
+@contextmanager
+def tenant_scope(tenant_id: str) -> Iterator[None]:
+    """
+    Explicit, non-HTTP counterpart to TenantMiddleware: sets the same
+    ContextVar for callers with no request in flight.
+
+    Required for the ORQ-21 offline ingestion pipeline (spec.md §Design
+    decisions 8) — outside an HTTP request, get_tenant_id() silently returns
+    the "default" tenant, which would write the whole corpus into the wrong
+    tenant without erroring. The ingestion script must call this explicitly
+    with its required --tenant-id argument rather than relying on the
+    ContextVar default. Reuses the same TenantScopedSession.after_begin
+    handler as the HTTP path (app/infra/db/session.py), so both paths set
+    the `app.tenant_id` GUC identically.
+    """
+    validated = _validate(tenant_id)
+    if validated != tenant_id:
+        raise ValueError(f"invalid tenant_id: {tenant_id!r}")
+    token = _tenant_id_ctx.set(validated)
+    try:
+        yield
+    finally:
+        _tenant_id_ctx.reset(token)
 
 
 class TenantContextFilter(logging.Filter):

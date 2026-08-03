@@ -6,12 +6,20 @@ existing diagram.
 
 | tipo | alcance | archivo | generado/manual | última actualización | refresh_pending | refresh_baseline |
 |---|---|---|---|---|---|---|
-| context | producto | `context.svg` | generado | 2026-07-21 | no | `sha256:240a74bf40cf3050f05f901a4978a02916231cce83d883f33ce298a3b7df1f6a` |
-| architecture | framework | `architecture.svg` | generado | 2026-07-21 | no | `sha256:240a74bf40cf3050f05f901a4978a02916231cce83d883f33ce298a3b7df1f6a` |
-| structural | producto | `structural.svg` | manual | 2026-07-21 | no | `sha256:240a74bf40cf3050f05f901a4978a02916231cce83d883f33ce298a3b7df1f6a` |
-| deployment | producto | `deployment.svg` | manual | 2026-07-21 | no | `sha256:240a74bf40cf3050f05f901a4978a02916231cce83d883f33ce298a3b7df1f6a` |
-| behavior | producto | `behavior.svg` | manual | 2026-07-21 | no | `sha256:240a74bf40cf3050f05f901a4978a02916231cce83d883f33ce298a3b7df1f6a` |
-| erd | producto | `erd.svg` | manual | 2026-07-21 | no | `sha256:240a74bf40cf3050f05f901a4978a02916231cce83d883f33ce298a3b7df1f6a` |
+| context | producto | `context.svg` | generado | 2026-07-21 | sí | `sha256:240a74bf40cf3050f05f901a4978a02916231cce83d883f33ce298a3b7df1f6a` |
+| architecture | framework | `architecture.svg` | generado | 2026-07-21 | sí | `sha256:240a74bf40cf3050f05f901a4978a02916231cce83d883f33ce298a3b7df1f6a` |
+| structural | producto | `structural.svg` | manual | 2026-07-21 | sí | `sha256:240a74bf40cf3050f05f901a4978a02916231cce83d883f33ce298a3b7df1f6a` |
+| deployment | producto | `deployment.svg` | manual | 2026-07-21 | sí | `sha256:240a74bf40cf3050f05f901a4978a02916231cce83d883f33ce298a3b7df1f6a` |
+| behavior | producto | `behavior.svg` | manual | 2026-07-21 | sí | `sha256:240a74bf40cf3050f05f901a4978a02916231cce83d883f33ce298a3b7df1f6a` |
+| erd | producto | `erd.svg` | manual | 2026-07-21 | sí | `sha256:240a74bf40cf3050f05f901a4978a02916231cce83d883f33ce298a3b7df1f6a` |
+
+## ORQ-21 refresh signal (2026-08-03, fw-validate)
+
+`fw_check_diagram_refresh.py` flagged all six rows `refresh_pending: sí` (architecture-signature
+source: Constitution) after ORQ-21 added a new pgvector-backed corpus (`documents`/`chunks`,
+`DATABASE_URL_APP`, a second RLS-scoped role) — a real change to the ERD and deployment shape.
+Signal only, per fw-validate step 8.b: not recalculated further, not regenerated, does not block
+this ORQ's closure. Actual regeneration is `fw-replan`'s responsibility.
 
 ## Gate evidence
 

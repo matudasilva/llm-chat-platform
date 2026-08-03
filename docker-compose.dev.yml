@@ -26,6 +26,8 @@ services:
       APP_ENV: dev
       PYTHONPATH: /app
       DATABASE_URL: ${DATABASE_URL}
+      DATABASE_URL_APP: ${DATABASE_URL_APP:-}
+      RAG_ENABLED: ${RAG_ENABLED:-false}
       PYTEST_ADDOPTS: "-o cache_dir=/tmp/pytest_cache"
       PROVIDER: ${PROVIDER:-stub}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
@@ -47,15 +49,17 @@ services:
       - postgres
 
   postgres:
-    image: postgres:16
+    image: pgvector/pgvector:pg16
     ports:
       - "15432:5432"
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_APP_PASSWORD: ${POSTGRES_APP_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./scripts/postgres-init:/docker-entrypoint-initdb.d:ro
 
 volumes:
   postgres_data:
