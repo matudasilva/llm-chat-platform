@@ -5,7 +5,7 @@
 - Host: Linux 7.0.0-28-generic / x86_64 / Python 3.13.14
 - GCP region/location: global
 - AWS region: us-west-2
-- Qwen GPU: NVIDIA GeForce RTX 4060 Laptop GPU / 8188 MiB / driver 580.173.02 / CUDA
+- Qwen GPU: NVIDIA GeForce RTX 4060 / 8188 MiB / driver 580.173.02 / CUDA
 - Candidate recall@30 ceiling: 0.8417
 - AWS pacing finding: Preparation finding: 8 rapid Bedrock Rerank calls throttled all tested regions; 4-second spacing with retries still failed; approximately 15-second spacing succeeded.
 - Cross-provider latency is indicative only and is not a ranking criterion.
@@ -18,7 +18,7 @@
 | aws (errors at pacing 15.0s) | 0.5188 | 0.6738 | 0.8500 | 1588.19 | 1816.53 | 180 | 0.0000 | 1.0 (AWS Price List Bulk API, publication 2026-07-23) |
 | baseline | 0.4460 | 0.6615 | 0.8167 | 0.00 | 0.00 | 60 | 0.0000 | 0.0 |
 | gcp | 0.5320 | 0.6780 | 0.8333 | 939.70 | 2478.55 | 180 | 0.0000 | unverified |
-| qwen | 0.4959 | 0.6909 | 0.8167 | 599.59 | 649.34 | 180 | 0.0000 | wall-clock; NVIDIA GeForce RTX 4060 Laptop GPU, 8188 MiB VRAM |
+| qwen | 0.4959 | 0.6909 | 0.8167 | 599.59 | 649.34 | 180 | 0.0000 | wall-clock; NVIDIA GeForce RTX 4060, 8188 MiB VRAM |
 
 ## Language splits
 
