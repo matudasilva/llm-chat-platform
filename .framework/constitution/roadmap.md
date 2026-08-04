@@ -49,18 +49,22 @@ invariant.
      genuinely unprivileged role (settles the ADR-004 §5 deferral for the RAG
      corpus specifically — `conversations`/`messages` RLS is still open, see
      `docs/adr/004-tenant-scoping-read-endpoints.md`).
-   - Open (ORQ-22, not yet started): query rewriting via `ProviderPort`,
-     cross-encoder reranking via Bedrock, reproducible evaluation harness with
-     MLflow tracking, golden dataset, OpenTelemetry-ready spans. Prerequisite:
-     a working AWS credential pair (revoked in ORQ-20, not yet replaced).
+   - In progress (ORQ-22, 2026-08-04): isolated reranking benchmark measuring
+     the RRF baseline, GCP, AWS, and conditionally Qwen over one frozen dataset.
+     ADR-006 remains unamended until the follow-up ORQ consumes the evidence.
+   - Follow-up retrieval-pipeline ORQ (number assigned after ORQ-22): query
+     rewriting via `ProviderPort`, the selected reranker integration, the
+     lightweight post-rerank evaluator, MLflow-compatible evaluation/golden
+     dataset expansion, OpenTelemetry-ready spans, the shared-index
+     partitioning trigger, and contextual-retrieval falsification.
    - **Not yet scoped in any ORQ** (drift flagged by `fw-replan`, 2026-08-03):
      the actual answer-generation step — reusing `ProviderPort`/
      `ResilientProvider` with retrieved context in `ProviderInput.metadata` to
      produce a synthesized answer, including the system prompt that step would
-     run under. ORQ-21 shipped retrieval only; ORQ-22 as currently scoped
-     covers retrieval *quality* (rewriting, reranking, evaluation), not
-     synthesis. Needs its own ORQ or an explicit scope addition before this
-     roadmap item can be marked done.
+     run under. ORQ-21 shipped retrieval only; ORQ-22 measures reranking only,
+     and the follow-up retrieval-pipeline ORQ still excludes synthesis. Needs
+     its own ORQ or an explicit scope addition before this roadmap item can be
+     marked done.
 2. **Routing evidence dataset** — `RoutingPolicy` interface with heuristic and
    static implementations by default; collect real signal before any model.
 3. **Offline ML routing baseline** — a simple, explainable model, only if the

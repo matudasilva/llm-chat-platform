@@ -93,14 +93,16 @@ One HNSW index covers all tenants; Row-Level Security filters the result of the 
 than each tenant getting its own index. This is the correct trade-off at the current corpus
 volume — a few thousand chunks — where the cost of maintaining per-tenant indexes is not justified.
 
-The evolution trigger is measurable, not assumed: if the ORQ-22+ evaluation harness shows
+The evolution trigger is measurable, not assumed: if the follow-up retrieval-pipeline evaluation
+harness shows
 per-tenant `recall@k` degrading on the shared index (RLS filtering after an approximate-search
 index scan can under-return true neighbors when a tenant's rows are a small fraction of the
 corpus), the migration is to partition `chunks` by `tenant_id`, with one partition and one HNSW
 index per tenant. This is a pure schema and storage change — `VectorStorePort`, the retrieval
 queries, and the RLS policies are unaffected, since the port already addresses rows by tenant
 context rather than by physical index. Not implemented now; the trigger can only be evaluated once
-the harness exists.
+the harness exists. **Reference maintenance (2026-08-04):** ORQ-22 now measures reranking only;
+this trigger moves to the follow-up retrieval-pipeline ORQ, with no change to this decision.
 
 ### 5. The `tsvector` column is application-written, not generated
 
@@ -123,10 +125,12 @@ architecture.
 
 Generation reuses `ProviderPort` with a fixed prompt and the cheapest model of the configured
 provider, so no provider-specific logic enters the pipeline. This ORQ ships the capability without
-claiming it improves retrieval: whether it does is an empirical question for the ORQ-22 evaluation
-harness, which can run the same golden dataset against a corpus indexed with and without the flag
+claiming it improves retrieval: whether it does is an empirical question for the follow-up
+retrieval-pipeline evaluation harness, which can run the same golden dataset against a corpus
+indexed with and without the flag
 and compare `recall@10`/`MRR`. The document's indexing mode is persisted so a corpus built in mixed
-modes is never silently compared against itself.
+modes is never silently compared against itself. **Reference maintenance (2026-08-04):** ORQ-22
+now measures reranking only; the contextual-retrieval A/B moves to that follow-up ORQ.
 
 ---
 
@@ -144,16 +148,17 @@ modes is never silently compared against itself.
 
 ### Negative / Trade-offs
 
-- **Dual external-provider dependency.** The RAG pipeline now depends on two external providers:
-  OpenAI for embeddings (this ORQ) and AWS Bedrock for reranking (ORQ-22). This is an accepted
-  trade-off, not an oversight — Bedrock Rerank is the reranking approach ORQ-22 specifies, and
+- **Dual external-provider dependency.** The RAG pipeline is expected to depend on external
+  embedding and reranking providers: OpenAI for embeddings (this ORQ), while ORQ-22 measures GCP,
+  AWS Bedrock, and conditionally Qwen before the follow-up retrieval-pipeline ORQ selects the
+  integration. ADR-006's incumbent Bedrock decision remains unamended during measurement, and
   OpenAI embeddings are the corpus-level constant fixed here. If a tenant requires an AWS-only
   deployment, the documented escape is a full corpus re-embed with Titan Embeddings; the cost is
   bounded by corpus size and was already implied by "changing the embedding provider later is a
   full re-embed" in §1. **Operational note, not a blocker for this ORQ:** the AWS credential pair
-  was revoked during ORQ-20 and has not been replaced. ORQ-21 touches only OpenAI and proceeds
-  unaffected; a working credential pair must exist and be verified before any Bedrock-dependent
-  work in ORQ-22 begins.
+  was revoked during ORQ-20. **Reference maintenance (2026-08-04):** a replacement credential and
+  `bedrock:Rerank` permission were verified before ORQ-22 execution; the final provider consequence
+  belongs to the follow-up ORQ after the benchmark, not to this dated pointer.
 - A dedicated application role and credential add one more piece of infrastructure to provision and
   keep out of version control (`POSTGRES_APP_PASSWORD` via `.env`, never a literal in
   `alembic/versions/` — this repository is public).
@@ -194,7 +199,9 @@ when the corpus and tenant count grow.
 Rejected. The ROI is well-documented in general RAG literature but unverified against this
 project's specific corpus (mixed prose and code) and golden dataset. Shipping it off by default
 keeps the ORQ-21 baseline comparable to a plain-chunking corpus and leaves the A/B evaluation to the
-ORQ-22 harness, which is the only place the claim can be falsified with this project's own data.
+follow-up retrieval-pipeline harness, which is the only place the claim can be falsified with this
+project's own data. **Reference maintenance (2026-08-04):** ORQ-22 now measures reranking only;
+contextual retrieval moves to that follow-up ORQ without amending this rejection.
 
 ---
 
