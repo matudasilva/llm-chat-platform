@@ -25,7 +25,6 @@ from app.core.domain.reranker import (
     TerminalRerankerError,
     TransientRerankerError,
 )
-from app.core.providers.aws_reranker import AwsReranker
 from app.core.providers.gcp_reranker import GcpReranker
 from app.core.providers.qwen_local_reranker import QwenLocalReranker
 from app.core.settings import settings
@@ -502,6 +501,7 @@ def write_report(
         f"- Host: {metadata.get('host', 'not recorded')}",
         f"- GCP region/location: {metadata.get('gcp_location', 'global')}",
         f"- AWS region: {metadata.get('aws_region', 'ca-central-1')}",
+        f"- Qwen GPU: {metadata.get('qwen_gpu', 'not run')}",
         f"- Candidate recall@30 ceiling: {table['candidate_recall_at_30']:.4f}",
         f"- AWS pacing finding: {_AWS_THROTTLE_FINDING}",
         "- Cross-provider latency is indicative only and is not a ranking criterion.",
@@ -547,17 +547,19 @@ def write_report(
             f"[{comparison['ci_95_low']:.4f}, {comparison['ci_95_high']:.4f}] | "
             f"{comparison['outcome']} |"
         )
-    managed = [
+    provider_arms = set(table["arms"]) - {"baseline"}
+    provider_comparisons = [
         row
         for row in table["comparisons"]
-        if {row["left"], row["right"]} == {"aws", "gcp"}
+        if row["left"] in provider_arms and row["right"] in provider_arms
     ]
-    if managed:
-        winners = {row["outcome"] for row in managed if row["outcome"] != "tie"}
+    if provider_comparisons:
+        winners = {row["outcome"] for row in provider_comparisons if row["outcome"] != "tie"}
         lines.extend(["", "## Recommendation", ""])
         if not winners:
+            names = ", ".join(arm.upper() for arm in sorted(provider_arms))
             lines.append(
-                "AWS and GCP tie on every pre-registered quality metric. Retain the ADR-006 "
+                f"{names} tie on every pairwise pre-registered quality metric. Retain the ADR-006 "
                 "incumbent AWS backend for the production follow-up; this benchmark provides no "
                 "quality evidence for a provider switch."
             )
@@ -614,6 +616,8 @@ def _adapter(arm: str) -> tuple[RerankerPort, str]:
             settings.reranker_gcp_model,
         )
     if arm == "aws":
+        from app.core.providers.aws_reranker import AwsReranker
+
         return (
             AwsReranker(
                 region=settings.reranker_aws_region,
@@ -685,6 +689,7 @@ async def async_main(args: argparse.Namespace) -> int:
                     pacer=Pacer(args.aws_pacing_s) if arm == "aws" else None,
                     budget=CallBudget(args.gcp_call_budget) if arm == "gcp" else None,
                 )
+                omissions.pop(arm, None)
             except TerminalRerankerError as exc:
                 omissions[arm] = str(exc)
         omissions_path.write_text(json.dumps(omissions, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -707,6 +712,15 @@ async def async_main(args: argparse.Namespace) -> int:
         records_by_arm=records_by_arm,
         stability_by_arm=stability_by_arm,
     )
+    qwen_environment_path = args.results_dir / "qwen_environment.json"
+    qwen_environment: dict[str, Any] = {}
+    if qwen_environment_path.exists() and "qwen" in table["arms"]:
+        qwen_environment = json.loads(qwen_environment_path.read_text(encoding="utf-8"))
+        table["qwen_environment"] = qwen_environment
+        table["arms"]["qwen"]["cost_per_1k"]["status"] = (
+            f"wall-clock; {qwen_environment['gpu']}, "
+            f"{qwen_environment['vram_total_mib']} MiB VRAM"
+        )
     write_metric_table(args.results_dir / "metrics.json", table)
     timestamps = [
         row.get("recorded_at")
@@ -720,6 +734,12 @@ async def async_main(args: argparse.Namespace) -> int:
         "gcp_location": settings.reranker_gcp_location,
         "aws_region": settings.reranker_aws_region,
         "aws_pacing_s": args.aws_pacing_s,
+        "qwen_gpu": (
+            f"{qwen_environment['gpu']} / {qwen_environment['vram_total_mib']} MiB / "
+            f"driver {qwen_environment['driver']} / CUDA"
+            if qwen_environment
+            else "not run"
+        ),
     }
     write_report(args.report, table=table, metadata=metadata, omissions=omissions)
     return 0

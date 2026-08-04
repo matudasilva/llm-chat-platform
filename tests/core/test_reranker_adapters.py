@@ -168,6 +168,13 @@ def test_qwen_adapter_module_imports_without_optional_dependencies(monkeypatch: 
     importlib.import_module(module_name)
 
 
+def test_qwen_adapter_rejects_nonpositive_batch_size() -> None:
+    from app.core.providers.qwen_local_reranker import QwenLocalReranker
+
+    with pytest.raises(ValueError, match="batch_size must be positive"):
+        QwenLocalReranker(model_id="fixture", batch_size=0)
+
+
 @pytest.mark.gcp
 async def test_gcp_reranker_live(integration_env: dict[str, str]) -> None:
     reranker = GcpReranker(

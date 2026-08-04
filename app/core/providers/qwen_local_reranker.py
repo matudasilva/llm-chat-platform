@@ -23,10 +23,14 @@ class QwenLocalReranker(RerankerPort):
         *,
         model_id: str,
         device: str = "cuda",
+        batch_size: int = 4,
         score_fn: Callable[[str, Sequence[str]], Sequence[float]] | None = None,
     ) -> None:
+        if batch_size <= 0:
+            raise ValueError("batch_size must be positive")
         self._model_id = model_id
         self._device = device
+        self._batch_size = batch_size
         self._score_fn = score_fn
         self._tokenizer: Any | None = None
         self._model: Any | None = None
@@ -79,19 +83,24 @@ class QwenLocalReranker(RerankerPort):
             f"{prefix}<Instruct>: {_DEFAULT_TASK}\n<Query>: {query}\n<Document>: {document}{suffix}"
             for document in documents
         ]
-        inputs = self._tokenizer(
-            pairs,
-            padding=True,
-            truncation=True,
-            max_length=8192,
-            return_tensors="pt",
-        ).to(self._device)
-        with torch.no_grad():
-            logits = self._model(**inputs).logits[:, -1, :]
-            false_id = self._tokenizer.convert_tokens_to_ids("no")
-            true_id = self._tokenizer.convert_tokens_to_ids("yes")
-            binary_logits = torch.stack([logits[:, false_id], logits[:, true_id]], dim=1)
-            return torch.nn.functional.log_softmax(binary_logits, dim=1)[:, 1].exp().tolist()
+        false_id = self._tokenizer.convert_tokens_to_ids("no")
+        true_id = self._tokenizer.convert_tokens_to_ids("yes")
+        scores: list[float] = []
+        with torch.inference_mode():
+            for start in range(0, len(pairs), self._batch_size):
+                inputs = self._tokenizer(
+                    pairs[start : start + self._batch_size],
+                    padding=True,
+                    truncation=True,
+                    max_length=1024,
+                    return_tensors="pt",
+                ).to(self._device)
+                logits = self._model(**inputs).logits[:, -1, :]
+                binary_logits = torch.stack([logits[:, false_id], logits[:, true_id]], dim=1)
+                scores.extend(
+                    torch.nn.functional.log_softmax(binary_logits, dim=1)[:, 1].exp().tolist()
+                )
+        return scores
 
 
 def _validate_request(request: RerankRequest) -> int:
