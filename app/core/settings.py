@@ -93,6 +93,42 @@ class Settings(BaseSettings):
     database_url_app: str | None = Field(default=None, alias="DATABASE_URL_APP")
     rag_embedding_dimensions: int = 1536
 
+    # Isolated reranking benchmark (ORQ-22). Backend toggles are all inert by
+    # default; these fields do not wire reranking into the application.
+    reranker_aws_region: str = Field(
+        default="ca-central-1",
+        validation_alias=AliasChoices("AWS_RERANK_REGION", "RERANKER_AWS_REGION"),
+    )
+    reranker_aws_model: str = Field(
+        default="amazon.rerank-v1:0",
+        validation_alias=AliasChoices("AWS_RERANK_MODEL", "RERANKER_AWS_MODEL"),
+    )
+    reranker_gcp_project: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("GCP_PROJECT_ID", "RERANKER_GCP_PROJECT"),
+    )
+    reranker_gcp_location: str = Field(
+        default="global",
+        validation_alias=AliasChoices("GCP_RERANK_LOCATION", "RERANKER_GCP_LOCATION"),
+    )
+    reranker_gcp_model: str = Field(
+        default="semantic-ranker-default-004",
+        validation_alias=AliasChoices("GCP_RERANK_MODEL", "RERANKER_GCP_MODEL"),
+    )
+    reranker_qwen_model_id: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("QWEN_MODEL_ID", "RERANKER_QWEN_MODEL_ID"),
+    )
+    reranker_qwen_device: str = Field(
+        default="cuda",
+        validation_alias=AliasChoices("QWEN_DEVICE", "RERANKER_QWEN_DEVICE"),
+    )
+    reranking_benchmark_gcp_enabled: bool = False
+    reranking_benchmark_aws_enabled: bool = False
+    reranking_benchmark_qwen_enabled: bool = False
+    reranking_benchmark_gcp_call_budget: int = 0
+    reranking_benchmark_aws_pacing_s: float = 15.0
+
     # Controlled Web Read (MVP): read-only, bounded external fetch surface.
     web_read_enabled: bool = True
     web_read_allow_http: bool = False
@@ -254,6 +290,20 @@ class Settings(BaseSettings):
     def validate_notion_write_timeout_s(cls, value: float) -> float:
         if value <= 0:
             raise ValueError("notion_write_timeout_s must be > 0")
+        return value
+
+    @field_validator("reranking_benchmark_gcp_call_budget")
+    @classmethod
+    def validate_reranking_benchmark_gcp_call_budget(cls, value: int) -> int:
+        if value < 0:
+            raise ValueError("reranking_benchmark_gcp_call_budget must be >= 0")
+        return value
+
+    @field_validator("reranking_benchmark_aws_pacing_s")
+    @classmethod
+    def validate_reranking_benchmark_aws_pacing_s(cls, value: float) -> float:
+        if value < 0:
+            raise ValueError("reranking_benchmark_aws_pacing_s must be >= 0")
         return value
 
     @field_validator("web_read_allowed_domains", mode="before")

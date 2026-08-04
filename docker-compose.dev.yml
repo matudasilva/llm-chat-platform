@@ -18,7 +18,10 @@ services:
       - ./app:/app/app
       - ./reports:/app/app/reports
       - ./tests:/app/tests
+      - ./experiments:/app/experiments
+      - ./docs:/app/docs
       - ./pytest.ini:/app/pytest.ini:ro
+      - ${GOOGLE_ADC_HOST_PATH:-./secrets/gcp-adc.json}:/run/secrets/gcp-adc.json:ro
     ports:
       - "8001:8000"
     
@@ -44,6 +47,14 @@ services:
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
       AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN:-}
 
+      # ORQ-22 isolated benchmark configuration. ADC stays on the host and is
+      # mounted read-only; no Google SDK or credential file enters the image.
+      AWS_RERANK_REGION: ${AWS_RERANK_REGION:-ca-central-1}
+      AWS_RERANK_MODEL: ${AWS_RERANK_MODEL:-amazon.rerank-v1:0}
+      GCP_PROJECT_ID: ${GCP_PROJECT_ID:-}
+      GCP_RERANK_LOCATION: ${GCP_RERANK_LOCATION:-global}
+      GCP_RERANK_MODEL: ${GCP_RERANK_MODEL:-semantic-ranker-default-004}
+      GOOGLE_APPLICATION_CREDENTIALS: /run/secrets/gcp-adc.json
 
     depends_on:
       - postgres

@@ -21,6 +21,25 @@ import app.core.settings as settings_module
 
 settings_module.Settings.model_config["env_file"] = None
 
+_INTEGRATION_ENV_NAMES = {
+    "AWS_ACCESS_KEY_ID",
+    "AWS_SECRET_ACCESS_KEY",
+    "AWS_SESSION_TOKEN",
+    "AWS_RERANK_REGION",
+    "AWS_RERANK_MODEL",
+    "GCP_PROJECT_ID",
+    "GCP_RERANK_LOCATION",
+    "GCP_RERANK_MODEL",
+    "GOOGLE_APPLICATION_CREDENTIALS",
+    "QWEN_MODEL_ID",
+    "QWEN_DEVICE",
+}
+_INTEGRATION_ENV = {
+    name: value
+    for name in _INTEGRATION_ENV_NAMES
+    if (value := os.environ.get(name))
+}
+
 
 def _clear_exported_settings() -> None:
     for field_name, field in settings_module.Settings.model_fields.items():
@@ -118,12 +137,32 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
     # RAG_TEST_DATABASE_URL is set — a real DSN, read directly from the
     # ambient environment rather than through the sandboxed Settings above,
     # since these tests are explicitly outside the hermetic contract.
-    if os.environ.get("RAG_TEST_DATABASE_URL"):
-        return
-    skip_postgres = pytest.mark.skip(reason="RAG_TEST_DATABASE_URL not set: no real Postgres reachable")
+    marker_requirements = {
+        "postgres": ("RAG_TEST_DATABASE_URL", bool(os.environ.get("RAG_TEST_DATABASE_URL"))),
+        "gcp": (
+            "RUN_GCP_RERANK_INTEGRATION",
+            os.environ.get("RUN_GCP_RERANK_INTEGRATION", "").lower() in {"1", "true", "yes"},
+        ),
+        "aws": (
+            "RUN_AWS_RERANK_INTEGRATION",
+            os.environ.get("RUN_AWS_RERANK_INTEGRATION", "").lower() in {"1", "true", "yes"},
+        ),
+        "cuda": (
+            "RUN_QWEN_RERANK_INTEGRATION",
+            os.environ.get("RUN_QWEN_RERANK_INTEGRATION", "").lower() in {"1", "true", "yes"},
+        ),
+    }
     for item in items:
-        if "postgres" in item.keywords:
-            item.add_marker(skip_postgres)
+        for marker, (environment_name, enabled) in marker_requirements.items():
+            if item.get_closest_marker(marker) is not None and not enabled:
+                item.add_marker(pytest.mark.skip(reason=f"{environment_name} is not enabled"))
+
+
+@pytest.fixture(scope="session")
+def integration_env() -> dict[str, str]:
+    """Credentials/config captured before the hermetic settings scrub."""
+
+    return dict(_INTEGRATION_ENV)
 
 
 @pytest.fixture(scope="session")

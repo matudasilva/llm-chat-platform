@@ -2108,4 +2108,16 @@ The earlier platform error was `bedrock provider not configured`. The root cause
 - telemetry remained best-effort even on failure
 - no provider-specific logic was added to routes or domain services
 
+## Appendix AE — Isolated reranker benchmark telemetry
+
+ORQ-22 emits three experiment-only structured events through the existing Python logging seam:
+
+- `reranker.request`: `backend`, `model`, `candidate_count`, `outcome`
+- `reranker.response`: the request fields plus `latency_ms`
+- `reranker.error`: the request fields plus `latency_ms` and normalized `error_kind`
+
+The payload allowlist excludes query text, document text, credentials, and raw provider payloads.
+Telemetry is best-effort: sink failure is swallowed and cannot fail or change a benchmark result.
+These events are not wired into `/chat` or any production retrieval path.
+
 **End of appendix — complements the live LLD document**
