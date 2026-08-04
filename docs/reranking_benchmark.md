@@ -1,10 +1,11 @@
 # ORQ-22 reranking benchmark
 
 - Dataset SHA-256: `a5a52e4e6484652edecfa871b048d646da2db2b20c51c6d17157cd23f444bdcb`
-- Measurement window: 2026-08-04T16:13:30.857129+00:00 to 2026-08-04T17:52:22.838517+00:00
+- Measurement window: 2026-08-04T16:13:30.857129+00:00 to 2026-08-04T18:43:29.534229+00:00
 - Host: Linux 7.0.0-28-generic / x86_64 / Python 3.13.14
 - GCP region/location: global
 - AWS region: us-west-2
+- Qwen GPU: NVIDIA GeForce RTX 4060 Laptop GPU / 8188 MiB / driver 580.173.02 / CUDA
 - Candidate recall@30 ceiling: 0.8417
 - AWS pacing finding: Preparation finding: 8 rapid Bedrock Rerank calls throttled all tested regions; 4-second spacing with retries still failed; approximately 15-second spacing succeeded.
 - Cross-provider latency is indicative only and is not a ranking criterion.
@@ -17,6 +18,7 @@
 | aws (errors at pacing 15.0s) | 0.5188 | 0.6738 | 0.8500 | 1588.19 | 1816.53 | 180 | 0.0000 | 1.0 (AWS Price List Bulk API, publication 2026-07-23) |
 | baseline | 0.4460 | 0.6615 | 0.8167 | 0.00 | 0.00 | 60 | 0.0000 | 0.0 |
 | gcp | 0.5320 | 0.6780 | 0.8333 | 939.70 | 2478.55 | 180 | 0.0000 | unverified |
+| qwen | 0.4959 | 0.6909 | 0.8167 | 599.59 | 649.34 | 180 | 0.0000 | wall-clock; NVIDIA GeForce RTX 4060 Laptop GPU, 8188 MiB VRAM |
 
 ## Language splits
 
@@ -41,6 +43,13 @@
 | en | 0.5006 | 0.6570 | 0.8333 |
 | es | 0.5634 | 0.6990 | 0.8333 |
 
+### qwen
+
+| Language | NDCG@10 | MRR@10 | HitRate@5 |
+|---|---:|---:|---:|
+| en | 0.4916 | 0.6548 | 0.8333 |
+| es | 0.5001 | 0.7270 | 0.8000 |
+
 ## Programmatic paired-bootstrap decisions
 
 | Left | Right | Metric | Difference | 95% CI | Outcome |
@@ -51,13 +60,22 @@
 | aws | gcp | ndcg_at_10 | -0.0132 | [-0.0742, 0.0424] | tie |
 | aws | gcp | mrr_at_10 | -0.0041 | [-0.0934, 0.0819] | tie |
 | aws | gcp | hit_rate_at_5 | 0.0167 | [-0.0833, 0.1167] | tie |
+| aws | qwen | ndcg_at_10 | 0.0229 | [-0.0186, 0.0623] | tie |
+| aws | qwen | mrr_at_10 | -0.0171 | [-0.0899, 0.0568] | tie |
+| aws | qwen | hit_rate_at_5 | 0.0333 | [-0.0667, 0.1167] | tie |
 | baseline | gcp | ndcg_at_10 | -0.0859 | [-0.1468, -0.0282] | gcp |
 | baseline | gcp | mrr_at_10 | -0.0165 | [-0.0968, 0.0660] | tie |
 | baseline | gcp | hit_rate_at_5 | -0.0167 | [-0.1167, 0.0833] | tie |
+| baseline | qwen | ndcg_at_10 | -0.0498 | [-0.1029, 0.0028] | tie |
+| baseline | qwen | mrr_at_10 | -0.0295 | [-0.1142, 0.0565] | tie |
+| baseline | qwen | hit_rate_at_5 | 0.0000 | [-0.1167, 0.1167] | tie |
+| gcp | qwen | ndcg_at_10 | 0.0361 | [-0.0175, 0.0921] | tie |
+| gcp | qwen | mrr_at_10 | -0.0129 | [-0.1002, 0.0725] | tie |
+| gcp | qwen | hit_rate_at_5 | 0.0167 | [-0.0667, 0.1000] | tie |
 
 ## Recommendation
 
-AWS and GCP tie on every pre-registered quality metric. Retain the ADR-006 incumbent AWS backend for the production follow-up; this benchmark provides no quality evidence for a provider switch.
+AWS, GCP, QWEN tie on every pairwise pre-registered quality metric. Retain the ADR-006 incumbent AWS backend for the production follow-up; this benchmark provides no quality evidence for a provider switch.
 
 ## Backend stability (second live run, first 20 rows)
 
@@ -65,9 +83,10 @@ AWS and GCP tie on every pre-registered quality metric. Retain the ADR-006 incum
 |---|---:|---:|---:|
 | aws | 20 | 1.0000 | 0 |
 | gcp | 20 | 1.0000 | 0 |
+| qwen | 20 | 1.0000 | 0 |
 
 ## Omissions and limits
 
-- qwen: Live arm deferred: the host NVIDIA driver was unavailable; the operator approved baseline + GCP + AWS as sufficient for the production decision.
+- No requested arm was omitted.
 - A tie is a valid result whenever the paired bootstrap CI contains zero.
 - The table supports only the metric-specific outcomes shown above; it does not support a latency-based provider ranking or a shared relevance-score threshold.
