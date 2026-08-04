@@ -6,12 +6,12 @@ existing diagram.
 
 | tipo | alcance | archivo | generado/manual | última actualización | refresh_pending | refresh_baseline |
 |---|---|---|---|---|---|---|
-| context | producto | `context.svg` | generado | 2026-07-21 | sí | `sha256:240a74bf40cf3050f05f901a4978a02916231cce83d883f33ce298a3b7df1f6a` |
-| architecture | framework | `architecture.svg` | generado | 2026-07-21 | sí | `sha256:240a74bf40cf3050f05f901a4978a02916231cce83d883f33ce298a3b7df1f6a` |
-| structural | producto | `structural.svg` | manual | 2026-07-21 | sí | `sha256:240a74bf40cf3050f05f901a4978a02916231cce83d883f33ce298a3b7df1f6a` |
-| deployment | producto | `deployment.svg` | manual | 2026-07-21 | sí | `sha256:240a74bf40cf3050f05f901a4978a02916231cce83d883f33ce298a3b7df1f6a` |
-| behavior | producto | `behavior.svg` | manual | 2026-07-21 | sí | `sha256:240a74bf40cf3050f05f901a4978a02916231cce83d883f33ce298a3b7df1f6a` |
-| erd | producto | `erd.svg` | manual | 2026-07-21 | sí | `sha256:240a74bf40cf3050f05f901a4978a02916231cce83d883f33ce298a3b7df1f6a` |
+| context | producto | `context.svg` | generado | 2026-08-04 | no | `sha256:6d4b7cd69c81e99e181999db7449dd68841e39637e051965fd3676e00aa0bb19` |
+| architecture | framework | `architecture.svg` | generado | 2026-08-04 | no | `sha256:6d4b7cd69c81e99e181999db7449dd68841e39637e051965fd3676e00aa0bb19` |
+| structural | producto | `structural.svg` | manual | 2026-08-04 | no | `sha256:6d4b7cd69c81e99e181999db7449dd68841e39637e051965fd3676e00aa0bb19` |
+| deployment | producto | `deployment.svg` | manual | 2026-08-04 | no | `sha256:6d4b7cd69c81e99e181999db7449dd68841e39637e051965fd3676e00aa0bb19` |
+| behavior | producto | `behavior.svg` | manual | 2026-08-04 | no | `sha256:6d4b7cd69c81e99e181999db7449dd68841e39637e051965fd3676e00aa0bb19` |
+| erd | producto | `erd.svg` | manual | 2026-08-04 | no | `sha256:6d4b7cd69c81e99e181999db7449dd68841e39637e051965fd3676e00aa0bb19` |
 
 ## ORQ-21 refresh signal (2026-08-03, fw-validate)
 
@@ -20,6 +20,14 @@ source: Constitution) after ORQ-21 added a new pgvector-backed corpus (`document
 `DATABASE_URL_APP`, a second RLS-scoped role) — a real change to the ERD and deployment shape.
 Signal only, per fw-validate step 8.b: not recalculated further, not regenerated, does not block
 this ORQ's closure. Actual regeneration is `fw-replan`'s responsibility.
+
+## ORQ-22 replan result (2026-08-04)
+
+The operator approved the recommended disposition: `context.svg` and `architecture.svg` were
+reviewed and acknowledged without content changes; `structural.svg`, `deployment.svg`,
+`behavior.svg`, and `erd.svg` were refreshed to reflect the delivered RAG corpus and isolated
+reranking benchmark. All six diagrams now share the current Constitution signature and have no
+pending refresh signal.
 
 ## Gate evidence
 

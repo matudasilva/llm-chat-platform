@@ -1,47 +1,28 @@
-<svg width="900" height="560" viewBox="0 0 900 560" xmlns="http://www.w3.org/2000/svg" role="img">
-<title>Entity relationship — llm-chat-platform (PostgreSQL)</title>
-<desc>Product schema owned by the Alembic migration chain: Conversation, Message and UsageEvent. Tenant scoping is carried by tenant_id on Conversation and Message; UsageEvent.tenant_id is documented debt, deferred pending cost-pipeline analysis. Completed by hand during fw-init.</desc>
-<defs><marker id="crow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#5F5E5A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
-<rect width="900" height="560" fill="#FBFAF7"/>
-<text x="450" y="38" text-anchor="middle" font-family="sans-serif" font-size="19" font-weight="600" fill="#26215C">Entity relationship — llm-chat-platform (PostgreSQL)</text>
-<text x="450" y="58" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#5F5E5A">Written only through /chat, in a single transaction per request. Schema evolves only through the explicit Alembic chain.</text>
+<svg width="1000" height="700" viewBox="0 0 1000 700" xmlns="http://www.w3.org/2000/svg" role="img">
+<title>Entity relationship — llm-chat-platform PostgreSQL</title>
+<desc>Current product-owned PostgreSQL schema after ORQ-21. Conversation, Message and UsageEvent serve the chat path; Document and Chunk form the separately ingested RAG corpus. Documents and chunks are tenant-scoped with PostgreSQL RLS through an unprivileged application role.</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M2 1L8 5L2 9" fill="none" stroke="#5F5E5A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<rect width="1000" height="700" fill="#FBFAF7"/>
+<text x="500" y="36" text-anchor="middle" font-family="sans-serif" font-size="19" font-weight="600" fill="#26215C">Entity relationship — llm-chat-platform PostgreSQL</text>
+<text x="500" y="57" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#5F5E5A">Chat writes are atomic through /chat; corpus writes use the explicit ingestion workflow</text>
 
-<g><rect x="60" y="96" width="240" height="168" rx="10" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.8"/>
-<rect x="60" y="96" width="240" height="34" rx="10" fill="#534AB7"/>
-<text x="180" y="119" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="600" fill="#FBFAF7">Conversation</text>
-<text x="78" y="152" font-family="sans-serif" font-size="11" font-weight="600" fill="#26215C">PK  id</text>
-<text x="78" y="174" font-family="sans-serif" font-size="11" font-weight="600" fill="#3C3489">      tenant_id</text>
-<text x="78" y="196" font-family="sans-serif" font-size="11" fill="#3C3489">      created_at</text>
-<text x="78" y="218" font-family="sans-serif" font-size="11" fill="#3C3489">      updated_at</text>
-<text x="78" y="246" font-family="sans-serif" font-size="9.5" fill="#5F5E5A">scoped in the service layer (ADR-004)</text></g>
+<text x="45" y="92" font-family="sans-serif" font-size="14" font-weight="600" fill="#26215C">Chat and usage schema</text>
+<rect x="45" y="108" width="250" height="180" rx="10" fill="#EEEDFE" stroke="#534AB7"/><rect x="45" y="108" width="250" height="34" rx="10" fill="#534AB7"/>
+<text x="170" y="131" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="600" fill="#FBFAF7">Conversation</text><text x="63" y="164" font-family="sans-serif" font-size="11" font-weight="600" fill="#26215C">PK  id</text><text x="63" y="186" font-family="sans-serif" font-size="11" font-weight="600" fill="#3C3489">tenant_id</text><text x="63" y="208" font-family="sans-serif" font-size="11" fill="#3C3489">created_at · updated_at</text><text x="63" y="250" font-family="sans-serif" font-size="9.5" fill="#5F5E5A">service-layer tenant scoping</text><text x="63" y="270" font-family="sans-serif" font-size="9.5" fill="#5F5E5A">RLS remains deferred (ADR-004)</text>
+<rect x="390" y="108" width="250" height="180" rx="10" fill="#E1F5EE" stroke="#0F6E56"/><rect x="390" y="108" width="250" height="34" rx="10" fill="#0F6E56"/>
+<text x="515" y="131" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="600" fill="#FBFAF7">Message</text><text x="408" y="164" font-family="sans-serif" font-size="11" font-weight="600" fill="#04342C">PK  id</text><text x="408" y="186" font-family="sans-serif" font-size="11" font-weight="600" fill="#085041">FK  conversation_id</text><text x="408" y="208" font-family="sans-serif" font-size="11" font-weight="600" fill="#085041">tenant_id</text><text x="408" y="230" font-family="sans-serif" font-size="11" fill="#085041">role · content</text><text x="408" y="252" font-family="sans-serif" font-size="11" fill="#085041">created_at</text>
+<line x1="295" y1="198" x2="390" y2="198" stroke="#5F5E5A" stroke-width="1.5" marker-end="url(#arrow)"/><text x="342" y="189" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#5F5E5A">1 : N</text>
+<rect x="735" y="108" width="220" height="180" rx="10" fill="#FAECE7" stroke="#993C1D"/><rect x="735" y="108" width="220" height="34" rx="10" fill="#993C1D"/>
+<text x="845" y="131" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="600" fill="#FBFAF7">UsageEvent</text><text x="753" y="164" font-family="sans-serif" font-size="11" font-weight="600" fill="#4A1B0C">PK  id</text><text x="753" y="186" font-family="sans-serif" font-size="11" font-weight="600" fill="#712B13">FK  conversation_id</text><text x="753" y="208" font-family="sans-serif" font-size="11" fill="#712B13">provider · model</text><text x="753" y="230" font-family="sans-serif" font-size="11" fill="#712B13">tokens · cost · created_at</text><text x="753" y="270" font-family="sans-serif" font-size="9.5" fill="#8A5A3E">tenant_id remains known debt</text>
+<path d="M170 288V312H845V288" fill="none" stroke="#5F5E5A" stroke-width="1.5" marker-end="url(#arrow)"/><text x="507" y="306" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#5F5E5A">1 : N</text>
 
-<g><rect x="520" y="96" width="240" height="190" rx="10" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.8"/>
-<rect x="520" y="96" width="240" height="34" rx="10" fill="#0F6E56"/>
-<text x="640" y="119" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="600" fill="#FBFAF7">Message</text>
-<text x="538" y="152" font-family="sans-serif" font-size="11" font-weight="600" fill="#04342C">PK  id</text>
-<text x="538" y="174" font-family="sans-serif" font-size="11" font-weight="600" fill="#085041">FK  conversation_id</text>
-<text x="538" y="196" font-family="sans-serif" font-size="11" font-weight="600" fill="#085041">      tenant_id</text>
-<text x="538" y="218" font-family="sans-serif" font-size="11" fill="#085041">      role  (user | assistant)</text>
-<text x="538" y="240" font-family="sans-serif" font-size="11" fill="#085041">      content</text>
-<text x="538" y="262" font-family="sans-serif" font-size="11" fill="#085041">      created_at</text></g>
-
-<g><rect x="290" y="342" width="300" height="170" rx="10" fill="#FAECE7" stroke="#993C1D" stroke-width="0.8"/>
-<rect x="290" y="342" width="300" height="34" rx="10" fill="#993C1D"/>
-<text x="440" y="365" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="600" fill="#FBFAF7">UsageEvent</text>
-<text x="308" y="398" font-family="sans-serif" font-size="11" font-weight="600" fill="#4A1B0C">PK  id</text>
-<text x="308" y="420" font-family="sans-serif" font-size="11" font-weight="600" fill="#712B13">FK  conversation_id</text>
-<text x="308" y="442" font-family="sans-serif" font-size="11" fill="#712B13">      provider · model</text>
-<text x="308" y="464" font-family="sans-serif" font-size="11" fill="#712B13">      prompt_tokens · completion_tokens</text>
-<text x="308" y="486" font-family="sans-serif" font-size="11" fill="#712B13">      cost · created_at</text>
-<text x="308" y="504" font-family="sans-serif" font-size="9.5" fill="#8A5A3E">tenant_id: known debt, deferred</text></g>
-
-<line x1="300" y1="180" x2="520" y2="180" stroke="#5F5E5A" stroke-width="1.5" marker-end="url(#crow)"/>
-<text x="410" y="172" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#2C2C2A">1 : N</text>
-<text x="410" y="198" text-anchor="middle" font-family="sans-serif" font-size="9.5" fill="#5F5E5A">ordered by created_at, tie-broken by role</text>
-
-<line x1="180" y1="264" x2="180" y2="410" stroke="#5F5E5A" stroke-width="1.5"/>
-<line x1="180" y1="410" x2="290" y2="410" stroke="#5F5E5A" stroke-width="1.5" marker-end="url(#crow)"/>
-<text x="196" y="340" font-family="sans-serif" font-size="11" fill="#2C2C2A">1 : N</text>
-
-<text x="450" y="546" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#8A8880">Completed by hand during fw-init from app/models/ and the Alembic chain — column detail is authoritative in docs/lld_apendix.md.</text>
+<line x1="45" y1="340" x2="955" y2="340" stroke="#D3D1C7" stroke-width="1"/>
+<text x="45" y="366" font-family="sans-serif" font-size="14" font-weight="600" fill="#04342C">RAG corpus schema — PostgreSQL RLS enabled</text>
+<rect x="145" y="388" width="300" height="230" rx="10" fill="#EEEDFE" stroke="#534AB7"/><rect x="145" y="388" width="300" height="34" rx="10" fill="#534AB7"/>
+<text x="295" y="411" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="600" fill="#FBFAF7">Document</text><text x="163" y="444" font-family="sans-serif" font-size="11" font-weight="600" fill="#26215C">PK  id</text><text x="163" y="466" font-family="sans-serif" font-size="11" font-weight="600" fill="#3C3489">tenant_id</text><text x="163" y="488" font-family="sans-serif" font-size="11" fill="#3C3489">source_path · content_hash</text><text x="163" y="510" font-family="sans-serif" font-size="11" fill="#3C3489">doc_type · indexing_mode</text><text x="163" y="532" font-family="sans-serif" font-size="11" fill="#3C3489">metadata · created_at</text><text x="163" y="574" font-family="sans-serif" font-size="9.5" fill="#5F5E5A">unique: tenant + source + hash + mode</text><text x="163" y="596" font-family="sans-serif" font-size="9.5" font-weight="600" fill="#0F6E56">tenant RLS via rag_app role</text>
+<rect x="555" y="388" width="300" height="230" rx="10" fill="#E1F5EE" stroke="#0F6E56"/><rect x="555" y="388" width="300" height="34" rx="10" fill="#0F6E56"/>
+<text x="705" y="411" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="600" fill="#FBFAF7">Chunk</text><text x="573" y="444" font-family="sans-serif" font-size="11" font-weight="600" fill="#04342C">PK  id</text><text x="573" y="466" font-family="sans-serif" font-size="11" font-weight="600" fill="#085041">FK  document_id</text><text x="573" y="488" font-family="sans-serif" font-size="11" font-weight="600" fill="#085041">tenant_id · ordinal</text><text x="573" y="510" font-family="sans-serif" font-size="11" fill="#085041">text · optional context</text><text x="573" y="532" font-family="sans-serif" font-size="11" fill="#085041">embedding vector(1536)</text><text x="573" y="554" font-family="sans-serif" font-size="11" fill="#085041">search_vector · metadata · created_at</text><text x="573" y="596" font-family="sans-serif" font-size="9.5" font-weight="600" fill="#0F6E56">tenant RLS via rag_app role</text>
+<line x1="445" y1="503" x2="555" y2="503" stroke="#5F5E5A" stroke-width="1.5" marker-end="url(#arrow)"/><text x="500" y="494" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#5F5E5A">1 : N · cascade delete</text>
+<rect x="145" y="638" width="710" height="34" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-dasharray="4 3"/><text x="500" y="659" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#5F5E5A">Owner role runs migrations; DATABASE_URL_APP uses the unprivileged role and never falls back to the owner connection.</text>
+<text x="500" y="691" text-anchor="middle" font-family="sans-serif" font-size="9.5" fill="#8A8880">Column and constraint details remain authoritative in the SQLAlchemy models and Alembic migration chain.</text>
 </svg>

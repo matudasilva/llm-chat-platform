@@ -49,11 +49,13 @@ invariant.
      genuinely unprivileged role (settles the ADR-004 §5 deferral for the RAG
      corpus specifically — `conversations`/`messages` RLS is still open, see
      `docs/adr/004-tenant-scoping-read-endpoints.md`).
-   - In progress (ORQ-22, 2026-08-04): isolated reranking benchmark measuring
-     the RRF baseline, GCP, AWS, and conditionally Qwen over one frozen dataset.
-     ADR-006 remains unamended until the follow-up ORQ consumes the evidence.
+   - ✅ done (ORQ-22, closed locally and merged 2026-08-04): isolated reranking
+     benchmark measured the RRF baseline, GCP, AWS, and Qwen over one frozen
+     dataset. The evidence outcome is recorded once in §Decisions closed by ORQ;
+     ADR-006 remains unamended.
    - Follow-up retrieval-pipeline ORQ (number assigned after ORQ-22): query
-     rewriting via `ProviderPort`, the selected reranker integration, the
+     rewriting via `ProviderPort`, the incumbent reranker integration (per the
+     closed ORQ-22 outcome below), the
      lightweight post-rerank evaluator, MLflow-compatible evaluation/golden
      dataset expansion, OpenTelemetry-ready spans, the shared-index
      partitioning trigger, and contextual-retrieval falsification.
@@ -99,6 +101,12 @@ CO2e) this phase depends on.
   `text-embedding-3-small` at 1536 dimensions, a corpus-level constant
   independent of each tenant's chat provider. Full rationale:
   `docs/adr/006-rag-corpus-embeddings-and-rls.md` §1.
+- **Reranker benchmark outcome** (ORQ-22, 2026-08-04): AWS, GCP and local Qwen
+  tied on every pairwise pre-registered quality metric, so the evidence does not
+  justify overturning ADR-006's AWS incumbent for the retrieval-pipeline
+  follow-up. This confirms the existing direction rather than amending the ADR;
+  cross-provider latency remains indicative only. Full evidence:
+  `docs/reranking_benchmark.md`.
 
 ## Related
 
