@@ -24,7 +24,12 @@ sheet so approval evaluates the independent ground truth only.
 
 ## Gate status
 
-- Status: pending operator approval
-- Approved by: pending
-- Approved at: pending
+- Status: approved
+- Approved by: operator
+- Approved at: 2026-08-04
 - Approval applies to the frozen hash above; any dataset change invalidates this sign-off.
+
+Non-blocking observation: q016 is intentionally retained for this reranking benchmark, where it is
+valid for measuring rank movement. Because it names the subject of ADR-006 directly, ORQ-25's
+broader evaluation harness must replace it with a query grounded in content that predates the
+evaluation corpus, matching the earlier ORQ-21 golden-set correction.
