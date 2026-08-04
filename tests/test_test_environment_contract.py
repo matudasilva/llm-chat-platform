@@ -22,6 +22,18 @@ def test_pytest_environment_is_hermetic() -> None:
     assert settings.web_read_enabled is False
     assert settings.rag_enabled is False
     assert settings.database_url_app is None
+    assert settings.reranker_aws_region == "ca-central-1"
+    assert settings.reranker_aws_model == "amazon.rerank-v1:0"
+    assert settings.reranker_gcp_project is None
+    assert settings.reranker_gcp_location == "global"
+    assert settings.reranker_gcp_model == "semantic-ranker-default-004"
+    assert settings.reranker_qwen_model_id is None
+    assert settings.reranker_qwen_device == "cuda"
+    assert settings.reranking_benchmark_gcp_enabled is False
+    assert settings.reranking_benchmark_aws_enabled is False
+    assert settings.reranking_benchmark_qwen_enabled is False
+    assert settings.reranking_benchmark_gcp_call_budget == 0
+    assert settings.reranking_benchmark_aws_pacing_s == 15.0
 
 
 def test_exported_environment_cannot_override_test_settings() -> None:
