@@ -19,6 +19,7 @@ services:
       - ./reports:/app/app/reports
       - ./tests:/app/tests
       - ./experiments:/app/experiments
+      - ./docs:/app/docs
       - ./pytest.ini:/app/pytest.ini:ro
       - ${GOOGLE_ADC_HOST_PATH:-./secrets/gcp-adc.json}:/run/secrets/gcp-adc.json:ro
     ports:

@@ -457,7 +457,11 @@ def build_metric_table(
     }
     costs: dict[str, Any] = {
         "baseline": {"value": 0.0, "unit": "USD per 1K queries"},
-        "aws": {"value": 1.0, "unit": "USD per 1K queries", "source": "AWS Pricing API"},
+        "aws": {
+            "value": 1.0,
+            "unit": "USD per 1K queries",
+            "source": "AWS Price List Bulk API, publication 2026-07-23",
+        },
         "gcp": {"value": None, "unit": "USD per 1K queries", "status": "unverified"},
         "qwen": {"value": None, "unit": "local compute", "status": "wall-clock/VRAM"},
     }
@@ -489,6 +493,7 @@ def write_report(
     metadata: dict[str, Any],
     omissions: dict[str, str],
 ) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
     lines = [
         "# ORQ-22 reranking benchmark",
         "",
@@ -512,6 +517,8 @@ def write_report(
         latency = values["latency_ms"]
         cost = values["cost_per_1k"]
         cost_text = str(cost.get("value")) if cost.get("value") is not None else cost.get("status", "unverified")
+        if cost.get("source"):
+            cost_text = f"{cost_text} ({cost['source']})"
         arm_label = f"aws (errors at pacing {metadata.get('aws_pacing_s', 15.0)}s)" if arm == "aws" else arm
         lines.append(
             f"| {arm_label} | {aggregate['ndcg_at_10']:.4f} | {aggregate['mrr_at_10']:.4f} | "
@@ -540,6 +547,31 @@ def write_report(
             f"[{comparison['ci_95_low']:.4f}, {comparison['ci_95_high']:.4f}] | "
             f"{comparison['outcome']} |"
         )
+    managed = [
+        row
+        for row in table["comparisons"]
+        if {row["left"], row["right"]} == {"aws", "gcp"}
+    ]
+    if managed:
+        winners = {row["outcome"] for row in managed if row["outcome"] != "tie"}
+        lines.extend(["", "## Recommendation", ""])
+        if not winners:
+            lines.append(
+                "AWS and GCP tie on every pre-registered quality metric. Retain the ADR-006 "
+                "incumbent AWS backend for the production follow-up; this benchmark provides no "
+                "quality evidence for a provider switch."
+            )
+        elif len(winners) == 1:
+            winner = next(iter(winners))
+            lines.append(
+                f"Select {winner.upper()} for the production follow-up: it is the only managed "
+                "backend with a non-tie managed-provider outcome in the generated table."
+            )
+        else:
+            lines.append(
+                "No single managed backend wins across the pre-registered quality metrics; retain "
+                "the ADR-006 incumbent AWS backend until a follow-up defines a trade-off rule."
+            )
     if table.get("stability"):
         lines.extend(["", "## Backend stability (second live run, first 20 rows)", ""])
         lines.append("| Arm | Queries | Mean Kendall tau | Top-1 changes |")
