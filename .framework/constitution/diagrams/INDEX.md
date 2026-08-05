@@ -6,12 +6,20 @@ existing diagram.
 
 | tipo | alcance | archivo | generado/manual | última actualización | refresh_pending | refresh_baseline |
 |---|---|---|---|---|---|---|
-| context | producto | `context.svg` | generado | 2026-08-04 | no | `sha256:6d4b7cd69c81e99e181999db7449dd68841e39637e051965fd3676e00aa0bb19` |
-| architecture | framework | `architecture.svg` | generado | 2026-08-04 | no | `sha256:6d4b7cd69c81e99e181999db7449dd68841e39637e051965fd3676e00aa0bb19` |
-| structural | producto | `structural.svg` | manual | 2026-08-04 | no | `sha256:6d4b7cd69c81e99e181999db7449dd68841e39637e051965fd3676e00aa0bb19` |
-| deployment | producto | `deployment.svg` | manual | 2026-08-04 | no | `sha256:6d4b7cd69c81e99e181999db7449dd68841e39637e051965fd3676e00aa0bb19` |
-| behavior | producto | `behavior.svg` | manual | 2026-08-04 | no | `sha256:6d4b7cd69c81e99e181999db7449dd68841e39637e051965fd3676e00aa0bb19` |
-| erd | producto | `erd.svg` | manual | 2026-08-04 | no | `sha256:6d4b7cd69c81e99e181999db7449dd68841e39637e051965fd3676e00aa0bb19` |
+| context | producto | `context.svg` | generado | 2026-08-04 | sí | `sha256:6d4b7cd69c81e99e181999db7449dd68841e39637e051965fd3676e00aa0bb19` |
+| architecture | framework | `architecture.svg` | generado | 2026-08-04 | sí | `sha256:6d4b7cd69c81e99e181999db7449dd68841e39637e051965fd3676e00aa0bb19` |
+| structural | producto | `structural.svg` | manual | 2026-08-04 | sí | `sha256:6d4b7cd69c81e99e181999db7449dd68841e39637e051965fd3676e00aa0bb19` |
+| deployment | producto | `deployment.svg` | manual | 2026-08-04 | sí | `sha256:6d4b7cd69c81e99e181999db7449dd68841e39637e051965fd3676e00aa0bb19` |
+| behavior | producto | `behavior.svg` | manual | 2026-08-04 | sí | `sha256:6d4b7cd69c81e99e181999db7449dd68841e39637e051965fd3676e00aa0bb19` |
+| erd | producto | `erd.svg` | manual | 2026-08-04 | sí | `sha256:6d4b7cd69c81e99e181999db7449dd68841e39637e051965fd3676e00aa0bb19` |
+
+## ORQ-23 refresh signal (2026-08-05, fw-validate)
+
+`fw_check_diagram_refresh.py` flagged all six rows `refresh_pending: sí` again
+(architecture-signature source: Constitution) after ORQ-23 changed `roadmap.md`'s Phase 2 item 1
+(the ORQ-23/24/25 split) — a `behavior`-level change, not structural/deployment. Signal only, per
+fw-validate step 8.b: not recalculated further, not regenerated, does not block this ORQ's
+closure. Actual regeneration is `fw-replan`'s responsibility.
 
 ## ORQ-21 refresh signal (2026-08-03, fw-validate)
 
