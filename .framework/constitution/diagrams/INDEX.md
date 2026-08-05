@@ -6,12 +6,23 @@ existing diagram.
 
 | tipo | alcance | archivo | generado/manual | última actualización | refresh_pending | refresh_baseline |
 |---|---|---|---|---|---|---|
-| context | producto | `context.svg` | generado | 2026-08-04 | sí | `sha256:6d4b7cd69c81e99e181999db7449dd68841e39637e051965fd3676e00aa0bb19` |
-| architecture | framework | `architecture.svg` | generado | 2026-08-04 | sí | `sha256:6d4b7cd69c81e99e181999db7449dd68841e39637e051965fd3676e00aa0bb19` |
-| structural | producto | `structural.svg` | manual | 2026-08-04 | sí | `sha256:6d4b7cd69c81e99e181999db7449dd68841e39637e051965fd3676e00aa0bb19` |
-| deployment | producto | `deployment.svg` | manual | 2026-08-04 | sí | `sha256:6d4b7cd69c81e99e181999db7449dd68841e39637e051965fd3676e00aa0bb19` |
-| behavior | producto | `behavior.svg` | manual | 2026-08-04 | sí | `sha256:6d4b7cd69c81e99e181999db7449dd68841e39637e051965fd3676e00aa0bb19` |
-| erd | producto | `erd.svg` | manual | 2026-08-04 | sí | `sha256:6d4b7cd69c81e99e181999db7449dd68841e39637e051965fd3676e00aa0bb19` |
+| context | producto | `context.svg` | generado | 2026-08-05 | no | `sha256:976c6cc77af0ca06e5cfe2bec14260b818a3b8b59b2ac02761e62acd0ea1a8d0` |
+| architecture | framework | `architecture.svg` | generado | 2026-08-05 | no | `sha256:976c6cc77af0ca06e5cfe2bec14260b818a3b8b59b2ac02761e62acd0ea1a8d0` |
+| structural | producto | `structural.svg` | manual | 2026-08-05 | no | `sha256:976c6cc77af0ca06e5cfe2bec14260b818a3b8b59b2ac02761e62acd0ea1a8d0` |
+| deployment | producto | `deployment.svg` | manual | 2026-08-05 | no | `sha256:976c6cc77af0ca06e5cfe2bec14260b818a3b8b59b2ac02761e62acd0ea1a8d0` |
+| behavior | producto | `behavior.svg` | manual | 2026-08-05 | no | `sha256:976c6cc77af0ca06e5cfe2bec14260b818a3b8b59b2ac02761e62acd0ea1a8d0` |
+| erd | producto | `erd.svg` | manual | 2026-08-05 | no | `sha256:976c6cc77af0ca06e5cfe2bec14260b818a3b8b59b2ac02761e62acd0ea1a8d0` |
+
+## ORQ-23 replan result (2026-08-05)
+
+`context.svg` and `architecture.svg` were reviewed and acknowledged without content changes
+(`ack`). `deployment.svg` and `erd.svg` were reviewed and acknowledged without content changes —
+ORQ-23 added no new deployable component and no schema change. `structural.svg` and
+`behavior.svg` were refreshed with real content (`adopt`, not just a signature rebaseline):
+structural now shows the retrieval pipeline wired end-to-end (was a dashed "benchmark only" box)
+and the AWS reranker adapter marked production (`us-west-2`); behavior shows ORQ-23 as done and
+relabels the old "follow-up retrieval pipeline" box to the actual ORQ-24/25 split. All six
+diagrams share the current Constitution signature and have no pending refresh signal.
 
 ## ORQ-23 refresh signal (2026-08-05, fw-validate)
 
@@ -19,7 +30,7 @@ existing diagram.
 (architecture-signature source: Constitution) after ORQ-23 changed `roadmap.md`'s Phase 2 item 1
 (the ORQ-23/24/25 split) — a `behavior`-level change, not structural/deployment. Signal only, per
 fw-validate step 8.b: not recalculated further, not regenerated, does not block this ORQ's
-closure. Actual regeneration is `fw-replan`'s responsibility.
+closure. Actual regeneration is `fw-replan`'s responsibility (see result above).
 
 ## ORQ-21 refresh signal (2026-08-03, fw-validate)
 
