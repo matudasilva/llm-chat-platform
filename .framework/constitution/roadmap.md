@@ -53,15 +53,19 @@ invariant.
      benchmark measured the RRF baseline, GCP, AWS, and Qwen over one frozen
      dataset. The evidence outcome is recorded once in §Decisions closed by ORQ;
      ADR-006 remains unamended.
-   - ⚡ **ORQ-23 — Retrieval pipeline** (in progress, `orq/ORQ-23-retrieval-pipeline`):
-     query rewrite via `ProviderPort` → `hybrid_search` → the incumbent AWS
-     reranker (per the closed ORQ-22 outcome above, `us-west-2`) → a
-     lightweight, conditional post-rerank evaluator (no agentic loop),
-     exposed as a new tenant-scoped read endpoint (`POST /rag/retrieve`).
-     Narrower than earlier drafts of this bullet — see below for what moved
-     out. Split adopted from the Notion master doc ("LLM Chat Platform —
-     Documento Maestro de Proyecto", v1.2, 2026-08-03) §10 items 11–13,
-     which supersedes the single bundled "follow-up ORQ" this bullet used to
+   - ✅ done (ORQ-23, fully synced 2026-08-05, merged to `main`): query rewrite
+     via `ProviderPort` → `hybrid_search` → the incumbent AWS reranker (per
+     the closed ORQ-22 outcome above, `us-west-2`) → a lightweight,
+     conditional post-rerank evaluator (no agentic loop, count-based `R < M`
+     trigger, never `relevance_score`), exposed as a new tenant-scoped read
+     endpoint (`POST /rag/retrieve`). Still disconnected from `/chat` and
+     `rag_enabled`/`retrieval_pipeline_enabled` stay `False` by default —
+     activation is a deploy-time decision, not part of this ORQ. Golden-set
+     regression 10/10 (rewrite ON and OFF, real corpus). Narrower than
+     earlier drafts of this bullet — see below for what moved out. Split
+     adopted from the Notion master doc ("LLM Chat Platform — Documento
+     Maestro de Proyecto", v1.2, 2026-08-03) §10 items 11–13, which
+     supersedes the single bundled "follow-up ORQ" this bullet used to
      describe.
    - **ORQ-24 — RAG generation** (not yet claimed): assembling the augmented
      prompt with retrieved chunks via `ProviderInput.metadata`, source
@@ -118,6 +122,11 @@ CO2e) this phase depends on.
   follow-up. This confirms the existing direction rather than amending the ADR;
   cross-provider latency remains indicative only. Full evidence:
   `docs/reranking_benchmark.md`.
+- **Production reranker region correction** (ORQ-23, 2026-08-05): the AWS
+  reranker's default region moved from `ca-central-1` (ORQ-22's fastest-latency
+  probe, not a quality result) to `us-west-2` (the region ORQ-22's actual tied
+  quality benchmark ran against). No ADR amendment — same incumbent backend,
+  corrected region evidence.
 
 ## Related
 
