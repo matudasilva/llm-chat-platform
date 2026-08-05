@@ -96,7 +96,13 @@ class Settings(BaseSettings):
     # Isolated reranking benchmark (ORQ-22). Backend toggles are all inert by
     # default; these fields do not wire reranking into the application.
     reranker_aws_region: str = Field(
-        default="ca-central-1",
+        # us-west-2, not ca-central-1: this is the region ORQ-22's actual
+        # quality benchmark ran against (docs/reranking_benchmark.md).
+        # ca-central-1 was only the fastest region in ORQ-22's separate,
+        # unpaced latency probe — a latency data point, not the evidence
+        # this production default activates (ORQ-23 spec.md §Design
+        # decisions 1).
+        default="us-west-2",
         validation_alias=AliasChoices("AWS_RERANK_REGION", "RERANKER_AWS_REGION"),
     )
     reranker_aws_model: str = Field(
@@ -128,6 +134,18 @@ class Settings(BaseSettings):
     reranking_benchmark_qwen_enabled: bool = False
     reranking_benchmark_gcp_call_budget: int = 0
     reranking_benchmark_aws_pacing_s: float = 15.0
+
+    # Retrieval pipeline (ORQ-23): rewrite -> retrieve -> rerank -> evaluator.
+    # Inert by default so the hermetic suite is unaffected unless a test
+    # explicitly opts in (same convention as rag_enabled). Distinct from the
+    # reranking_benchmark_* toggles above, which stay ORQ-22-only.
+    retrieval_pipeline_enabled: bool = False
+    # Minimum number of reranked candidates required to skip the lightweight
+    # evaluator call -- a rank/count-based signal only (spec.md §Design
+    # decisions 5: never relevance_score, which ORQ-22 found incomparable
+    # across backends). Fewer reranked results than this triggers the
+    # evaluator.
+    retrieval_pipeline_min_reranked_results: int = 5
 
     # Controlled Web Read (MVP): read-only, bounded external fetch surface.
     web_read_enabled: bool = True
@@ -304,6 +322,13 @@ class Settings(BaseSettings):
     def validate_reranking_benchmark_aws_pacing_s(cls, value: float) -> float:
         if value < 0:
             raise ValueError("reranking_benchmark_aws_pacing_s must be >= 0")
+        return value
+
+    @field_validator("retrieval_pipeline_min_reranked_results")
+    @classmethod
+    def validate_retrieval_pipeline_min_reranked_results(cls, value: int) -> int:
+        if value < 1:
+            raise ValueError("retrieval_pipeline_min_reranked_results must be >= 1")
         return value
 
     @field_validator("web_read_allowed_domains", mode="before")

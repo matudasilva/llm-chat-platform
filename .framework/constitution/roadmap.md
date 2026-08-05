@@ -53,20 +53,31 @@ invariant.
      benchmark measured the RRF baseline, GCP, AWS, and Qwen over one frozen
      dataset. The evidence outcome is recorded once in §Decisions closed by ORQ;
      ADR-006 remains unamended.
-   - Follow-up retrieval-pipeline ORQ (number assigned after ORQ-22): query
-     rewriting via `ProviderPort`, the incumbent reranker integration (per the
-     closed ORQ-22 outcome below), the
-     lightweight post-rerank evaluator, MLflow-compatible evaluation/golden
-     dataset expansion, OpenTelemetry-ready spans, the shared-index
-     partitioning trigger, and contextual-retrieval falsification.
-   - **Not yet scoped in any ORQ** (drift flagged by `fw-replan`, 2026-08-03):
-     the actual answer-generation step — reusing `ProviderPort`/
-     `ResilientProvider` with retrieved context in `ProviderInput.metadata` to
-     produce a synthesized answer, including the system prompt that step would
-     run under. ORQ-21 shipped retrieval only; ORQ-22 measures reranking only,
-     and the follow-up retrieval-pipeline ORQ still excludes synthesis. Needs
-     its own ORQ or an explicit scope addition before this roadmap item can be
-     marked done.
+   - ⚡ **ORQ-23 — Retrieval pipeline** (in progress, `orq/ORQ-23-retrieval-pipeline`):
+     query rewrite via `ProviderPort` → `hybrid_search` → the incumbent AWS
+     reranker (per the closed ORQ-22 outcome above, `us-west-2`) → a
+     lightweight, conditional post-rerank evaluator (no agentic loop),
+     exposed as a new tenant-scoped read endpoint (`POST /rag/retrieve`).
+     Narrower than earlier drafts of this bullet — see below for what moved
+     out. Split adopted from the Notion master doc ("LLM Chat Platform —
+     Documento Maestro de Proyecto", v1.2, 2026-08-03) §10 items 11–13,
+     which supersedes the single bundled "follow-up ORQ" this bullet used to
+     describe.
+   - **ORQ-24 — RAG generation** (not yet claimed): assembling the augmented
+     prompt with retrieved chunks via `ProviderInput.metadata`, source
+     citation, and a lightweight feedback endpoint reusing `UsageEvent`.
+     This is where the answer-generation step and its system prompt land —
+     the item previously flagged here as "not yet scoped in any ORQ" by
+     `fw-replan` (2026-08-03).
+   - **ORQ-25 — Evaluation and harness** (not yet claimed): golden-set
+     expansion beyond ORQ-21's original 10 items, MLflow-compatible
+     evaluation tracking, OpenTelemetry-ready spans, and contextual-retrieval
+     A/B falsification. Explicitly out of ORQ-23's scope (see that ORQ's
+     spec §Non-scope) so ORQ-23 does not grow into a second RAG-baseline-sized
+     ORQ.
+   - The shared-index partitioning trigger stays deferred until a harness
+     (ORQ-25) shows measured recall degradation on the shared HNSW index —
+     unchanged from ADR-006 §4.
 2. **Routing evidence dataset** — `RoutingPolicy` interface with heuristic and
    static implementations by default; collect real signal before any model.
 3. **Offline ML routing baseline** — a simple, explainable model, only if the
