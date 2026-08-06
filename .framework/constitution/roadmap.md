@@ -67,7 +67,7 @@ invariant.
      Maestro de Proyecto", v1.2, 2026-08-03) §10 items 11–13, which
      supersedes the single bundled "follow-up ORQ" this bullet used to
      describe.
-   - ✅ done (ORQ-24, closed locally 2026-08-06): reranker availability —
+   - ✅ done (ORQ-24, fully synced 2026-08-06, merged to `main`): reranker availability —
      `CascadingRerankerAdapter` makes GCP Vertex the primary production
      reranker, AWS Bedrock the automatic fallback. Triggered by ORQ-23's
      closure-pass finding that AWS Bedrock Rerank's account quota for
