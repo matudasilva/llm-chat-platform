@@ -6,12 +6,24 @@ existing diagram.
 
 | tipo | alcance | archivo | generado/manual | última actualización | refresh_pending | refresh_baseline |
 |---|---|---|---|---|---|---|
-| context | producto | `context.svg` | generado | 2026-08-05 | no | `sha256:976c6cc77af0ca06e5cfe2bec14260b818a3b8b59b2ac02761e62acd0ea1a8d0` |
-| architecture | framework | `architecture.svg` | generado | 2026-08-05 | no | `sha256:976c6cc77af0ca06e5cfe2bec14260b818a3b8b59b2ac02761e62acd0ea1a8d0` |
-| structural | producto | `structural.svg` | manual | 2026-08-05 | no | `sha256:976c6cc77af0ca06e5cfe2bec14260b818a3b8b59b2ac02761e62acd0ea1a8d0` |
-| deployment | producto | `deployment.svg` | manual | 2026-08-05 | no | `sha256:976c6cc77af0ca06e5cfe2bec14260b818a3b8b59b2ac02761e62acd0ea1a8d0` |
-| behavior | producto | `behavior.svg` | manual | 2026-08-05 | no | `sha256:976c6cc77af0ca06e5cfe2bec14260b818a3b8b59b2ac02761e62acd0ea1a8d0` |
-| erd | producto | `erd.svg` | manual | 2026-08-05 | no | `sha256:976c6cc77af0ca06e5cfe2bec14260b818a3b8b59b2ac02761e62acd0ea1a8d0` |
+| context | producto | `context.svg` | generado | 2026-08-06 | no | `sha256:220010819c504b34ae72073a514a5d2bc31d3cfabbcd5a17bdd47d8b24e9c86f` |
+| architecture | framework | `architecture.svg` | generado | 2026-08-06 | no | `sha256:220010819c504b34ae72073a514a5d2bc31d3cfabbcd5a17bdd47d8b24e9c86f` |
+| structural | producto | `structural.svg` | manual | 2026-08-06 | no | `sha256:220010819c504b34ae72073a514a5d2bc31d3cfabbcd5a17bdd47d8b24e9c86f` |
+| deployment | producto | `deployment.svg` | manual | 2026-08-06 | no | `sha256:220010819c504b34ae72073a514a5d2bc31d3cfabbcd5a17bdd47d8b24e9c86f` |
+| behavior | producto | `behavior.svg` | manual | 2026-08-06 | no | `sha256:220010819c504b34ae72073a514a5d2bc31d3cfabbcd5a17bdd47d8b24e9c86f` |
+| erd | producto | `erd.svg` | manual | 2026-08-06 | no | `sha256:220010819c504b34ae72073a514a5d2bc31d3cfabbcd5a17bdd47d8b24e9c86f` |
+
+## ORQ-24 replan result (2026-08-06)
+
+`context.svg`, `architecture.svg`, `deployment.svg` and `erd.svg` were reviewed and acknowledged
+without content changes (`ack`) — ORQ-24 added no new deployable component and no schema change.
+`structural.svg` and `behavior.svg` were refreshed with real content (`adopt`): structural now
+shows the reranker adapters box as `CascadingRerankerAdapter: GCP primary → AWS fallback` (was
+`AWS (production, us-west-2) · GCP · Qwen (benchmark only)`); behavior adds an ORQ-24 "done" box
+between ORQ-23 and the planned-work box, and relabels that planned box from "ORQ-24
+generation · ORQ-25 eval" to "ORQ-25 generation · ORQ-26 eval" to match `roadmap.md`'s
+renumbering. All six diagrams share the current Constitution signature and have no pending
+refresh signal.
 
 ## ORQ-23 replan result (2026-08-05)
 
