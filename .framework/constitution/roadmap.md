@@ -67,20 +67,32 @@ invariant.
      Maestro de Proyecto", v1.2, 2026-08-03) §10 items 11–13, which
      supersedes the single bundled "follow-up ORQ" this bullet used to
      describe.
-   - **ORQ-24 — RAG generation** (not yet claimed): assembling the augmented
+   - 🔨 in progress (ORQ-24, implement phase, 2026-08-06): reranker availability —
+     `CascadingRerankerAdapter` makes GCP Vertex the primary production
+     reranker, AWS Bedrock the automatic fallback. Triggered by ORQ-23's
+     closure-pass finding that AWS Bedrock Rerank's account quota for
+     `amazon.rerank-v1:0` is a hard, non-adjustable 2 requests/minute
+     (`aws_quota_finding.md`) — confirmed in both `us-west-2` and
+     `ca-central-1`, so region choice does not relieve it. ORQ-22's tied
+     benchmark meant no quality trade-off in switching primaries. See
+     `docs/adr/007-reranker-availability-cascade.md`. This ORQ claims the
+     number the "RAG generation" bullet below previously held; that item
+     renumbers to ORQ-25, and the evaluation-harness item renumbers to
+     ORQ-26.
+   - **ORQ-25 — RAG generation** (not yet claimed): assembling the augmented
      prompt with retrieved chunks via `ProviderInput.metadata`, source
      citation, and a lightweight feedback endpoint reusing `UsageEvent`.
      This is where the answer-generation step and its system prompt land —
-     the item previously flagged here as "not yet scoped in any ORQ" by
-     `fw-replan` (2026-08-03).
-   - **ORQ-25 — Evaluation and harness** (not yet claimed): golden-set
+     the item originally flagged as "not yet scoped in any ORQ" by
+     `fw-replan` (2026-08-03), previously numbered ORQ-24.
+   - **ORQ-26 — Evaluation and harness** (not yet claimed): golden-set
      expansion beyond ORQ-21's original 10 items, MLflow-compatible
      evaluation tracking, OpenTelemetry-ready spans, and contextual-retrieval
      A/B falsification. Explicitly out of ORQ-23's scope (see that ORQ's
-     spec §Non-scope) so ORQ-23 does not grow into a second RAG-baseline-sized
-     ORQ.
+     spec §Non-scope) so ORQ-23 did not grow into a second RAG-baseline-sized
+     ORQ. Previously numbered ORQ-25.
    - The shared-index partitioning trigger stays deferred until a harness
-     (ORQ-25) shows measured recall degradation on the shared HNSW index —
+     (ORQ-26) shows measured recall degradation on the shared HNSW index —
      unchanged from ADR-006 §4.
 2. **Routing evidence dataset** — `RoutingPolicy` interface with heuristic and
    static implementations by default; collect real signal before any model.
@@ -127,6 +139,13 @@ CO2e) this phase depends on.
   probe, not a quality result) to `us-west-2` (the region ORQ-22's actual tied
   quality benchmark ran against). No ADR amendment — same incumbent backend,
   corrected region evidence.
+- **Reranker primary switched to GCP, AWS demoted to fallback** (ORQ-24, 2026-08-06): AWS Bedrock
+  Rerank's account quota for `amazon.rerank-v1:0` measured at 2 requests/minute
+  (`QuotaAppliedAtLevel: ACCOUNT`, `Adjustable: false`, confirmed in `us-west-2` and
+  `ca-central-1`) — a real production ceiling, not a test-burst artifact. GCP Vertex becomes
+  primary via `CascadingRerankerAdapter`; AWS stays as an automatic availability fallback.
+  Amends, does not supersede, ADR-006's quality rationale for AWS (unchanged, per ORQ-22).
+  Full rationale: `docs/adr/007-reranker-availability-cascade.md`.
 
 ## Related
 
