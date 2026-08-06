@@ -109,6 +109,11 @@ class Settings(BaseSettings):
         default="amazon.rerank-v1:0",
         validation_alias=AliasChoices("AWS_RERANK_MODEL", "RERANKER_AWS_MODEL"),
     )
+    # GCP Vertex reranker (production, ORQ-24): primary backend in
+    # CascadingRerankerAdapter as of ORQ-24 spec.md §Design decisions 1 —
+    # no longer benchmark-only despite sitting next to the reranking_benchmark_*
+    # toggles above (ORQ-22 origin). Distinct comment block from those on
+    # purpose (design-review observation, ORQ-24 round 1).
     reranker_gcp_project: str | None = Field(
         default=None,
         validation_alias=AliasChoices("GCP_PROJECT_ID", "RERANKER_GCP_PROJECT"),
