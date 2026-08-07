@@ -89,16 +89,25 @@ invariant.
      This is where the answer-generation step and its system prompt landed —
      the item originally flagged as "not yet scoped in any ORQ" by
      `fw-replan` (2026-08-03), previously numbered ORQ-24.
-   - **ORQ-26 — Evaluation and harness** (not yet claimed): golden-set
-     expansion beyond ORQ-21's original 10 items, MLflow-compatible
-     evaluation tracking, OpenTelemetry-ready spans, contextual-retrieval
-     A/B falsification, and grounded-answer quality review for ORQ-25's
-     generation step. The current follow-up focus is not wiring but answer
-     quality: compare the question, retrieved chunks, structured `sources`,
-     and final model answer over a short real-user question set; adjust the
-     RAG prompt/citation guidance only if the evidence shows retrieval is
-     correct but the answer still underuses the best chunks. Include the
-     frontend UX follow-up as part of that evaluation loop: make the rendered
+   - **ORQ-26 — Evaluation and harness** (not yet claimed): golden set
+     expanded to 30 prompts, replacing golden-set prompt 5 — near-tautological
+     because it restates ADR-006, flagged as R3 by ORQ-21's Execution Review
+     and carried as `q016` in `experiments/reranking/ground_truth.jsonl`;
+     retriever metrics `recall@10`, `MAP@10` and `MRR` persisted in an
+     MLflow-compatible Postgres table; RAGAS
+     `faithfulness` and `response_relevancy` as LLM-as-judge signals, so no
+     manual ground truth is required for the generation step; explicit
+     diagnostic separation — low recall indicts the retriever, low
+     faithfulness indicts the generator; OpenTelemetry spans over
+     `retrieve → rerank → generate` (emission only; the collector and
+     dashboard belong to ORQ-27); and a contextual-retrieval A/B
+     falsification behind a `--contextualize` on/off flag. The current
+     follow-up focus is not wiring but answer quality: compare the question,
+     retrieved chunks, structured `sources`, and final model answer over a
+     short real-user question set; adjust the RAG prompt/citation guidance
+     only if the evidence shows retrieval is correct but the answer still
+     underuses the best chunks. Include the frontend UX follow-up as part of
+     that evaluation loop: make the rendered
      `sources` block collapsible/expandable so citations stay visible without
      dominating the viewport, and consider promoting a more human-readable
      source label than truncated UUIDs if the backend later exposes one.
@@ -108,10 +117,22 @@ invariant.
    - The shared-index partitioning trigger stays deferred until a harness
      (ORQ-26) shows measured recall degradation on the shared HNSW index —
      unchanged from ADR-006 §4.
-2. **Routing evidence dataset** — `RoutingPolicy` interface with heuristic and
-   static implementations by default; collect real signal before any model.
-3. **Offline ML routing baseline** — a simple, explainable model, only if the
-   evidence dataset shows real signal.
+   - **ORQ-27 — RAG in Production** (not yet claimed): end-to-end observability
+     and hardening following ORQ-26's baseline metrics. Prerequisites: ORQ-23,
+     24, 25 operationally stable, ORQ-26 baselines established. Scope: complete
+     OpenTelemetry instrumentation (retrieve → rerank → generate spans),
+     Phoenix/Grafana observability dashboard, adversarial robustness hardening,
+     cost/latency optimization tuning. Design Review prompt deferred pending
+     completion of Module 5 from the RAG course (may introduce new scope items).
+2. **ORQ-28 — Routing evidence dataset** (not yet claimed): `RoutingPolicy`
+   interface with heuristic and static implementations by default; collect real
+   signal before any model. Numbered ORQ-22 in the original plan, renumbered by
+   the ORQ-22…ORQ-25 RAG insertions. Convergence note: the Agentic RAG LLM
+   router is conceptually the same classifier, so once ORQ-27/ORQ-28 produce
+   real signal, the RAG router design follows at no extra cost.
+3. **ORQ-29 — Offline ML routing baseline** (not yet claimed): a simple,
+   explainable model, and only if ORQ-28's evidence dataset shows real signal.
+   Numbered ORQ-23 in the original plan.
 
 Reusable precedent: for broad or multilingual queries, reranking alone is not
 enough when the initial candidate set is poor — intent detection plus an
@@ -119,6 +140,12 @@ enough when the initial candidate set is poor — intent detection plus an
 that worked. Relevant here because project documentation is bilingual.
 
 ## Phase 3 — AI Green extension
+
+**ORQ-30 — AI Green extension** (not yet claimed). Numbered ORQ-24 in the
+original plan. Sequenced as energy telemetry → carbon-aware routing →
+scheduler, and gated on ORQ-28 producing real routing signal. Convergence
+note: Adaptive RAG rests on the same principle — spend the cheapest resource
+that still answers the question.
 
 Fits as an extension, not a rewrite; each piece maps to an existing component.
 
