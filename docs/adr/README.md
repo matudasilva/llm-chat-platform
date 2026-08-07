@@ -76,3 +76,6 @@ Ver [`template.md`](template.md) para la estructura mínima de un nuevo ADR.
 | [003](003-multitenancy-transversal-foundation.md) | Multitenancy Transversal Foundation — Row-Level with Deferred RLS | Aceptada | 2026-06-30 |
 | [004](004-tenant-scoping-read-endpoints.md) | Tenant Scoping for Read Endpoints — Application-Layer Filter | Aceptada | 2026-07-01 |
 | [005](005-paas-provider.md) | PaaS Provider for Staging Deployment | Aceptada | 2026-07-06 (rev. 2026-07-08) |
+| [006](006-rag-corpus-embeddings-and-rls.md) | RAG Corpus — Embedding Space, Row-Level Security, and HNSW Parameters | Aceptada | 2026-07-29 |
+| [007](007-reranker-availability-cascade.md) | Reranker Availability — GCP Primary, AWS Fallback Cascade | Aceptada | 2026-08-06 |
+| [008](008-rag-generation-and-feedback-boundaries.md) | RAG Generation and Feedback Boundaries | Aceptada | 2026-08-06 |
