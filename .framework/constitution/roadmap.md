@@ -103,14 +103,27 @@ invariant.
      set derived from `experiments/reranking/ground_truth.jsonl` — already 30
      bilingual pairs with labels declared before retrieval ran, so the master
      doc's "expand to 30 prompts" is satisfied and the work is promoting them to
-     a first-class asset while replacing the tautological `q015`/`q016` pair
-     (golden-set prompt 5, flagged as R3 by ORQ-21's Execution Review, which
-     restates ADR-006). Retriever metrics `recall@10`, `MAP@10`, `MRR@10` in an
-     MLflow-compatible Postgres schema created outside the Alembic chain. Plus
-     the `source_path` resolution both the metrics and the citations need, an
-     additive `RagSourceOut.source_path` behind a deny-prefix filter, and the
-     collapsible `Sources` block in `llm-chat-platform-web`. Answers one
-     question: is the retriever the problem?
+     a first-class asset. Retriever metrics `recall@10`, `MAP@10`, `MRR@10` in
+     an MLflow-compatible Postgres schema created outside the Alembic chain.
+     Answers one question: is the retriever the problem?
+
+     **Correction (2026-08-07):** an earlier revision of this bullet said the
+     tautological golden-set prompt 5 was "carried as `q016`". That conflated
+     two different sets. ADR-006 embeds all ten of ORQ-21's prompts verbatim
+     (§Retrieval golden set) and ADR-006 is itself ingested, so each of those
+     ten matches its own expected document lexically — that is the R3 defect.
+     None of the 30 reranking queries appears in ADR-006, verified by exact
+     string search; `q015`/`q016` asks a legitimate question that happens to
+     expect ADR-006. So the derived set needs no replacement pair, and ORQ-26
+     instead asserts the general property: no golden-set query text may appear
+     in any ingested document.
+
+     The readable citation label (`source_path` on `RagSourceOut`) is *not*
+     part of this ORQ. The metrics resolve `source_path` with a post-query
+     lookup and zero production diff, exactly as
+     `experiments/reranking/build_dataset.py` already does, so the two do not
+     share a dependency. It remains an unscheduled follow-up, to ride along
+     with a future ORQ that already touches the retrieval path.
    - **ORQ-27 — RAG answer quality** (not yet claimed): RAGAS `faithfulness`
      and `response_relevancy` as LLM-as-judge signals, judged by a non-OpenAI
      model in an optional dependency group that never reaches any image;
