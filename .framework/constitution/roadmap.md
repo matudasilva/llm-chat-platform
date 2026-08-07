@@ -162,6 +162,18 @@ CO2e) this phase depends on.
 
 - Energy/CO2e estimation methodology per request.
 - Default model and routing escalation thresholds.
+- **Moving the embedding provider off OpenAI** (raised 2026-08-07). The operator
+  intends to consolidate GenAI spend on Bedrock/GCP, where credits are
+  available; generation already runs on Bedrock, so embeddings are the last
+  OpenAI dependency. Not scheduled in any ORQ. This is not a config change:
+  ADR-006 §1 fixes `text-embedding-3-small` at 1536 dimensions as a
+  corpus-level constant, another provider likely changes the dimension, and the
+  pgvector column is dimension-typed — so it implies a schema migration plus
+  full corpus re-ingestion, and warrants its own ORQ. Decide it with ORQ-26's
+  harness rather than by intuition, mirroring how ORQ-22's frozen dataset
+  justified the reranker choice before ORQ-24 acted on it. Amends ADR-006 when
+  taken. Related: the same rationale drives the reranker's planned AWS→GCP
+  swap.
 
 ## Decisions closed by ORQ
 
