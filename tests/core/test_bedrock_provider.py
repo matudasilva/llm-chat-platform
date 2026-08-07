@@ -8,6 +8,9 @@ import pytest
 
 from app.core.domain.provider import ProviderInput, ProviderStreamSession
 from app.core.domain.provider_errors import ProviderError, ProviderErrorKind
+from app.core.domain.chat_service import ChatService
+from app.core.domain.errors import ProviderExecutionError
+from app.core.domain.types import ChatMessage
 from app.core.providers.bedrock_provider import BedrockProvider, BedrockProviderConfig
 
 
@@ -226,6 +229,46 @@ async def test_bedrock_provider_maps_generate_and_stream_errors(caplog) -> None:
     )
     assert stream_error_record.error_kind == "rate_limit"
     assert stream_error_record.failure_kind == "rate_limit"
+
+
+@pytest.mark.asyncio
+async def test_bedrock_error_message_cannot_leak_rag_content_through_chat_service(caplog) -> None:
+    sentinel = "tenant-corpus-secret-do-not-log"
+    client = _FakeBedrockClient(
+        converse_responses=[
+            _FakeBedrockException("ValidationException", sentinel, 400),
+        ]
+    )
+    provider = BedrockProvider(_provider(), runtime_client=client)
+    service = ChatService(provider, timeout_s=1.0)
+    metadata = {
+        "rag": {
+            "schema_version": "rag-generation-v1",
+            "sources": [
+                {
+                    "citation": "S1",
+                    "document_id": str(uuid4()),
+                    "chunk_id": str(uuid4()),
+                    "rank": 1,
+                    "truncated": False,
+                    "content": sentinel,
+                }
+            ],
+        }
+    }
+
+    caplog.set_level("INFO")
+    with pytest.raises(ProviderExecutionError) as exc_info:
+        await service.run(
+            request_id=uuid4(),
+            messages=[ChatMessage(role="user", content="question")],
+            provider_metadata=metadata,
+        )
+
+    assert str(exc_info.value) == "provider request failed"
+    for record in caplog.records:
+        assert sentinel not in record.getMessage()
+        assert all(sentinel not in str(value) for value in vars(record).values())
 
 
 @pytest.mark.asyncio

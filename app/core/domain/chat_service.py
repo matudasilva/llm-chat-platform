@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import logging
 from dataclasses import dataclass
-from typing import AsyncIterator, Awaitable, Callable, Sequence
+from typing import Any, AsyncIterator, Awaitable, Callable, Sequence
 from uuid import UUID
 
 from .provider_factory import ProviderResolver
@@ -58,11 +58,18 @@ class ChatService:
         self._provider_resolver = provider_resolver
         self._routing_context_builder = routing_context_builder
 
-    async def run(self, *, request_id: UUID, messages: Sequence[ChatMessage]) -> ChatServiceResult:
+    async def run(
+        self,
+        *,
+        request_id: UUID,
+        messages: Sequence[ChatMessage],
+        provider_metadata: dict[str, Any] | None = None,
+    ) -> ChatServiceResult:
         provider = self._resolve_provider(request_id=request_id, messages=messages, stream=False)
         provider_in = ProviderInput(
             request_id=request_id,
             messages=messages,
+            metadata=provider_metadata,
         )
 
         try:
@@ -113,14 +120,26 @@ class ChatService:
         )
 
     async def stream_chat(
-        self, *, request_id: UUID, messages: Sequence[ChatMessage]
+        self,
+        *,
+        request_id: UUID,
+        messages: Sequence[ChatMessage],
+        provider_metadata: dict[str, Any] | None = None,
     ) -> ChatServiceStreamSession:
         provider = self._resolve_provider(request_id=request_id, messages=messages, stream=True)
-        provider_in = ProviderInput(request_id=request_id, messages=messages)
+        provider_in = ProviderInput(
+            request_id=request_id,
+            messages=messages,
+            metadata=provider_metadata,
+        )
 
         stream_fn = getattr(provider, "stream", None)
         if not callable(stream_fn):
-            result = await self.run(request_id=request_id, messages=messages)
+            result = await self.run(
+                request_id=request_id,
+                messages=messages,
+                provider_metadata=provider_metadata,
+            )
 
             async def fallback_chunks() -> AsyncIterator[str]:
                 yield result.assistant_message.content
@@ -140,7 +159,11 @@ class ChatService:
         provider_session = await stream_fn(provider_in)
 
         if provider_session is None:
-            result = await self.run(request_id=request_id, messages=messages)
+            result = await self.run(
+                request_id=request_id,
+                messages=messages,
+                provider_metadata=provider_metadata,
+            )
 
             async def fallback_chunks() -> AsyncIterator[str]:
                 yield result.assistant_message.content

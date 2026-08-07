@@ -124,7 +124,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_allow_origins,
     allow_credentials=False,
-    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_methods=["GET", "POST", "PUT", "OPTIONS"],
     allow_headers=["Content-Type", "X-Tenant-ID", "X-Staging-Key"],
 )
 # StagingGuardMiddleware is added last, making it outermost — even outside

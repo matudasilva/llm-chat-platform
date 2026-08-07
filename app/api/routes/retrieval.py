@@ -5,10 +5,8 @@ from uuid import uuid4
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.domain.provider_factory import build_provider
-from app.core.domain.retrieval_factory import build_embedding_provider, build_reranker
+from app.core.domain.retrieval_factory import build_retrieval_pipeline
 from app.core.domain.retrieval_pipeline import RetrievalPipeline
-from app.core.providers.pgvector_store import PgVectorStore
 from app.core.settings import settings
 from app.http.middleware.tenant import get_tenant_id
 from app.infra.db.session import get_rag_db
@@ -29,13 +27,7 @@ def get_retrieval_pipeline(db: AsyncSession = Depends(get_rag_db)) -> RetrievalP
     # db is a TenantScopedSession bound to DATABASE_URL_APP (the unprivileged
     # rag_app role) -- RLS enforces tenant isolation on the corpus itself
     # (ADR-006 §2), unchanged from ORQ-21. Read-only: no write path is added.
-    return RetrievalPipeline(
-        provider=build_provider(),
-        embedding=build_embedding_provider(),
-        vector_store=PgVectorStore(db),
-        reranker=build_reranker(),
-        min_reranked_results=settings.retrieval_pipeline_min_reranked_results,
-    )
+    return build_retrieval_pipeline(db, settings)
 
 
 @router.post("/retrieve", response_model=RetrieveResponse)

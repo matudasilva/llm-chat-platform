@@ -27,5 +27,7 @@ class UsageEventOut(BaseModel):
 
     status: Optional[str] = None        # nullable en DB
     error_message: Optional[str] = None
+    feedback: Optional[str] = None
+    feedback_updated_at: Optional[datetime] = None
 
     timestamp: datetime

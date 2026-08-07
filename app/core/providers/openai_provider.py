@@ -18,6 +18,7 @@ from app.core.domain.provider import (
     ProviderStreamSession,
 )
 from app.core.domain.provider_errors import ProviderError, ProviderErrorKind
+from app.core.domain.provider_prompt import messages_for_provider
 from app.core.utils.retry import RetryPolicy, retry_async
 
 
@@ -427,6 +428,7 @@ class OpenAIProvider(ProviderPort):
         )
 
     def _build_payload(self, input: ProviderInput) -> dict[str, Any]:
+        messages = messages_for_provider(input)
         return {
             "model": self._cfg.model,
             "input": [
@@ -434,7 +436,7 @@ class OpenAIProvider(ProviderPort):
                     "role": m.role,
                     "content": [{"type": "input_text", "text": m.content}],
                 }
-                for m in input.messages
+                for m in messages
             ],
         }
 

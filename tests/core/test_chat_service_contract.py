@@ -5,6 +5,7 @@ from app.core.domain.chat_service import ChatService
 from app.core.domain.types import ChatMessage
 from app.core.providers.stub_provider import StubProvider
 from app.core.domain.errors import ProviderExecutionError
+from app.core.domain.provider import ProviderResult
 
 
 @pytest.mark.asyncio
@@ -89,3 +90,40 @@ async def test_chat_service_stream_chat_does_not_swallow_provider_attribute_erro
             request_id=uuid.uuid4(),
             messages=[ChatMessage(role="user", content="stream me")],
         )
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("stream_value", ["missing", None])
+async def test_chat_service_stream_fallback_preserves_provider_metadata(stream_value) -> None:
+    class GenerateOnlyProvider:
+        def __init__(self) -> None:
+            self.metadata = None
+
+        async def generate(self, input):
+            self.metadata = input.metadata
+            return ProviderResult(
+                content="fallback",
+                provider="stub",
+                model_version="stub-v1",
+                prompt_version="v1",
+            )
+
+    provider = GenerateOnlyProvider()
+    if stream_value is None:
+        async def _stream(input):
+            return None
+
+        provider.stream = _stream
+
+    metadata = {"rag": {"schema_version": "rag-generation-v1", "sources": []}}
+    service = ChatService(provider, timeout_s=1.0)
+
+    session = await service.stream_chat(
+        request_id=uuid.uuid4(),
+        messages=[ChatMessage(role="user", content="question")],
+        provider_metadata=metadata,
+    )
+    chunks = [chunk async for chunk in session.chunks]
+
+    assert chunks == ["fallback"]
+    assert provider.metadata is metadata
