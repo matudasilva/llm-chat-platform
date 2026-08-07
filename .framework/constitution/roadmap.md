@@ -79,19 +79,32 @@ invariant.
      number the "RAG generation" bullet below previously held; that item
      renumbers to ORQ-25, and the evaluation-harness item renumbers to
      ORQ-26.
-   - **ORQ-25 — RAG generation** (fully synced; implementation, independent
-     validation, and configured governance sync complete; awaiting commit/merge): assembling the augmented
-     prompt with retrieved chunks via `ProviderInput.metadata`, source
-     citation, and a lightweight feedback endpoint reusing `UsageEvent`.
-     This is where the answer-generation step and its system prompt land —
+   - ✅ done (ORQ-25, fully synced 2026-08-07, merged to `main`): `/chat`
+     generation now assembles an augmented prompt with retrieved chunks via
+     `ProviderInput.metadata`, emits structured `sources` in non-stream JSON
+     and SSE `done`, and supports lightweight answer feedback by updating the
+     existing `UsageEvent`. Local browser validation also confirmed the
+     separate `llm-chat-platform-web` client can consume the augmented stream
+     over CORS, inspect the final `sources` payload, and submit feedback.
+     This is where the answer-generation step and its system prompt landed —
      the item originally flagged as "not yet scoped in any ORQ" by
      `fw-replan` (2026-08-03), previously numbered ORQ-24.
    - **ORQ-26 — Evaluation and harness** (not yet claimed): golden-set
      expansion beyond ORQ-21's original 10 items, MLflow-compatible
-     evaluation tracking, OpenTelemetry-ready spans, and contextual-retrieval
-     A/B falsification. Explicitly out of ORQ-23's scope (see that ORQ's
-     spec §Non-scope) so ORQ-23 did not grow into a second RAG-baseline-sized
-     ORQ. Previously numbered ORQ-25.
+     evaluation tracking, OpenTelemetry-ready spans, contextual-retrieval
+     A/B falsification, and grounded-answer quality review for ORQ-25's
+     generation step. The current follow-up focus is not wiring but answer
+     quality: compare the question, retrieved chunks, structured `sources`,
+     and final model answer over a short real-user question set; adjust the
+     RAG prompt/citation guidance only if the evidence shows retrieval is
+     correct but the answer still underuses the best chunks. Include the
+     frontend UX follow-up as part of that evaluation loop: make the rendered
+     `sources` block collapsible/expandable so citations stay visible without
+     dominating the viewport, and consider promoting a more human-readable
+     source label than truncated UUIDs if the backend later exposes one.
+     Explicitly out of ORQ-23's scope (see that ORQ's spec §Non-scope) so
+     ORQ-23 did not grow into a second RAG-baseline-sized ORQ. Previously
+     numbered ORQ-25.
    - The shared-index partitioning trigger stays deferred until a harness
      (ORQ-26) shows measured recall degradation on the shared HNSW index —
      unchanged from ADR-006 §4.

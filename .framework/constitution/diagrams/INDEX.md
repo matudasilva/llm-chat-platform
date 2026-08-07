@@ -6,12 +6,23 @@ existing diagram.
 
 | tipo | alcance | archivo | generado/manual | última actualización | refresh_pending | refresh_baseline |
 |---|---|---|---|---|---|---|
-| context | producto | `context.svg` | generado | 2026-08-06 | sí | `sha256:220010819c504b34ae72073a514a5d2bc31d3cfabbcd5a17bdd47d8b24e9c86f` |
-| architecture | framework | `architecture.svg` | generado | 2026-08-06 | sí | `sha256:220010819c504b34ae72073a514a5d2bc31d3cfabbcd5a17bdd47d8b24e9c86f` |
-| structural | producto | `structural.svg` | manual | 2026-08-06 | sí | `sha256:220010819c504b34ae72073a514a5d2bc31d3cfabbcd5a17bdd47d8b24e9c86f` |
-| deployment | producto | `deployment.svg` | manual | 2026-08-06 | sí | `sha256:220010819c504b34ae72073a514a5d2bc31d3cfabbcd5a17bdd47d8b24e9c86f` |
-| behavior | producto | `behavior.svg` | manual | 2026-08-06 | sí | `sha256:220010819c504b34ae72073a514a5d2bc31d3cfabbcd5a17bdd47d8b24e9c86f` |
-| erd | producto | `erd.svg` | manual | 2026-08-06 | sí | `sha256:220010819c504b34ae72073a514a5d2bc31d3cfabbcd5a17bdd47d8b24e9c86f` |
+| context | producto | `context.svg` | generado | 2026-08-07 | no | `sha256:6096ce9ea9c68868dd5216f05b946195f01a2d2db874d05e7612d69274ddf957` |
+| architecture | framework | `architecture.svg` | generado | 2026-08-07 | no | `sha256:6096ce9ea9c68868dd5216f05b946195f01a2d2db874d05e7612d69274ddf957` |
+| structural | producto | `structural.svg` | manual | 2026-08-07 | no | `sha256:6096ce9ea9c68868dd5216f05b946195f01a2d2db874d05e7612d69274ddf957` |
+| deployment | producto | `deployment.svg` | manual | 2026-08-07 | no | `sha256:6096ce9ea9c68868dd5216f05b946195f01a2d2db874d05e7612d69274ddf957` |
+| behavior | producto | `behavior.svg` | manual | 2026-08-07 | no | `sha256:6096ce9ea9c68868dd5216f05b946195f01a2d2db874d05e7612d69274ddf957` |
+| erd | producto | `erd.svg` | manual | 2026-08-07 | no | `sha256:6096ce9ea9c68868dd5216f05b946195f01a2d2db874d05e7612d69274ddf957` |
+
+## ORQ-25 replan result (2026-08-07)
+
+`context.svg`, `architecture.svg`, and `deployment.svg` were reviewed and acknowledged without
+content changes (`ack`): ORQ-25 adds no actor, Framework installation change, or deployable
+component. `structural.svg`, `behavior.svg`, and `erd.svg` were refreshed with real content
+(`adopt`): structural now shows the default-off retrieval-to-chat augmentation boundary and
+feedback telemetry; behavior marks ORQ-25 done and ORQ-26 as the grounded-answer-quality and
+harness follow-up; ERD now records `UsageEvent.message_id`, feedback, and
+`feedback_updated_at`. All six diagrams share the current Constitution signature and have no
+pending refresh signal.
 
 ## ORQ-25 refresh signal (2026-08-06, fw-validate)
 
