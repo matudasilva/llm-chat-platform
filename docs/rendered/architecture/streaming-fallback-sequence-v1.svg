@@ -1,6 +1,6 @@
 <svg width="1000" height="880" viewBox="0 0 1000 880" xmlns="http://www.w3.org/2000/svg" role="img">
 <title>Streaming and fallback sequence — LLM Chat Platform</title>
-<desc>Sequence for POST /chat with stream=true, covering the three outcomes: fallback taken before the first token, the primary provider streaming successfully, and an error after partial emission where fallback is forbidden. Persistence happens once, after the provider completes.</desc>
+<desc>Sequence for POST /chat with stream=true after optional RAG retrieval has completed and its session has closed. It covers fallback before the first token, primary success, and terminal error after partial emission. Persistence remains one transaction after provider completion.</desc>
 <defs>
 <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#5F5E5A" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></marker>
 <marker id="arrowg" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#0F6E56" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></marker>
@@ -27,7 +27,7 @@
 <line x1="80" y1="140" x2="223" y2="140" stroke="#5F5E5A" stroke-width="1.4" marker-end="url(#arrow)"/>
 <text x="152" y="134" text-anchor="middle" font-family="sans-serif" font-size="9.5" fill="#2C2C2A">POST /chat?stream=true</text>
 <line x1="225" y1="168" x2="390" y2="168" stroke="#5F5E5A" stroke-width="1.4" marker-end="url(#arrow)"/>
-<text x="307" y="162" text-anchor="middle" font-family="sans-serif" font-size="9.5" fill="#2C2C2A">stream_chat(request)</text>
+<text x="307" y="162" text-anchor="middle" font-family="sans-serif" font-size="9.5" fill="#2C2C2A">RAG resolved/closed · stream_chat(metadata)</text>
 <line x1="392" y1="196" x2="573" y2="196" stroke="#5F5E5A" stroke-width="1.4" marker-end="url(#arrow)"/>
 <text x="482" y="190" text-anchor="middle" font-family="sans-serif" font-size="9.5" fill="#2C2C2A">open stream</text>
 
@@ -43,7 +43,7 @@
 <line x1="392" y1="350" x2="898" y2="350" stroke="#5F5E5A" stroke-width="1.4" marker-end="url(#arrow)"/>
 <text x="645" y="344" text-anchor="middle" font-family="sans-serif" font-size="9.5" fill="#2C2C2A">persist user message, assistant message and UsageEvent — one transaction</text>
 <line x1="392" y1="378" x2="82" y2="378" stroke="#5F5E5A" stroke-width="1.4" stroke-dasharray="5 3" marker-end="url(#arrow)"/>
-<text x="237" y="372" text-anchor="middle" font-family="sans-serif" font-size="9.5" fill="#2C2C2A">event: done</text>
+<text x="237" y="372" text-anchor="middle" font-family="sans-serif" font-size="9.5" fill="#2C2C2A">event: done (structured sources)</text>
 
 <g><rect x="40" y="408" width="930" height="150" rx="8" fill="none" stroke="#3B6D11" stroke-width="1" stroke-dasharray="5 4"/>
 <rect x="40" y="408" width="256" height="20" rx="4" fill="#EAF3DE"/>
@@ -55,7 +55,7 @@
 <line x1="392" y1="516" x2="898" y2="516" stroke="#5F5E5A" stroke-width="1.4" marker-end="url(#arrow)"/>
 <text x="645" y="510" text-anchor="middle" font-family="sans-serif" font-size="9.5" fill="#2C2C2A">persist messages and usage — one transaction, after the provider completes</text>
 <line x1="392" y1="544" x2="82" y2="544" stroke="#5F5E5A" stroke-width="1.4" stroke-dasharray="5 3" marker-end="url(#arrow)"/>
-<text x="237" y="538" text-anchor="middle" font-family="sans-serif" font-size="9.5" fill="#2C2C2A">event: done</text>
+<text x="237" y="538" text-anchor="middle" font-family="sans-serif" font-size="9.5" fill="#2C2C2A">event: done (structured sources)</text>
 
 <g><rect x="40" y="574" width="930" height="140" rx="8" fill="none" stroke="#993C1D" stroke-width="1" stroke-dasharray="5 4"/>
 <rect x="40" y="574" width="286" height="20" rx="4" fill="#FAECE7"/>
@@ -71,6 +71,6 @@
 <text x="237" y="690" text-anchor="middle" font-family="sans-serif" font-size="9.5" fill="#4A1B0C">event: error</text>
 
 <text x="500" y="776" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#5F5E5A">The SSE contract is exactly three event types: token, done, error.</text>
-<text x="500" y="796" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#5F5E5A">In streaming mode tokens are emitted first; persistence follows in a single transaction once the provider completes.</text>
+<text x="500" y="796" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#5F5E5A">Optional retrieval completes before streaming; persistence follows in one transaction after provider completion.</text>
 <text x="500" y="840" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#8A8880">Authoritative detail: docs/lld_llm_chat_platform_live_doc.md · docs/error_decision_table.md · invariants in AGENTS.md.</text>
 </svg>

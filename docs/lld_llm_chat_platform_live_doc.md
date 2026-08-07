@@ -690,6 +690,49 @@ If final persistence fails:
 
 `ChatService.stream_chat(...)` supports defensive fallback behavior only for providers that do not implement streaming.
 
+### 15.8 RAG generation augmentation (ORQ-25)
+
+Chat RAG is controlled exclusively by `CHAT_RAG_AUGMENTATION_ENABLED` and is disabled by default.
+It is independent from `RAG_ENABLED` (corpus operations) and `RETRIEVAL_PIPELINE_ENABLED` (the
+read-only `POST /rag/retrieve` endpoint). Enabling chat augmentation requires `DATABASE_URL_APP`
+so retrieval uses the unprivileged role and existing corpus RLS policy.
+
+Before either the non-stream business transaction or the streaming provider session begins, the
+request dependency:
+
+1. opens a short-lived RAG session;
+2. builds and executes the existing `RetrievalPipeline` under a whole-operation timeout;
+3. ranks and bounds source content by source count, per-source characters, and total characters;
+4. rolls back any auto-begun read transaction and closes the RAG session; and
+5. passes the normalized envelope to `ChatService` through `ProviderInput.metadata`.
+
+Any construction, embedding, vector-store, rewrite, evaluator, or timeout failure produces an
+empty context and normal generation continues. The degradation log contains identifiers and an
+exception class only, never query or chunk content. Retrieval is therefore complete before any
+SSE token can be emitted and cannot change the established fallback boundary.
+
+OpenAI, Bedrock, and Stub consume the same validated metadata through a shared prompt formatter.
+Retrieved content is marked as untrusted evidence and is never treated as instructions. The model
+is asked for answer-only output with best-effort `[S#]` markers; no visible `<think>` scratchpad is
+requested.
+
+Successful non-stream responses and SSE `done` payloads expose a `sources` array containing only
+`citation`, `document_id`, `chunk_id`, and `rank`. Chunk content is not returned or logged. The
+current Redis response cache is bypassed for every request while chat RAG is enabled, including
+degraded and no-result executions, because its key has no corpus/source identity.
+
+### 15.9 Lightweight chat feedback (ORQ-25)
+
+`PUT /chat/messages/{message_id}/feedback` accepts `rating: "up" | "down"` and updates nullable
+`feedback` and `feedback_updated_at` fields on the existing successful `UsageEvent` linked to an
+assistant message. The query joins through `Message.tenant_id`; missing, invalid, error-event, and
+cross-tenant targets all return the same `404`. Historical ambiguity returns `409`. Repeating the
+same rating leaves its timestamp unchanged, while changing it advances the timestamp.
+
+The endpoint remains under the literal `/chat` write surface and never inserts or modifies a
+Conversation or Message. It preserves UsageEvent cardinality, status, token, cost, and trace
+semantics. CORS explicitly permits `PUT` for browser clients.
+
 ---
 
 ## 16. Observed failure modes (and resolutions)

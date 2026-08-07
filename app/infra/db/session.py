@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
 from fastapi import Request
@@ -136,10 +137,24 @@ async def get_rag_db(request: Request) -> AsyncGenerator[AsyncSession, None]:
     sm = getattr(request.app.state, _RAG_SESSIONMAKER_KEY, None)
     if sm is None:
         raise RuntimeError(
-            "RAG DB is not configured. Set DATABASE_URL_APP (and RAG_ENABLED=true) before use."
+            "RAG DB is not configured. Set DATABASE_URL_APP before use."
         )
     async with sm() as session:
         yield session
+
+
+@asynccontextmanager
+async def short_lived_rag_session(request: Request) -> AsyncGenerator[AsyncSession, None]:
+    """Own and close a RAG session before `/chat` enters its write transaction."""
+    sm = getattr(request.app.state, _RAG_SESSIONMAKER_KEY, None)
+    if sm is None:
+        raise RuntimeError("RAG DB is not configured. Set DATABASE_URL_APP before use.")
+    async with sm() as session:
+        try:
+            yield session
+        finally:
+            if session.in_transaction():
+                await session.rollback()
 
 
 def build_rag_sessionmaker(database_url: str) -> async_sessionmaker[AsyncSession]:

@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+from datetime import datetime
 from enum import Enum
-from typing import Optional
+from typing import Literal, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, Field, ConfigDict, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.core.settings import settings
 
@@ -38,6 +39,15 @@ class ChatRequest(BaseModel):
         return v
 
 
+class RagSourceOut(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    citation: str
+    document_id: UUID
+    chunk_id: UUID
+    rank: int
+
+
 class ChatResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -59,6 +69,8 @@ class ChatResponse(BaseModel):
         description="Assistant response text (null on error).",
     )
 
+    sources: list[RagSourceOut] = Field(default_factory=list)
+
     status: ChatStatus = Field(..., description="success or error")
 
     error_message: Optional[str] = Field(
@@ -66,3 +78,17 @@ class ChatResponse(BaseModel):
         max_length=settings.max_error_message_chars,
         description="Error details suitable for logs/UI (kept short).",
     )
+
+
+class ChatFeedbackRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    rating: Literal["up", "down"]
+
+
+class ChatFeedbackResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    message_id: UUID
+    rating: Literal["up", "down"]
+    feedback_updated_at: datetime

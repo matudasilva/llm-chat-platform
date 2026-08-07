@@ -13,6 +13,7 @@ from app.core.domain.provider import (
     ProviderStreamResult,
     ProviderStreamSession,
 )
+from app.core.domain.provider_prompt import messages_for_provider
 
 
 @dataclass(slots=True)
@@ -40,14 +41,15 @@ class StubProvider(ProviderPort):
         if self.mode == "error":
             raise RuntimeError("StubProvider simulated error")
 
-        last = input.messages[-1].content if input.messages else ""
+        messages = messages_for_provider(input)
+        last = messages[-1].content if messages else ""
         seed = f"{input.request_id}:{last}".encode("utf-8")
         digest = hashlib.sha256(seed).hexdigest()[:12]
 
         content = f"[stub:{digest}] {last}".strip()
 
         # Deterministic-ish minimal token estimation (words-based)
-        input_text = " ".join(m.content for m in input.messages)
+        input_text = " ".join(m.content for m in messages)
         in_tok = max(1, len(input_text.split())) if input_text else 0
         out_tok = max(1, len(content.split())) if content else 0
 

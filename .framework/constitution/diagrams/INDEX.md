@@ -6,12 +6,20 @@ existing diagram.
 
 | tipo | alcance | archivo | generado/manual | última actualización | refresh_pending | refresh_baseline |
 |---|---|---|---|---|---|---|
-| context | producto | `context.svg` | generado | 2026-08-06 | no | `sha256:220010819c504b34ae72073a514a5d2bc31d3cfabbcd5a17bdd47d8b24e9c86f` |
-| architecture | framework | `architecture.svg` | generado | 2026-08-06 | no | `sha256:220010819c504b34ae72073a514a5d2bc31d3cfabbcd5a17bdd47d8b24e9c86f` |
-| structural | producto | `structural.svg` | manual | 2026-08-06 | no | `sha256:220010819c504b34ae72073a514a5d2bc31d3cfabbcd5a17bdd47d8b24e9c86f` |
-| deployment | producto | `deployment.svg` | manual | 2026-08-06 | no | `sha256:220010819c504b34ae72073a514a5d2bc31d3cfabbcd5a17bdd47d8b24e9c86f` |
-| behavior | producto | `behavior.svg` | manual | 2026-08-06 | no | `sha256:220010819c504b34ae72073a514a5d2bc31d3cfabbcd5a17bdd47d8b24e9c86f` |
-| erd | producto | `erd.svg` | manual | 2026-08-06 | no | `sha256:220010819c504b34ae72073a514a5d2bc31d3cfabbcd5a17bdd47d8b24e9c86f` |
+| context | producto | `context.svg` | generado | 2026-08-06 | sí | `sha256:220010819c504b34ae72073a514a5d2bc31d3cfabbcd5a17bdd47d8b24e9c86f` |
+| architecture | framework | `architecture.svg` | generado | 2026-08-06 | sí | `sha256:220010819c504b34ae72073a514a5d2bc31d3cfabbcd5a17bdd47d8b24e9c86f` |
+| structural | producto | `structural.svg` | manual | 2026-08-06 | sí | `sha256:220010819c504b34ae72073a514a5d2bc31d3cfabbcd5a17bdd47d8b24e9c86f` |
+| deployment | producto | `deployment.svg` | manual | 2026-08-06 | sí | `sha256:220010819c504b34ae72073a514a5d2bc31d3cfabbcd5a17bdd47d8b24e9c86f` |
+| behavior | producto | `behavior.svg` | manual | 2026-08-06 | sí | `sha256:220010819c504b34ae72073a514a5d2bc31d3cfabbcd5a17bdd47d8b24e9c86f` |
+| erd | producto | `erd.svg` | manual | 2026-08-06 | sí | `sha256:220010819c504b34ae72073a514a5d2bc31d3cfabbcd5a17bdd47d8b24e9c86f` |
+
+## ORQ-25 refresh signal (2026-08-06, fw-validate)
+
+`fw_check_diagram_refresh.py` flagged all six rows `refresh_pending: sí`
+(architecture-signature source: Constitution) after ORQ-25 changed `roadmap.md` and delivered
+RAG augmentation plus UsageEvent feedback. This is a non-blocking signal only: framework diagram
+review/regeneration belongs to `fw-replan`. The four affected hand-authored LLD SVGs under
+`docs/rendered/architecture/` were updated and XML-validated within ORQ-25.
 
 ## ORQ-24 replan result (2026-08-06)
 

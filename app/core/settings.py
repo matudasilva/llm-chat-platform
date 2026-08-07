@@ -152,6 +152,14 @@ class Settings(BaseSettings):
     # evaluator.
     retrieval_pipeline_min_reranked_results: int = 5
 
+    # ORQ-25: chat augmentation is independent from the read-only retrieval
+    # endpoint and the corpus rollout flag. Disabled by default.
+    chat_rag_augmentation_enabled: bool = False
+    chat_rag_retrieval_timeout_s: float = 30.0
+    chat_rag_max_sources: int = 5
+    chat_rag_max_source_chars: int = 4_000
+    chat_rag_max_context_chars: int = 12_000
+
     # Controlled Web Read (MVP): read-only, bounded external fetch surface.
     web_read_enabled: bool = True
     web_read_allow_http: bool = False
@@ -218,6 +226,24 @@ class Settings(BaseSettings):
     def validate_provider_timeout_s(cls, value: float) -> float:
         if value <= 0:
             raise ValueError("provider_timeout_s must be > 0")
+        return value
+
+    @field_validator("chat_rag_retrieval_timeout_s")
+    @classmethod
+    def validate_chat_rag_timeout_s(cls, value: float) -> float:
+        if value <= 0:
+            raise ValueError("chat_rag_retrieval_timeout_s must be > 0")
+        return value
+
+    @field_validator(
+        "chat_rag_max_sources",
+        "chat_rag_max_source_chars",
+        "chat_rag_max_context_chars",
+    )
+    @classmethod
+    def validate_chat_rag_limits(cls, value: int) -> int:
+        if value <= 0:
+            raise ValueError("chat RAG limits must be > 0")
         return value
 
     @field_validator("web_read_timeout_s")
@@ -438,8 +464,10 @@ class Settings(BaseSettings):
         # ADR-006 §2 / spec.md §Design decisions 4: DATABASE_URL_APP must never
         # silently fall back to the superuser database_url — that would make
         # every RLS policy inert without anything failing loudly.
-        if self.rag_enabled and not self.database_url_app:
-            raise ValueError("DATABASE_URL_APP is required when RAG_ENABLED=true")
+        if (self.rag_enabled or self.chat_rag_augmentation_enabled) and not self.database_url_app:
+            raise ValueError(
+                "DATABASE_URL_APP is required when RAG_ENABLED or CHAT_RAG_AUGMENTATION_ENABLED is true"
+            )
         return self
 
     @property

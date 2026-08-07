@@ -2,16 +2,18 @@ import json
 import logging
 import time
 import uuid
-from typing import AsyncIterator
+from typing import Any, AsyncIterator
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import get_chat_service
+from app.api.deps import get_chat_rag_context, get_chat_service
 from app.core.domain.chat_service import ChatService
-from app.core.domain.errors import ProviderExecutionError, ProviderTimeoutError
 from app.core.domain.chat_types import ChatServiceResult
+from app.core.domain.errors import ProviderExecutionError, ProviderTimeoutError
+from app.core.domain.provider_errors import ProviderError
+from app.core.domain.rag_generation import RagGenerationContext
 from app.core.domain.types import ChatMessage
 from app.core.settings import settings
 from app.core.utils.limits import sanitize_error_message, truncate
@@ -21,13 +23,13 @@ from app.infra.db.session import get_db
 from app.models.conversation import Conversation
 from app.models.message import Message, MessageRole
 from app.models.usage_event import UsageEvent
-from app.schemas.chat import ChatRequest, ChatResponse, ChatStatus
-from app.core.domain.provider_errors import ProviderError
+from app.schemas.chat import ChatRequest, ChatResponse, ChatStatus, RagSourceOut
 from app.services.chat_response_cache import get_chat_response_cache
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["chat"])
+
 
 def _sse(event: str, data: str) -> str:
     # SSE format: event + one "data:" line per line of the payload + blank
@@ -56,6 +58,7 @@ async def chat(
     payload: ChatRequest,
     db: AsyncSession = Depends(get_db),
     chat_service: ChatService = Depends(get_chat_service),
+    rag_context: RagGenerationContext = Depends(get_chat_rag_context),
 ) -> ChatResponse:
     start = time.perf_counter()
     rid = get_request_id()
@@ -70,9 +73,28 @@ async def chat(
     assistant_message_id: uuid.UUID | None = None
     assistant_content: str | None = None
     cache = get_chat_response_cache()
-    
+    if not isinstance(rag_context, RagGenerationContext):
+        # Direct unit calls bypass FastAPI dependency resolution.
+        rag_context = RagGenerationContext()
+    if not settings.chat_rag_augmentation_enabled:
+        # The route remains fail-closed if a dependency override supplies
+        # context while the independent rollout flag is disabled.
+        rag_context = RagGenerationContext()
+    provider_metadata = rag_context.provider_metadata
+    public_sources = [
+        RagSourceOut(
+            citation=source.citation,
+            document_id=source.document_id,
+            chunk_id=source.chunk_id,
+            rank=source.rank,
+        )
+        for source in rag_context.sources
+    ]
+
     if getattr(payload, "stream", False):
-        cache.log_bypass(reason="streaming")
+        cache.log_bypass(
+            reason="rag_augmentation" if settings.chat_rag_augmentation_enabled else "streaming"
+        )
 
         async def event_generator() -> AsyncIterator[str]:
             logger.info(
@@ -86,10 +108,13 @@ async def chat(
 
             try:
                 # 1) Stream from provider (no DB, no transaction)
-                stream_session = await chat_service.stream_chat(
-                    request_id=request_id,
-                    messages=[ChatMessage(role="user", content=payload.message)],
-                )
+                stream_kwargs: dict[str, Any] = {
+                    "request_id": request_id,
+                    "messages": [ChatMessage(role="user", content=payload.message)],
+                }
+                if provider_metadata is not None:
+                    stream_kwargs["provider_metadata"] = provider_metadata
+                stream_session = await chat_service.stream_chat(**stream_kwargs)
 
                 async for chunk in stream_session.chunks:
                     yield _sse("token", chunk)
@@ -101,8 +126,8 @@ async def chat(
                 assistant_content_final = truncate(
                     assistant_text,
                     settings.max_assistant_chars,
-                    )
-                
+                )
+
                 user_msg_id = uuid.uuid4()
                 assistant_msg_id = uuid.uuid4()
 
@@ -146,30 +171,50 @@ async def chat(
                     latency_ms = max(0, int((time.perf_counter() - start_stream) * 1000))
 
                     provider_result = (
-                          stream_result.provider_result.provider_result
-                          if stream_result.provider_result is not None
-                          else None
-                      )
+                        stream_result.provider_result.provider_result
+                        if stream_result.provider_result is not None
+                        else None
+                    )
 
                     try:
-                          db.add(
-                              UsageEvent(
-                                  id=uuid.uuid4(),
-                                  provider=provider_result.provider if provider_result else "unknown",
-                                  model_version=provider_result.model_version if provider_result else "unknown",
-                                  prompt_version=provider_result.prompt_version if provider_result else "unknown",
-                                  status=ChatStatus.success.value,
-                                  request_id=request_id,
-                                  latency_ms=provider_result.latency_ms if provider_result and provider_result.latency_ms is not None else latency_ms,
-                                  error_message=None,
-                                  conversation_id=None,
-                                  message_id=assistant_msg_id,
-                                  input_tokens=provider_result.input_tokens if provider_result else None,
-                                  output_tokens=provider_result.output_tokens if provider_result else None,
-                                  total_tokens=provider_result.total_tokens if provider_result else None,
-                              )
-                          )
-                          
+                        db.add(
+                            UsageEvent(
+                                id=uuid.uuid4(),
+                                provider=(
+                                    provider_result.provider if provider_result else "unknown"
+                                ),
+                                model_version=(
+                                    provider_result.model_version
+                                    if provider_result
+                                    else "unknown"
+                                ),
+                                prompt_version=(
+                                    provider_result.prompt_version
+                                    if provider_result
+                                    else "unknown"
+                                ),
+                                status=ChatStatus.success.value,
+                                request_id=request_id,
+                                latency_ms=(
+                                    provider_result.latency_ms
+                                    if provider_result
+                                    and provider_result.latency_ms is not None
+                                    else latency_ms
+                                ),
+                                error_message=None,
+                                conversation_id=None,
+                                message_id=assistant_msg_id,
+                                input_tokens=(
+                                    provider_result.input_tokens if provider_result else None
+                                ),
+                                output_tokens=(
+                                    provider_result.output_tokens if provider_result else None
+                                ),
+                                total_tokens=(
+                                    provider_result.total_tokens if provider_result else None
+                                ),
+                            )
+                        )
                     except Exception:
                         pass
 
@@ -182,6 +227,7 @@ async def chat(
                         "user_message_id": str(user_msg_id),
                         "assistant_message_id": str(assistant_msg_id),
                         "status": "success",
+                        "sources": [source.model_dump(mode="json") for source in public_sources],
                     },
                 )
 
@@ -194,7 +240,7 @@ async def chat(
                     },
                 )
                 return
-            except Exception as e:
+            except Exception:
                 logger.exception(
                     "chat_streaming_unhandled_error request_id=%s conversation_id=%s",
                     str(request_id),
@@ -204,8 +250,6 @@ async def chat(
                 return
 
         return StreamingResponse(event_generator(), media_type="text/event-stream")
-    
-
 
     try:
         cache_write_result: ChatServiceResult | None = None
@@ -235,15 +279,23 @@ async def chat(
             user_message_id = user_msg.id
 
             # 3) Execute model (via ChatService)
-            service_result = await cache.get(
-                request_id=request_id, messages=_messages, tenant_id=tenant_id
-            )
-            if service_result is None:
-                service_result = await chat_service.run(
-                    request_id=request_id,
-                    messages=_messages,
+            service_result = None
+            if settings.chat_rag_augmentation_enabled:
+                cache.log_bypass(reason="rag_augmentation")
+            else:
+                service_result = await cache.get(
+                    request_id=request_id, messages=_messages, tenant_id=tenant_id
                 )
-                cache_write_result = service_result
+            if service_result is None:
+                run_kwargs: dict[str, Any] = {
+                    "request_id": request_id,
+                    "messages": _messages,
+                }
+                if provider_metadata is not None:
+                    run_kwargs["provider_metadata"] = provider_metadata
+                service_result = await chat_service.run(**run_kwargs)
+                if not settings.chat_rag_augmentation_enabled:
+                    cache_write_result = service_result
 
             assistant_content = truncate(
                 service_result.assistant_message.content,
@@ -309,6 +361,7 @@ async def chat(
             user_message_id=user_message_id,
             assistant_message_id=assistant_message_id,
             assistant_content=assistant_content,
+            sources=public_sources,
             status=status,
             error_message=None,
         )
@@ -361,7 +414,7 @@ async def chat(
             "chat_unhandled_error request_id=%s conversation_id=%s",
             str(request_id),
             str(conversation_id),
-)
+        )
         error_message = sanitize_error_message("internal error", settings.max_error_message_chars)
 
         try:

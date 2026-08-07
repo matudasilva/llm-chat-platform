@@ -79,7 +79,8 @@ invariant.
      number the "RAG generation" bullet below previously held; that item
      renumbers to ORQ-25, and the evaluation-harness item renumbers to
      ORQ-26.
-   - **ORQ-25 — RAG generation** (not yet claimed): assembling the augmented
+   - **ORQ-25 — RAG generation** (fully synced; implementation, independent
+     validation, and configured governance sync complete; awaiting commit/merge): assembling the augmented
      prompt with retrieved chunks via `ProviderInput.metadata`, source
      citation, and a lightweight feedback endpoint reusing `UsageEvent`.
      This is where the answer-generation step and its system prompt land —

@@ -36,6 +36,11 @@ def test_pytest_environment_is_hermetic() -> None:
     assert settings.reranking_benchmark_aws_pacing_s == 15.0
     assert settings.retrieval_pipeline_enabled is False
     assert settings.retrieval_pipeline_min_reranked_results == 5
+    assert settings.chat_rag_augmentation_enabled is False
+    assert settings.chat_rag_retrieval_timeout_s == 30.0
+    assert settings.chat_rag_max_sources == 5
+    assert settings.chat_rag_max_source_chars == 4_000
+    assert settings.chat_rag_max_context_chars == 12_000
 
 
 def test_exported_environment_cannot_override_test_settings() -> None:

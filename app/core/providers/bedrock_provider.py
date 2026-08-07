@@ -15,6 +15,7 @@ from app.core.domain.provider import (
     ProviderStreamSession,
 )
 from app.core.domain.provider_errors import ProviderError, ProviderErrorKind
+from app.core.domain.provider_prompt import messages_for_provider
 from app.core.utils.retry import RetryPolicy, retry_async
 
 
@@ -116,7 +117,10 @@ class BedrockProvider(ProviderPort):
                                 "error_kind": perr.kind,
                             },
                         )
-                    raise perr from exc
+                    # Upstream messages can echo prompt content. Preserve the
+                    # normalized code/status, but suppress the raw exception
+                    # chain so tenant corpus text cannot reach traceback logs.
+                    raise perr from None
 
                 attempt_ms = int((time.monotonic() - attempt_start) * 1000)
                 logger.info(
@@ -211,7 +215,7 @@ class BedrockProvider(ProviderPort):
                         "retryable": perr.retryable,
                     },
                 )
-                raise perr from exc
+                raise perr from None
             logger.info(
                 "provider.response",
                 extra={
@@ -291,7 +295,7 @@ class BedrockProvider(ProviderPort):
                                 "stream": True,
                             },
                         )
-                    raise perr from exc
+                    raise perr from None
 
                 logger.info(
                     "provider.response",
@@ -657,7 +661,7 @@ def _build_inline_stream_session(
 def _build_payload(*, input: ProviderInput, model: str) -> dict[str, Any]:
     messages: list[dict[str, Any]] = []
     system: list[dict[str, str]] = []
-    for message in input.messages:
+    for message in messages_for_provider(input):
         if message.role == "system":
             system.append({"text": message.content})
             continue
@@ -848,7 +852,9 @@ def _provider_error_from_code(
     )
     return ProviderError(
         kind=kind,
-        message=message or _default_message(kind),
+        # Never propagate Bedrock's free-form message: validation and model
+        # errors may echo request/prompt fragments, including RAG content.
+        message=_default_message(kind),
         provider="bedrock",
         http_status=http_status,
         retryable=retryable,

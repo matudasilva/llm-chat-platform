@@ -218,6 +218,7 @@ Foundation for:
 * Cost estimation
 * Observability
 * Failure audit
+* Optional tenant-scoped answer feedback (`up`/`down`)
 
 Nullable foreign keys allow error telemetry without breaking atomicity.
 
@@ -272,7 +273,7 @@ GET /health
 `CORSMiddleware` is enabled for browser-based frontends (e.g. `llm-chat-platform-web`, dev server on `:5173`).
 
 - **`CORS_ALLOW_ORIGINS`** — comma-separated list of allowed origins. Default `http://localhost:5173` when unset or blank; there is no "block all origins" mode via this variable.
-- Fixed (not configurable via env): `allow_credentials=False` (the tenant travels via the `X-Tenant-ID` header, not cookies), `allow_methods=["GET", "POST", "OPTIONS"]`, `allow_headers=["Content-Type", "X-Tenant-ID"]` (no `Authorization` — real auth is out of scope, see ORQ-19 non-goals).
+- Fixed (not configurable via env): `allow_credentials=False` (the tenant travels via the `X-Tenant-ID` header, not cookies), `allow_methods=["GET", "POST", "PUT", "OPTIONS"]`, `allow_headers=["Content-Type", "X-Tenant-ID"]` (no `Authorization` — real auth is out of scope, see ORQ-19 non-goals).
 - **Middleware order matters:** `CORSMiddleware` is registered *after* `TenantMiddleware` in `app/main.py` (`add_middleware()` is LIFO, so the last one registered runs outermost). This makes `CORSMiddleware` the outermost layer: `OPTIONS` preflights are answered directly and never reach `TenantMiddleware`, while actual requests — including SSE streaming — still pass through `TenantMiddleware` first, which keeps the tenant `ContextVar` set for the whole streamed response. This order reuses the LIFO learning documented for ORQ-18 (see ADR-003); no new ADR was needed for ORQ-19.6.
 
 ---
@@ -505,6 +506,8 @@ Current coverage includes:
 * Structured logging behavior
 * Telemetry best-effort guarantees
 * Cost estimation logic
+* RAG generation bounds, failure degradation, structured citations, and cache bypass
+* Tenant-scoped, idempotent chat feedback
 
 ---
 
@@ -516,6 +519,23 @@ Current coverage includes:
 * Observability is non-invasive
 * No cost logic is coupled to provider execution
 * No schema drift through analytics layers
+
+### Chat RAG generation (ORQ-25)
+
+`POST /chat` can consume the ORQ-23 retrieval pipeline behind the independent
+`CHAT_RAG_AUGMENTATION_ENABLED=false` default. Retrieval completes through the tenant-scoped
+`DATABASE_URL_APP` session before the business transaction opens or the SSE response starts.
+Timeouts and failures degrade to normal generation without retrieved context.
+
+The normalized sources travel through `ProviderInput.metadata`; provider adapters materialize the
+same bounded, untrusted-evidence system context without provider-specific route or domain logic.
+Non-stream JSON and the existing SSE `done` event expose only `citation`, `document_id`, `chunk_id`,
+and `rank`. When augmentation is enabled, Redis response-cache reads and writes are bypassed.
+
+Lightweight feedback updates the successful assistant `UsageEvent` through
+`PUT /chat/messages/{message_id}/feedback` with `{"rating":"up"}` or `{"rating":"down"}`.
+The target is tenant-scoped; identical retries are no-ops, and no Conversation or Message is
+created or modified.
 
 ---
 
@@ -589,8 +609,8 @@ Minimal chat frontend delivered in the separate [`llm-chat-platform-web`](../llm
 ### Explicitly Not Implemented
 
 - ML-based routing (logistic regression for cheap-vs-smart model selection; deferred for later implementation)
-- `/chat` tool integration (read endpoints remain separate)
-- RAG / embeddings / vector search
+- Generic `/chat` tool integration beyond the bounded ORQ-25 RAG context
+- RAG evaluation harness, golden-set expansion, and contextual-retrieval A/B testing
 - Generic MCP tools runtime (read/write endpoints remain specific)
 - Browser automation
 - Real-time collaboration
@@ -613,6 +633,9 @@ Non-trivial architecture decisions are recorded as ADRs in `docs/adr/`:
 | [003](docs/adr/003-multitenancy-transversal-foundation.md) | Multitenancy transversal foundation | Accepted |
 | [004](docs/adr/004-tenant-scoping-read-endpoints.md) | Tenant scoping for read endpoints — application-layer filter | Accepted |
 | [005](docs/adr/005-paas-provider.md) | PaaS provider for staging deployment | Accepted |
+| [006](docs/adr/006-rag-corpus-embeddings-and-rls.md) | RAG corpus, embeddings, and RLS | Accepted |
+| [007](docs/adr/007-reranker-availability-cascade.md) | Reranker availability cascade | Accepted |
+| [008](docs/adr/008-rag-generation-and-feedback-boundaries.md) | RAG generation and feedback boundaries | Accepted |
 
 See `docs/adr/README.md` for the full ADR workflow and template.
 

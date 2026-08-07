@@ -4,6 +4,7 @@ from datetime import datetime
 
 from sqlalchemy import (
     DateTime,
+    CheckConstraint,
     ForeignKey,
     Integer,
     String,
@@ -23,6 +24,10 @@ class UsageEvent(Base):
         Index("ix_usage_events_request_id", "request_id"),
         Index("ix_usage_events_conversation_ts", "conversation_id", "timestamp"),
         Index("ix_usage_events_message_id", "message_id"),
+        CheckConstraint(
+            "feedback IS NULL OR feedback IN ('up', 'down')",
+            name="ck_usage_events_feedback",
+        ),
     )
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -53,11 +58,15 @@ class UsageEvent(Base):
 
     status: Mapped[str | None] = mapped_column(String(32), nullable=True)
     error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+    feedback: Mapped[str | None] = mapped_column(String(8), nullable=True)
+    feedback_updated_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
 
     timestamp: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),
         nullable=False,
     )
-
 

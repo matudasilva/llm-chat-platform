@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.domain.embedding import EmbeddingPort
+from app.core.domain.provider_factory import build_provider
 from app.core.domain.reranker import RerankerPort
+from app.core.domain.retrieval_pipeline import RetrievalPipeline
 from app.core.providers.aws_reranker import AwsReranker
 from app.core.providers.cascading_reranker import CascadingRerankerAdapter
 from app.core.providers.gcp_reranker import GcpReranker
@@ -9,6 +13,7 @@ from app.core.providers.openai_embedding_provider import (
     OpenAIEmbeddingConfig,
     OpenAIEmbeddingProvider,
 )
+from app.core.providers.pgvector_store import PgVectorStore
 from app.core.settings import settings as default_settings
 
 
@@ -53,4 +58,15 @@ def build_embedding_provider(cfg=None) -> EmbeddingPort:
             api_key=cfg.openai_api_key,
             dimensions=cfg.rag_embedding_dimensions,
         )
+    )
+
+
+def build_retrieval_pipeline(db: AsyncSession, cfg=None) -> RetrievalPipeline:
+    cfg = cfg or default_settings
+    return RetrievalPipeline(
+        provider=build_provider(cfg),
+        embedding=build_embedding_provider(cfg),
+        vector_store=PgVectorStore(db),
+        reranker=build_reranker(cfg),
+        min_reranked_results=cfg.retrieval_pipeline_min_reranked_results,
     )

@@ -2120,4 +2120,78 @@ The payload allowlist excludes query text, document text, credentials, and raw p
 Telemetry is best-effort: sink failure is swallowed and cannot fail or change a benchmark result.
 These events are not wired into `/chat` or any production retrieval path.
 
+## Appendix AF — ORQ-25 RAG generation and feedback evidence
+
+### AF.1 Runtime order and transaction boundary
+
+With `CHAT_RAG_AUGMENTATION_ENABLED=true`, `POST /chat` resolves retrieval before entering either
+business persistence mode:
+
+```text
+tenant/request context
+  -> short-lived DATABASE_URL_APP session
+  -> RetrievalPipeline.retrieve(request_id, query)
+  -> rollback auto-begun read transaction
+  -> close RAG session
+  -> non-stream: open the existing business transaction
+     stream: create provider stream, then persist once after completion
+```
+
+The retrieval timeout covers the complete pipeline. Any failure returns an empty RAG context and
+generation proceeds. Because resolution finishes before the streaming response is created,
+retrieval cannot fail after token emission and does not alter provider fallback semantics.
+
+### AF.2 Metadata and source contract
+
+The canonical provider metadata shape is:
+
+```json
+{
+  "rag": {
+    "schema_version": "rag-generation-v1",
+    "sources": [
+      {
+        "citation": "S1",
+        "document_id": "<uuid>",
+        "chunk_id": "<uuid>",
+        "rank": 1,
+        "truncated": false,
+        "content": "<bounded chunk text>"
+      }
+    ]
+  }
+}
+```
+
+The provider prompt receives content; public JSON and SSE `done` receive only the citation label,
+document/chunk identifiers, and rank. Logs receive neither query nor chunk text. Defaults are five
+sources, 4,000 characters per source, 12,000 total context characters, and a 30-second whole-
+pipeline timeout. All limits must be positive.
+
+### AF.3 Feedback contract
+
+```text
+PUT /chat/messages/{assistant_message_id}/feedback
+{"rating":"up"}  or  {"rating":"down"}
+```
+
+The route updates the existing successful assistant UsageEvent. Identical retries keep
+`feedback_updated_at` unchanged; a changed rating advances it. Tenant mismatch and an invalid
+target are indistinguishable `404` responses, while multiple matching historical UsageEvents
+return `409`. The migration is additive and reversible and enforces `up`/`down` with a database
+check constraint.
+
+### AF.4 Focused validation
+
+The deterministic suites are located in:
+
+- `tests/core/test_rag_generation.py`
+- `tests/core/test_settings_chat_rag.py`
+- `tests/api/test_chat_rag_generation.py`
+- `tests/api/test_chat_rag_dependency.py`
+- `tests/api/test_chat_feedback.py`
+
+Real-Postgres migration checks remain opt-in through the existing `postgres` marker and
+`RAG_TEST_DATABASE_URL` convention.
+
 **End of appendix — complements the live LLD document**
