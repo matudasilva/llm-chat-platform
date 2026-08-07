@@ -88,51 +88,68 @@ invariant.
      over CORS, inspect the final `sources` payload, and submit feedback.
      This is where the answer-generation step and its system prompt landed —
      the item originally flagged as "not yet scoped in any ORQ" by
-     `fw-replan` (2026-08-03), previously numbered ORQ-24.
-   - **ORQ-26 — Evaluation and harness** (not yet claimed): golden set
-     expanded to 30 prompts, replacing golden-set prompt 5 — near-tautological
-     because it restates ADR-006, flagged as R3 by ORQ-21's Execution Review
-     and carried as `q016` in `experiments/reranking/ground_truth.jsonl`;
-     retriever metrics `recall@10`, `MAP@10` and `MRR` persisted in an
-     MLflow-compatible Postgres table; RAGAS
-     `faithfulness` and `response_relevancy` as LLM-as-judge signals, so no
-     manual ground truth is required for the generation step; explicit
-     diagnostic separation — low recall indicts the retriever, low
-     faithfulness indicts the generator; OpenTelemetry spans over
-     `retrieve → rerank → generate` (emission only; the collector and
-     dashboard belong to ORQ-27); and a contextual-retrieval A/B
-     falsification behind a `--contextualize` on/off flag. The current
-     follow-up focus is not wiring but answer quality: compare the question,
-     retrieved chunks, structured `sources`, and final model answer over a
-     short real-user question set; adjust the RAG prompt/citation guidance
-     only if the evidence shows retrieval is correct but the answer still
-     underuses the best chunks. Include the frontend UX follow-up as part of
-     that evaluation loop: make the rendered
-     `sources` block collapsible/expandable so citations stay visible without
-     dominating the viewport, and consider promoting a more human-readable
-     source label than truncated UUIDs if the backend later exposes one.
-     Explicitly out of ORQ-23's scope (see that ORQ's spec §Non-scope) so
-     ORQ-23 did not grow into a second RAG-baseline-sized ORQ. Previously
-     numbered ORQ-25.
-   - The shared-index partitioning trigger stays deferred until a harness
-     (ORQ-26) shows measured recall degradation on the shared HNSW index —
-     unchanged from ADR-006 §4.
-   - **ORQ-27 — RAG in Production** (not yet claimed): end-to-end observability
-     and hardening following ORQ-26's baseline metrics. Prerequisites: ORQ-23,
-     24, 25 operationally stable, ORQ-26 baselines established. Scope: complete
-     OpenTelemetry instrumentation (retrieve → rerank → generate spans),
-     Phoenix/Grafana observability dashboard, adversarial robustness hardening,
-     cost/latency optimization tuning. Design Review prompt deferred pending
-     completion of Module 5 from the RAG course (may introduce new scope items).
-2. **ORQ-28 — Routing evidence dataset** (not yet claimed): `RoutingPolicy`
+     `fw-replan` (2026-08-03), previously numbered ORQ-24. **Closure correction
+     (2026-08-07):** "merged to `main`" covers the backend only. The frontend
+     half of this ORQ is commit `f79f920` in `llm-chat-platform-web`, still
+     unpushed; ORQ-26 carries pushing it as a prerequisite.
+   - The master doc's single "Evaluation and harness" item was **split into
+     three ORQs by the operator on 2026-08-07**, after an Early Design Review
+     found the combined scope violated this roadmap's own ORQ-23 precedent
+     (narrowing so an item does not grow into a second RAG-baseline-sized ORQ).
+     The split renumbers everything below it by two. The three slices cut on
+     what each one needs: ORQ-26 needs no LLM judge, ORQ-27 introduces one,
+     ORQ-28 needs a second corpus ingestion.
+   - **ORQ-26 — Evaluation harness** (claimed, Plan): frozen bilingual golden
+     set derived from `experiments/reranking/ground_truth.jsonl` — already 30
+     bilingual pairs with labels declared before retrieval ran, so the master
+     doc's "expand to 30 prompts" is satisfied and the work is promoting them to
+     a first-class asset while replacing the tautological `q015`/`q016` pair
+     (golden-set prompt 5, flagged as R3 by ORQ-21's Execution Review, which
+     restates ADR-006). Retriever metrics `recall@10`, `MAP@10`, `MRR@10` in an
+     MLflow-compatible Postgres schema created outside the Alembic chain. Plus
+     the `source_path` resolution both the metrics and the citations need, an
+     additive `RagSourceOut.source_path` behind a deny-prefix filter, and the
+     collapsible `Sources` block in `llm-chat-platform-web`. Answers one
+     question: is the retriever the problem?
+   - **ORQ-27 — RAG answer quality** (not yet claimed): RAGAS `faithfulness`
+     and `response_relevancy` as LLM-as-judge signals, judged by a non-OpenAI
+     model in an optional dependency group that never reaches any image;
+     diagnostic separation (low recall indicts the retriever, low faithfulness
+     indicts the generator) computed from pre-registered thresholds; and judge
+     *stability* evidence as its own assertion, since replaying cached bytes
+     proves harness determinism and nothing about a managed endpoint — the
+     distinction ORQ-22 §Design decisions 5 already learned. Adjust the RAG
+     prompt/citation guidance only if the evidence shows retrieval is correct
+     but the answer still underuses the best chunks.
+   - **ORQ-28 — Contextual retrieval A/B** (not yet claimed): falsify the
+     `--contextualize` ROI that ADR-006 §Alternative D deliberately left
+     unverified, with both arms ingested from one commit under two tenants and
+     a pre-registered decision rule. A whole experiment, not a task: the
+     contextualized arm is roughly 1817 provider calls, and the arm must prove
+     it contextualized with a real provider — the default is still `stub`, and
+     `indexing_mode` is set from the CLI flag without checking that
+     contextualization produced anything.
+   - The shared-index partitioning trigger stays deferred until ORQ-26 shows
+     measured recall degradation on the shared HNSW index — unchanged from
+     ADR-006 §4.
+   - **ORQ-29 — RAG in Production** (not yet claimed): end-to-end observability
+     and hardening following ORQ-26/27 baseline metrics. Prerequisites: ORQ-23,
+     24, 25 operationally stable, baselines established. Scope: complete
+     OpenTelemetry instrumentation (`retrieve → rerank → generate` spans —
+     including the emission the master doc assigned to the evaluation item, moved
+     here so instrumentation is designed once with its backend), Phoenix/Grafana
+     dashboard, adversarial robustness hardening, cost/latency tuning. Design
+     Review prompt deferred pending Module 5 of the RAG course. Numbered ORQ-27
+     before the 2026-08-07 split.
+2. **ORQ-30 — Routing evidence dataset** (not yet claimed): `RoutingPolicy`
    interface with heuristic and static implementations by default; collect real
-   signal before any model. Numbered ORQ-22 in the original plan, renumbered by
-   the ORQ-22…ORQ-25 RAG insertions. Convergence note: the Agentic RAG LLM
-   router is conceptually the same classifier, so once ORQ-27/ORQ-28 produce
-   real signal, the RAG router design follows at no extra cost.
-3. **ORQ-29 — Offline ML routing baseline** (not yet claimed): a simple,
-   explainable model, and only if ORQ-28's evidence dataset shows real signal.
-   Numbered ORQ-23 in the original plan.
+   signal before any model. Numbered ORQ-22 in the original plan, then ORQ-28
+   before the 2026-08-07 split. Convergence note: the Agentic RAG LLM router is
+   conceptually the same classifier, so once ORQ-29/ORQ-30 produce real signal,
+   the RAG router design follows at no extra cost.
+3. **ORQ-31 — Offline ML routing baseline** (not yet claimed): a simple,
+   explainable model, and only if ORQ-30's evidence dataset shows real signal.
+   Numbered ORQ-23 in the original plan, then ORQ-29.
 
 Reusable precedent: for broad or multilingual queries, reranking alone is not
 enough when the initial candidate set is poor — intent detection plus an
@@ -141,11 +158,11 @@ that worked. Relevant here because project documentation is bilingual.
 
 ## Phase 3 — AI Green extension
 
-**ORQ-30 — AI Green extension** (not yet claimed). Numbered ORQ-24 in the
-original plan. Sequenced as energy telemetry → carbon-aware routing →
-scheduler, and gated on ORQ-28 producing real routing signal. Convergence
-note: Adaptive RAG rests on the same principle — spend the cheapest resource
-that still answers the question.
+**ORQ-32 — AI Green extension** (not yet claimed). Numbered ORQ-24 in the
+original plan, then ORQ-30 before the 2026-08-07 evaluation split. Sequenced as
+energy telemetry → carbon-aware routing → scheduler, and gated on ORQ-30
+producing real routing signal. Convergence note: Adaptive RAG rests on the same
+principle — spend the cheapest resource that still answers the question.
 
 Fits as an extension, not a rewrite; each piece maps to an existing component.
 
@@ -171,9 +188,11 @@ CO2e) this phase depends on.
   pgvector column is dimension-typed — so it implies a schema migration plus
   full corpus re-ingestion, and warrants its own ORQ. Decide it with ORQ-26's
   harness rather than by intuition, mirroring how ORQ-22's frozen dataset
-  justified the reranker choice before ORQ-24 acted on it. Amends ADR-006 when
-  taken. Related: the same rationale drives the reranker's planned AWS→GCP
-  swap.
+  justified the reranker choice before ORQ-24 acted on it. ORQ-26 deliberately
+  does not add provider dispatch to the embedding factory — its harness takes an
+  injected `EmbeddingPort` instead, so this decision stays unmade rather than
+  half-made. Amends ADR-006 when taken. Related: the same rationale drives the
+  reranker's planned AWS→GCP swap.
 
 ## Decisions closed by ORQ
 
