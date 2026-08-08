@@ -1,0 +1,74 @@
+{
+  "registration_version": 1,
+  "orq": "ORQ-26",
+  "adr": "docs/adr/009-rag-evaluation-harness.md",
+  "question": "Is the retriever the problem?",
+
+  "golden_set": {
+    "path": "experiments/evaluation/golden_set.jsonl",
+    "sha256": "7924387510bd6a26fe9982d1d01d5ee0e1b36c4a3140b494d264519c5dd85452",
+    "derived_from": "experiments/reranking/ground_truth.jsonl",
+    "rows": 60,
+    "pairs": 30,
+    "languages": ["en", "es"],
+    "grades_present": [1, 2],
+    "note": "Grade 0 is implicit for unjudged source_paths and never written. Judged paths per query are 1 or 2, so the >= 1 relevance rule admits every judgment; the graded scale is carried for future graded metrics, not used by the metrics registered below."
+  },
+
+  "instrument": {
+    "callable": "app.core.providers.pgvector_store.PgVectorStore.hybrid_search",
+    "measures": "the deterministic candidate generator, not RetrievalPipeline",
+    "excluded": ["query rewrite", "reranking", "the conditional evaluator"],
+    "embedding": {
+      "provider": "app.core.domain.retrieval_factory.build_embedding_provider",
+      "rationale": "Same call ORQ-22 used (build_dataset.py:52-57), so the ceiling numbers are directly comparable. Changing the embedding model would make this run measure something else; that swap is deferred and is itself a candidate for a later run of this harness."
+    },
+    "determinism_requires": "the ORDER BY tiebreakers of ORQ-26 Task 0; before that commit hybrid_search had no stable ordering under RRF score ties"
+  },
+
+  "corpus": {
+    "pinned_commit": "d849f08f0a5b4164ec74ecb3a6705eb676a59dd0",
+    "rationale": "ORQ-26 both edits a labelled document (app/core/providers/pgvector_store.py, judged grade 2 by q045/q046 and grade 1 by q015/q016) and adds new documents under docs/adr/ that ingestion would pick up. Measuring HEAD would let this ORQ's own text raise the term frequency of a labelled document in the terms of the query that judges it, and let an unlabelled ADR compete for top-k against labelled documents. Pinning the corpus to the branch merge-base removes both effects by construction rather than by careful wording.",
+    "ingestion_mode": "plain",
+    "tenant_id": "acme",
+    "recorded_per_run": ["ingestion_commit", "indexing_mode", "document_count", "chunk_count"]
+  },
+
+  "metrics": {
+    "scored_unit": "distinct source_path, resolved from the retrieved document_id by a post-query lookup",
+    "window": "top-k chunks, collapsed to distinct source_path after retrieval",
+    "k_values": [10, 20, 30],
+    "k_rationale": "20 is the pool RetrievalPipeline would consume; 30 matches ORQ-22's ceiling measurement.",
+    "document_rank": "dense - position in the collapsed distinct-source_path list, not the first-occurrence chunk rank",
+    "relevance_rule": "grade >= 1, the binarization run_reranking_benchmark.py:297,301 applies",
+    "map_denominator": "min(|relevant|, k)",
+    "reported": ["recall@10", "recall@20", "recall@30", "MAP@10", "MRR@10"],
+    "granularities": ["per_query", "per_language", "aggregate"],
+    "aggregate": "unweighted mean over the 60 queries"
+  },
+
+  "decision_rule": {
+    "statement": "The retriever is indicted if EITHER aggregate recall@10 falls below recall_at_10_floor, OR (aggregate recall@20 - aggregate recall@10) exceeds recall_gap_margin.",
+    "gap_clause_means": "Widening the candidate pool from k=10 to k=20 recovers substantially more relevant documents, which indicates low ranking efficiency in the smaller pool.",
+    "gap_clause_does_not_mean": "That the documents were already in a fixed pool and merely ranked too low. LIMIT :top_k sits inside each CTE, before the FULL OUTER JOIN that fuses them (pgvector_store.py:86-101), so k=10 and k=20 are two different candidate pools, not one pool truncated at two depths.",
+    "thresholds": {
+      "recall_at_10_floor": null,
+      "recall_gap_margin": null
+    },
+    "thresholds_note": "Null by design. The runner refuses to execute until both are set and committed. A threshold chosen after seeing the numbers registers nothing."
+  },
+
+  "leakage_assertion": {
+    "claim": "No golden-set query string occurs in the ingested text of the measured corpus.",
+    "asserted_against": "a tenant-scoped chunks query, not the filesystem",
+    "rationale": "The vectors were written at an earlier commit, so a later rephrasing on disk would hide a leak that the corpus still carries."
+  },
+
+  "reporting": {
+    "all_registrations_reported": true,
+    "note": "Re-registration requires a new commit. Every runs row carries this file's sha256 and the commit that introduced it. Runs under earlier registration hashes are reported alongside, never replaced."
+  },
+
+  "approved_by": null,
+  "approved_at": null
+}

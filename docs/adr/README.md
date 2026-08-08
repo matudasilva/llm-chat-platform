@@ -79,3 +79,4 @@ Ver [`template.md`](template.md) para la estructura mínima de un nuevo ADR.
 | [006](006-rag-corpus-embeddings-and-rls.md) | RAG Corpus — Embedding Space, Row-Level Security, and HNSW Parameters | Aceptada | 2026-07-29 |
 | [007](007-reranker-availability-cascade.md) | Reranker Availability — GCP Primary, AWS Fallback Cascade | Aceptada | 2026-08-06 |
 | [008](008-rag-generation-and-feedback-boundaries.md) | RAG Generation and Feedback Boundaries | Aceptada | 2026-08-06 |
+| [009](009-rag-evaluation-harness.md) | RAG Evaluation Harness — Instrument, Store, and Pre-registration | Propuesta | 2026-08-08 |
