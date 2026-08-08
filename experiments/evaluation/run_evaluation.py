@@ -85,6 +85,22 @@ def _git(*args: str) -> str:
     ).stdout.strip()
 
 
+def validate_registration_payload(payload: dict[str, Any]) -> None:
+    """The content half of guard 1, separated so it needs neither git nor a database."""
+    thresholds = payload["decision_rule"]["thresholds"]
+    missing = [name for name, value in thresholds.items() if value is None]
+    if missing:
+        raise GuardFailure(
+            f"decision thresholds are null: {', '.join(sorted(missing))}. A threshold chosen "
+            "after seeing the numbers registers nothing."
+        )
+    if not payload.get("approved_by") or not payload.get("approved_at"):
+        raise GuardFailure(
+            "registration.json is unsigned (approved_by/approved_at). Unsigned, the "
+            "pre-registration is decoration rather than precedence."
+        )
+
+
 def load_registration(path: Path = _REGISTRATION) -> Registration:
     """Guard 1. Refuses anything that would let the rule be chosen after the fact."""
     if not path.exists():
@@ -101,19 +117,7 @@ def load_registration(path: Path = _REGISTRATION) -> Registration:
 
     raw = path.read_bytes()
     payload = json.loads(raw)
-
-    thresholds = payload["decision_rule"]["thresholds"]
-    missing = [name for name, value in thresholds.items() if value is None]
-    if missing:
-        raise GuardFailure(
-            f"decision thresholds are null: {', '.join(missing)}. A threshold chosen after "
-            "seeing the numbers registers nothing."
-        )
-    if not payload.get("approved_by") or not payload.get("approved_at"):
-        raise GuardFailure(
-            "registration.json is unsigned (approved_by/approved_at). Unsigned, the "
-            "pre-registration is decoration rather than precedence."
-        )
+    validate_registration_payload(payload)
 
     return Registration(
         payload=payload, sha256=hashlib.sha256(raw).hexdigest(), commit=commit

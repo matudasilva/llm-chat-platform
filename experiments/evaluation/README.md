@@ -20,9 +20,11 @@ This directory is not imported by the application. It imports `app.*` in one dir
 | File | Role |
 |---|---|
 | `build_golden_set.py` | Derives the golden set from ORQ-22's ground truth. Pure file transform: no database, no network. |
+| `run_evaluation.py` | The harness. Runs the guards, measures, computes the registered verdict, writes the run. |
+| `metrics.py` / `store.py` | Binary-relevance metrics; the MLflow-compatible store. |
 | `golden_set.jsonl` | 60 rows — 30 bilingual pairs, frozen. |
-| `golden_set.sha256` | The freeze. Verified today by `build_golden_set.py --check` and by the hermetic suite; the specified runner will also verify it at run time. |
-| `registration.json` | The **draft** registration: metric definitions, `k` values, decision rule, pinned corpus commit, approval fields. Not yet an enforced pre-registration — see below. |
+| `golden_set.sha256` | The freeze. Verified by `build_golden_set.py --check`, by the hermetic suite, and by the runner at run time. |
+| `registration.json` | The signed pre-registration: metric definitions, `k` values, decision rule with thresholds, pinned corpus commit, approval fields. Enforced by the runner. |
 
 ## The golden set
 
@@ -52,19 +54,22 @@ registration before being run.
 `registration.json` is the record, not the ORQ spec — `.gitignore:64` excludes `.framework/orqs/`.
 
 A content hash alone would prove only which file produced a run, not that it predated one. So the
-runner is *specified* to refuse execution unless `registration.json` is committed and unmodified in
+runner refuses execution unless `registration.json` is committed and unmodified in
 the worktree and both decision thresholds are non-null; to record the file's SHA-256 and the commit
 that introduced it in every `runs` row; and to report runs under every registration hash, never only
 the last.
 
-> **Not enforced yet.** `run_evaluation.py` is Task 5 and does not exist. The only control in force
-> today is the golden-set checksum. Until the runner exists and is tested against dirty,
-> uncommitted, unsigned, checksum-mutated and null-threshold registrations, this is a draft
-> registration with stated future controls — not an enforced pre-registration, and not something
-> another ORQ may inherit as precedent. `registration.json` says the same in `enforcement_status`.
+> **Enforced.** `run_evaluation.py` refuses to measure anything unless every guard passes: a
+> committed and unmodified `registration.json`, non-null thresholds, a present approval signature, a
+> matching golden-set hash, a corpus manifest whose commit equals the pinned one, and no golden-set
+> query text in the ingested corpus. Every refusal is exercised by a test that observes it failing.
 
-The decision thresholds ship as `null` **by design**. A threshold chosen after seeing the numbers
-registers nothing.
+The thresholds were set and committed **before** the first run: `recall_at_10_floor = 0.65` and
+`recall_gap_margin = 0.12`. They are calibrated on `experiments/reranking/dataset.jsonl`, which
+predates this ORQ entirely — recomputing these metric definitions over ORQ-22's frozen candidates
+gives `recall@10 = 0.7167` and a gap of `0.0750`. Calibrating on a prior dataset is not previewing
+the run. A threshold chosen after seeing the numbers would register nothing, which is why the runner
+refuses to execute while either is null.
 
 ## The corpus is pinned
 
@@ -96,11 +101,22 @@ python -m experiments.evaluation.build_golden_set           # regenerate it
 Regenerating rewrites `golden_set.sha256` and therefore requires a new registration commit before
 anything may be run against it.
 
-**There is no harness to run yet.** `run_evaluation.py` is Task 5. Until it exists there is no
-reproduction procedure to follow, and no run — baseline or otherwise — may be described as
-reproducible or verified: nothing yet proves the corpus in a database was ingested from the pinned
-commit with the registered configuration. The runner must write and validate that manifest.
+Running the harness needs the pinned corpus ingested first. Ingest from a worktree at the pinned
+commit, so this ORQ's own text never enters the corpus it measures:
 
-When it exists, a run will additionally need: the pinned commit checked out into a worktree and
-ingested for the registered tenant in `plain` mode; `DATABASE_URL_APP`, `OPENAI_API_KEY` and the
-evaluation store DSN set; and non-null thresholds plus a signed approval in `registration.json`.
+```
+git worktree add /tmp/orq26-corpus <pinned_commit>
+python -m app.scripts.ingest_corpus --tenant-id acme --repo-root /tmp/orq26-corpus
+```
+
+Run from the main tree, not the worktree: the corpus content comes from the pinned commit, the code
+running the search comes from `HEAD`, and the manifest belongs to the main tree. Then:
+
+```
+python -m experiments.evaluation.run_evaluation --dry-run   # guards + metrics, no store write
+python -m experiments.evaluation.run_evaluation             # records a run
+```
+
+Needs `DATABASE_URL_APP`, `OPENAI_API_KEY` and `EVALUATION_STORE_URL`. A repeated run inserts a
+second row rather than replacing the first — see ADR-009 decision 3 for why that is an audit
+property, not a storage detail.

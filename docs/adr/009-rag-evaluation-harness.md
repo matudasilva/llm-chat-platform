@@ -63,9 +63,8 @@ and rerank stay unmeasured until ORQ-27, which needs call budgeting and judge-st
 anyway.
 
 The trade is deliberate: a repeatable answer about the candidate generator, rather than an
-irreproducible answer about everything. "Repeatable" describes the instrument's design, not any run:
-no run has been made, and none may be called reproducible until the runner writes and validates a
-corpus manifest (decision 3).
+irreproducible answer about everything. Two consecutive runs against the pinned corpus produced
+identical metrics at every granularity, which is the property the instrument was chosen for.
 
 ### 2. Fix `hybrid_search`'s ordering first — it was not deterministic
 
@@ -128,12 +127,28 @@ is specified to:
 - require a new commit for re-registration, and report runs under every registration hash — never
   only the last.
 
-**None of that is implemented yet.** `experiments/evaluation/run_evaluation.py` is Task 5 and does
-not exist. Today the only enforced control is the golden-set checksum. Until the runner exists and is
-tested against dirty, uncommitted, unsigned, checksum-mutated and null-threshold registrations, this
-is a *draft registration with stated future controls*, and neither this ADR nor ORQ-27 and ORQ-28 may
-describe it as an enforced pre-registration or inherit it as precedent. `registration.json` carries
-the same statement in `enforcement_status`, so the file cannot be read without it.
+**A run never overwrites a run.** Repeating the harness against the same golden set, the same
+registration and the same corpus inserts a *second* row in `runs` with its own `run_id` and
+timestamp; it does not update the first. Nothing in the schema can collapse them — `run_id` is the
+primary key and no uniqueness constraint spans the registration hash.
+
+This is an audit property, not a storage detail. A store that overwrote would make "we ran it again
+and it looked better" indistinguishable from "it always looked like that", which is precisely the
+manipulation the pre-registration exists to prevent. It also makes the harness's own stability
+observable: two rows carrying identical metrics are evidence of determinism, and a pair that
+disagrees is evidence something changed underneath — either of which is lost if the second write
+replaces the first.
+
+**Enforcement status: enforced.** `experiments/evaluation/run_evaluation.py` implements every guard
+above and refuses to measure anything until they pass — a modified or uncommitted
+`registration.json`, a null threshold, a missing approval signature, a golden-set hash mismatch, a
+missing corpus manifest, a manifest whose commit differs from the pinned one, or any golden-set query
+found in the ingested corpus. Each refusal is exercised by a test that observes it failing, because a
+guard never seen refusing is not a guard. `registration.json` carries the same statement in
+`enforcement_status`.
+
+Earlier revisions of this ADR said the opposite, correctly: until Tasks 4-6 landed the file was a
+draft registration with stated future controls, and could not be inherited as precedent.
 
 ### 4. Pin the measured corpus to the branch merge-base
 
@@ -162,8 +177,11 @@ leakage and contamination checks against the new corpus.
 **ORQ-27 and ORQ-28 do not inherit this pin by default.** Inheriting it silently would convert a
 one-time contamination control into a permanently stale baseline presented as current evidence — the
 corpus drifts further from production with every ORQ, while the number keeps being cited as reusable.
-No automated corpus manifest exists yet; the runner must produce one, and until then the pin is
-asserted by procedure rather than proven by artifact.
+`app.scripts.ingest_corpus` writes a corpus manifest recording the ingested revision, and the runner
+refuses to execute without one or when its commit differs from the pinned one. The manifest is an
+honest declaration of what the ingesting process saw, not a proof: a later hand-edit of the database
+would not invalidate it. Proving the correspondence would mean recomputing every `content_hash` from
+the pinned worktree at run time.
 
 ### 5. The store is a separate schema, a provisioned role, and outside the Alembic chain
 

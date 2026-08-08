@@ -1,0 +1,148 @@
+"""ORQ-26 AC3: no golden-set query text is present in the measured corpus.
+
+Asserted against `chunks` under tenant scope rather than against the
+filesystem. The vectors were written at an earlier commit, so a later
+rephrasing on disk would hide a leak the corpus still carries — the filesystem
+and the corpus can disagree, and only one of them is what gets measured.
+
+The contaminated case is the point of this module. An assertion that has only
+ever been observed passing is not evidence that it can fail.
+
+Skipped unless RAG_TEST_DATABASE_URL and RAG_TEST_DATABASE_URL_APP are set.
+"""
+
+from __future__ import annotations
+
+import json
+import os
+import uuid
+from pathlib import Path
+
+import pytest
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import create_async_engine
+
+from app.http.middleware.tenant import tenant_scope
+from app.infra.db.session import build_rag_sessionmaker
+from experiments.evaluation.run_evaluation import GuardFailure, assert_no_query_leaked
+
+pytestmark = pytest.mark.postgres
+
+_TENANT = "tenant-leakage"
+_DUMMY_EMBEDDING = [0.001] * 1536
+_GOLDEN_SET = Path("experiments/evaluation/golden_set.jsonl")
+
+
+def _privileged_url() -> str:
+    url = os.environ.get("RAG_TEST_DATABASE_URL")
+    assert url, "RAG_TEST_DATABASE_URL must be set"
+    return url
+
+
+def _app_url() -> str:
+    url = os.environ.get("RAG_TEST_DATABASE_URL_APP")
+    if not url:
+        pytest.skip("RAG_TEST_DATABASE_URL_APP not set")
+    return url
+
+
+def _queries() -> list[str]:
+    return [
+        json.loads(line)["query"]
+        for line in _GOLDEN_SET.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+
+
+async def _seed(chunk_text: str) -> None:
+    engine = create_async_engine(_privileged_url())
+    document_id = uuid.uuid4()
+    try:
+        async with engine.begin() as conn:
+            await conn.execute(
+                text(
+                    "INSERT INTO documents (id, tenant_id, source_path, content_hash, doc_type) "
+                    "VALUES (:id, :tenant_id, 'leak-probe.md', :hash, 'markdown')"
+                ),
+                {"id": document_id, "tenant_id": _TENANT, "hash": str(uuid.uuid4())},
+            )
+            await conn.execute(
+                text(
+                    "INSERT INTO chunks (id, document_id, tenant_id, ordinal, text, embedding, search_vector) "
+                    "VALUES (:id, :doc_id, :tenant_id, 0, :text, CAST(:embedding AS vector), "
+                    "to_tsvector('english', :text))"
+                ),
+                {
+                    "id": uuid.uuid4(),
+                    "doc_id": document_id,
+                    "tenant_id": _TENANT,
+                    "text": chunk_text,
+                    "embedding": "[" + ",".join(str(v) for v in _DUMMY_EMBEDDING) + "]",
+                },
+            )
+    finally:
+        await engine.dispose()
+
+
+async def _cleanup() -> None:
+    engine = create_async_engine(_privileged_url())
+    try:
+        async with engine.begin() as conn:
+            await conn.execute(
+                text("DELETE FROM documents WHERE tenant_id = :tenant_id"),
+                {"tenant_id": _TENANT},
+            )
+    finally:
+        await engine.dispose()
+
+
+async def _assert_against_seeded_corpus() -> None:
+    sessionmaker = build_rag_sessionmaker(_app_url())
+    with tenant_scope(_TENANT):
+        async with sessionmaker() as session:
+            await assert_no_query_leaked(session, _queries())
+
+
+@pytest.mark.asyncio
+async def test_a_clean_corpus_passes() -> None:
+    await _seed("This chunk discusses retrieval fusion without quoting any evaluation query.")
+    try:
+        await _assert_against_seeded_corpus()
+    finally:
+        await _cleanup()
+
+
+@pytest.mark.asyncio
+async def test_a_leaked_query_fails_the_assertion() -> None:
+    leaked = _queries()[0]
+    await _seed(f"Some preamble. {leaked} Some trailing prose.")
+    try:
+        with pytest.raises(GuardFailure, match="occur verbatim in the ingested corpus"):
+            await _assert_against_seeded_corpus()
+    finally:
+        await _cleanup()
+
+
+@pytest.mark.asyncio
+async def test_a_leak_is_caught_regardless_of_case() -> None:
+    # A corpus that lower-cases or title-cases a query still carries the lexical
+    # advantage, so the assertion must not be defeated by capitalisation.
+    leaked = _queries()[0]
+    await _seed(f"Preamble. {leaked.upper()} Trailing.")
+    try:
+        with pytest.raises(GuardFailure, match="occur verbatim in the ingested corpus"):
+            await _assert_against_seeded_corpus()
+    finally:
+        await _cleanup()
+
+
+@pytest.mark.asyncio
+async def test_the_measured_corpus_itself_is_clean() -> None:
+    # The real assertion, against the tenant the harness actually measures.
+    sessionmaker = build_rag_sessionmaker(_app_url())
+    with tenant_scope("acme"):
+        async with sessionmaker() as session:
+            total = (await session.execute(text("SELECT count(*) FROM chunks"))).scalar_one()
+            if total == 0:
+                pytest.skip("the acme corpus is not ingested in this environment")
+            await assert_no_query_leaked(session, _queries())
