@@ -140,6 +140,13 @@ class Settings(BaseSettings):
     reranking_benchmark_gcp_call_budget: int = 0
     reranking_benchmark_aws_pacing_s: float = 15.0
 
+    # Evaluation metric store (ORQ-26 / ADR-009 decision 5). The harness owns an
+    # `evaluation` schema through its own idempotent DDL, never an Alembic
+    # revision, under a role distinct from both rag_app and the superuser. Inert
+    # by default; nothing in the application reads it. Follows the precedent the
+    # reranking_benchmark_* fields above already set for experiment settings.
+    evaluation_store_url: str | None = Field(default=None, alias="EVALUATION_STORE_URL")
+
     # Retrieval pipeline (ORQ-23): rewrite -> retrieve -> rerank -> evaluator.
     # Inert by default so the hermetic suite is unaffected unless a test
     # explicitly opts in (same convention as rag_enabled). Distinct from the
@@ -467,6 +474,25 @@ class Settings(BaseSettings):
         if (self.rag_enabled or self.chat_rag_augmentation_enabled) and not self.database_url_app:
             raise ValueError(
                 "DATABASE_URL_APP is required when RAG_ENABLED or CHAT_RAG_AUGMENTATION_ENABLED is true"
+            )
+        return self
+
+    @model_validator(mode="after")
+    def validate_evaluation_store_url(self) -> "Settings":
+        # ADR-009 decision 5: the store must never be the superuser database.
+        # That is the direction this drifts in — the superuser DSN is already in
+        # the environment and it works, so a harness that "just needs a
+        # connection" would silently gain write access to business data.
+        #
+        # database_url_app is deliberately NOT rejected here. rag_app is
+        # under-privileged, not over-privileged: it cannot CREATE SCHEMA, so
+        # pointing the store at it fails loudly at DDL time rather than
+        # succeeding dangerously. Guarding it would be guarding the wrong
+        # direction.
+        if self.evaluation_store_url and self.evaluation_store_url == self.database_url:
+            raise ValueError(
+                "EVALUATION_STORE_URL must not equal the application database URL; "
+                "the evaluation store requires its own non-superuser role (ADR-009)"
             )
         return self
 

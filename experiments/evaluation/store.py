@@ -1,0 +1,206 @@
+"""MLflow-compatible metric store for ORQ-26, outside the Alembic chain.
+
+The schema is created by the idempotent DDL below and never by a migration
+(ADR-009 decision 5): an experiment must not be able to introduce a revision
+into the chain that serves the product, nor gain a write path into business
+tables. `mission.md` §Excluded defers MLflow — this shape is MLflow-*compatible*
+and adds no MLflow dependency.
+
+Provenance lives in `runs` as NOT NULL columns rather than in `tags`, so the
+database refuses a run that cannot say which registration and which corpus
+produced it. In `tags` that would be a convention; here it is a constraint.
+"""
+
+from __future__ import annotations
+
+import uuid
+from dataclasses import dataclass
+from datetime import datetime, timezone
+
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
+
+SCHEMA = "evaluation"
+
+_PROVENANCE_FIELDS = (
+    "registration_sha256",
+    "registration_commit",
+    "golden_set_sha256",
+    "ingestion_commit",
+    "code_commit",
+)
+
+
+def build_ddl(schema: str = SCHEMA) -> tuple[str, ...]:
+    """Idempotent DDL for the metric store.
+
+    A schema name is a Postgres identifier, not a value, so it cannot be a bound
+    parameter. It is validated instead. The only caller that passes a
+    non-default is the test suite, which needs its own schema so that a teardown
+    can never drop a real store.
+    """
+    if not schema.isidentifier():
+        raise ValueError(f"invalid schema identifier: {schema!r}")
+    return (
+        f"CREATE SCHEMA IF NOT EXISTS {schema}",
+        f"""
+        CREATE TABLE IF NOT EXISTS {schema}.runs (
+            run_id              uuid PRIMARY KEY,
+            experiment_name     text        NOT NULL,
+            status              text        NOT NULL,
+            start_time          timestamptz NOT NULL,
+            end_time            timestamptz,
+            registration_sha256 text        NOT NULL,
+            registration_commit text        NOT NULL,
+            golden_set_sha256   text        NOT NULL,
+            ingestion_commit    text        NOT NULL,
+            code_commit         text        NOT NULL
+        )
+        """,
+        f"""
+        CREATE TABLE IF NOT EXISTS {schema}.metrics (
+            run_id    uuid             NOT NULL REFERENCES {schema}.runs (run_id) ON DELETE CASCADE,
+            key       text             NOT NULL,
+            value     double precision NOT NULL,
+            step      bigint           NOT NULL DEFAULT 0,
+            timestamp timestamptz      NOT NULL,
+            PRIMARY KEY (run_id, key, step)
+        )
+        """,
+        f"""
+        CREATE TABLE IF NOT EXISTS {schema}.params (
+            run_id uuid NOT NULL REFERENCES {schema}.runs (run_id) ON DELETE CASCADE,
+            key    text NOT NULL,
+            value  text NOT NULL,
+            PRIMARY KEY (run_id, key)
+        )
+        """,
+        f"""
+        CREATE TABLE IF NOT EXISTS {schema}.tags (
+            run_id uuid NOT NULL REFERENCES {schema}.runs (run_id) ON DELETE CASCADE,
+            key    text NOT NULL,
+            value  text NOT NULL,
+            PRIMARY KEY (run_id, key)
+        )
+        """,
+        # Reporting every registration's runs, never only the last, is the point
+        # of ADR-009 decision 3; this index keeps that query cheap enough to be
+        # routine rather than something a reader skips.
+        f"CREATE INDEX IF NOT EXISTS runs_registration_idx "
+        f"ON {schema}.runs (registration_sha256, start_time)",
+    )
+
+
+@dataclass(frozen=True)
+class RunProvenance:
+    """What a run must be able to prove about itself before it may be written."""
+
+    registration_sha256: str
+    registration_commit: str
+    golden_set_sha256: str
+    ingestion_commit: str
+    code_commit: str
+
+    def __post_init__(self) -> None:
+        for field_name in _PROVENANCE_FIELDS:
+            if not getattr(self, field_name):
+                raise ValueError(f"{field_name} is required to write a run")
+
+
+class EvaluationStore:
+    def __init__(self, dsn: str, *, schema: str = SCHEMA) -> None:
+        self._schema = schema
+        self._ddl = build_ddl(schema)
+        self._engine: AsyncEngine = create_async_engine(dsn)
+
+    async def dispose(self) -> None:
+        await self._engine.dispose()
+
+    async def ensure_schema(self) -> None:
+        async with self._engine.begin() as conn:
+            for statement in self._ddl:
+                await conn.execute(text(statement))
+
+    async def is_superuser(self) -> bool:
+        async with self._engine.connect() as conn:
+            result = await conn.execute(
+                text("SELECT rolsuper FROM pg_roles WHERE rolname = current_user")
+            )
+            return bool(result.scalar_one())
+
+    async def create_run(
+        self,
+        *,
+        experiment_name: str,
+        provenance: RunProvenance,
+        params: dict[str, str] | None = None,
+        tags: dict[str, str] | None = None,
+    ) -> uuid.UUID:
+        run_id = uuid.uuid4()
+        async with self._engine.begin() as conn:
+            await conn.execute(
+                text(
+                    f"INSERT INTO {self._schema}.runs "
+                    "(run_id, experiment_name, status, start_time, registration_sha256, "
+                    " registration_commit, golden_set_sha256, ingestion_commit, code_commit) "
+                    "VALUES (:run_id, :experiment_name, 'RUNNING', :start_time, :registration_sha256, "
+                    " :registration_commit, :golden_set_sha256, :ingestion_commit, :code_commit)"
+                ),
+                {
+                    "run_id": run_id,
+                    "experiment_name": experiment_name,
+                    "start_time": _now(),
+                    **{field: getattr(provenance, field) for field in _PROVENANCE_FIELDS},
+                },
+            )
+            await self._insert_kv(conn, "params", run_id, params or {})
+            await self._insert_kv(conn, "tags", run_id, tags or {})
+        return run_id
+
+    async def log_metrics(
+        self, run_id: uuid.UUID, metrics: dict[str, float], *, step: int = 0
+    ) -> None:
+        if not metrics:
+            return
+        timestamp = _now()
+        async with self._engine.begin() as conn:
+            for key, value in metrics.items():
+                await conn.execute(
+                    text(
+                        f"INSERT INTO {self._schema}.metrics (run_id, key, value, step, timestamp) "
+                        "VALUES (:run_id, :key, :value, :step, :timestamp)"
+                    ),
+                    {
+                        "run_id": run_id,
+                        "key": key,
+                        "value": float(value),
+                        "step": step,
+                        "timestamp": timestamp,
+                    },
+                )
+
+    async def finish_run(self, run_id: uuid.UUID, *, status: str) -> None:
+        async with self._engine.begin() as conn:
+            await conn.execute(
+                text(
+                    f"UPDATE {self._schema}.runs SET status = :status, end_time = :end_time "
+                    "WHERE run_id = :run_id"
+                ),
+                {"run_id": run_id, "status": status, "end_time": _now()},
+            )
+
+    async def _insert_kv(
+        self, conn, table: str, run_id: uuid.UUID, values: dict[str, str]
+    ) -> None:
+        for key, value in values.items():
+            await conn.execute(
+                text(
+                    f"INSERT INTO {self._schema}.{table} (run_id, key, value) "
+                    "VALUES (:run_id, :key, :value)"
+                ),
+                {"run_id": run_id, "key": key, "value": str(value)},
+            )
+
+
+def _now() -> datetime:
+    return datetime.now(timezone.utc)

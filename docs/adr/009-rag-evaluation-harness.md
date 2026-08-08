@@ -119,8 +119,27 @@ MLflow-compatible shape — `runs`, `metrics`, `params`, `tags`. An experiment m
 introduce a migration into the chain that serves the product.
 
 `rag_app` cannot create a schema by design, and the existing init script only runs on a fresh data
-directory, so a second `scripts/postgres-init/` script covers local setup while this ADR documents
-the manual `CREATE ROLE` / `GRANT` path for existing and managed databases. The store DSN is a
+directory, so `scripts/postgres-init/20-evaluation-role.sh` covers local setup from scratch. For an
+existing or managed database — the common case in staging, and the case the init script cannot
+reach — the equivalent must be run once by hand as a privileged user:
+
+```sql
+CREATE ROLE rag_evaluation LOGIN PASSWORD '<secret>'
+  NOSUPERUSER NOCREATEDB NOCREATEROLE NOBYPASSRLS;
+GRANT CONNECT ON DATABASE <db> TO rag_evaluation;
+-- The harness creates the `evaluation` schema itself on first run.
+GRANT CREATE  ON DATABASE <db> TO rag_evaluation;
+-- Nothing on `public`, where the application's tables live. Explicit because
+-- the defaults on `public` have changed across Postgres major versions.
+REVOKE ALL ON SCHEMA public FROM rag_evaluation;
+```
+
+`rag_app` needs no counterpart statement: the schema does not exist at provisioning time and the
+harness creates it as `rag_evaluation`, so `rag_app` never acquires anything on it. Verified —
+`rag_app` reading a table in a schema owned by `rag_evaluation` fails with `permission denied for
+schema`, and the store role reports `rolsuper = false`.
+
+The store DSN is a
 setting in `app/core/settings.py`, following the precedent ORQ-22's `reranking_benchmark_*` settings
 set, and its validator rejects a DSN equal to `database_url` — the superuser — because that is the
 failure this would otherwise drift into. Rejecting `database_url_app` would guard the wrong
