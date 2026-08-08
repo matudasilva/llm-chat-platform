@@ -107,16 +107,50 @@ class RunProvenance:
                 raise ValueError(f"{field_name} is required to write a run")
 
 
+class SuperuserStoreError(RuntimeError):
+    """The store DSN resolves to a superuser role."""
+
+
 class EvaluationStore:
-    def __init__(self, dsn: str, *, schema: str = SCHEMA) -> None:
-        self._schema = schema
-        self._ddl = build_ddl(schema)
+    """Writes evaluation runs to the `evaluation` schema.
+
+    The schema is fixed. `Settings.validate_evaluation_store_url` rejects a DSN
+    string-equal to the application database, but that check is ergonomic only —
+    an equivalent DSN differing in a query parameter, host alias or password
+    encoding passes it. The authoritative control is `ensure_schema`, which asks
+    the server who it is actually connected as (ADR-009 decision 5).
+    """
+
+    def __init__(self, dsn: str) -> None:
+        self._schema = SCHEMA
+        self._ddl = build_ddl(SCHEMA)
         self._engine: AsyncEngine = create_async_engine(dsn)
+
+    @classmethod
+    def _for_test(cls, dsn: str, schema: str) -> "EvaluationStore":
+        """Test-only seam: a throwaway schema so a teardown cannot drop a real store.
+
+        Deliberately not part of the public surface. Production code has exactly
+        one schema, which is what ADR-009 decision 5 declares the harness owns.
+        """
+        store = cls(dsn)
+        store._schema = schema
+        store._ddl = build_ddl(schema)
+        return store
 
     async def dispose(self) -> None:
         await self._engine.dispose()
 
     async def ensure_schema(self) -> None:
+        # Checked here rather than at settings time because this is the first
+        # point at which the *actual* connected role is knowable. A DSN string
+        # can lie by being merely equivalent to the superuser's; `rolsuper`
+        # cannot.
+        if await self.is_superuser():
+            raise SuperuserStoreError(
+                "the evaluation store must not connect as a superuser; "
+                "provision the rag_evaluation role (ADR-009 decision 5)"
+            )
         async with self._engine.begin() as conn:
             for statement in self._ddl:
                 await conn.execute(text(statement))

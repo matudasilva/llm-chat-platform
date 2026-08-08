@@ -2,7 +2,8 @@
   "registration_version": 1,
   "orq": "ORQ-26",
   "adr": "docs/adr/009-rag-evaluation-harness.md",
-  "question": "Is the retriever the problem?",
+  "question": "Under this frozen configuration, does the deterministic candidate generator retrieve the labelled documents?",
+  "question_scope_note": "Deliberately narrower than 'is the retriever the problem?', which earlier drafts used. This measures PgVectorStore.hybrid_search alone. Production retrieval also rewrites the query and reranks, so a good score here does NOT clear the production retrieval path, and a bad one does not by itself indict it. Claims about production retrieval need the pipeline evaluation, which is ORQ-27's.",
 
   "golden_set": {
     "path": "experiments/evaluation/golden_set.jsonl",
@@ -31,7 +32,14 @@
     "rationale": "ORQ-26 both edits a labelled document (app/core/providers/pgvector_store.py, judged grade 2 by q045/q046 and grade 1 by q015/q016) and adds new documents under docs/adr/ that ingestion would pick up. Measuring HEAD would let this ORQ's own text raise the term frequency of a labelled document in the terms of the query that judges it, and let an unlabelled ADR compete for top-k against labelled documents. Pinning the corpus to the branch merge-base removes both effects by construction rather than by careful wording.",
     "ingestion_mode": "plain",
     "tenant_id": "acme",
-    "recorded_per_run": ["ingestion_commit", "indexing_mode", "document_count", "chunk_count"]
+    "recorded_per_run": ["ingestion_commit", "indexing_mode", "document_count", "chunk_count"],
+    "run_class": "contamination-controlled baseline",
+    "repinning_policy": {
+      "baseline_runs": "Retain d849f08 permanently. These are comparable to each other and to nothing else; that is their whole purpose.",
+      "production_relevance_runs": "Must re-pin to a reviewed commit rather than inherit this one. Each re-pin records source commit, ingestion config, document and chunk counts, and the golden-set hash, and re-runs the leakage and contamination checks against the new corpus.",
+      "inheritance": "ORQ-27 and ORQ-28 do NOT inherit this pin by default. A pinned corpus drifts further from production with every ORQ, so inheriting it silently would turn a one-time contamination control into a permanently stale baseline presented as current evidence.",
+      "note": "No automated corpus manifest exists yet; the runner (Task 5) must produce one, and until it does the pin is asserted by procedure rather than proven by artifact."
+    }
   },
 
   "metrics": {
@@ -41,6 +49,8 @@
     "k_rationale": "20 is the pool RetrievalPipeline would consume; 30 matches ORQ-22's ceiling measurement.",
     "document_rank": "dense - position in the collapsed distinct-source_path list, not the first-occurrence chunk rank",
     "relevance_rule": "grade >= 1, the binarization run_reranking_benchmark.py:297,301 applies",
+    "relevance_is_binary": true,
+    "relevance_note": "These are binary-relevance metrics, not graded ones. Every judgment in the golden set is grade 1 or 2, so >= 1 admits all of them and the grade scale carries no discriminating power here. Per-query recall therefore takes only the values 0, 0.5 and 1. The grade scale must not be cited as evidence of finer discrimination than that. A graded metric, or a separate primary-relevance (grade 2 only) analysis, would need its own registration before being run.",
     "map_denominator": "min(|relevant|, k)",
     "reported": ["recall@10", "recall@20", "recall@30", "MAP@10", "MRR@10"],
     "granularities": ["per_query", "per_language", "aggregate"],
@@ -67,6 +77,12 @@
   "reporting": {
     "all_registrations_reported": true,
     "note": "Re-registration requires a new commit. Every runs row carries this file's sha256 and the commit that introduced it. Runs under earlier registration hashes are reported alongside, never replaced."
+  },
+
+  "enforcement_status": {
+    "state": "SPECIFIED, NOT YET IMPLEMENTED",
+    "note": "experiments/evaluation/run_evaluation.py does not exist yet (ORQ-26 Task 5). Until it does, nothing enforces the clean-worktree requirement, the committed-registration requirement, the run-time checksum verification, the non-null threshold check, the approval check, or the decision rule. This file is therefore a draft registration with stated future controls, not an enforced pre-registration, and must not be described as one or inherited as precedent by another ORQ until the runner exists and is tested against dirty, uncommitted, unsigned, checksum-mutated and null-threshold registrations.",
+    "enforced_today": ["golden_set.sha256 verified by build_golden_set.py --check and by the hermetic test suite"]
   },
 
   "approved_by": null,

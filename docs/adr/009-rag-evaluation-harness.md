@@ -14,7 +14,18 @@ retrieval pipeline, a reranker cascade, and augmented chat generation — withou
 whether retrieval finds the right documents. Every improvement so far was argued from design, not
 from evidence.
 
-ORQ-26 answers one question: **is the retriever the problem?** That framing is narrow on purpose.
+ORQ-26 answers one question: **under a frozen configuration, does the deterministic candidate
+generator retrieve the labelled documents?**
+
+That wording is deliberately narrower than the "is the retriever the problem?" framing earlier drafts
+of this ADR used, and the narrowing is not cosmetic. What is measured is `hybrid_search` alone.
+Production retrieval also rewrites the query and reranks, so **a good score here does not clear the
+production retrieval path**, and a poor one does not by itself indict it. Any claim about production
+retrieval needs the pipeline evaluation, which belongs to ORQ-27. Calling this a verdict on "the
+retriever" would be an overclaim, and the decision rule below must be read as a verdict on the
+candidate generator only.
+
+The scope is narrow on purpose.
 The roadmap's original evaluation item bundled retriever metrics, LLM-as-judge answer quality, and
 a contextual-retrieval A/B; the operator split it on 2026-08-07 into ORQ-26, ORQ-27 and ORQ-28
 after Early Design Review found the combined scope violated this project's own precedent of
@@ -70,9 +81,26 @@ The fix adds `id` as the final ordering key to **all five** `ORDER BY` clauses �
 its `row_number()` window and its own `ORDER BY … LIMIT :top_k`. Fixing only the windows, as first
 proposed, would leave pool *membership* non-deterministic while making the ranking within it look
 stable: the `LIMIT` ordering decides which rows enter the candidate pool at all, and `ts_rank` ties
-at the cutoff boundary are the common case. `id` is a random UUID — arbitrary as a preference but
-stable — and never reorders chunks with distinct scores, so ranking quality is unchanged by
-construction.
+at the cutoff boundary are the common case.
+
+**This is a ranking policy on the production retrieval path, and is approved here as such — not as
+a cosmetic fix.** An earlier draft of this ADR claimed the change "never reorders chunks with
+distinct scores". That is false, and the correction matters. `row_number()` assigns the rank that
+feeds the RRF score, so ordering tied candidates by `id` decides which of them scores `1/(60+r)` and
+which scores `1/(60+r+1)`. Those differing scores can then order differently against a third chunk
+whose score was never tied with either. Only the final `ORDER BY score DESC, id` is a pure
+tie-break; the four CTE-level keys are not.
+
+What the change does *not* do is introduce a preference among candidates that were not already tied
+on cosine distance or `ts_rank`. Both the old and the new order among ties are arbitrary — a v4 UUID
+carries no semantic bias, and neither did the query plan. What changed is that the arbitrary order
+is now stable. We accept an arbitrary-but-stable ranking of tied candidates over an
+arbitrary-and-unstable one, because a retrieval system that returns different sources for identical
+requests cannot be measured, and cannot be trusted to cite.
+
+An alternative tiebreaker with semantic meaning — `ordinal`, `document_id`, recency — would express
+a preference this project has no evidence for. Choosing one would be a retrieval-quality decision,
+which is explicitly out of scope here; `id` is the deliberate refusal to make it.
 
 The regression tests seed corpora that *force* both tie shapes rather than repeating a call and
 comparing. That distinction is load-bearing: against the unfixed query, the repeat-and-compare test
@@ -87,13 +115,21 @@ the `k` values, the decision rule, the golden set's SHA-256, the pinned corpus c
 `approved_by` / `approved_at`.
 
 A content hash alone proves only which file produced a run. It does not prevent registering `k=10`,
-running, disliking the number, editing, re-running, and reporting only the second set. So:
+running, disliking the number, editing, re-running, and reporting only the second set. So the runner
+is specified to:
 
-- the runner refuses to execute unless `registration.json` is committed and unmodified in the
-  worktree, and unless both decision thresholds are non-null;
-- every `runs` row records the file's SHA-256 **and** the commit that introduced it;
-- re-registration requires a new commit, and runs under every registration hash are reported —
-  never only the last.
+- refuse to execute unless `registration.json` is committed and unmodified in the worktree, and
+  unless both decision thresholds are non-null;
+- record the file's SHA-256 **and** the commit that introduced it in every `runs` row;
+- require a new commit for re-registration, and report runs under every registration hash — never
+  only the last.
+
+**None of that is implemented yet.** `experiments/evaluation/run_evaluation.py` is Task 5 and does
+not exist. Today the only enforced control is the golden-set checksum. Until the runner exists and is
+tested against dirty, uncommitted, unsigned, checksum-mutated and null-threshold registrations, this
+is a *draft registration with stated future controls*, and neither this ADR nor ORQ-27 and ORQ-28 may
+describe it as an enforced pre-registration or inherit it as precedent. `registration.json` carries
+the same statement in `enforcement_status`, so the file cannot be read without it.
 
 ### 4. Pin the measured corpus to the branch merge-base
 
@@ -109,8 +145,21 @@ changes ordering, not content, so it belongs in the measurement; this ORQ's pros
 removes both effects by construction, rather than relying on the author of a document to choose
 words that do not happen to match a query they can read.
 
-The cost is that the metric describes a corpus that is not current `HEAD`. That is the right price
-for a pre-registered experiment about the retriever, and the pinned commit is recorded in every run.
+The cost is that the metric describes a corpus that is not current `HEAD`, and the pinned commit is
+recorded in every run.
+
+**A pin without a re-pinning policy is a stale baseline waiting to happen**, so the policy is set
+here rather than deferred. Runs of this pinned corpus are *contamination-controlled baseline* runs:
+comparable to each other and to nothing else, which is their entire purpose. Any run intended to say
+something about production relevance must re-pin to a reviewed commit, recording that commit, the
+ingestion configuration, document and chunk counts, and the golden-set hash, and re-running the
+leakage and contamination checks against the new corpus.
+
+**ORQ-27 and ORQ-28 do not inherit this pin by default.** Inheriting it silently would convert a
+one-time contamination control into a permanently stale baseline presented as current evidence — the
+corpus drifts further from production with every ORQ, while the number keeps being cited as reusable.
+No automated corpus manifest exists yet; the runner must produce one, and until then the pin is
+asserted by procedure rather than proven by artifact.
 
 ### 5. The store is a separate schema, a provisioned role, and outside the Alembic chain
 
@@ -145,6 +194,12 @@ set, and its validator rejects a DSN equal to `database_url` — the superuser �
 failure this would otherwise drift into. Rejecting `database_url_app` would guard the wrong
 direction: that role is under-privileged, not over-privileged. `rag_app` receives no grant on
 `evaluation`.
+
+That string comparison is an **ergonomic early error, not the control**: an equivalent DSN differing
+in a query parameter, host alias, password encoding or URL form passes it. The authoritative check is
+at connection time — `EvaluationStore.ensure_schema` queries `pg_roles.rolsuper` for the actually
+connected role and raises before issuing any DDL. A DSN string can lie by being merely equivalent;
+`rolsuper` cannot.
 
 ### 6. The harness lives entirely under `experiments/`
 
@@ -193,8 +248,13 @@ and so respects the exclusion rather than deviating from it.
   and each query has one or two relevant documents, which makes per-query recall coarse (0, 0.5 or
   1). Aggregates over 60 queries carry the signal; single-query values should not be over-read.
 - A second Postgres role and schema is one more thing to provision in every environment.
-- The tiebreaker changes the observed order of tied results. It cannot degrade ranking, but evidence
-  captured before it may not reproduce row-for-row among tied rows.
+- The tiebreaker is a ranking policy on the production path, not a free fix. Because CTE ranks feed
+  RRF scores, it can change the relative order of chunks whose final scores differ, and retrieval
+  evidence captured before it may not reproduce row-for-row. It cannot be argued to *improve*
+  ranking either — the claim is only that an arbitrary-but-stable order beats an
+  arbitrary-and-unstable one.
+- The metrics are binary-relevance, and the store is fixed to one schema; both are narrower surfaces
+  than a general evaluation framework would offer, deliberately.
 
 ---
 

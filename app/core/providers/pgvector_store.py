@@ -21,9 +21,21 @@ _RRF_K = 60
 # the tiebreaker both the *membership* of each CTE (ORDER BY ... LIMIT) and the
 # final ordering are left to the plan, so an autovacuum or a plan change can
 # silently reorder results for an unchanged corpus and an unchanged query.
+#
 # `id` is a random UUID: arbitrary as a preference, but stable, which is all a
-# tiebreaker has to be. It never reorders chunks with distinct scores
-# (ORQ-26 Task 0, ADR-009).
+# tiebreaker has to be. Be precise about what that costs, though. The two
+# CTE-level tiebreakers are NOT merely cosmetic: row_number() assigns the rank
+# that feeds the RRF score, so ordering tied candidates by `id` fixes which of
+# them scores 1/(60+r) and which scores 1/(60+r+1). A different score can then
+# order differently against a third chunk whose score was never tied with
+# either. So this DOES change the observable ranking of distinctly-scored
+# chunks relative to an unfixed run — it is a ranking policy over tied
+# candidates, not only a display-order fix.
+#
+# What it does not do: introduce any preference among candidates that were not
+# already tied on cosine distance or ts_rank. Both the old and new orders among
+# ties are arbitrary; only stability changed. ADR-009 decision 2 approves that
+# trade explicitly (ORQ-26 Task 0).
 
 
 class PgVectorStore(VectorStorePort):

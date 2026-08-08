@@ -1,10 +1,16 @@
 # ORQ-26 retrieval evaluation harness
 
-Answers one question with pre-registered evidence: **is the retriever the problem?**
+Answers one question: **under a frozen configuration, does the deterministic candidate generator
+retrieve the labelled documents?**
 
 Measures `PgVectorStore.hybrid_search` directly — not `RetrievalPipeline` — so a run costs one
 embedding call per query, makes zero LLM and zero reranker calls, and is reproducible. See
-`docs/adr/009-rag-evaluation-harness.md` for why, and for the four alternatives that were discarded.
+`docs/adr/009-rag-evaluation-harness.md` for why, and for the five alternatives that were discarded.
+
+**What this does not tell you.** Production retrieval also rewrites the query and reranks. A good
+score here does **not** clear the production retrieval path, and a poor one does not by itself
+indict it. This is a candidate-generator baseline; claims about production retrieval need the
+pipeline evaluation, which is ORQ-27's.
 
 This directory is not imported by the application. It imports `app.*` in one direction only.
 
@@ -32,18 +38,29 @@ frozen file.
 
 Note that grade `0` is implicit for unjudged paths and never appears in the data. Since the
 registered relevance rule is `>= 1`, every judgment counts as relevant and the graded scale is
-unused by the metrics registered here — it is carried for future graded metrics. Each query has one
-or two relevant documents, so **per-query recall is coarse** (0, 0.5 or 1); the aggregates carry the
-signal.
+unused by the metrics registered here.
+
+**These are binary-relevance metrics, not graded ones.** The grade scale must not be cited as
+evidence of finer discrimination than the data supports. Each query has one or two relevant
+documents, so per-query recall takes only the values 0, 0.5 and 1; the aggregates carry the signal.
+A graded metric, or a separate primary-relevance analysis over grade 2 alone, would need its own
+registration before being run.
 
 ## Pre-registration
 
 `registration.json` is the record, not the ORQ spec — `.gitignore:64` excludes `.framework/orqs/`.
 
 A content hash alone would prove only which file produced a run, not that it predated one. So the
-runner refuses to execute unless `registration.json` is committed and unmodified in the worktree and
-both decision thresholds are non-null; every `runs` row records the file's SHA-256 and the commit
-that introduced it; and runs under every registration hash are reported, never only the last.
+runner is *specified* to refuse execution unless `registration.json` is committed and unmodified in
+the worktree and both decision thresholds are non-null; to record the file's SHA-256 and the commit
+that introduced it in every `runs` row; and to report runs under every registration hash, never only
+the last.
+
+> **Not enforced yet.** `run_evaluation.py` is Task 5 and does not exist. The only control in force
+> today is the golden-set checksum. Until the runner exists and is tested against dirty,
+> uncommitted, unsigned, checksum-mutated and null-threshold registrations, this is a draft
+> registration with stated future controls — not an enforced pre-registration, and not something
+> another ORQ may inherit as precedent. `registration.json` says the same in `enforcement_status`.
 
 The decision thresholds ship as `null` **by design**. A threshold chosen after seeing the numbers
 registers nothing.
@@ -60,6 +77,13 @@ top-k against the labelled ones. Pinning removes both effects by construction, r
 on an author to avoid words that happen to match a query they can read.
 
 The metric therefore describes the corpus at that commit, not at `HEAD`. That is the intended trade.
+
+Runs against this pin are **contamination-controlled baseline** runs: comparable to each other and
+to nothing else. Any run meant to say something about production relevance must re-pin to a reviewed
+commit, recording that commit, the ingestion configuration, document and chunk counts and the
+golden-set hash, and re-running the leakage checks. **ORQ-27 and ORQ-28 do not inherit this pin by
+default** — inheriting it silently would turn a one-time control into a permanently stale baseline
+cited as current evidence.
 
 ## Reproduction
 

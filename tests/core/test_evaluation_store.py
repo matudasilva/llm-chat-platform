@@ -3,9 +3,15 @@
 Runs against a throwaway schema, never `evaluation` itself, so a teardown here
 can never drop a real store.
 
-Skipped unless RAG_TEST_DATABASE_URL is set — see pytest.ini's `postgres`
-marker. The privilege assertions additionally need RAG_TEST_DATABASE_URL_APP
-(the rag_app role) and EVALUATION_TEST_DATABASE_URL (the store role).
+The store fixture connects as the **evaluation role**, not the superuser.
+Review round 1 found that using the privileged DSN made AC6 self-defeating: it
+would have proved the DDL runs, under exactly the privilege level the ADR
+forbids. `ensure_schema` now refuses a superuser outright, so the earlier
+fixture could not work anyway.
+
+Skipped unless RAG_TEST_DATABASE_URL (privileged, for inspection and teardown)
+and EVALUATION_TEST_DATABASE_URL (the store role) are both set. The rag_app
+isolation assertion additionally needs RAG_TEST_DATABASE_URL_APP.
 """
 
 from __future__ import annotations
@@ -18,7 +24,13 @@ from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError, ProgrammingError
 from sqlalchemy.ext.asyncio import create_async_engine
 
-from experiments.evaluation.store import EvaluationStore, RunProvenance, build_ddl
+from experiments.evaluation.store import (
+    SCHEMA,
+    EvaluationStore,
+    RunProvenance,
+    SuperuserStoreError,
+    build_ddl,
+)
 
 pytestmark = pytest.mark.postgres
 
@@ -28,6 +40,13 @@ _TEST_SCHEMA = "evaluation_test"
 def _privileged_url() -> str:
     url = os.environ.get("RAG_TEST_DATABASE_URL")
     assert url, "RAG_TEST_DATABASE_URL must be set"
+    return url
+
+
+def _store_url() -> str:
+    url = os.environ.get("EVALUATION_TEST_DATABASE_URL")
+    if not url:
+        pytest.skip("EVALUATION_TEST_DATABASE_URL not set")
     return url
 
 
@@ -44,7 +63,7 @@ def _provenance(**overrides: str) -> RunProvenance:
 
 @pytest.fixture
 async def store():
-    store = EvaluationStore(_privileged_url(), schema=_TEST_SCHEMA)
+    store = EvaluationStore._for_test(_store_url(), _TEST_SCHEMA)
     try:
         await store.ensure_schema()
         yield store
@@ -249,12 +268,33 @@ async def test_rag_app_cannot_reach_the_store(store) -> None:
 
 
 async def test_the_store_role_is_not_a_superuser() -> None:
-    store_url = os.environ.get("EVALUATION_TEST_DATABASE_URL")
-    if not store_url:
-        pytest.skip("EVALUATION_TEST_DATABASE_URL not set")
-    store = EvaluationStore(store_url, schema=_TEST_SCHEMA)
+    store = EvaluationStore(_store_url())
     try:
         assert await store.is_superuser() is False
+    finally:
+        await store.dispose()
+
+
+async def test_ensure_schema_refuses_a_superuser_connection() -> None:
+    # The settings-time string check is ergonomic only: an equivalent DSN
+    # differing in a query parameter, host alias or password encoding passes it.
+    # This is the control that cannot be talked around, because it asks the
+    # server who it is actually connected as.
+    store = EvaluationStore._for_test(_privileged_url(), _TEST_SCHEMA)
+    try:
+        with pytest.raises(SuperuserStoreError, match="must not connect as a superuser"):
+            await store.ensure_schema()
+    finally:
+        await store.dispose()
+
+
+async def test_the_public_store_is_fixed_to_the_evaluation_schema() -> None:
+    # The schema the harness owns is declared in ADR-009 decision 5. Letting a
+    # caller redirect DDL and writes elsewhere would widen that boundary
+    # silently, so configurability lives only in the test seam.
+    store = EvaluationStore(_store_url())
+    try:
+        assert store._schema == SCHEMA
     finally:
         await store.dispose()
 

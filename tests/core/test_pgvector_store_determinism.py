@@ -127,14 +127,17 @@ async def tied_corpus():
         await engine.dispose()
 
 
-async def _search(top_k: int) -> list[uuid.UUID]:
+async def _retrieve(top_k: int):
     sessionmaker = build_rag_sessionmaker(_app_url())
     with tenant_scope(_TENANT):
         async with sessionmaker() as session:
-            chunks = await PgVectorStore(session).hybrid_search(
+            return await PgVectorStore(session).hybrid_search(
                 _QUERY_TEXT, _NEAR, top_k=top_k
             )
-    return [chunk.chunk_id for chunk in chunks]
+
+
+async def _search(top_k: int) -> list[uuid.UUID]:
+    return [chunk.chunk_id for chunk in await _retrieve(top_k)]
 
 
 def _expected_order(tied_corpus: dict[str, list[uuid.UUID]], top_k: int) -> list[uuid.UUID]:
@@ -171,6 +174,82 @@ async def test_cte_membership_is_stable_under_ties(tied_corpus) -> None:
     admitted_keyword = set(sorted(tied_corpus["keyword_ids"])[:truncated])
     assert set(returned) <= admitted_semantic | admitted_keyword
     assert len(returned) == truncated
+
+
+@pytest.fixture
+async def uniform_corpus():
+    """Seeds one group in which *every* ordering key ties, for all chunks.
+
+    Same embedding as the query (cosine distance 0) and the same text, which
+    also matches the query, so both legs see an identically-tied population and
+    admit the same subset. The fused set is then exactly `top_k` rows, which is
+    what makes CTE membership observable as an equality rather than as a
+    subset.
+    """
+    engine = create_async_engine(_privileged_url())
+    document_id = uuid.uuid4()
+    chunk_ids = [uuid.uuid4() for _ in range(5)]
+    try:
+        async with engine.begin() as conn:
+            await conn.execute(
+                text(
+                    "INSERT INTO documents (id, tenant_id, source_path, content_hash, doc_type) "
+                    "VALUES (:id, :tenant_id, 'det-uniform.md', 'hash-uniform', 'markdown')"
+                ),
+                {"id": document_id, "tenant_id": _TENANT},
+            )
+            for ordinal, chunk_id in enumerate(chunk_ids):
+                await conn.execute(
+                    text(
+                        "INSERT INTO chunks "
+                        "(id, document_id, tenant_id, ordinal, text, embedding, search_vector) "
+                        "VALUES (:id, :doc_id, :tenant_id, :ordinal, :text, "
+                        "CAST(:embedding AS vector), to_tsvector('english', :text))"
+                    ),
+                    {
+                        "id": chunk_id,
+                        "doc_id": document_id,
+                        "tenant_id": _TENANT,
+                        "ordinal": ordinal,
+                        "text": _KEYWORD_TEXT,
+                        "embedding": _vector(_NEAR),
+                    },
+                )
+        yield chunk_ids
+    finally:
+        async with engine.begin() as conn:
+            await conn.execute(
+                text("DELETE FROM documents WHERE tenant_id = :tenant_id"),
+                {"tenant_id": _TENANT},
+            )
+        await engine.dispose()
+
+
+@pytest.mark.asyncio
+async def test_cte_membership_is_exactly_the_id_ordered_subset(uniform_corpus) -> None:
+    # Stronger than the subset assertion above, which review round 1 found could
+    # hold while a CTE still admitted a different tied subset. Here both legs
+    # tie completely and admit the same rows, so the fused set is exactly top_k
+    # and membership is pinned by equality.
+    top_k = 3
+    returned = await _search(top_k)
+    assert returned == sorted(uniform_corpus)[:top_k]
+
+
+@pytest.mark.asyncio
+async def test_rrf_scores_follow_the_id_determined_rank_assignment(uniform_corpus) -> None:
+    # The point review round 1 made: the CTE tiebreakers are not cosmetic.
+    # row_number() assigns the rank that feeds the RRF score, so ordering tied
+    # candidates by `id` decides which of them scores 1/(60+r) and which
+    # 1/(60+r+1). Asserting the scores themselves — not just their order — is
+    # what makes that visible.
+    top_k = 3
+    chunks = await _retrieve(top_k)
+    expected = [
+        (chunk_id, 2 * (1.0 / (_RRF_K + rank)))
+        for rank, chunk_id in enumerate(sorted(uniform_corpus)[:top_k], start=1)
+    ]
+    assert [(chunk.chunk_id, pytest.approx(float(chunk.score))) for chunk in chunks] == expected
 
 
 @pytest.mark.asyncio
