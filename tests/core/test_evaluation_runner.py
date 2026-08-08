@@ -16,8 +16,10 @@ from pathlib import Path
 import pytest
 
 from experiments.evaluation.run_evaluation import (
+    CorpusStateError,
     GuardFailure,
     Registration,
+    assert_manifest_matches_pin,
     compute_verdict,
     load_golden_set,
     load_manifest,
@@ -190,3 +192,52 @@ def test_verdict_uses_the_registered_thresholds_not_hardcoded_ones() -> None:
 def test_verdict_carries_the_scope_note() -> None:
     verdict = compute_verdict(_registration(), {"recall@10": 0.9, "recall@20": 0.9, "recall@30": 0.9})
     assert "not a verdict on production retrieval" in verdict["scope_note"].lower()
+
+
+def test_measure_is_not_publicly_reachable() -> None:
+    # Round 1 of tranche 2 found `measure()` was a public alternate entry point:
+    # given a caller-supplied Registration and golden set it retrieved without
+    # any guard having run. The only public path to a result must be the one
+    # that has passed all of them.
+    import experiments.evaluation.run_evaluation as runner
+
+    assert not hasattr(runner, "measure")
+    assert hasattr(runner, "_measure")
+
+
+def test_the_instrument_guard_lists_the_files_that_are_the_instrument() -> None:
+    # If a module that shapes the measurement is left off this list, the guard
+    # passes while the recorded runner_commit describes something else.
+    from experiments.evaluation.run_evaluation import _INSTRUMENT_PATHS
+
+    assert set(_INSTRUMENT_PATHS) == {
+        "experiments/evaluation/run_evaluation.py",
+        "experiments/evaluation/metrics.py",
+        "experiments/evaluation/store.py",
+        "app/core/providers/pgvector_store.py",
+    }
+
+
+def test_corpus_state_error_is_a_guard_failure() -> None:
+    # So a caller catching GuardFailure cannot miss a wiped corpus.
+    assert issubclass(CorpusStateError, GuardFailure)
+
+
+def test_manifest_guard_rejects_a_commit_other_than_the_pin() -> None:
+    # Round 1 of tranche 2: this check existed inline in main_async and had no
+    # test, so nothing proved a corpus from the wrong revision would be caught.
+    registration = _registration()
+    manifest = {"commit": "0" * 40, "ingested_at": "x", "document_count": 1, "chunk_count": 1}
+    with pytest.raises(GuardFailure, match="but the registration pins"):
+        assert_manifest_matches_pin(manifest, registration)
+
+
+def test_manifest_guard_accepts_the_pinned_commit() -> None:
+    registration = _registration()
+    manifest = {
+        "commit": registration.pinned_commit,
+        "ingested_at": "x",
+        "document_count": 1,
+        "chunk_count": 1,
+    }
+    assert_manifest_matches_pin(manifest, registration)

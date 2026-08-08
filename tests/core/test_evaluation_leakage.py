@@ -24,7 +24,12 @@ from sqlalchemy.ext.asyncio import create_async_engine
 
 from app.http.middleware.tenant import tenant_scope
 from app.infra.db.session import build_rag_sessionmaker
-from experiments.evaluation.run_evaluation import GuardFailure, assert_no_query_leaked
+from experiments.evaluation.run_evaluation import (
+    CorpusStateError,
+    GuardFailure,
+    assert_corpus_matches_manifest,
+    assert_no_query_leaked,
+)
 
 pytestmark = pytest.mark.postgres
 
@@ -146,3 +151,40 @@ async def test_the_measured_corpus_itself_is_clean() -> None:
             if total == 0:
                 pytest.skip("the acme corpus is not ingested in this environment")
             await assert_no_query_leaked(session, _queries())
+
+
+@pytest.mark.asyncio
+async def test_a_corpus_that_does_not_match_the_manifest_is_refused() -> None:
+    """The guard that would have caught a wiped corpus.
+
+    `tests/core/test_rag_migration.py` downgrades the schema, emptying
+    `documents` and `chunks`. Without this check the next run measured an empty
+    corpus and reported 0.0 across the board as though it were a finding —
+    which is exactly what happened before the guard existed.
+    """
+    await _seed("A single chunk, so the tenant holds 1 document and 1 chunk.")
+    try:
+        sessionmaker = build_rag_sessionmaker(_app_url())
+        with tenant_scope(_TENANT):
+            async with sessionmaker() as session:
+                with pytest.raises(CorpusStateError, match="corpus mismatch"):
+                    await assert_corpus_matches_manifest(
+                        session,
+                        {"commit": "x", "document_count": 999, "chunk_count": 999},
+                    )
+    finally:
+        await _cleanup()
+
+
+@pytest.mark.asyncio
+async def test_a_matching_corpus_passes_the_guard() -> None:
+    await _seed("A single chunk, so the tenant holds 1 document and 1 chunk.")
+    try:
+        sessionmaker = build_rag_sessionmaker(_app_url())
+        with tenant_scope(_TENANT):
+            async with sessionmaker() as session:
+                await assert_corpus_matches_manifest(
+                    session, {"commit": "x", "document_count": 1, "chunk_count": 1}
+                )
+    finally:
+        await _cleanup()

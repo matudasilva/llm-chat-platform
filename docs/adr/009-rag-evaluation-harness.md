@@ -118,13 +118,15 @@ the `k` values, the decision rule, the golden set's SHA-256, the pinned corpus c
 `approved_by` / `approved_at`.
 
 A content hash alone proves only which file produced a run. It does not prevent registering `k=10`,
-running, disliking the number, editing, re-running, and reporting only the second set. So the runner
-is specified to:
+running, disliking the number, editing, re-running, and reporting only the second set. So the runner:
 
-- refuse to execute unless `registration.json` is committed and unmodified in the worktree, and
-  unless both decision thresholds are non-null;
-- record the file's SHA-256 **and** the commit that introduced it in every `runs` row;
-- require a new commit for re-registration, and report runs under every registration hash — never
+- refuses to execute unless `registration.json` is committed and unmodified in the worktree, and
+  unless both decision thresholds are non-null and the approval is signed;
+- refuses to execute unless the instrument itself — the runner, the metrics, the store and
+  `pgvector_store.py` — is committed and unmodified, and records that commit as `runner_commit`.
+  Without it a run could name a revision that does not describe the code that produced it;
+- records the file's SHA-256 **and** the commit that introduced it in every `runs` row;
+- requires a new commit for re-registration, and reports runs under every registration hash — never
   only the last.
 
 **A run never overwrites a run.** Repeating the harness against the same golden set, the same
@@ -159,7 +161,7 @@ terms of the query that judges it. And this ADR is itself ingested under `docs/`
 unlabelled document topically adjacent to labelled queries competes for top-k against the documents
 that carry the labels.
 
-Ingestion is therefore pinned to the branch merge-base, with the Task 0 code fix applied. The fix
+Ingestion is therefore pinned to the branch merge-base, with the ordering fix of decision 2 applied. It
 changes ordering, not content, so it belongs in the measurement; this ORQ's prose does not. Pinning
 removes both effects by construction, rather than relying on the author of a document to choose
 words that do not happen to match a query they can read.
@@ -253,12 +255,14 @@ and so respects the exclusion rather than deviating from it.
 
 ### Positivas
 
-- A zero-LLM-cost measurement of candidate-generator quality that later ORQs will be able to re-run
-  to judge a change, rather than arguing it from design — once the Task 5 runner exists.
+- A zero-LLM-cost measurement of candidate-generator quality that later ORQs re-run to judge a
+  change, rather than arguing it from design.
 - A production bug fixed: `/chat` no longer returns unstable source attributions for identical
   requests.
-- A pre-registration discipline *designed* to be enforced in the runner rather than by convention.
-  It is not enforced yet and is not inheritable as precedent until it is (decision 3).
+- A pre-registration discipline enforced by the runner rather than by convention. It refuses a
+  modified registration or instrument, a null threshold, an unsigned approval, a mutated golden set,
+  a missing or mismatched corpus manifest, a corpus that does not match the counts the manifest
+  declares, and any golden-set query found in the corpus.
 - Evaluation data cannot reach business tables: separate schema, separate role, no migration.
 
 ### Negativas / Trade-offs
@@ -277,6 +281,11 @@ and so respects the exclusion rather than deviating from it.
   arbitrary-and-unstable one.
 - The metrics are binary-relevance, and the store is fixed to one schema; both are narrower surfaces
   than a general evaluation framework would offer, deliberately.
+- The test suite and the measured corpus are mutually destructive. `tests/core/test_rag_migration.py`
+  downgrades the schema, which empties `documents` and `chunks`, so running the full suite requires
+  re-ingesting before evaluating. That test belongs to ORQ-21 and is not changed here; the runner's
+  corpus guard turns the collision into a refusal instead of a silent run of zeros, which is what it
+  produced before the guard existed.
 
 ---
 

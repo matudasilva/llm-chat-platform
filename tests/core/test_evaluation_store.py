@@ -57,6 +57,7 @@ def _provenance(**overrides: str) -> RunProvenance:
         "golden_set_sha256": "c" * 64,
         "ingestion_commit": "d" * 40,
         "code_commit": "e" * 40,
+        "runner_commit": "f" * 40,
     }
     return RunProvenance(**{**base, **overrides})
 
@@ -130,6 +131,7 @@ async def test_run_provenance_columns_are_not_nullable(store) -> None:
         "golden_set_sha256",
         "ingestion_commit",
         "code_commit",
+        "runner_commit",
     } <= not_null
 
 
@@ -141,6 +143,7 @@ async def test_run_provenance_columns_are_not_nullable(store) -> None:
         "golden_set_sha256",
         "ingestion_commit",
         "code_commit",
+        "runner_commit",
     ],
 )
 def test_provenance_refuses_a_missing_field(missing: str) -> None:

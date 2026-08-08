@@ -28,6 +28,7 @@ _PROVENANCE_FIELDS = (
     "golden_set_sha256",
     "ingestion_commit",
     "code_commit",
+    "runner_commit",
 )
 
 
@@ -54,7 +55,8 @@ def build_ddl(schema: str = SCHEMA) -> tuple[str, ...]:
             registration_commit text        NOT NULL,
             golden_set_sha256   text        NOT NULL,
             ingestion_commit    text        NOT NULL,
-            code_commit         text        NOT NULL
+            code_commit         text        NOT NULL,
+            runner_commit       text        NOT NULL
         )
         """,
         f"""
@@ -83,6 +85,15 @@ def build_ddl(schema: str = SCHEMA) -> tuple[str, ...]:
             PRIMARY KEY (run_id, key)
         )
         """,
+        # For a store created before runner_commit existed. Added nullable and
+        # then backfilled, because a NOT NULL column cannot be added to a table
+        # that already holds rows. The sentinel is deliberately not a plausible
+        # commit: those rows were written by a runner that did not verify its own
+        # source, and must not be readable as though they had.
+        f"ALTER TABLE {schema}.runs ADD COLUMN IF NOT EXISTS runner_commit text",
+        f"UPDATE {schema}.runs SET runner_commit = 'unverified-pre-guard' "
+        f"WHERE runner_commit IS NULL",
+        f"ALTER TABLE {schema}.runs ALTER COLUMN runner_commit SET NOT NULL",
         # Reporting every registration's runs, never only the last, is the point
         # of ADR-009 decision 3; this index keeps that query cheap enough to be
         # routine rather than something a reader skips.
@@ -100,6 +111,7 @@ class RunProvenance:
     golden_set_sha256: str
     ingestion_commit: str
     code_commit: str
+    runner_commit: str
 
     def __post_init__(self) -> None:
         for field_name in _PROVENANCE_FIELDS:
@@ -195,9 +207,9 @@ class EvaluationStore:
                 text(
                     f"INSERT INTO {self._schema}.runs "
                     "(run_id, experiment_name, status, start_time, registration_sha256, "
-                    " registration_commit, golden_set_sha256, ingestion_commit, code_commit) "
+                    " registration_commit, golden_set_sha256, ingestion_commit, code_commit, runner_commit) "
                     "VALUES (:run_id, :experiment_name, 'RUNNING', :start_time, :registration_sha256, "
-                    " :registration_commit, :golden_set_sha256, :ingestion_commit, :code_commit)"
+                    " :registration_commit, :golden_set_sha256, :ingestion_commit, :code_commit, :runner_commit)"
                 ),
                 {
                     "run_id": run_id,

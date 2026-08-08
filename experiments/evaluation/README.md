@@ -91,6 +91,16 @@ golden-set hash, and re-running the leakage checks. **ORQ-27 and ORQ-28 do not i
 default** — inheriting it silently would turn a one-time control into a permanently stale baseline
 cited as current evidence.
 
+## Corpus integrity
+
+Running `pytest` executes `tests/core/test_rag_migration.py`, which performs a schema
+downgrade/upgrade cycle that empties `documents` and `chunks`. **After running the full test suite,
+re-run `ingest_corpus.py` before calling `run_evaluation.py`.**
+
+The runner detects this and exits with `CorpusStateError` rather than measuring an empty corpus. That
+guard exists because the failure already happened once: before it, a wiped corpus produced a silent
+run of `0.0` across every metric, which reads like a finding rather than like a broken environment.
+
 ## What can be run today
 
 ```

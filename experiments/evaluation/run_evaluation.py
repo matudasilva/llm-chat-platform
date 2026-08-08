@@ -4,17 +4,24 @@ Imports nothing from generation or reranking. That is asserted by a test rather
 than trusted (AC7): the whole value of this instrument is that it calls
 `PgVectorStore.hybrid_search` and an embedding provider, and nothing else.
 
-Three guards run before any measurement, and each fails the run outright:
+Guards run before any measurement, and each fails the run outright:
 
   1. `registration.json` is committed and unmodified, with non-null thresholds
      and a signed approval. A threshold chosen after seeing the numbers
      registers nothing (ADR-009 decision 3).
-  2. The corpus manifest exists, so `ingestion_commit` is a recorded fact rather
-     than an assertion (ADR-009 decision 4).
-  3. No golden-set query string occurs in the ingested corpus. Asserted against
+  2. The instrument itself is committed and unmodified, so `runner_commit`
+     names the code that actually ran.
+  3. The corpus manifest exists and its commit matches the registered pin, so
+     `ingestion_commit` is a recorded fact rather than an assertion.
+  4. The live corpus matches the counts the manifest declares. Without this a
+     wiped corpus yields a silent run of zeros instead of a refusal.
+  5. No golden-set query string occurs in the ingested corpus. Asserted against
      `chunks` under tenant scope, not against the filesystem: the vectors were
      written at an earlier commit, so a later rephrasing on disk would hide a
      leak the corpus still carries.
+
+`_measure` is private on purpose: the only public path to a result is the one
+that has passed every guard above.
 
     python -m experiments.evaluation.run_evaluation
     python -m experiments.evaluation.run_evaluation --dry-run   # guards + metrics, no store write
@@ -54,6 +61,20 @@ _EXPERIMENT_NAME = "orq-26-candidate-generator-baseline"
 
 class GuardFailure(RuntimeError):
     """A precondition failed; no measurement was taken."""
+
+
+class CorpusStateError(GuardFailure):
+    """The live corpus does not match what the manifest declares."""
+
+
+# The files that *are* the instrument. If any of them is dirty, `code_commit`
+# would name a revision that does not describe what actually ran.
+_INSTRUMENT_PATHS = (
+    "experiments/evaluation/run_evaluation.py",
+    "experiments/evaluation/metrics.py",
+    "experiments/evaluation/store.py",
+    "app/core/providers/pgvector_store.py",
+)
 
 
 @dataclass(frozen=True)
@@ -98,6 +119,61 @@ def validate_registration_payload(payload: dict[str, Any]) -> None:
         raise GuardFailure(
             "registration.json is unsigned (approved_by/approved_at). Unsigned, the "
             "pre-registration is decoration rather than precedence."
+        )
+
+
+def assert_instrument_committed() -> str:
+    """Guard 2. Refuses to measure with a modified instrument.
+
+    Round 1 of tranche 2 found that the runner guarded `registration.json` but
+    not its own source, so a run could record a `code_commit` that does not
+    describe the code that produced it. Uses `git status --porcelain` rather
+    than `git diff --exit-code` because the latter is blind to untracked files —
+    a freshly written module is exactly the case that matters.
+
+    Returns the commit that last touched the instrument, which is what
+    `runner_commit` records.
+    """
+    dirty = _git("status", "--porcelain", "--", *_INSTRUMENT_PATHS)
+    if dirty:
+        raise GuardFailure(
+            "the instrument is modified or untracked; a run would record a commit that does "
+            f"not describe the code that produced it:\n{dirty}"
+        )
+    commit = _git("log", "-1", "--format=%H", "--", *_INSTRUMENT_PATHS)
+    if not commit:
+        raise GuardFailure("the instrument has no commit history")
+    return commit
+
+
+def assert_manifest_matches_pin(manifest: dict[str, Any], registration: Registration) -> None:
+    """The corpus must be the one the registration pinned, not merely *a* corpus."""
+    if manifest["commit"] != registration.pinned_commit:
+        raise GuardFailure(
+            f"corpus was ingested from {manifest['commit']}, but the registration pins "
+            f"{registration.pinned_commit}"
+        )
+
+
+async def assert_corpus_matches_manifest(session, manifest: dict[str, Any]) -> None:
+    """Guard 3. The corpus in the database must be the one the manifest declares.
+
+    Without this, a wiped corpus produces a silent run of zeros rather than a
+    refusal — which is exactly what happened once: `tests/core/test_rag_migration.py`
+    performs a schema downgrade that empties `documents` and `chunks`, so running
+    the full suite destroys the measured corpus and the next run would have
+    reported 0.0 across the board as though it were a finding.
+    """
+    live_documents = (await session.execute(text("SELECT count(*) FROM documents"))).scalar_one()
+    live_chunks = (await session.execute(text("SELECT count(*) FROM chunks"))).scalar_one()
+    if (
+        live_documents != manifest["document_count"]
+        or live_chunks != manifest["chunk_count"]
+    ):
+        raise CorpusStateError(
+            f"corpus mismatch — manifest declares {manifest['document_count']} docs / "
+            f"{manifest['chunk_count']} chunks, DB has {live_documents} / {live_chunks}. "
+            "Re-run app.scripts.ingest_corpus before evaluating."
         )
 
 
@@ -178,7 +254,9 @@ async def _source_paths(session, document_ids: Sequence[Any]) -> dict[str, str]:
     return {str(row.id): row.source_path for row in result}
 
 
-async def measure(registration: Registration, golden_set: list[dict[str, Any]]) -> dict[str, Any]:
+async def _measure(
+    registration: Registration, golden_set: list[dict[str, Any]], manifest: dict[str, Any]
+) -> dict[str, Any]:
     """Runs the golden set and returns per-query, per-language and aggregate metrics."""
     embedding = build_embedding_provider(settings)
     vectors = (await embedding.embed_many([row["query"] for row in golden_set])).vectors
@@ -189,6 +267,7 @@ async def measure(registration: Registration, golden_set: list[dict[str, Any]]) 
 
     with tenant_scope(registration.tenant_id):
         async with sessionmaker() as session:
+            await assert_corpus_matches_manifest(session, manifest)
             await assert_no_query_leaked(session, [row["query"] for row in golden_set])
 
         for row, vector in zip(golden_set, vectors):
@@ -286,16 +365,13 @@ def compute_verdict(registration: Registration, aggregate: dict[str, float]) -> 
 
 async def main_async(*, dry_run: bool) -> int:
     registration = load_registration()
+    runner_commit = assert_instrument_committed()
     golden_set = load_golden_set(registration)
     manifest = load_manifest()
+    assert_manifest_matches_pin(manifest, registration)
 
-    if manifest["commit"] != registration.pinned_commit:
-        raise GuardFailure(
-            f"corpus was ingested from {manifest['commit']}, but the registration pins "
-            f"{registration.pinned_commit}"
-        )
 
-    results = await measure(registration, golden_set)
+    results = await _measure(registration, golden_set, manifest)
     verdict = compute_verdict(registration, results["aggregate"])
 
     report = {
@@ -304,6 +380,7 @@ async def main_async(*, dry_run: bool) -> int:
         "registration_commit": registration.commit,
         "ingestion_commit": manifest["commit"],
         "code_commit": _git("rev-parse", "HEAD"),
+        "runner_commit": runner_commit,
         "corpus": {
             "document_count": manifest["document_count"],
             "chunk_count": manifest["chunk_count"],
@@ -315,7 +392,9 @@ async def main_async(*, dry_run: bool) -> int:
     }
 
     if not dry_run:
-        report["run_id"] = str(await _record(registration, manifest, results, verdict))
+        report["run_id"] = str(
+            await _record(registration, manifest, results, verdict, runner_commit)
+        )
 
     print(json.dumps(report, indent=2, sort_keys=True))
     return 0
@@ -326,6 +405,7 @@ async def _record(
     manifest: dict[str, Any],
     results: dict[str, Any],
     verdict: dict[str, Any],
+    runner_commit: str,
 ):
     if not settings.evaluation_store_url:
         raise GuardFailure("EVALUATION_STORE_URL is not set; the run has nowhere to be recorded")
@@ -341,6 +421,7 @@ async def _record(
                 golden_set_sha256=registration.payload["golden_set"]["sha256"],
                 ingestion_commit=manifest["commit"],
                 code_commit=_git("rev-parse", "HEAD"),
+                runner_commit=runner_commit,
             ),
             params={
                 "k_values": ",".join(str(k) for k in registration.k_values),
