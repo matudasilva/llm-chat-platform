@@ -14,6 +14,17 @@ from app.core.domain.vector_store import ChunkUpsert, RetrievedChunk, VectorStor
 # them (spec.md §Design decisions 6).
 _RRF_K = 60
 
+# Every ORDER BY below carries `id` as a final tiebreaker. RRF produces exact
+# score ties by construction — a chunk found only by the semantic leg at rank r
+# scores 1.0/(60+r), identical to a chunk found only by the keyword leg at the
+# same rank — and ts_rank ties are the common case, not the edge case. Without
+# the tiebreaker both the *membership* of each CTE (ORDER BY ... LIMIT) and the
+# final ordering are left to the plan, so an autovacuum or a plan change can
+# silently reorder results for an unchanged corpus and an unchanged query.
+# `id` is a random UUID: arbitrary as a preference, but stable, which is all a
+# tiebreaker has to be. It never reorders chunks with distinct scores
+# (ORQ-26 Task 0, ADR-009).
+
 
 class PgVectorStore(VectorStorePort):
     """
@@ -75,17 +86,17 @@ class PgVectorStore(VectorStorePort):
                 """
                 WITH semantic AS (
                     SELECT id, document_id, text, metadata,
-                           row_number() OVER (ORDER BY embedding <=> CAST(:query_embedding AS vector)) AS rank
+                           row_number() OVER (ORDER BY embedding <=> CAST(:query_embedding AS vector), id) AS rank
                     FROM chunks
-                    ORDER BY embedding <=> CAST(:query_embedding AS vector)
+                    ORDER BY embedding <=> CAST(:query_embedding AS vector), id
                     LIMIT :top_k
                 ),
                 keyword AS (
                     SELECT id, document_id, text, metadata,
-                           row_number() OVER (ORDER BY ts_rank(search_vector, plainto_tsquery('english', :query_text)) DESC) AS rank
+                           row_number() OVER (ORDER BY ts_rank(search_vector, plainto_tsquery('english', :query_text)) DESC, id) AS rank
                     FROM chunks
                     WHERE search_vector @@ plainto_tsquery('english', :query_text)
-                    ORDER BY ts_rank(search_vector, plainto_tsquery('english', :query_text)) DESC
+                    ORDER BY ts_rank(search_vector, plainto_tsquery('english', :query_text)) DESC, id
                     LIMIT :top_k
                 ),
                 fused AS (
@@ -101,7 +112,7 @@ class PgVectorStore(VectorStorePort):
                 )
                 SELECT id, document_id, text, metadata, score
                 FROM fused
-                ORDER BY score DESC
+                ORDER BY score DESC, id
                 LIMIT :top_k
                 """
             ),
