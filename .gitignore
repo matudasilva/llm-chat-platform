@@ -77,3 +77,8 @@ CLAUDE.md
 .claude/skills/
 .claude/settings.local.json
 secrets/
+
+# ORQ-26: records which revision the locally ingested corpus came from. Machine-
+# specific state describing one database, so committing it would publish a claim
+# about a corpus nobody else has.
+experiments/evaluation/.corpus_manifest.json

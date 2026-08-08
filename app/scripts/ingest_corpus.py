@@ -16,10 +16,12 @@ from __future__ import annotations
 import argparse
 import asyncio
 import hashlib
+import json
 import logging
 import subprocess
 import sys
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
 from uuid import uuid4
 
@@ -255,6 +257,61 @@ async def ingest(
     return stats
 
 
+def _repo_commit(repo_root: Path) -> str:
+    """The commit the ingested content came from.
+
+    Read from `repo_root`, not the current directory: ORQ-26 ingests a pinned
+    worktree while running from the main tree, so those are deliberately
+    different revisions (ADR-009 decision 4).
+    """
+    result = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=repo_root,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    return result.stdout.strip()
+
+
+async def _corpus_counts(tenant_id: str, database_url_app: str) -> tuple[int, int]:
+    sessionmaker = build_rag_sessionmaker(database_url_app)
+    with tenant_scope(tenant_id):
+        async with sessionmaker() as session:
+            documents = (await session.execute(text("SELECT count(*) FROM documents"))).scalar_one()
+            chunks = (await session.execute(text("SELECT count(*) FROM chunks"))).scalar_one()
+    return int(documents), int(chunks)
+
+
+def write_corpus_manifest(
+    path: Path,
+    *,
+    commit: str,
+    document_count: int,
+    chunk_count: int,
+) -> None:
+    """Records which revision the corpus in the database was built from.
+
+    ORQ-26's harness refuses to run without this file, because `documents`
+    stores a per-document content_hash but no corpus-level revision, so there
+    is otherwise nothing to copy into a run's `ingestion_commit` except an
+    operator's assertion.
+
+    This is an honest declaration, not a proof: it states what the ingesting
+    process saw, and a later hand-edit of the database would not invalidate it.
+    Proving the correspondence would mean recomputing every content_hash from
+    the pinned worktree at run time (ADR-009 decision 4).
+    """
+    payload = {
+        "commit": commit,
+        "ingested_at": datetime.now(timezone.utc).isoformat(),
+        "document_count": document_count,
+        "chunk_count": chunk_count,
+    }
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+
+
 def _build_embedding_provider() -> EmbeddingPort:
     if not settings.openai_api_key:
         raise SystemExit("OPENAI_API_KEY is required for RAG ingestion (ADR-006 §1).")
@@ -271,6 +328,16 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--tenant-id", required=True, help="Tenant to ingest the corpus into. Required — no default.")
     parser.add_argument("--contextualize", action="store_true", help="Prepend an LLM-generated situating context before embedding (off by default, ADR-006 §6).")
     parser.add_argument("--repo-root", default=".", help="Repository root to scan (default: current directory).")
+    parser.add_argument(
+        "--manifest-path",
+        type=Path,
+        default=Path("experiments/evaluation/.corpus_manifest.json"),
+        help=(
+            "Where to record which revision this corpus came from. Resolved against the current "
+            "directory, NOT --repo-root: ORQ-26 ingests a pinned worktree while running from the "
+            "main tree, and the manifest belongs to the latter."
+        ),
+    )
     args = parser.parse_args(argv)
 
     if not settings.database_url_app:
@@ -289,6 +356,22 @@ def main(argv: list[str] | None = None) -> int:
         )
     )
     logger.info("ingest.summary", extra={"event": "ingest.summary", **stats})
+
+    repo_root = Path(args.repo_root).resolve()
+    document_count, chunk_count = asyncio.run(
+        _corpus_counts(args.tenant_id, settings.database_url_app)
+    )
+    # Counts come from the database, not from `stats`: a re-run skips unchanged
+    # documents, so the number this invocation inserted is not the size of the
+    # corpus a harness would then measure.
+    write_corpus_manifest(
+        args.manifest_path,
+        commit=_repo_commit(repo_root),
+        document_count=document_count,
+        chunk_count=chunk_count,
+    )
+    logger.info("ingest.manifest", extra={"event": "ingest.manifest", "path": str(args.manifest_path)})
+
     print(stats)
     return 0
 

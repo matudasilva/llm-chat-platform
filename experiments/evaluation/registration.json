@@ -4,88 +4,114 @@
   "adr": "docs/adr/009-rag-evaluation-harness.md",
   "question": "Under this frozen configuration, does the deterministic candidate generator retrieve the labelled documents?",
   "question_scope_note": "Deliberately narrower than 'is the retriever the problem?', which earlier drafts used. This measures PgVectorStore.hybrid_search alone. Production retrieval also rewrites the query and reranks, so a good score here does NOT clear the production retrieval path, and a bad one does not by itself indict it. Claims about production retrieval need the pipeline evaluation, which is ORQ-27's.",
-
   "golden_set": {
     "path": "experiments/evaluation/golden_set.jsonl",
     "sha256": "7924387510bd6a26fe9982d1d01d5ee0e1b36c4a3140b494d264519c5dd85452",
     "derived_from": "experiments/reranking/ground_truth.jsonl",
     "rows": 60,
     "pairs": 30,
-    "languages": ["en", "es"],
-    "grades_present": [1, 2],
+    "languages": [
+      "en",
+      "es"
+    ],
+    "grades_present": [
+      1,
+      2
+    ],
     "note": "Grade 0 is implicit for unjudged source_paths and never written. Judged paths per query are 1 or 2, so the >= 1 relevance rule admits every judgment; the graded scale is carried for future graded metrics, not used by the metrics registered below."
   },
-
   "instrument": {
     "callable": "app.core.providers.pgvector_store.PgVectorStore.hybrid_search",
     "measures": "the deterministic candidate generator, not RetrievalPipeline",
-    "excluded": ["query rewrite", "reranking", "the conditional evaluator"],
+    "excluded": [
+      "query rewrite",
+      "reranking",
+      "the conditional evaluator"
+    ],
     "embedding": {
       "provider": "app.core.domain.retrieval_factory.build_embedding_provider",
       "rationale": "Same call ORQ-22 used (build_dataset.py:52-57), so the ceiling numbers are directly comparable. Changing the embedding model would make this run measure something else; that swap is deferred and is itself a candidate for a later run of this harness."
     },
     "determinism_requires": "the ORDER BY tiebreakers of ORQ-26 Task 0; before that commit hybrid_search had no stable ordering under RRF score ties"
   },
-
   "corpus": {
     "pinned_commit": "d849f08f0a5b4164ec74ecb3a6705eb676a59dd0",
     "rationale": "ORQ-26 both edits a labelled document (app/core/providers/pgvector_store.py, judged grade 2 by q045/q046 and grade 1 by q015/q016) and adds new documents under docs/adr/ that ingestion would pick up. Measuring HEAD would let this ORQ's own text raise the term frequency of a labelled document in the terms of the query that judges it, and let an unlabelled ADR compete for top-k against labelled documents. Pinning the corpus to the branch merge-base removes both effects by construction rather than by careful wording.",
     "ingestion_mode": "plain",
     "tenant_id": "acme",
-    "recorded_per_run": ["ingestion_commit", "indexing_mode", "document_count", "chunk_count"],
+    "recorded_per_run": [
+      "ingestion_commit",
+      "indexing_mode",
+      "document_count",
+      "chunk_count"
+    ],
     "run_class": "contamination-controlled baseline",
     "repinning_policy": {
       "baseline_runs": "Retain d849f08 permanently. These are comparable to each other and to nothing else; that is their whole purpose.",
       "production_relevance_runs": "Must re-pin to a reviewed commit rather than inherit this one. Each re-pin records source commit, ingestion config, document and chunk counts, and the golden-set hash, and re-runs the leakage and contamination checks against the new corpus.",
       "inheritance": "ORQ-27 and ORQ-28 do NOT inherit this pin by default. A pinned corpus drifts further from production with every ORQ, so inheriting it silently would turn a one-time contamination control into a permanently stale baseline presented as current evidence.",
-      "note": "No automated corpus manifest exists yet; the runner (Task 5) must produce one, and until it does the pin is asserted by procedure rather than proven by artifact."
+      "note": "The corpus manifest is written by app.scripts.ingest_corpus and read by the runner, which refuses to execute without it. It is an honest declaration of what the ingesting process saw, not a proof: a later hand-edit of the database would not invalidate it. Proving the correspondence would mean recomputing every content_hash from the pinned worktree at run time."
     }
   },
-
   "metrics": {
     "scored_unit": "distinct source_path, resolved from the retrieved document_id by a post-query lookup",
     "window": "top-k chunks, collapsed to distinct source_path after retrieval",
-    "k_values": [10, 20, 30],
+    "k_values": [
+      10,
+      20,
+      30
+    ],
     "k_rationale": "20 is the pool RetrievalPipeline would consume; 30 matches ORQ-22's ceiling measurement.",
     "document_rank": "dense - position in the collapsed distinct-source_path list, not the first-occurrence chunk rank",
     "relevance_rule": "grade >= 1, the binarization run_reranking_benchmark.py:297,301 applies",
     "relevance_is_binary": true,
     "relevance_note": "These are binary-relevance metrics, not graded ones. Every judgment in the golden set is grade 1 or 2, so >= 1 admits all of them and the grade scale carries no discriminating power here. Per-query recall therefore takes only the values 0, 0.5 and 1. The grade scale must not be cited as evidence of finer discrimination than that. A graded metric, or a separate primary-relevance (grade 2 only) analysis, would need its own registration before being run.",
     "map_denominator": "min(|relevant|, k)",
-    "reported": ["recall@10", "recall@20", "recall@30", "MAP@10", "MRR@10"],
-    "granularities": ["per_query", "per_language", "aggregate"],
+    "reported": [
+      "recall@10",
+      "recall@20",
+      "recall@30",
+      "MAP@10",
+      "MRR@10"
+    ],
+    "granularities": [
+      "per_query",
+      "per_language",
+      "aggregate"
+    ],
     "aggregate": "unweighted mean over the 60 queries"
   },
-
   "decision_rule": {
     "statement": "The CANDIDATE GENERATOR baseline is judged inadequate if EITHER aggregate recall@10 falls below recall_at_10_floor, OR (aggregate recall@20 - aggregate recall@10) exceeds recall_gap_margin. The verdict is about hybrid_search under this frozen configuration and this pinned corpus. It is not a verdict on 'the retriever' or on production retrieval, which also rewrites and reranks.",
     "gap_clause_means": "Candidate-pool depth sensitivity: retrieving 20 chunks recovers substantially more labelled documents than retrieving 10.",
     "gap_clause_does_not_mean_ranking_efficiency": "The gap must NOT be read as 'the documents were in the pool but ranked too low'. LIMIT :top_k sits inside each CTE, so k=10 and k=20 build different pre-fusion pools; the comparison measures sensitivity to pool depth, not ranking quality within a fixed pool.",
-    "gap_clause_does_not_mean": "That the documents were already in a fixed pool and merely ranked too low. LIMIT :top_k sits inside each CTE, before the FULL OUTER JOIN that fuses them (pgvector_store.py:86-101), so k=10 and k=20 are two different candidate pools, not one pool truncated at two depths.",
     "thresholds": {
-      "recall_at_10_floor": null,
-      "recall_gap_margin": null
+      "recall_at_10_floor": 0.65,
+      "recall_gap_margin": 0.12
     },
-    "thresholds_note": "Null by design. The runner refuses to execute until both are set and committed. A threshold chosen after seeing the numbers registers nothing."
+    "thresholds_note": "Set and committed before any run, per the pre-registration discipline. recall_at_10_floor = 0.65: ORQ-22's frozen dataset gives an aggregate recall@10 of 0.7167 over the same 60 queries; 0.65 allows roughly a 10% relative margin for corpus drift accumulated across ORQ-23/24/25. recall_gap_margin = 0.12: the same prior gives a recall@20 - recall@10 gap of 0.0750; 0.12 is a factor of ~1.6 above it, covering the different pre-fusion pool composition at k=10 versus k=20. Both priors were computed from experiments/reranking/dataset.jsonl, which predates this ORQ entirely, so they calibrate the rule without previewing the run."
   },
-
   "leakage_assertion": {
     "claim": "No golden-set query string occurs in the ingested text of the measured corpus.",
     "asserted_against": "a tenant-scoped chunks query, not the filesystem",
     "rationale": "The vectors were written at an earlier commit, so a later rephrasing on disk would hide a leak that the corpus still carries."
   },
-
   "reporting": {
     "all_registrations_reported": true,
     "note": "Re-registration requires a new commit. Every runs row carries this file's sha256 and the commit that introduced it. Runs under earlier registration hashes are reported alongside, never replaced."
   },
-
   "enforcement_status": {
-    "state": "SPECIFIED, NOT YET IMPLEMENTED",
-    "note": "experiments/evaluation/run_evaluation.py does not exist yet (ORQ-26 Task 5). Until it does, nothing enforces the clean-worktree requirement, the committed-registration requirement, the run-time checksum verification, the non-null threshold check, the approval check, or the decision rule. This file is therefore a draft registration with stated future controls, not an enforced pre-registration, and must not be described as one or inherited as precedent by another ORQ until the runner exists and is tested against dirty, uncommitted, unsigned, checksum-mutated and null-threshold registrations.",
-    "enforced_today": ["golden_set.sha256 verified by build_golden_set.py --check and by the hermetic test suite"]
+    "state": "ENFORCED",
+    "note": "experiments/evaluation/run_evaluation.py implements the guards. It refuses to run on a modified or uncommitted registration.json, on null thresholds, on a missing approval signature, on a golden-set hash mismatch, on a missing corpus manifest, on a manifest whose commit differs from the pinned one, and on any golden-set query found in the ingested corpus.",
+    "enforced_today": [
+      "registration.json committed and unmodified",
+      "non-null decision thresholds",
+      "approved_by / approved_at present",
+      "golden_set.sha256 matches at run time and via build_golden_set.py --check",
+      "corpus manifest present and matching the pinned commit",
+      "no golden-set query text in the measured corpus"
+    ]
   },
-
-  "approved_by": null,
-  "approved_at": null
+  "approved_by": "operator",
+  "approved_at": "2026-08-08"
 }
