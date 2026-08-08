@@ -56,14 +56,16 @@ The harness calls `PgVectorStore.hybrid_search(query_text, query_embedding, top_
 embedding each query through the existing `build_embedding_provider(cfg)` at its own call site. No
 production signature changes.
 
-The value of this ORQ is reproducibility. Measuring through `RetrievalPipeline` would make the one
+The value of this ORQ is a measurement that can be repeated and compared. Measuring through `RetrievalPipeline` would make the one
 deliverable whose worth is a repeatable number depend on two managed services per query, against a
 documented quota, with a `top_n` default of 5 that no "@10" measurement could honestly use. Rewrite
 and rerank stay unmeasured until ORQ-27, which needs call budgeting and judge-stability machinery
 anyway.
 
-The trade is deliberate: a reproducible answer about the retriever now, rather than an
-irreproducible answer about everything.
+The trade is deliberate: a repeatable answer about the candidate generator, rather than an
+irreproducible answer about everything. "Repeatable" describes the instrument's design, not any run:
+no run has been made, and none may be called reproducible until the runner writes and validates a
+corpus manifest (decision 3).
 
 ### 2. Fix `hybrid_search`'s ordering first — it was not deterministic
 
@@ -103,9 +105,11 @@ a preference this project has no evidence for. Choosing one would be a retrieval
 which is explicitly out of scope here; `id` is the deliberate refusal to make it.
 
 The regression tests seed corpora that *force* both tie shapes rather than repeating a call and
-comparing. That distinction is load-bearing: against the unfixed query, the repeat-and-compare test
-passed while both tie-forcing tests failed. A determinism test that can pass on non-deterministic
-code is not evidence.
+comparing. That distinction is load-bearing: against the unfixed query, in the recorded environment
+and across three consecutive runs, the repeat-and-compare test passed while the tie-forcing tests
+failed. This is observed evidence rather than a guarantee — an unfixed query may return id order
+under some valid plan — but a determinism test that *can* pass on non-deterministic code is not
+evidence, and the repeat-and-compare test demonstrably did.
 
 ### 3. Pre-registration establishes precedence, not merely association
 
@@ -231,12 +235,12 @@ and so respects the exclusion rather than deviating from it.
 
 ### Positivas
 
-- A repeatable, zero-LLM-cost measurement of retrieval quality that later ORQs can re-run to judge a
-  change, rather than arguing it from design.
+- A zero-LLM-cost measurement of candidate-generator quality that later ORQs will be able to re-run
+  to judge a change, rather than arguing it from design — once the Task 5 runner exists.
 - A production bug fixed: `/chat` no longer returns unstable source attributions for identical
   requests.
-- Pre-registration discipline, with enforcement in the runner rather than in a convention, inherited
-  by ORQ-27 and ORQ-28.
+- A pre-registration discipline *designed* to be enforced in the runner rather than by convention.
+  It is not enforced yet and is not inheritable as precedent until it is (decision 3).
 - Evaluation data cannot reach business tables: separate schema, separate role, no migration.
 
 ### Negativas / Trade-offs

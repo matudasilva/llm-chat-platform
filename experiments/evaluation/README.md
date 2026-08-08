@@ -4,8 +4,9 @@ Answers one question: **under a frozen configuration, does the deterministic can
 retrieve the labelled documents?**
 
 Measures `PgVectorStore.hybrid_search` directly — not `RetrievalPipeline` — so a run costs one
-embedding call per query, makes zero LLM and zero reranker calls, and is reproducible. See
-`docs/adr/009-rag-evaluation-harness.md` for why, and for the five alternatives that were discarded.
+embedding call per query, makes zero LLM and zero reranker calls, and is deterministic given a fixed
+corpus. See `docs/adr/009-rag-evaluation-harness.md` for why, and for the five alternatives that were
+discarded.
 
 **What this does not tell you.** Production retrieval also rewrites the query and reranks. A good
 score here does **not** clear the production retrieval path, and a poor one does not by itself
