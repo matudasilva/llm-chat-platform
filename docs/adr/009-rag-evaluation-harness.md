@@ -300,8 +300,9 @@ those defects and its labels predate retrieval.
 ## Evidencia
 
 - Commit `178622e` — `fix(retrieval): make hybrid_search ordering deterministic` (decision 2)
-- Test: `tests/core/test_pgvector_store_determinism.py` — both tie shapes forced; shown red against
-  the pre-fix query and green after
+- Test: `tests/core/test_pgvector_store_determinism.py` — both tie shapes forced; observed red
+  against the pre-fix query across three consecutive runs in the recorded environment, and green
+  after. Observed evidence, not a guarantee: see decision 2
 - Source labels: `experiments/reranking/ground_truth.jsonl`, consumed read-only; ORQ-22's
   `dataset.sha256` recomputes unchanged
 - Derived contract: `experiments/evaluation/golden_set.jsonl` +
