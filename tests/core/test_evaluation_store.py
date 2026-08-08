@@ -275,6 +275,23 @@ async def test_the_store_role_is_not_a_superuser() -> None:
         await store.dispose()
 
 
+async def test_superuser_cannot_write_to_an_existing_schema(store) -> None:
+    # Review round 2 found the real hole: guarding only ensure_schema leaves a
+    # superuser free to write to a schema someone else legitimately created, by
+    # simply never calling it. The `store` fixture has already created the
+    # schema, so this is exactly that path.
+    intruder = EvaluationStore._for_test(_privileged_url(), _TEST_SCHEMA)
+    try:
+        with pytest.raises(SuperuserStoreError):
+            await intruder.create_run(experiment_name="orq-26", provenance=_provenance())
+        with pytest.raises(SuperuserStoreError):
+            await intruder.log_metrics(uuid.uuid4(), {"recall@10": 1.0})
+        with pytest.raises(SuperuserStoreError):
+            await intruder.finish_run(uuid.uuid4(), status="FINISHED")
+    finally:
+        await intruder.dispose()
+
+
 async def test_ensure_schema_refuses_a_superuser_connection() -> None:
     # The settings-time string check is ergonomic only: an equivalent DSN
     # differing in a query parameter, host alias or password encoding passes it.

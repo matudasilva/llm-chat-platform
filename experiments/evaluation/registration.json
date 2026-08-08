@@ -58,8 +58,9 @@
   },
 
   "decision_rule": {
-    "statement": "The retriever is indicted if EITHER aggregate recall@10 falls below recall_at_10_floor, OR (aggregate recall@20 - aggregate recall@10) exceeds recall_gap_margin.",
-    "gap_clause_means": "Widening the candidate pool from k=10 to k=20 recovers substantially more relevant documents, which indicates low ranking efficiency in the smaller pool.",
+    "statement": "The CANDIDATE GENERATOR baseline is judged inadequate if EITHER aggregate recall@10 falls below recall_at_10_floor, OR (aggregate recall@20 - aggregate recall@10) exceeds recall_gap_margin. The verdict is about hybrid_search under this frozen configuration and this pinned corpus. It is not a verdict on 'the retriever' or on production retrieval, which also rewrites and reranks.",
+    "gap_clause_means": "Candidate-pool depth sensitivity: retrieving 20 chunks recovers substantially more labelled documents than retrieving 10.",
+    "gap_clause_does_not_mean_ranking_efficiency": "The gap must NOT be read as 'the documents were in the pool but ranked too low'. LIMIT :top_k sits inside each CTE, so k=10 and k=20 build different pre-fusion pools; the comparison measures sensitivity to pool depth, not ranking quality within a fixed pool.",
     "gap_clause_does_not_mean": "That the documents were already in a fixed pool and merely ranked too low. LIMIT :top_k sits inside each CTE, before the FULL OUTER JOIN that fuses them (pgvector_store.py:86-101), so k=10 and k=20 are two different candidate pools, not one pool truncated at two depths.",
     "thresholds": {
       "recall_at_10_floor": null,

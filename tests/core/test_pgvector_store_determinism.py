@@ -225,24 +225,78 @@ async def uniform_corpus():
         await engine.dispose()
 
 
+@pytest.fixture
+async def semantic_only_corpus():
+    """A tied population that the keyword leg cannot see at all.
+
+    Every chunk sits at cosine distance 0 from the query and shares no lexeme
+    with it, so `search_vector @@ plainto_tsquery(...)` excludes all of them and
+    the keyword CTE is empty. The fused set is then *exactly* the semantic CTE,
+    which is what lets its `ORDER BY ... LIMIT` be asserted directly rather than
+    inferred.
+    """
+    engine = create_async_engine(_privileged_url())
+    document_id = uuid.uuid4()
+    chunk_ids = [uuid.uuid4() for _ in range(5)]
+    try:
+        async with engine.begin() as conn:
+            await conn.execute(
+                text(
+                    "INSERT INTO documents (id, tenant_id, source_path, content_hash, doc_type) "
+                    "VALUES (:id, :tenant_id, 'det-semantic-only.md', 'hash-semonly', 'markdown')"
+                ),
+                {"id": document_id, "tenant_id": _TENANT},
+            )
+            for ordinal, chunk_id in enumerate(chunk_ids):
+                await conn.execute(
+                    text(
+                        "INSERT INTO chunks "
+                        "(id, document_id, tenant_id, ordinal, text, embedding, search_vector) "
+                        "VALUES (:id, :doc_id, :tenant_id, :ordinal, :text, "
+                        "CAST(:embedding AS vector), to_tsvector('english', :text))"
+                    ),
+                    {
+                        "id": chunk_id,
+                        "doc_id": document_id,
+                        "tenant_id": _TENANT,
+                        "ordinal": ordinal,
+                        "text": _SEMANTIC_TEXT,
+                        "embedding": _vector(_NEAR),
+                    },
+                )
+        yield chunk_ids
+    finally:
+        async with engine.begin() as conn:
+            await conn.execute(
+                text("DELETE FROM documents WHERE tenant_id = :tenant_id"),
+                {"tenant_id": _TENANT},
+            )
+        await engine.dispose()
+
+
 @pytest.mark.asyncio
-async def test_cte_membership_is_exactly_the_id_ordered_subset(uniform_corpus) -> None:
-    # Stronger than the subset assertion above, which review round 1 found could
-    # hold while a CTE still admitted a different tied subset. Here both legs
-    # tie completely and admit the same rows, so the fused set is exactly top_k
-    # and membership is pinned by equality.
+async def test_semantic_cte_membership_is_exactly_the_id_ordered_subset(
+    semantic_only_corpus,
+) -> None:
+    # Direct test of the semantic CTE's `ORDER BY ... LIMIT`: with the keyword
+    # leg empty, the returned rows ARE that CTE's membership, so equality here
+    # is a statement about the clause and not an inference from a fused result.
     top_k = 3
     returned = await _search(top_k)
-    assert returned == sorted(uniform_corpus)[:top_k]
+    assert returned == sorted(semantic_only_corpus)[:top_k]
 
 
 @pytest.mark.asyncio
-async def test_rrf_scores_follow_the_id_determined_rank_assignment(uniform_corpus) -> None:
-    # The point review round 1 made: the CTE tiebreakers are not cosmetic.
-    # row_number() assigns the rank that feeds the RRF score, so ordering tied
-    # candidates by `id` decides which of them scores 1/(60+r) and which
-    # 1/(60+r+1). Asserting the scores themselves — not just their order — is
-    # what makes that visible.
+async def test_uniform_ties_pin_both_legs_through_the_fused_scores(uniform_corpus) -> None:
+    # The keyword CTE cannot be isolated the way the semantic one can: the
+    # semantic leg has no WHERE clause, so it always contributes rows and no
+    # corpus makes the fused output equal the keyword membership alone.
+    #
+    # The scores pin it instead. In a fully tied population each returned chunk
+    # must score 1/(60+r) from BOTH legs at the same r. If the keyword CTE had
+    # admitted a different subset, or ordered its members differently, some
+    # returned chunk would carry a single-leg score of 1/(60+r) rather than the
+    # doubled one, and this assertion would fail.
     top_k = 3
     chunks = await _retrieve(top_k)
     expected = [

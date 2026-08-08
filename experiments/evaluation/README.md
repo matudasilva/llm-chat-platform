@@ -20,8 +20,8 @@ This directory is not imported by the application. It imports `app.*` in one dir
 |---|---|
 | `build_golden_set.py` | Derives the golden set from ORQ-22's ground truth. Pure file transform: no database, no network. |
 | `golden_set.jsonl` | 60 rows — 30 bilingual pairs, frozen. |
-| `golden_set.sha256` | The freeze. The runner refuses to execute on mismatch. |
-| `registration.json` | The pre-registered contract: metric definitions, `k` values, decision rule, pinned corpus commit, approval fields. |
+| `golden_set.sha256` | The freeze. Verified today by `build_golden_set.py --check` and by the hermetic suite; the specified runner will also verify it at run time. |
+| `registration.json` | The **draft** registration: metric definitions, `k` values, decision rule, pinned corpus commit, approval fields. Not yet an enforced pre-registration — see below. |
 
 ## The golden set
 
@@ -85,13 +85,21 @@ golden-set hash, and re-running the leakage checks. **ORQ-27 and ORQ-28 do not i
 default** — inheriting it silently would turn a one-time control into a permanently stale baseline
 cited as current evidence.
 
-## Reproduction
+## What can be run today
 
-1. Check out the pinned commit from `registration.json` into a worktree, and ingest the corpus for
-   the registered tenant in `plain` mode via `app.scripts.ingest_corpus`.
-2. Set `DATABASE_URL_APP`, `OPENAI_API_KEY`, and the evaluation store DSN in `.env`.
-3. Verify the freeze: `python -m experiments.evaluation.build_golden_set --check`.
-4. Run the harness and record the run id it prints.
+```
+python -m experiments.evaluation.build_golden_set --check   # verify the freeze
+python -m experiments.evaluation.build_golden_set           # regenerate it
+```
 
-Regenerating the golden set is `python -m experiments.evaluation.build_golden_set` — which rewrites
-`golden_set.sha256`, and so requires a new registration commit before anything may be run against it.
+Regenerating rewrites `golden_set.sha256` and therefore requires a new registration commit before
+anything may be run against it.
+
+**There is no harness to run yet.** `run_evaluation.py` is Task 5. Until it exists there is no
+reproduction procedure to follow, and no run — baseline or otherwise — may be described as
+reproducible or verified: nothing yet proves the corpus in a database was ingested from the pinned
+commit with the registered configuration. The runner must write and validate that manifest.
+
+When it exists, a run will additionally need: the pinned commit checked out into a worktree and
+ingested for the registered tenant in `plain` mode; `DATABASE_URL_APP`, `OPENAI_API_KEY` and the
+evaluation store DSN set; and non-null thresholds plus a signed approval in `registration.json`.

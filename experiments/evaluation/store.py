@@ -117,14 +117,21 @@ class EvaluationStore:
     The schema is fixed. `Settings.validate_evaluation_store_url` rejects a DSN
     string-equal to the application database, but that check is ergonomic only —
     an equivalent DSN differing in a query parameter, host alias or password
-    encoding passes it. The authoritative control is `ensure_schema`, which asks
-    the server who it is actually connected as (ADR-009 decision 5).
+    encoding passes it. The authoritative control is `_assert_not_superuser`,
+    which asks the server who it is actually connected as, and which gates every
+    public method that touches the database — not only `ensure_schema`. Guarding
+    the DDL alone would still let a superuser DSN write to an already-created
+    schema (ADR-009 decision 5).
     """
 
     def __init__(self, dsn: str) -> None:
         self._schema = SCHEMA
         self._ddl = build_ddl(SCHEMA)
         self._engine: AsyncEngine = create_async_engine(dsn)
+        # None until checked. Guarding only ensure_schema would leave the hole
+        # review round 2 found: once a legitimate schema exists, a superuser DSN
+        # could write to it by never calling ensure_schema at all.
+        self._role_checked = False
 
     @classmethod
     def _for_test(cls, dsn: str, schema: str) -> "EvaluationStore":
@@ -141,16 +148,27 @@ class EvaluationStore:
     async def dispose(self) -> None:
         await self._engine.dispose()
 
-    async def ensure_schema(self) -> None:
-        # Checked here rather than at settings time because this is the first
-        # point at which the *actual* connected role is knowable. A DSN string
-        # can lie by being merely equivalent to the superuser's; `rolsuper`
-        # cannot.
+    async def _assert_not_superuser(self) -> None:
+        """Gate on every public entry point that touches the database.
+
+        Checked at connection time rather than at settings time because this is
+        the first point at which the *actual* connected role is knowable. A DSN
+        string can lie by being merely equivalent to the superuser's; `rolsuper`
+        cannot. Cached after the first successful check — the role of an open
+        engine's connections does not change underneath us, and re-querying on
+        every metric write would be a round trip per row.
+        """
+        if self._role_checked:
+            return
         if await self.is_superuser():
             raise SuperuserStoreError(
                 "the evaluation store must not connect as a superuser; "
                 "provision the rag_evaluation role (ADR-009 decision 5)"
             )
+        self._role_checked = True
+
+    async def ensure_schema(self) -> None:
+        await self._assert_not_superuser()
         async with self._engine.begin() as conn:
             for statement in self._ddl:
                 await conn.execute(text(statement))
@@ -170,6 +188,7 @@ class EvaluationStore:
         params: dict[str, str] | None = None,
         tags: dict[str, str] | None = None,
     ) -> uuid.UUID:
+        await self._assert_not_superuser()
         run_id = uuid.uuid4()
         async with self._engine.begin() as conn:
             await conn.execute(
@@ -194,6 +213,7 @@ class EvaluationStore:
     async def log_metrics(
         self, run_id: uuid.UUID, metrics: dict[str, float], *, step: int = 0
     ) -> None:
+        await self._assert_not_superuser()
         if not metrics:
             return
         timestamp = _now()
@@ -214,6 +234,7 @@ class EvaluationStore:
                 )
 
     async def finish_run(self, run_id: uuid.UUID, *, status: str) -> None:
+        await self._assert_not_superuser()
         async with self._engine.begin() as conn:
             await conn.execute(
                 text(

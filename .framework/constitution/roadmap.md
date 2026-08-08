@@ -105,7 +105,15 @@ invariant.
      doc's "expand to 30 prompts" is satisfied and the work is promoting them to
      a first-class asset. Retriever metrics `recall@10`, `MAP@10`, `MRR@10` in
      an MLflow-compatible Postgres schema created outside the Alembic chain.
-     Answers one question: is the retriever the problem?
+     Answers one question: under a frozen configuration, does the deterministic
+     candidate generator retrieve the labelled documents?
+
+     **Correction (2026-08-08, external review round 2):** this bullet said
+     "answers one question: is the retriever the problem?". That overclaims.
+     The harness measures `PgVectorStore.hybrid_search` alone; production
+     retrieval also rewrites the query and reranks, so a good score here does
+     not clear the production path and a poor one does not by itself indict it.
+     Claims about production retrieval belong to ORQ-27. See ADR-009.
 
      **Correction (2026-08-07):** an earlier revision of this bullet said the
      tautological golden-set prompt 5 was "carried as `q016`". That conflated
