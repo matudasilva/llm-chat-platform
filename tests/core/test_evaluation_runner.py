@@ -194,15 +194,56 @@ def test_verdict_carries_the_scope_note() -> None:
     assert "not a verdict on production retrieval" in verdict["scope_note"].lower()
 
 
-def test_measure_is_not_publicly_reachable() -> None:
-    # Round 1 of tranche 2 found `measure()` was a public alternate entry point:
-    # given a caller-supplied Registration and golden set it retrieved without
-    # any guard having run. The only public path to a result must be the one
-    # that has passed all of them.
+def test_the_guards_are_inside_the_measurement_not_before_it() -> None:
+    """Round 2 of tranche 2: renaming a function private is convention, not
+    enforcement. Any path that reaches the retrieval loop must run the guards on
+    the way, so they live inside `_measure` rather than in its caller.
+
+    Checked structurally: both database guards must be called within `_measure`'s
+    own body, and `hybrid_search` must not be reachable in it before they are.
+    """
+    tree = ast.parse(_RUNNER.read_text(encoding="utf-8"))
+    measure = next(
+        node
+        for node in ast.walk(tree)
+        if isinstance(node, ast.AsyncFunctionDef) and node.name == "_measure"
+    )
+    calls = [
+        node.func.id if isinstance(node.func, ast.Name) else getattr(node.func, "attr", "")
+        for node in ast.walk(measure)
+        if isinstance(node, ast.Call)
+    ]
+    assert "assert_corpus_matches_manifest" in calls
+    assert "assert_no_query_leaked" in calls
+    # And the expensive call comes after the free ones.
+    assert calls.index("assert_corpus_matches_manifest") < calls.index("embed_many")
+    assert calls.index("assert_no_query_leaked") < calls.index("embed_many")
+    assert calls.index("embed_many") < calls.index("hybrid_search")
+
+
+def test_the_instrument_guard_refuses_a_dirty_file(monkeypatch: pytest.MonkeyPatch) -> None:
+    # Observed refusing, rather than assumed to refuse. Patching `_git` avoids
+    # dirtying a real tracked file to prove it.
     import experiments.evaluation.run_evaluation as runner
 
-    assert not hasattr(runner, "measure")
-    assert hasattr(runner, "_measure")
+    monkeypatch.setattr(
+        runner, "_git", lambda *args: " M experiments/evaluation/run_evaluation.py"
+    )
+    with pytest.raises(GuardFailure, match="the instrument is modified or untracked"):
+        runner.assert_instrument_committed()
+
+
+def test_the_instrument_guard_returns_the_commit_when_clean(monkeypatch: pytest.MonkeyPatch) -> None:
+    import experiments.evaluation.run_evaluation as runner
+
+    calls: list[tuple] = []
+
+    def fake_git(*args):
+        calls.append(args)
+        return "" if args[0] == "status" else "c0ffee" * 6 + "abcd"
+
+    monkeypatch.setattr(runner, "_git", fake_git)
+    assert runner.assert_instrument_committed() == "c0ffee" * 6 + "abcd"
 
 
 def test_the_instrument_guard_lists_the_files_that_are_the_instrument() -> None:
@@ -215,6 +256,9 @@ def test_the_instrument_guard_lists_the_files_that_are_the_instrument() -> None:
         "experiments/evaluation/metrics.py",
         "experiments/evaluation/store.py",
         "app/core/providers/pgvector_store.py",
+        # Selects the embedding provider and its dimensions, so it shapes every
+        # vector the measurement depends on.
+        "app/core/domain/retrieval_factory.py",
     }
 
 

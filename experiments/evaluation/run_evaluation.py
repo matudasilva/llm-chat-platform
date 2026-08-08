@@ -74,6 +74,9 @@ _INSTRUMENT_PATHS = (
     "experiments/evaluation/metrics.py",
     "experiments/evaluation/store.py",
     "app/core/providers/pgvector_store.py",
+    # Selects the embedding provider and its dimensions, so it shapes every
+    # vector the measurement depends on (round 2 of tranche 2).
+    "app/core/domain/retrieval_factory.py",
 )
 
 
@@ -257,18 +260,29 @@ async def _source_paths(session, document_ids: Sequence[Any]) -> dict[str, str]:
 async def _measure(
     registration: Registration, golden_set: list[dict[str, Any]], manifest: dict[str, Any]
 ) -> dict[str, Any]:
-    """Runs the golden set and returns per-query, per-language and aggregate metrics."""
-    embedding = build_embedding_provider(settings)
-    vectors = (await embedding.embed_many([row["query"] for row in golden_set])).vectors
+    """Runs the golden set and returns per-query, per-language and aggregate metrics.
 
+    The database guards live *here*, not in the caller. Round 2 of tranche 2 made
+    the point that renaming a function private is a convention, not enforcement:
+    anything that can reach the retrieval loop must run the guards on the way,
+    or the guards are optional in practice.
+
+    They also run *before* embedding. Round 2 found the previous order spent 60
+    embedding calls on a corpus that was about to be refused — the checks that
+    cost nothing belong ahead of the one that costs money.
+    """
     sessionmaker = build_rag_sessionmaker(settings.database_url_app)
+    queries = [row["query"] for row in golden_set]
     k_values = registration.k_values
     per_query: list[dict[str, Any]] = []
 
     with tenant_scope(registration.tenant_id):
         async with sessionmaker() as session:
             await assert_corpus_matches_manifest(session, manifest)
-            await assert_no_query_leaked(session, [row["query"] for row in golden_set])
+            await assert_no_query_leaked(session, queries)
+
+        embedding = build_embedding_provider(settings)
+        vectors = (await embedding.embed_many(queries)).vectors
 
         for row, vector in zip(golden_set, vectors):
             relevant = M.relevant_paths(row["relevant"])
