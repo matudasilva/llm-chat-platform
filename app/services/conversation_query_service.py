@@ -44,7 +44,7 @@ class ConversationQueryService:
         stmt = (
             select(Message)
             .where(Message.conversation_id == conversation_id)
-            .order_by(Message.created_at.asc(), Message.id.asc())
+            .order_by(Message.sequence.asc())
         )
         res = await self._db.execute(stmt)
         return list(res.scalars().all())

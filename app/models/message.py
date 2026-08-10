@@ -4,7 +4,7 @@ import enum
 import uuid
 from typing import Any
 
-from sqlalchemy import DateTime, Enum, ForeignKey, Index, String, Text, func
+from sqlalchemy import BigInteger, DateTime, Enum, ForeignKey, Identity, Index, String, Text, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -26,6 +26,12 @@ class Message(Base):
         UUID(as_uuid=True),
         primary_key=True,
         default=uuid.uuid4,
+    )
+
+    sequence: Mapped[int] = mapped_column(
+        BigInteger,
+        Identity(always=True),
+        nullable=False,
     )
 
     conversation_id: Mapped[uuid.UUID] = mapped_column(

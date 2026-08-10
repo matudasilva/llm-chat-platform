@@ -101,7 +101,7 @@ class TraceService:
                 msgs_stmt = (
                     select(Message)
                     .where(Message.conversation_id == conversation_id)
-                    .order_by(Message.created_at.asc(), Message.id.asc())
+                    .order_by(Message.sequence.asc())
                 )
                 messages = (await db.execute(msgs_stmt)).scalars().all()
 
