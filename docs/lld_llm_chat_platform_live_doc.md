@@ -1004,7 +1004,7 @@ Implemented and validated endpoints:
 
   * returns 404 if not found
   * loads conversation and associated messages
-  * deterministic ordering (`created_at`, `id`)
+  * deterministic ordering (`sequence ASC`)
 
 ### 21.4 Read-path — Usage Events (Auditing)
 

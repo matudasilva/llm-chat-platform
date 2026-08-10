@@ -49,6 +49,7 @@ CREATE INDEX ix_conversations_tenant_id_created_at
 ```sql
 CREATE TABLE messages (
   id UUID PRIMARY KEY,
+  sequence BIGINT GENERATED ALWAYS AS IDENTITY,
   conversation_id UUID NOT NULL REFERENCES conversations(id),
   role TEXT NOT NULL CHECK (role IN ('user','assistant','system')),
   content TEXT NOT NULL,
@@ -65,7 +66,7 @@ CREATE INDEX ix_messages_tenant_id_created_at
 
 **Semantics**
 
-* Ordering guaranteed by `(conversation_id, created_at)`
+* Ordering guaranteed by database-generated `sequence ASC`
 * FK enforces existence of conversation
 * `system` role reserved for orchestration
 * `tenant_id` added by migration `a1b2c3d4e5f6` (ORQ-18); existing rows backfilled to `'default'`
@@ -360,7 +361,7 @@ Given a `request_id`:
 4. Load the associated `Conversation`
 5. Load all `Message` records for the conversation
 
-   * Ordered deterministically by `(created_at, id)`
+   * Ordered deterministically by `sequence ASC`
 6. Reconstruct the input/output pair:
 
    * `output_message` resolved directly from `UsageEvent.message_id`
@@ -1344,7 +1345,7 @@ Add production-style, read-only endpoints to inspect conversations and messages 
 1) `GET /conversations/{conversation_id}`
 
 - 404 if not found
-- Returns conversation metadata and messages ordered by `(created_at ASC, id ASC)`
+- Returns conversation metadata and messages ordered by `sequence ASC`
 - Implementation uses two queries (conversation + messages) to avoid N+1 behavior
 
 2) `GET /conversations`
