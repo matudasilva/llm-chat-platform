@@ -19,6 +19,7 @@ from experiments.evaluation.run_evaluation import (
     CorpusStateError,
     GuardFailure,
     Registration,
+    assert_indexing_mode_matches_registration,
     assert_manifest_matches_pin,
     compute_verdict,
     load_golden_set,
@@ -116,7 +117,8 @@ def test_manifest_guard_rejects_a_missing_file(tmp_path: Path) -> None:
 
 
 @pytest.mark.parametrize(
-    "field", ["commit", "ingested_at", "document_count", "chunk_count", "content_fingerprint"]
+    "field",
+    ["commit", "ingested_at", "document_count", "chunk_count", "content_fingerprint", "indexing_mode"],
 )
 def test_manifest_guard_rejects_a_missing_field(tmp_path: Path, field: str) -> None:
     manifest = {
@@ -125,6 +127,7 @@ def test_manifest_guard_rejects_a_missing_field(tmp_path: Path, field: str) -> N
         "document_count": 1,
         "chunk_count": 1,
         "content_fingerprint": "b" * 64,
+        "indexing_mode": "plain",
     }
     del manifest[field]
     path = tmp_path / "manifest.json"
@@ -341,3 +344,22 @@ def test_manifest_guard_accepts_the_pinned_commit() -> None:
         "chunk_count": 1,
     }
     assert_manifest_matches_pin(manifest, registration)
+
+
+def test_indexing_mode_guard_rejects_a_contextualized_corpus() -> None:
+    # Round 4 of tranche 2: the registration pins "plain". A corpus rebuilt
+    # with --contextualize over the same files would share every source path
+    # and content hash with the registered one, so content_fingerprint alone
+    # would let it through as the baseline. This guard is what actually reads
+    # the mode.
+    registration = _registration()
+    assert registration.ingestion_mode == "plain"
+    manifest = {"commit": registration.pinned_commit, "indexing_mode": "contextualized"}
+    with pytest.raises(GuardFailure, match="registration pins 'plain'"):
+        assert_indexing_mode_matches_registration(manifest, registration)
+
+
+def test_indexing_mode_guard_accepts_the_registered_mode() -> None:
+    registration = _registration()
+    manifest = {"commit": registration.pinned_commit, "indexing_mode": "plain"}
+    assert_indexing_mode_matches_registration(manifest, registration)

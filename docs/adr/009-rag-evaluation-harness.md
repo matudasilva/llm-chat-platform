@@ -127,9 +127,9 @@ running, disliking the number, editing, re-running, and reporting only the secon
   that produced it. "The instrument" is every file that shapes a measurement, not just the runner:
   the runner, the metrics, the store, `pgvector_store.py`, `retrieval_factory.py` (selects the
   embedding provider), `openai_embedding_provider.py` and `settings.py` (the model, dimensions and
-  request payload behind every vector), and `corpus_fingerprint.py` (guard 3's content check). The
-  canonical list is `_INSTRUMENT_PATHS` in `run_evaluation.py` — enumerated here for readability, not
-  duplicated as a second source of truth to drift from it;
+  request payload behind every vector), and `corpus_fingerprint.py` (the live content check's
+  digest). The canonical list is `_INSTRUMENT_PATHS` in `run_evaluation.py` — enumerated here for
+  readability, not duplicated as a second source of truth to drift from it;
 - records the file's SHA-256 **and** the commit that introduced it in every `runs` row;
 - requires a new commit for re-registration, and reports runs under every registration hash — never
   only the last.
@@ -189,6 +189,16 @@ refuses to execute without one or when its commit differs from the pinned one. T
 honest declaration of what the ingesting process saw, not a proof: a later hand-edit of the database
 would not invalidate it. Proving the correspondence would mean recomputing every `content_hash` from
 the pinned worktree at run time.
+
+The registration also pins `ingestion_mode` (`"plain"`), and the manifest records the corpus's actual
+`indexing_mode` alongside `content_fingerprint`. The two are checked separately because they defend
+against different things: `content_fingerprint` is a digest over `(source_path, content_hash)` and
+is blind to how a chunk was embedded, so a corpus rebuilt with `--contextualize` over the same files
+would share the identical fingerprint while every chunk's embedding input differs from the registered
+baseline. The runner refuses if the manifest's `indexing_mode` does not match the registration's, and
+separately refuses (live, against the database) if the corpus no longer agrees with what the manifest
+declared — closing both the "wrong mode was ever ingested" and the "corpus was re-ingested in a
+different mode after the manifest was written" cases (round 4 of tranche 2 review).
 
 ### 5. The store is a separate schema, a provisioned role, and outside the Alembic chain
 

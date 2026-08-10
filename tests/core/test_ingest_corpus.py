@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+from pathlib import Path
 from uuid import uuid4
 
 import pytest
@@ -11,6 +13,7 @@ from app.scripts.ingest_corpus import (
     build_search_texts,
     fingerprint,
     should_reindex,
+    write_corpus_manifest,
 )
 from app.services.rag_chunking import RawChunk
 
@@ -64,6 +67,23 @@ def test_build_search_texts_prepends_context_when_present() -> None:
     assert result == ["This chunk is from the foo function.\noriginal chunk text"]
     # The original chunk text itself is never mutated by contextualization.
     assert chunks[0].text == "original chunk text"
+
+
+def test_write_corpus_manifest_records_the_indexing_mode(tmp_path: Path) -> None:
+    # Round 4 of tranche 2: content_fingerprint alone doesn't bind how a chunk
+    # was embedded, so the manifest must carry indexing_mode as its own field
+    # for the runner to check against the registration.
+    manifest_path = tmp_path / "manifest.json"
+    write_corpus_manifest(
+        manifest_path,
+        commit="a" * 40,
+        document_count=1,
+        chunk_count=1,
+        fingerprint="b" * 64,
+        indexing_mode="contextualized",
+    )
+    payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    assert payload["indexing_mode"] == "contextualized"
 
 
 @pytest.mark.asyncio

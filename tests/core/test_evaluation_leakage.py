@@ -63,7 +63,9 @@ def _queries() -> list[str]:
 _SOURCE_PATH = "leak-probe.md"
 
 
-async def _seed(chunk_text: str, *, content_hash: str | None = None) -> str:
+async def _seed(
+    chunk_text: str, *, content_hash: str | None = None, indexing_mode: str = "plain"
+) -> str:
     """Seeds one document/chunk pair and returns the content_hash used, so
     callers can compute the fingerprint a guard is expected to match."""
     engine = create_async_engine(_privileged_url())
@@ -73,14 +75,15 @@ async def _seed(chunk_text: str, *, content_hash: str | None = None) -> str:
         async with engine.begin() as conn:
             await conn.execute(
                 text(
-                    "INSERT INTO documents (id, tenant_id, source_path, content_hash, doc_type) "
-                    "VALUES (:id, :tenant_id, :source_path, :hash, 'markdown')"
+                    "INSERT INTO documents (id, tenant_id, source_path, content_hash, doc_type, indexing_mode) "
+                    "VALUES (:id, :tenant_id, :source_path, :hash, 'markdown', :indexing_mode)"
                 ),
                 {
                     "id": document_id,
                     "tenant_id": _TENANT,
                     "source_path": _SOURCE_PATH,
                     "hash": content_hash,
+                    "indexing_mode": indexing_mode,
                 },
             )
             await conn.execute(
@@ -203,8 +206,40 @@ async def test_a_matching_corpus_passes_the_guard() -> None:
                         "document_count": 1,
                         "chunk_count": 1,
                         "content_fingerprint": content_fingerprint([(_SOURCE_PATH, content_hash)]),
+                        "indexing_mode": "plain",
                     },
                 )
+    finally:
+        await _cleanup()
+
+
+@pytest.mark.asyncio
+async def test_an_indexing_mode_mismatch_is_refused_despite_matching_content() -> None:
+    """Round 4 of tranche 2: a corpus re-ingested with --contextualize in place —
+    same source paths, same content hashes — shares content_fingerprint with the
+    manifest's declared "plain" corpus. Only the live indexing_mode check catches
+    it."""
+    content_hash = await _seed(
+        "A single chunk, so the tenant holds 1 document and 1 chunk.",
+        indexing_mode="contextualized",
+    )
+    try:
+        sessionmaker = build_rag_sessionmaker(_app_url())
+        with tenant_scope(_TENANT):
+            async with sessionmaker() as session:
+                with pytest.raises(CorpusStateError, match="indexing mode mismatch"):
+                    await assert_corpus_matches_manifest(
+                        session,
+                        {
+                            "commit": "x",
+                            "document_count": 1,
+                            "chunk_count": 1,
+                            "content_fingerprint": content_fingerprint(
+                                [(_SOURCE_PATH, content_hash)]
+                            ),
+                            "indexing_mode": "plain",
+                        },
+                    )
     finally:
         await _cleanup()
 

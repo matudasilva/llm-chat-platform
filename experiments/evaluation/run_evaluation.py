@@ -13,9 +13,18 @@ Guards run before any measurement, and each fails the run outright:
      names the code that actually ran.
   3. The corpus manifest exists and its commit matches the registered pin, so
      `ingestion_commit` is a recorded fact rather than an assertion.
-  4. The live corpus matches the counts the manifest declares. Without this a
-     wiped corpus yields a silent run of zeros instead of a refusal.
-  5. No golden-set query string occurs in the ingested corpus. Asserted against
+  4. The manifest's indexing_mode matches the registration's pinned
+     ingestion_mode. `content_fingerprint` binds (source_path, content_hash)
+     but is blind to how those chunks were embedded, so a corpus rebuilt with
+     `--contextualize` can share every source path and content hash with the
+     registered "plain" corpus while its embeddings and search_vector content
+     differ (round 4 of tranche 2).
+  5. The live corpus matches the counts the manifest declares, and every live
+     document shares the manifest's declared indexing_mode. Without the count
+     check a wiped corpus yields a silent run of zeros instead of a refusal;
+     without the mode check, an in-place re-ingestion with a different mode
+     after the manifest was written would go undetected.
+  6. No golden-set query string occurs in the ingested corpus. Asserted against
      `chunks` under tenant scope, not against the filesystem: the vectors were
      written at an earlier commit, so a later rephrasing on disk would hide a
      leak the corpus still carries.
@@ -86,7 +95,7 @@ _INSTRUMENT_PATHS = (
     # the module, and a dirty change anywhere in it is cheaper to over-refuse
     # than to silently accept.
     "app/core/settings.py",
-    # Guard 3's content check (round 3). A dirty change here could silently
+    # Guard 5's content check (round 3). A dirty change here could silently
     # weaken or disable the corpus fingerprint comparison.
     "app/core/utils/corpus_fingerprint.py",
 )
@@ -113,6 +122,10 @@ class Registration:
     @property
     def pinned_commit(self) -> str:
         return self.payload["corpus"]["pinned_commit"]
+
+    @property
+    def ingestion_mode(self) -> str:
+        return self.payload["corpus"]["ingestion_mode"]
 
 
 def _git(*args: str) -> str:
@@ -170,8 +183,31 @@ def assert_manifest_matches_pin(manifest: dict[str, Any], registration: Registra
         )
 
 
+def assert_indexing_mode_matches_registration(
+    manifest: dict[str, Any], registration: Registration
+) -> None:
+    """Guard 4. The corpus's indexing_mode must be the one the registration commits to.
+
+    `content_fingerprint` binds (source_path, content_hash) but is blind to how
+    those chunks were embedded: a corpus rebuilt with `--contextualize` can have
+    identical source paths and content hashes — same document text — while
+    every chunk's embedding input differs, because the fingerprint never reads
+    `indexing_mode`. That is not the digest's stated second-preimage
+    limitation (ADR-009 decision 4); it is an ordinary, supported ingestion
+    mode silently passing as the registered "plain" baseline (round 4 of
+    tranche 2 review).
+    """
+    if manifest["indexing_mode"] != registration.ingestion_mode:
+        raise GuardFailure(
+            f"corpus was ingested in '{manifest['indexing_mode']}' mode, but the registration "
+            f"pins '{registration.ingestion_mode}'. A different indexing mode changes what "
+            "hybrid_search actually searches, even with identical source paths and content "
+            "hashes."
+        )
+
+
 async def assert_corpus_matches_manifest(session, manifest: dict[str, Any]) -> None:
-    """Guard 3. The corpus in the database must be the one the manifest declares.
+    """Guard 5. The corpus in the database must be the one the manifest declares.
 
     Without this, a wiped corpus produces a silent run of zeros rather than a
     refusal — which is exactly what happened once: `tests/core/test_rag_migration.py`
@@ -186,6 +222,15 @@ async def assert_corpus_matches_manifest(session, manifest: dict[str, Any]) -> N
     so a same-size mutation is caught too. Still not a proof of correspondence
     to the pinned worktree itself (ADR-009 decision 4, ingest_corpus.py
     docstring); a hand-edit reproducing the digest is not defended against.
+
+    Neither of those reads `indexing_mode`, so an in-place re-ingestion between
+    the manifest write and this run — with `--contextualize`, over the same
+    source paths and content — would pass both checks while every chunk's
+    embedding and `search_vector` content differ from what the manifest
+    describes (round 4 of tranche 2). Checked here, live, in addition to the
+    static comparison against the registration in `assert_indexing_mode_matches_registration`,
+    because that guard only ever saw the manifest's declared value, not what is
+    actually in the database at measurement time.
     """
     live_documents = (await session.execute(text("SELECT count(*) FROM documents"))).scalar_one()
     live_chunks = (await session.execute(text("SELECT count(*) FROM chunks"))).scalar_one()
@@ -207,6 +252,16 @@ async def assert_corpus_matches_manifest(session, manifest: dict[str, Any]) -> N
             f"content fingerprint does not (manifest {manifest['content_fingerprint'][:12]}…, "
             f"live {live_fingerprint[:12]}…). The corpus was replaced or mutated with the same "
             "counts. Re-run app.scripts.ingest_corpus before evaluating."
+        )
+
+    modes = (
+        await session.execute(text("SELECT DISTINCT indexing_mode FROM documents"))
+    ).scalars().all()
+    if len(modes) != 1 or modes[0] != manifest["indexing_mode"]:
+        raise CorpusStateError(
+            f"corpus indexing mode mismatch — manifest declares '{manifest['indexing_mode']}', "
+            f"live corpus has {sorted(modes)}. The corpus was re-ingested in a different mode "
+            "since the manifest was written. Re-run app.scripts.ingest_corpus before evaluating."
         )
 
 
@@ -246,7 +301,7 @@ def load_golden_set(registration: Registration, path: Path = _GOLDEN_SET) -> lis
 
 
 def load_manifest(path: Path = _MANIFEST) -> dict[str, Any]:
-    """Guard 2. Without it there is nothing honest to put in `ingestion_commit`."""
+    """Guard 3. Without it there is nothing honest to put in `ingestion_commit`."""
     if not path.exists():
         raise GuardFailure(
             f"{path} does not exist. Run app.scripts.ingest_corpus, which writes it; "
@@ -254,7 +309,14 @@ def load_manifest(path: Path = _MANIFEST) -> dict[str, Any]:
             "without the manifest a run cannot say which commit it measured."
         )
     manifest = json.loads(path.read_text(encoding="utf-8"))
-    for field in ("commit", "ingested_at", "document_count", "chunk_count", "content_fingerprint"):
+    for field in (
+        "commit",
+        "ingested_at",
+        "document_count",
+        "chunk_count",
+        "content_fingerprint",
+        "indexing_mode",
+    ):
         if field not in manifest:
             raise GuardFailure(
                 f"{path} is missing '{field}'. Re-run app.scripts.ingest_corpus to regenerate it "
@@ -264,7 +326,7 @@ def load_manifest(path: Path = _MANIFEST) -> dict[str, Any]:
 
 
 async def assert_no_query_leaked(session, queries: Sequence[str]) -> None:
-    """Guard 3, asserted against the measured corpus rather than the filesystem."""
+    """Guard 6, asserted against the measured corpus rather than the filesystem."""
     result = await session.execute(
         text(
             "SELECT DISTINCT q.query FROM unnest(CAST(:queries AS text[])) AS q(query) "
@@ -416,7 +478,7 @@ async def main_async(*, dry_run: bool) -> int:
     golden_set = load_golden_set(registration)
     manifest = load_manifest()
     assert_manifest_matches_pin(manifest, registration)
-
+    assert_indexing_mode_matches_registration(manifest, registration)
 
     results = await _measure(registration, golden_set, manifest)
     verdict = compute_verdict(registration, results["aggregate"])
@@ -431,6 +493,7 @@ async def main_async(*, dry_run: bool) -> int:
         "corpus": {
             "document_count": manifest["document_count"],
             "chunk_count": manifest["chunk_count"],
+            "indexing_mode": manifest["indexing_mode"],
         },
         "aggregate": results["aggregate"],
         "per_language": results["per_language"],
@@ -476,6 +539,7 @@ async def _record(
                 "pinned_commit": registration.pinned_commit,
                 "document_count": str(manifest["document_count"]),
                 "chunk_count": str(manifest["chunk_count"]),
+                "indexing_mode": manifest["indexing_mode"],
                 "recall_at_10_floor": str(verdict["recall_at_10_floor"]),
                 "recall_gap_margin": str(verdict["recall_gap_margin"]),
             },

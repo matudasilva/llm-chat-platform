@@ -275,7 +275,7 @@ def _repo_commit(repo_root: Path) -> str:
     return result.stdout.strip()
 
 
-async def _corpus_fingerprint(tenant_id: str, database_url_app: str) -> tuple[int, int, str]:
+async def _corpus_fingerprint(tenant_id: str, database_url_app: str) -> tuple[int, int, str, str]:
     sessionmaker = build_rag_sessionmaker(database_url_app)
     with tenant_scope(tenant_id):
         async with sessionmaker() as session:
@@ -284,8 +284,23 @@ async def _corpus_fingerprint(tenant_id: str, database_url_app: str) -> tuple[in
             rows = (
                 await session.execute(text("SELECT source_path, content_hash FROM documents"))
             ).all()
+            modes = (
+                await session.execute(text("SELECT DISTINCT indexing_mode FROM documents"))
+            ).scalars().all()
     fingerprint = content_fingerprint([(row.source_path, row.content_hash) for row in rows])
-    return int(documents), int(chunks), fingerprint
+    # Round 4 of tranche 2: the fingerprint binds (source_path, content_hash) but
+    # is blind to *how* those chunks were embedded. A corpus with identical source
+    # paths and content hashes but built with --contextualize would pass it while
+    # its chunk embeddings and search_vector content differ from the registered
+    # "plain" baseline. A mixed corpus has no single honest value to declare.
+    if len(modes) > 1:
+        raise SystemExit(
+            f"corpus has mixed indexing modes {sorted(modes)} for tenant '{tenant_id}'; the "
+            "manifest cannot make a single honest declaration. Re-ingest into a clean tenant "
+            "or reconcile the modes before writing a manifest."
+        )
+    indexing_mode = modes[0] if modes else "plain"
+    return int(documents), int(chunks), fingerprint, indexing_mode
 
 
 def write_corpus_manifest(
@@ -295,6 +310,7 @@ def write_corpus_manifest(
     document_count: int,
     chunk_count: int,
     fingerprint: str,
+    indexing_mode: str,
 ) -> None:
     """Records which revision the corpus in the database was built from.
 
@@ -311,6 +327,12 @@ def write_corpus_manifest(
     reproduce the digest (a second-preimage of sha256) is not defended against.
     Proving correspondence to the worktree itself would mean recomputing every
     content_hash from it at run time (ADR-009 decision 4).
+
+    `indexing_mode` is recorded separately from `content_fingerprint` because
+    the fingerprint is blind to it (round 4 of tranche 2): the registration
+    commits to `"plain"`, and a corpus rebuilt with `--contextualize` can share
+    every source path and content hash with the registered one while its
+    chunk embeddings and `search_vector` content differ.
     """
     payload = {
         "commit": commit,
@@ -318,6 +340,7 @@ def write_corpus_manifest(
         "document_count": document_count,
         "chunk_count": chunk_count,
         "content_fingerprint": fingerprint,
+        "indexing_mode": indexing_mode,
     }
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
@@ -369,7 +392,7 @@ def main(argv: list[str] | None = None) -> int:
     logger.info("ingest.summary", extra={"event": "ingest.summary", **stats})
 
     repo_root = Path(args.repo_root).resolve()
-    document_count, chunk_count, fingerprint = asyncio.run(
+    document_count, chunk_count, fingerprint, indexing_mode = asyncio.run(
         _corpus_fingerprint(args.tenant_id, settings.database_url_app)
     )
     # Counts and fingerprint come from the database, not from `stats`: a re-run
@@ -381,6 +404,7 @@ def main(argv: list[str] | None = None) -> int:
         document_count=document_count,
         chunk_count=chunk_count,
         fingerprint=fingerprint,
+        indexing_mode=indexing_mode,
     )
     logger.info("ingest.manifest", extra={"event": "ingest.manifest", "path": str(args.manifest_path)})
 
