@@ -35,6 +35,7 @@ from app.core.domain.vector_store import ChunkUpsert
 from app.core.providers.openai_embedding_provider import OpenAIEmbeddingConfig, OpenAIEmbeddingProvider
 from app.core.providers.pgvector_store import PgVectorStore
 from app.core.settings import settings
+from app.core.utils.corpus_fingerprint import content_fingerprint
 from app.http.middleware.tenant import tenant_scope
 from app.infra.db.session import build_rag_sessionmaker
 from app.services.rag_chunking import RawChunk, chunk_document
@@ -274,13 +275,17 @@ def _repo_commit(repo_root: Path) -> str:
     return result.stdout.strip()
 
 
-async def _corpus_counts(tenant_id: str, database_url_app: str) -> tuple[int, int]:
+async def _corpus_fingerprint(tenant_id: str, database_url_app: str) -> tuple[int, int, str]:
     sessionmaker = build_rag_sessionmaker(database_url_app)
     with tenant_scope(tenant_id):
         async with sessionmaker() as session:
             documents = (await session.execute(text("SELECT count(*) FROM documents"))).scalar_one()
             chunks = (await session.execute(text("SELECT count(*) FROM chunks"))).scalar_one()
-    return int(documents), int(chunks)
+            rows = (
+                await session.execute(text("SELECT source_path, content_hash FROM documents"))
+            ).all()
+    fingerprint = content_fingerprint([(row.source_path, row.content_hash) for row in rows])
+    return int(documents), int(chunks), fingerprint
 
 
 def write_corpus_manifest(
@@ -289,6 +294,7 @@ def write_corpus_manifest(
     commit: str,
     document_count: int,
     chunk_count: int,
+    fingerprint: str,
 ) -> None:
     """Records which revision the corpus in the database was built from.
 
@@ -297,16 +303,21 @@ def write_corpus_manifest(
     is otherwise nothing to copy into a run's `ingestion_commit` except an
     operator's assertion.
 
-    This is an honest declaration, not a proof: it states what the ingesting
-    process saw, and a later hand-edit of the database would not invalidate it.
-    Proving the correspondence would mean recomputing every content_hash from
-    the pinned worktree at run time (ADR-009 decision 4).
+    `content_fingerprint` is a digest over every document's (source_path,
+    content_hash), so a mutation that preserves the counts still changes the
+    manifest. This is still an honest declaration, not a proof of correspondence
+    to the pinned worktree: it states what the ingesting process saw at the
+    time it ran, and a later hand-edit of the database that also happens to
+    reproduce the digest (a second-preimage of sha256) is not defended against.
+    Proving correspondence to the worktree itself would mean recomputing every
+    content_hash from it at run time (ADR-009 decision 4).
     """
     payload = {
         "commit": commit,
         "ingested_at": datetime.now(timezone.utc).isoformat(),
         "document_count": document_count,
         "chunk_count": chunk_count,
+        "content_fingerprint": fingerprint,
     }
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
@@ -358,17 +369,18 @@ def main(argv: list[str] | None = None) -> int:
     logger.info("ingest.summary", extra={"event": "ingest.summary", **stats})
 
     repo_root = Path(args.repo_root).resolve()
-    document_count, chunk_count = asyncio.run(
-        _corpus_counts(args.tenant_id, settings.database_url_app)
+    document_count, chunk_count, fingerprint = asyncio.run(
+        _corpus_fingerprint(args.tenant_id, settings.database_url_app)
     )
-    # Counts come from the database, not from `stats`: a re-run skips unchanged
-    # documents, so the number this invocation inserted is not the size of the
-    # corpus a harness would then measure.
+    # Counts and fingerprint come from the database, not from `stats`: a re-run
+    # skips unchanged documents, so the number this invocation inserted is not
+    # the size of the corpus a harness would then measure.
     write_corpus_manifest(
         args.manifest_path,
         commit=_repo_commit(repo_root),
         document_count=document_count,
         chunk_count=chunk_count,
+        fingerprint=fingerprint,
     )
     logger.info("ingest.manifest", extra={"event": "ingest.manifest", "path": str(args.manifest_path)})
 

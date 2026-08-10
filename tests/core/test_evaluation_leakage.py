@@ -22,6 +22,7 @@ import pytest
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine
 
+from app.core.utils.corpus_fingerprint import content_fingerprint
 from app.http.middleware.tenant import tenant_scope
 from app.infra.db.session import build_rag_sessionmaker
 from experiments.evaluation.run_evaluation import (
@@ -59,17 +60,28 @@ def _queries() -> list[str]:
     ]
 
 
-async def _seed(chunk_text: str) -> None:
+_SOURCE_PATH = "leak-probe.md"
+
+
+async def _seed(chunk_text: str, *, content_hash: str | None = None) -> str:
+    """Seeds one document/chunk pair and returns the content_hash used, so
+    callers can compute the fingerprint a guard is expected to match."""
     engine = create_async_engine(_privileged_url())
     document_id = uuid.uuid4()
+    content_hash = content_hash or str(uuid.uuid4())
     try:
         async with engine.begin() as conn:
             await conn.execute(
                 text(
                     "INSERT INTO documents (id, tenant_id, source_path, content_hash, doc_type) "
-                    "VALUES (:id, :tenant_id, 'leak-probe.md', :hash, 'markdown')"
+                    "VALUES (:id, :tenant_id, :source_path, :hash, 'markdown')"
                 ),
-                {"id": document_id, "tenant_id": _TENANT, "hash": str(uuid.uuid4())},
+                {
+                    "id": document_id,
+                    "tenant_id": _TENANT,
+                    "source_path": _SOURCE_PATH,
+                    "hash": content_hash,
+                },
             )
             await conn.execute(
                 text(
@@ -87,6 +99,7 @@ async def _seed(chunk_text: str) -> None:
             )
     finally:
         await engine.dispose()
+    return content_hash
 
 
 async def _cleanup() -> None:
@@ -178,13 +191,42 @@ async def test_a_corpus_that_does_not_match_the_manifest_is_refused() -> None:
 
 @pytest.mark.asyncio
 async def test_a_matching_corpus_passes_the_guard() -> None:
-    await _seed("A single chunk, so the tenant holds 1 document and 1 chunk.")
+    content_hash = await _seed("A single chunk, so the tenant holds 1 document and 1 chunk.")
     try:
         sessionmaker = build_rag_sessionmaker(_app_url())
         with tenant_scope(_TENANT):
             async with sessionmaker() as session:
                 await assert_corpus_matches_manifest(
-                    session, {"commit": "x", "document_count": 1, "chunk_count": 1}
+                    session,
+                    {
+                        "commit": "x",
+                        "document_count": 1,
+                        "chunk_count": 1,
+                        "content_fingerprint": content_fingerprint([(_SOURCE_PATH, content_hash)]),
+                    },
                 )
+    finally:
+        await _cleanup()
+
+
+@pytest.mark.asyncio
+async def test_a_content_mismatch_is_refused_despite_matching_counts() -> None:
+    """The guard round 3 found missing: counts alone let a replaced or mutated
+    corpus with the same document/chunk totals pass silently."""
+    await _seed("A single chunk, so the tenant holds 1 document and 1 chunk.")
+    try:
+        sessionmaker = build_rag_sessionmaker(_app_url())
+        with tenant_scope(_TENANT):
+            async with sessionmaker() as session:
+                with pytest.raises(CorpusStateError, match="content mismatch"):
+                    await assert_corpus_matches_manifest(
+                        session,
+                        {
+                            "commit": "x",
+                            "document_count": 1,
+                            "chunk_count": 1,
+                            "content_fingerprint": "0" * 64,
+                        },
+                    )
     finally:
         await _cleanup()

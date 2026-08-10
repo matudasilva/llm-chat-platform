@@ -130,3 +130,18 @@ python -m experiments.evaluation.run_evaluation             # records a run
 Needs `DATABASE_URL_APP`, `OPENAI_API_KEY` and `EVALUATION_STORE_URL`. A repeated run inserts a
 second row rather than replacing the first — see ADR-009 decision 3 for why that is an audit
 property, not a storage detail.
+
+## Running the hermetic test suite
+
+The evaluation test suites need three DSNs, none of which is `EVALUATION_STORE_URL` above:
+
+| Variable | Role | Used for |
+|---|---|---|
+| `RAG_TEST_DATABASE_URL` | privileged (superuser) | seeding fixtures, teardown, inspection |
+| `RAG_TEST_DATABASE_URL_APP` | `rag_app` | the isolation assertion (that `rag_app` cannot read the evaluation schema) |
+| `EVALUATION_TEST_DATABASE_URL` | `rag_evaluation` | the store role itself — `test_evaluation_store.py` and `test_settings_evaluation_store.py` connect **as this role, not as the superuser** |
+
+Pointing `EVALUATION_TEST_DATABASE_URL` at the superuser role does not skip the test — it fails it:
+`ensure_schema` refuses a superuser outright (ADR-009 decision 3), so the store suite would report
+failures that look like a broken guard rather than a wrong DSN. Provision `rag_evaluation` with the
+`CREATE ROLE` statement in ADR-009 decision 3 before running this suite locally.

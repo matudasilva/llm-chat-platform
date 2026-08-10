@@ -122,9 +122,14 @@ running, disliking the number, editing, re-running, and reporting only the secon
 
 - refuses to execute unless `registration.json` is committed and unmodified in the worktree, and
   unless both decision thresholds are non-null and the approval is signed;
-- refuses to execute unless the instrument itself — the runner, the metrics, the store and
-  `pgvector_store.py` — is committed and unmodified, and records that commit as `runner_commit`.
-  Without it a run could name a revision that does not describe the code that produced it;
+- refuses to execute unless the instrument itself is committed and unmodified, and records that
+  commit as `runner_commit`. Without it a run could name a revision that does not describe the code
+  that produced it. "The instrument" is every file that shapes a measurement, not just the runner:
+  the runner, the metrics, the store, `pgvector_store.py`, `retrieval_factory.py` (selects the
+  embedding provider), `openai_embedding_provider.py` and `settings.py` (the model, dimensions and
+  request payload behind every vector), and `corpus_fingerprint.py` (guard 3's content check). The
+  canonical list is `_INSTRUMENT_PATHS` in `run_evaluation.py` — enumerated here for readability, not
+  duplicated as a second source of truth to drift from it;
 - records the file's SHA-256 **and** the commit that introduced it in every `runs` row;
 - requires a new commit for re-registration, and reports runs under every registration hash — never
   only the last.

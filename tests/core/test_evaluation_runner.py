@@ -115,13 +115,16 @@ def test_manifest_guard_rejects_a_missing_file(tmp_path: Path) -> None:
         load_manifest(tmp_path / "absent.json")
 
 
-@pytest.mark.parametrize("field", ["commit", "ingested_at", "document_count", "chunk_count"])
+@pytest.mark.parametrize(
+    "field", ["commit", "ingested_at", "document_count", "chunk_count", "content_fingerprint"]
+)
 def test_manifest_guard_rejects_a_missing_field(tmp_path: Path, field: str) -> None:
     manifest = {
         "commit": "a" * 40,
         "ingested_at": "2026-08-08T00:00:00+00:00",
         "document_count": 1,
         "chunk_count": 1,
+        "content_fingerprint": "b" * 64,
     }
     del manifest[field]
     path = tmp_path / "manifest.json"
@@ -221,6 +224,52 @@ def test_the_guards_are_inside_the_measurement_not_before_it() -> None:
     assert calls.index("embed_many") < calls.index("hybrid_search")
 
 
+@pytest.mark.asyncio
+async def test_a_failing_corpus_guard_actually_prevents_embedding_and_retrieval(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Round 3: the AST test above proves the guard *calls* appear textually before
+    `embed_many`/`hybrid_search` — it would still pass if they were moved into a
+    conditional or exception-swallowing branch, since `ast.walk` sees order, not
+    reachability. This proves the claim behaviorally: make guard 3 raise, and
+    observe that the embedding provider is never built and `PgVectorStore` is
+    never constructed, rather than trusting that the textual order is load-bearing.
+    """
+    import experiments.evaluation.run_evaluation as runner
+
+    class _FakeSession:
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *exc_info):
+            return False
+
+    monkeypatch.setattr(runner, "build_rag_sessionmaker", lambda *_a, **_k: _FakeSession)
+
+    async def _raising_guard(session, manifest):
+        raise runner.CorpusStateError("simulated corpus mismatch")
+
+    monkeypatch.setattr(runner, "assert_corpus_matches_manifest", _raising_guard)
+
+    def _forbidden_embedding_provider(*_a, **_k):
+        raise AssertionError("embedding provider must not be built when a guard fails")
+
+    monkeypatch.setattr(runner, "build_embedding_provider", _forbidden_embedding_provider)
+
+    class _ForbiddenStore:
+        def __init__(self, *_a, **_k):
+            raise AssertionError("PgVectorStore must not be constructed when a guard fails")
+
+    monkeypatch.setattr(runner, "PgVectorStore", _ForbiddenStore)
+
+    registration = _registration()
+    golden_set = [
+        {"query_id": "q001", "language": "en", "pair_id": "p001", "query": "probe", "relevant": []}
+    ]
+    with pytest.raises(runner.CorpusStateError, match="simulated corpus mismatch"):
+        await runner._measure(registration, golden_set, {"commit": "x"})
+
+
 def test_the_instrument_guard_refuses_a_dirty_file(monkeypatch: pytest.MonkeyPatch) -> None:
     # Observed refusing, rather than assumed to refuse. Patching `_git` avoids
     # dirtying a real tracked file to prove it.
@@ -259,6 +308,13 @@ def test_the_instrument_guard_lists_the_files_that_are_the_instrument() -> None:
         # Selects the embedding provider and its dimensions, so it shapes every
         # vector the measurement depends on.
         "app/core/domain/retrieval_factory.py",
+        # The model, dimensions and request payload that actually shape the
+        # vector (round 3 of tranche 2).
+        "app/core/providers/openai_embedding_provider.py",
+        # `rag_embedding_dimensions` is read from here.
+        "app/core/settings.py",
+        # Guard 3's content check; a dirty change here could silently weaken it.
+        "app/core/utils/corpus_fingerprint.py",
     }
 
 

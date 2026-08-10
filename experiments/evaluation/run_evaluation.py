@@ -43,6 +43,7 @@ from sqlalchemy import text
 from app.core.domain.retrieval_factory import build_embedding_provider
 from app.core.providers.pgvector_store import PgVectorStore
 from app.core.settings import settings
+from app.core.utils.corpus_fingerprint import content_fingerprint
 from app.http.middleware.tenant import tenant_scope
 from app.infra.db.session import build_rag_sessionmaker
 from experiments.evaluation import metrics as M
@@ -77,6 +78,17 @@ _INSTRUMENT_PATHS = (
     # Selects the embedding provider and its dimensions, so it shapes every
     # vector the measurement depends on (round 2 of tranche 2).
     "app/core/domain/retrieval_factory.py",
+    # Round 3 of tranche 2: `retrieval_factory` names the class, but the model,
+    # dimensions and request payload that actually shape the vector live here.
+    "app/core/providers/openai_embedding_provider.py",
+    # Same round: `rag_embedding_dimensions` is read from here. Broad — most of
+    # this file is unrelated to embeddings — but there is no narrower unit than
+    # the module, and a dirty change anywhere in it is cheaper to over-refuse
+    # than to silently accept.
+    "app/core/settings.py",
+    # Guard 3's content check (round 3). A dirty change here could silently
+    # weaken or disable the corpus fingerprint comparison.
+    "app/core/utils/corpus_fingerprint.py",
 )
 
 
@@ -166,6 +178,14 @@ async def assert_corpus_matches_manifest(session, manifest: dict[str, Any]) -> N
     performs a schema downgrade that empties `documents` and `chunks`, so running
     the full suite destroys the measured corpus and the next run would have
     reported 0.0 across the board as though it were a finding.
+
+    Counts alone let a corpus with the right totals but different text pass
+    (round 2 and round 3 of tranche 2 both flagged this). `content_fingerprint`
+    — a digest over every document's (source_path, content_hash), computed by
+    `app.scripts.ingest_corpus.content_fingerprint` — is checked in addition,
+    so a same-size mutation is caught too. Still not a proof of correspondence
+    to the pinned worktree itself (ADR-009 decision 4, ingest_corpus.py
+    docstring); a hand-edit reproducing the digest is not defended against.
     """
     live_documents = (await session.execute(text("SELECT count(*) FROM documents"))).scalar_one()
     live_chunks = (await session.execute(text("SELECT count(*) FROM chunks"))).scalar_one()
@@ -177,6 +197,16 @@ async def assert_corpus_matches_manifest(session, manifest: dict[str, Any]) -> N
             f"corpus mismatch — manifest declares {manifest['document_count']} docs / "
             f"{manifest['chunk_count']} chunks, DB has {live_documents} / {live_chunks}. "
             "Re-run app.scripts.ingest_corpus before evaluating."
+        )
+
+    rows = (await session.execute(text("SELECT source_path, content_hash FROM documents"))).all()
+    live_fingerprint = content_fingerprint([(row.source_path, row.content_hash) for row in rows])
+    if live_fingerprint != manifest["content_fingerprint"]:
+        raise CorpusStateError(
+            "corpus content mismatch — document/chunk counts match the manifest, but the "
+            f"content fingerprint does not (manifest {manifest['content_fingerprint'][:12]}…, "
+            f"live {live_fingerprint[:12]}…). The corpus was replaced or mutated with the same "
+            "counts. Re-run app.scripts.ingest_corpus before evaluating."
         )
 
 
@@ -224,9 +254,12 @@ def load_manifest(path: Path = _MANIFEST) -> dict[str, Any]:
             "without the manifest a run cannot say which commit it measured."
         )
     manifest = json.loads(path.read_text(encoding="utf-8"))
-    for field in ("commit", "ingested_at", "document_count", "chunk_count"):
+    for field in ("commit", "ingested_at", "document_count", "chunk_count", "content_fingerprint"):
         if field not in manifest:
-            raise GuardFailure(f"{path} is missing '{field}'")
+            raise GuardFailure(
+                f"{path} is missing '{field}'. Re-run app.scripts.ingest_corpus to regenerate it "
+                "with the current manifest schema."
+            )
     return manifest
 
 
