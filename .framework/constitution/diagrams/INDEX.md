@@ -6,12 +6,26 @@ existing diagram.
 
 | tipo | alcance | archivo | generado/manual | última actualización | refresh_pending | refresh_baseline |
 |---|---|---|---|---|---|---|
-| context | producto | `context.svg` | generado | 2026-08-07 | no | `sha256:6096ce9ea9c68868dd5216f05b946195f01a2d2db874d05e7612d69274ddf957` |
-| architecture | framework | `architecture.svg` | generado | 2026-08-07 | no | `sha256:6096ce9ea9c68868dd5216f05b946195f01a2d2db874d05e7612d69274ddf957` |
-| structural | producto | `structural.svg` | manual | 2026-08-07 | no | `sha256:6096ce9ea9c68868dd5216f05b946195f01a2d2db874d05e7612d69274ddf957` |
-| deployment | producto | `deployment.svg` | manual | 2026-08-07 | no | `sha256:6096ce9ea9c68868dd5216f05b946195f01a2d2db874d05e7612d69274ddf957` |
-| behavior | producto | `behavior.svg` | manual | 2026-08-07 | no | `sha256:6096ce9ea9c68868dd5216f05b946195f01a2d2db874d05e7612d69274ddf957` |
-| erd | producto | `erd.svg` | manual | 2026-08-07 | no | `sha256:6096ce9ea9c68868dd5216f05b946195f01a2d2db874d05e7612d69274ddf957` |
+| context | producto | `context.svg` | generado | 2026-08-07 | sí (deferred) | `sha256:6096ce9ea9c68868dd5216f05b946195f01a2d2db874d05e7612d69274ddf957` |
+| architecture | framework | `architecture.svg` | generado | 2026-08-07 | sí (deferred) | `sha256:6096ce9ea9c68868dd5216f05b946195f01a2d2db874d05e7612d69274ddf957` |
+| structural | producto | `structural.svg` | manual | 2026-08-07 | sí (deferred) | `sha256:6096ce9ea9c68868dd5216f05b946195f01a2d2db874d05e7612d69274ddf957` |
+| deployment | producto | `deployment.svg` | manual | 2026-08-07 | sí (deferred) | `sha256:6096ce9ea9c68868dd5216f05b946195f01a2d2db874d05e7612d69274ddf957` |
+| behavior | producto | `behavior.svg` | manual | 2026-08-07 | sí (deferred) | `sha256:6096ce9ea9c68868dd5216f05b946195f01a2d2db874d05e7612d69274ddf957` |
+| erd | producto | `erd.svg` | manual | 2026-08-07 | sí (deferred) | `sha256:6096ce9ea9c68868dd5216f05b946195f01a2d2db874d05e7612d69274ddf957` |
+
+## ORQ-26 replan result (2026-08-10) — deferred by operator
+
+All six diagrams flagged `refresh_pending: sí` (architecture-signature source: constitution)
+after this replan's `roadmap.md` edits — closing ORQ-26, correcting the cache-fingerprint and
+message-order overclaims, adding the three rediscovered Phase 1 debt items, and adding the
+"Conversational memory via RAG" Phase 2 item. Proposed disposition was `ack` for
+`context`/`architecture`/`deployment` (no actor, framework-install, or deployable-component
+change) and `adopt` for `structural`/`behavior`/`erd` (ORQ-26 added a real module —
+`experiments/evaluation/` — and a real schema — `evaluation`, outside the Alembic chain per
+ADR-009 — plus the roadmap's phase-dependency shape changed). **Operator explicitly deferred all
+six** (2026-08-10): batch them together right before starting the Routing phase (Phase 2 item 2,
+`RoutingPolicy`/ORQ-30 in the current draft numbering) rather than refreshing twice in a row for
+adjacent changes. Signal only, does not block ORQ-26's closure or any work in between.
 
 ## ORQ-25 replan result (2026-08-07)
 

@@ -21,20 +21,61 @@ the `v1.1-stable` tag.
   behind a safety contract.
 - Foundational multitenancy (ADR-003): `tenant_id` on `Conversation`/`Message`,
   pure-ASGI `TenantMiddleware` registered last (Starlette LIFO), `ContextVar`
-  propagation, tenant-namespaced cache with full-history fingerprint.
+  propagation, tenant-namespaced cache keyed on the message list passed to it.
+  **Correction (2026-08-10, manual testing during ORQ-26 review):** ADR-003 and
+  this roadmap both described the fingerprint as hashing "the full message
+  list", read by a prior version of this bullet as full conversation history.
+  It is not: `app/api/routes/chat.py` has never built that list with more than
+  the single incoming message, in any commit. The fingerprint fix was real (a
+  list-shaped hash instead of a bare string) but had nothing to omit, because
+  no history was ever assembled upstream of it. See the new "still open" item
+  below.
 - Cross-tenant read-path leak closed via service-layer scoping (ADR-004).
 - Local test suite hermetized.
-- Minimal chat frontend, tenant-aware, in a separate repository; SSE framing,
-  GFM tables and message-order fixes.
+- Minimal chat frontend, tenant-aware, in a separate repository; SSE framing
+  and GFM tables. **Correction (2026-08-10):** the "message-order fix" here
+  was frontend-only — `useChat.ts` sorts with a role-based tie-breaker when
+  `created_at` ties (same transaction, same `func.now()`), documented at the
+  time as `ORQ-19.1`'s workaround with the real backend fix named as
+  "ORQ-19.2" and deferred. `ORQ-19.2` was never claimed. The backend's own
+  `ORDER BY created_at ASC, id ASC` (`app/services/conversation_query_service.py:47`)
+  still ties on a random UUID when timestamps match, so any client reading the
+  API directly (not through the frontend workaround) can still see a reply
+  ordered before the question that produced it. See the new "still open" item
+  below.
 - Dev→Prod Option A (ADR-005): image pipeline to GHCR, thin deploy repository,
   staging on PaaS with serverless Postgres and Redis, end-to-end SSE verified.
 
 **Still open in this phase:**
 - Execution Orchestrator + Tool Calling Engine, and the `ChatService` refactor
   that uses them — deferred by ADR-001, not cancelled.
-- Default provider moved off `stub` to a live-validated OpenAI/Bedrock.
+- Default provider moved off `stub` to a live-validated OpenAI/Bedrock. Partial
+  evidence: manually re-validated live against both Bedrock and OpenAI on
+  2026-08-10 (ordinary chat + the multi-turn-memory probe below), but that was
+  ad hoc testing during a review session, not a dedicated ORQ's evidence — this
+  item stays open until one exists.
 - Backend sequencing via `GENERATED ALWAYS AS IDENTITY` instead of
-  timestamp-based ordering (proposed follow-up from the SSE fix).
+  timestamp-based ordering (proposed follow-up from the SSE fix, `ORQ-19.2` in
+  the original V2 numbering, never claimed). **Next to be claimed** (operator
+  decision 2026-08-10) as a narrowly-scoped ORQ — schema + `ORDER BY` change
+  only, no RLS, no `usage_events` work folded in even though both touch
+  adjacent tables, per the same narrow-scope precedent as the ORQ-26 split
+  (see Phase 2 item 1).
+- **Conversation history is never sent to the provider.** Moved to Phase 2 as
+  RAG work (operator decision 2026-08-10) — see "Conversational memory via RAG"
+  below. Kept as a one-line pointer here, not restated, so a reader scanning
+  Phase 1 debt still finds it (ORQ-15 single-source-of-fact: the description
+  lives in Phase 2 only).
+- **RLS on `conversations`/`messages` remains unenforced.** Already referenced
+  in Phase 2 item 1 above and `docs/adr/004-tenant-scoping-read-endpoints.md`
+  and `docs/adr/006-rag-corpus-vector-store.md` §RLS discussion (single source
+  of fact, not restated here) — recorded in this list only so it is visible
+  next to the other still-open Phase 1 items rather than requiring a reader to
+  already know to look inside ORQ-21's bullet. Verified live 2026-08-10:
+  `relrowsecurity = false` on both tables.
+- **`usage_events.tenant_id` is still missing.** No column exists on
+  `usage_events` (verified live 2026-08-10). Deferred since ORQ-18.2 pending a
+  cost-pipeline analysis that was never scheduled as its own ORQ.
 
 ## Phase 2 — Retrieval (RAG) + Routing — next
 
@@ -99,7 +140,9 @@ invariant.
      The split renumbers everything below it by two. The three slices cut on
      what each one needs: ORQ-26 needs no LLM judge, ORQ-27 introduces one,
      ORQ-28 needs a second corpus ingestion.
-   - **ORQ-26 — Evaluation harness** (claimed, Plan): frozen bilingual golden
+   - ✅ done (ORQ-26, 5 review rounds — round 4 blocked on a corpus-fingerprint
+     gap that round 5 closed and re-verified live with all three test DSNs and
+     `pgvector` installed — merged to `main` 2026-08-10): frozen bilingual golden
      set derived from `experiments/reranking/ground_truth.jsonl` — already 30
      bilingual pairs with labels declared before retrieval ran, so the master
      doc's "expand to 30 prompts" is satisfied and the work is promoting them to
@@ -132,6 +175,46 @@ invariant.
      `experiments/reranking/build_dataset.py` already does, so the two do not
      share a dependency. It remains an unscheduled follow-up, to ride along
      with a future ORQ that already touches the retrieval path.
+
+     **Pending renumbering note (2026-08-10):** the message-ordering item
+     (Phase 1, "still open") is next in line to be claimed via
+     `fw_claim_orq_number.py`, ahead of any item below. Numbers are assigned
+     strictly by claim order (`max(existing tags/branches) + 1`), not by this
+     document's draft labels — none of ORQ-27 through ORQ-32 below has a
+     branch or reservation tag yet, so claiming the ordering item now will
+     take the number **27**, shifting every draft number below down by one
+     (RAG answer quality becomes ORQ-28, and so on through AI Green becoming
+     ORQ-33). This bullet list keeps its current draft numbers until each item
+     is actually claimed, at which point its real number replaces the draft
+     one here — same convention as every prior renumbering in this section.
+   - **Conversational memory via RAG** (not yet claimed, unnumbered — sequenced
+     after the Phase 1 message-ordering ORQ claims its number): `app/api/routes/chat.py`
+     builds `_messages = [ChatMessage(role="user", content=payload.message)]` —
+     one message, always, regardless of `conversation_id`; `ChatService.run`
+     accepts a full `Sequence[ChatMessage]` and is provider-agnostic, but
+     nothing upstream of it ever supplies more than the current turn.
+     Reproduced live 2026-08-10 against both Bedrock and OpenAI (identical:
+     the model denies being told anything in a prior turn of the same
+     conversation). First named as deferred debt in `ORQ-19` Design Review
+     finding F3 (2026-07-02), candidate for "a future backend ORQ" that was
+     never claimed — see `.framework/learnings.md` (2026-08-10 governance
+     entry) for how it fell out of the V2→V3 transition.
+
+     **Design direction (operator decision 2026-08-10):** solve it with RAG
+     rather than full-history replay — embed each turn and retrieve the top-k
+     most relevant prior turns of the *same* `conversation_id` via
+     `PgVectorStore`/`VectorStorePort`, the same infrastructure already built
+     for `documents`/`chunks`, applied to `messages` instead. Reuses embedding
+     + hybrid retrieval rather than growing token cost linearly with
+     conversation length. **Scoped strictly to within one conversation** —
+     cross-conversation / long-term per-tenant memory ("remember me across
+     sessions") is explicitly *not* included here; noted under §Open decisions
+     as a future RAG improvement candidate, not committed to any ORQ.
+     Needs its own spec (retrieval `top_k`, embedding-write path on every
+     turn or lazy/batched, interaction with the existing Redis response
+     cache's fingerprint, token/cost impact relevant to Phase 3's per-tenant
+     accounting) before implementation — a design decision, not a mechanical
+     fix like the ordering item in Phase 1.
    - **ORQ-27 — RAG answer quality** (not yet claimed): RAGAS `faithfulness`
      and `response_relevancy` as LLM-as-judge signals, judged by a non-OpenAI
      model in an optional dependency group that never reaches any image;
@@ -200,6 +283,16 @@ CO2e) this phase depends on.
 
 - Energy/CO2e estimation methodology per request.
 - Default model and routing escalation thresholds.
+- **Cross-conversation / long-term memory via RAG** (raised 2026-08-10, operator
+  decision when scoping "Conversational memory via RAG" in Phase 2). Same
+  retrieval mechanism as within-conversation memory, but over a corpus that
+  spans a tenant's conversations rather than one `conversation_id` — "remember
+  what I told you last week" instead of "remember what I told you five
+  messages ago". Deliberately not committed to any ORQ yet: needs its own
+  privacy/retention model (how long a fact persists, whether a user can clear
+  it) that within-conversation memory does not, and depends on the
+  within-conversation version shipping first to reuse its embedding-write
+  path rather than building two parallel mechanisms.
 - **Moving the embedding provider off OpenAI** (raised 2026-08-07). The operator
   intends to consolidate GenAI spend on Bedrock/GCP, where credits are
   available; generation already runs on Bedrock, so embeddings are the last
