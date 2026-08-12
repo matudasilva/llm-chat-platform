@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import re
+import subprocess
 from collections import defaultdict
 from pathlib import Path
 from statistics import mean
@@ -31,8 +34,7 @@ def build_analysis(
     if run["phase"] != "development" or run["heldout_inspected"]:
         raise ValueError("analysis accepts an unblinded development run only")
     registration_path = ROOT / run["registration_path"]
-    if sha256_file(registration_path) != run["registration_sha256"]:
-        raise ValueError("registration changed after the development run")
+    _verify_source_registration_snapshot(run)
     registration = json.loads(registration_path.read_text(encoding="utf-8"))
     fixtures = load_dataset(dataset_path, expected_split="development")
     evaluations = {
@@ -122,6 +124,8 @@ def build_analysis(
         "source_run_id": run["run_id"],
         "source_git_head": run["git_head"],
         "source_registration_sha256": run["registration_sha256"],
+        "source_registration_git_snapshot_verified": True,
+        "proposal_registration_sha256": sha256_file(registration_path),
         "development_dataset_sha256": run["dataset_sha256"],
         "heldout_inspected": False,
         "scorer_version": "nested-forbidden-span-safe-v2",
@@ -238,7 +242,9 @@ def render_markdown(analysis: Mapping[str, Any]) -> str:
         f"- Source run SHA-256: `{analysis['source_run_sha256']}`",
         f"- Run ID: `{analysis['source_run_id']}`",
         f"- Instrument commit: `{analysis['source_git_head']}`",
-        f"- Registration SHA-256: `{analysis['source_registration_sha256']}`",
+        f"- Source-run registration SHA-256: `{analysis['source_registration_sha256']}`",
+        f"- Proposed registration SHA-256: `{analysis['proposal_registration_sha256']}`",
+        "- Source registration verified from the instrument commit: `true`",
         f"- Development dataset SHA-256: `{analysis['development_dataset_sha256']}`",
         f"- Scorer: `{analysis['scorer_version']}`",
         "- Held-out inspected: `false`",
@@ -364,8 +370,10 @@ def _proposal_values(
         - quality["C"]["conversational_recall_accuracy"],
         "d_over_c_fact_consistency_improvement": quality[selected_arm]["fact_consistency"]
         - quality["C"]["fact_consistency"],
-        "d_below_b_quality_loss": quality["B"]["conversational_recall_accuracy"]
+        "d_below_b_recall_loss": quality["B"]["conversational_recall_accuracy"]
         - quality[selected_arm]["conversational_recall_accuracy"],
+        "d_below_b_fact_consistency_loss": quality["B"]["fact_consistency"]
+        - quality[selected_arm]["fact_consistency"],
         "d_vs_b_cumulative_api_cost_improvement": 1 - selected_cost / baseline_cost,
         "worst_break_even_exchange": max(break_even_values)
         if break_even_values and all(value is not None for value in break_even_values)
@@ -444,6 +452,24 @@ def _observed_api_cost(observed: Mapping[str, Any]) -> dict[str, Any]:
         "total_estimated_api_cost": embedding + generation,
         "note": "Physical experiment spend; not a standalone memory-strategy cost.",
     }
+
+
+def _verify_source_registration_snapshot(run: Mapping[str, Any]) -> None:
+    git_head = run["git_head"]
+    registration_path = run["registration_path"]
+    if not isinstance(git_head, str) or not re.fullmatch(r"[0-9a-f]{40}", git_head):
+        raise ValueError("run git head is invalid")
+    result = subprocess.run(
+        ["git", "show", f"{git_head}:{registration_path}"],
+        cwd=ROOT,
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode:
+        raise ValueError("source registration snapshot is unavailable")
+    actual = hashlib.sha256(result.stdout).hexdigest()
+    if actual != run["registration_sha256"]:
+        raise ValueError("source registration snapshot hash mismatch")
 
 
 def main() -> int:

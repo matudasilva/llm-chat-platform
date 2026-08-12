@@ -97,7 +97,11 @@ REGISTERED_THRESHOLD_METRICS = {
         "d_over_c_fact_consistency_improvement",
         "minimum",
     ),
-    "maximum_d_below_b_quality_loss": ("d_below_b_quality_loss", "maximum"),
+    "maximum_d_below_b_recall_loss": ("d_below_b_recall_loss", "maximum"),
+    "maximum_d_below_b_fact_consistency_loss": (
+        "d_below_b_fact_consistency_loss",
+        "maximum",
+    ),
     "minimum_d_vs_b_cumulative_api_cost_improvement": (
         "d_vs_b_cumulative_api_cost_improvement",
         "minimum",
@@ -1014,9 +1018,13 @@ def build_heldout_decision(
         "d_over_c_fact_consistency_improvement": _difference(
             quality[selected_arm]["fact_consistency"], quality["C"]["fact_consistency"]
         ),
-        "d_below_b_quality_loss": _difference(
+        "d_below_b_recall_loss": _difference(
             quality["B"]["conversational_recall_accuracy"],
             quality[selected_arm]["conversational_recall_accuracy"],
+        ),
+        "d_below_b_fact_consistency_loss": _difference(
+            quality["B"]["fact_consistency"],
+            quality[selected_arm]["fact_consistency"],
         ),
         "d_vs_b_cumulative_api_cost_improvement": cost_improvement,
         "worst_break_even_exchange": worst_break_even,
