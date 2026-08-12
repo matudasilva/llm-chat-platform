@@ -262,31 +262,45 @@ def build_memory_query(
         if token_count > max_tokens:
             return MemoryQuery("D1", None, None, (), token_count, "current_user_over_budget")
         return MemoryQuery("D1", text, stable_text_hash(text), (), token_count)
-    if variant != "D2":
+    if variant not in {"D2_JSON", "D2_TEXT"}:
         raise ValueError(f"unsupported query variant {variant!r}")
     eligible_ids = {message.message_id for message in prefix}
     recent = [message for message in active_messages if message.message_id in eligible_ids]
     while True:
-        payload = {
-            "schema": "memory-query-v1",
-            "recent_messages": [
-                {
-                    "sequence": message.sequence,
-                    "role": message.role,
-                    "content": normalize_line_endings(message.content),
-                }
+        if variant == "D2_JSON":
+            payload = {
+                "schema": "memory-query-v1",
+                "recent_messages": [
+                    {
+                        "sequence": message.sequence,
+                        "role": message.role,
+                        "content": normalize_line_endings(message.content),
+                    }
+                    for message in recent
+                ],
+                "current_user": {
+                    "role": "user",
+                    "content": normalize_line_endings(current_user.content),
+                },
+            }
+            text = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
+        else:
+            lines = ["RECENT CONVERSATION"]
+            lines.extend(
+                f"{message.role.upper()}: {normalize_line_endings(message.content)}"
                 for message in recent
-            ],
-            "current_user": {
-                "role": "user",
-                "content": normalize_line_endings(current_user.content),
-            },
-        }
-        text = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
+            )
+            lines.extend(
+                (
+                    "CURRENT USER MESSAGE",
+                    f"USER: {normalize_line_endings(current_user.content)}",
+                )
+            )
+            text = "\n".join(lines)
         token_count = estimated_tokens(text)
         if token_count <= max_tokens:
             return MemoryQuery(
-                "D2",
+                variant,
                 text,
                 stable_text_hash(text),
                 tuple(message.sequence for message in recent),
@@ -295,7 +309,7 @@ def build_memory_query(
         if recent:
             recent.pop(0)
             continue
-        return MemoryQuery("D2", None, None, (), token_count, "current_user_over_budget")
+        return MemoryQuery(variant, None, None, (), token_count, "current_user_over_budget")
 
 
 class ExactMemoryIndex:
@@ -395,7 +409,7 @@ def compose_context(
     budgets.validate()
     if current_user.role != "user":
         raise ValueError("current message must have user role")
-    if arm not in {"A", "B", "C", "D1", "D2"}:
+    if arm not in {"A", "B", "C", "D1", "D2_JSON", "D2_TEXT"}:
         raise ValueError(f"unknown arm {arm!r}")
     system = ChatMessage(role="system", content=BASE_SYSTEM_INSTRUCTIONS)
     active: tuple[TranscriptMessage, ...] = ()
@@ -408,7 +422,7 @@ def compose_context(
             max_tokens=budgets.conversation_tokens,
             max_messages=budgets.recent_window_max_messages,
         )
-    elif arm in {"D1", "D2"}:
+    elif arm in {"D1", "D2_JSON", "D2_TEXT"}:
         active = fit_latest_messages(
             prefix,
             max_tokens=budgets.active_window_tokens,

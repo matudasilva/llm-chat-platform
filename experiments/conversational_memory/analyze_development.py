@@ -1,46 +1,24 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
-import random
 from collections import defaultdict
 from pathlib import Path
 from statistics import mean
-from typing import Any, Mapping, Sequence
+from typing import Any, Mapping
 
 from .dataset import load_dataset, sha256_file
 from .execution import summarize_execution_ledger
+from .run_experiment import (
+    ARMS,
+    MEMORY_ARMS,
+    evaluate_registered_thresholds,
+    paired_bootstrap_interval,
+)
 
 
 ROOT = Path(__file__).resolve().parents[2]
-
-
-def paired_bootstrap_interval(
-    selected: Mapping[str, float],
-    comparator: Mapping[str, float],
-    *,
-    samples: int = 10_000,
-    seed: int = 2701,
-) -> dict[str, float | int]:
-    if set(selected) != set(comparator) or not selected:
-        raise ValueError("paired samples must have the same non-empty step IDs")
-    if samples <= 0:
-        raise ValueError("samples must be positive")
-    step_ids = sorted(selected)
-    differences = [selected[step_id] - comparator[step_id] for step_id in step_ids]
-    rng = random.Random(seed)
-    draws = sorted(
-        mean(rng.choice(differences) for _ in differences) for _ in range(samples)
-    )
-    return {
-        "step_count": len(step_ids),
-        "samples": samples,
-        "seed": seed,
-        "mean_difference": mean(differences),
-        "ci95_low": _percentile(draws, 0.025),
-        "ci95_high": _percentile(draws, 0.975),
-    }
+QUERY_TIE_PRIORITY = {"D1": 0, "D2_TEXT": 1, "D2_JSON": 2}
 
 
 def build_analysis(
@@ -52,188 +30,193 @@ def build_analysis(
     run = json.loads(run_path.read_text(encoding="utf-8"))
     if run["phase"] != "development" or run["heldout_inspected"]:
         raise ValueError("analysis accepts an unblinded development run only")
+    registration_path = ROOT / run["registration_path"]
+    if sha256_file(registration_path) != run["registration_sha256"]:
+        raise ValueError("registration changed after the development run")
+    registration = json.loads(registration_path.read_text(encoding="utf-8"))
     fixtures = load_dataset(dataset_path, expected_split="development")
     evaluations = {
         evaluation.step_id: evaluation
         for fixture in fixtures
         for evaluation in fixture.evaluations
     }
+    step_clusters = {
+        evaluation.step_id: fixture.conversation_id
+        for fixture in fixtures
+        for evaluation in fixture.evaluations
+    }
+    expected_repetitions = registration["calibration"]["managed_generation_repetitions"]
     observations: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
     for observation in run["generation_observations"]:
         observations[(observation["step_id"], observation["arm"])].append(observation)
-    step_scores: dict[str, dict[str, float]] = {arm: {} for arm in ("A", "B", "C", "D1", "D2")}
-    step_consistency: dict[str, dict[str, float]] = {
-        arm: {} for arm in ("A", "B", "C", "D1", "D2")
-    }
+    step_scores: dict[str, dict[str, float]] = {arm: {} for arm in ARMS}
+    step_consistency: dict[str, dict[str, float]] = {arm: {} for arm in ARMS}
     for step_id in evaluations:
-        for arm in step_scores:
+        for arm in ARMS:
             items = observations[(step_id, arm)]
-            if not items:
-                raise ValueError(f"missing generation observation for {step_id}/{arm}")
+            repetitions = {item["repetition"] for item in items}
+            if len(items) != expected_repetitions or repetitions != set(
+                range(1, expected_repetitions + 1)
+            ):
+                raise ValueError(f"incomplete generation observations for {step_id}/{arm}")
             step_scores[arm][step_id] = mean(
                 item["conversational_recall_accuracy"] for item in items
             )
-            step_consistency[arm][step_id] = mean(item["fact_consistency"] for item in items)
+            step_consistency[arm][step_id] = mean(
+                item["fact_consistency"] for item in items
+            )
     quality = {
         arm: {
             "conversational_recall_accuracy": mean(step_scores[arm].values()),
             "fact_consistency": mean(step_consistency[arm].values()),
         }
-        for arm in step_scores
+        for arm in ARMS
     }
-    quality["D1"]["paired_vs_c"] = paired_bootstrap_interval(
-        step_scores["D1"], step_scores["C"]
-    )
-    quality["D1"]["paired_vs_b"] = paired_bootstrap_interval(
-        step_scores["D1"], step_scores["B"]
-    )
-    slices: dict[str, dict[str, Any]] = {}
-    for slice_name in sorted(
-        {slice_name for evaluation in evaluations.values() for slice_name in evaluation.slices}
-    ):
-        ids = [
-            step_id
-            for step_id, evaluation in evaluations.items()
-            if slice_name in evaluation.slices
-        ]
-        slices[slice_name] = {
-            "steps": len(ids),
-            "recall_accuracy": {
-                arm: mean(step_scores[arm][step_id] for step_id in ids)
-                for arm in step_scores
-            },
-            "fact_consistency": {
-                arm: mean(step_consistency[arm][step_id] for step_id in ids)
-                for arm in step_scores
-            },
-        }
+    for arm in MEMORY_ARMS:
+        quality[arm]["paired_vs_c"] = paired_bootstrap_interval(
+            step_scores[arm],
+            step_scores["C"],
+            step_clusters=step_clusters,
+            samples=10_000,
+            seed=2701,
+        )
+        quality[arm]["paired_vs_b"] = paired_bootstrap_interval(
+            step_scores[arm],
+            step_scores["B"],
+            step_clusters=step_clusters,
+            samples=10_000,
+            seed=2701,
+        )
+    slices = _slice_metrics(evaluations, step_scores, step_consistency)
     logical_costs = _logical_cost_summary(run["cost_taxonomy"]["logical_strategy_ledgers"])
-    d1_vs_b_cost_improvement = 1 - (
-        logical_costs["D1"]["mean_total_estimated_api_cost"]
-        / logical_costs["B"]["mean_total_estimated_api_cost"]
+    retrieval = run["selected_candidate"]["aggregate"]
+    selected_arm, selection_scorecards = select_query_variant(
+        quality=quality,
+        slices=slices,
+        logical_costs=logical_costs,
+        retrieval=retrieval,
     )
     generation = run["generation_aggregate"]
-    thresholds = {
-        "minimum_d_over_c_recall_improvement": 0.20,
-        "minimum_d_over_c_fact_consistency_improvement": 0.20,
-        "maximum_d_below_b_quality_loss": 0.25,
-        "minimum_d_vs_b_cumulative_api_cost_improvement": 0.15,
-        "primary_break_even_exchange": 6,
-        "maximum_observed_retry_or_rebuild_cost_overhead": 0.0,
-        "maximum_irrelevant_injection_rate": 0.80,
-        "maximum_duplicate_chunk_slot_rate": 0.10,
-        "maximum_superseded_retrieval_rate": 0.20,
-        "maximum_repeated_source_amplification_rate": 0.25,
-        "minimum_message_recall_at_k": 0.30,
-        "minimum_delivered_unique_source_recall": 0.60,
-        "minimum_ambiguous_followup_recall_accuracy": 0.50,
-        "minimum_exact_identifier_recall_accuracy": 0.75,
-        "maximum_echo_overlap_p95": 0.70,
-        "maximum_p95_latency_regression_ms": 300,
-        "maximum_p95_ttft_regression_ms": 300,
-    }
-    selected_retrieval = run["selected_candidate"]["aggregate"]["D1"]
     observed = summarize_execution_ledger(execution_ledger_path, run_id=run["run_id"])
-    proposal_checks = {
-        "d1_over_c_recall": quality["D1"]["conversational_recall_accuracy"]
-        - quality["C"]["conversational_recall_accuracy"],
-        "d1_over_c_fact_consistency": quality["D1"]["fact_consistency"]
-        - quality["C"]["fact_consistency"],
-        "d1_below_b_quality_loss": quality["B"]["conversational_recall_accuracy"]
-        - quality["D1"]["conversational_recall_accuracy"],
-        "d1_vs_b_logical_cost_improvement": d1_vs_b_cost_improvement,
-        "d1_message_recall_at_k": selected_retrieval["recall_at_k"],
-        "d1_delivered_unique_source_recall": selected_retrieval[
-            "delivered_unique_source_recall"
-        ],
-        "d1_irrelevant_injection_rate": selected_retrieval[
-            "irrelevant_memory_injection_rate"
-        ],
-        "d1_duplicate_chunk_slot_rate": selected_retrieval[
-            "duplicate_chunk_slot_rate"
-        ],
-        "d1_superseded_retrieval_rate": selected_retrieval[
-            "superseded_fact_retrieval_rate"
-        ],
-        "d1_repeated_source_amplification_rate": selected_retrieval[
-            "repeated_source_amplification_rate"
-        ],
-        "d1_ambiguous_followup_recall_accuracy": slices["ambiguous_followup"][
-            "recall_accuracy"
-        ]["D1"],
-        "d1_exact_identifier_recall_accuracy": slices["exact_identifier"][
-            "recall_accuracy"
-        ]["D1"],
-        "d1_echo_overlap_p95": generation["D1"]["echo_overlap"]["p95"],
-        "d1_p95_latency_regression_ms": generation["D1"]["latency_ms"]["p95"]
-        - generation["C"]["latency_ms"]["p95"],
-        "d1_p95_ttft_regression_ms": generation["D1"]["ttft_ms"]["p95"]
-        - generation["C"]["ttft_ms"]["p95"],
-        "observed_failed_calls": observed["failed_calls"],
-        "observed_unknown_outcome_calls": observed["unknown_outcome_calls"],
-    }
+    proposal_values = _proposal_values(
+        selected_arm=selected_arm,
+        quality=quality,
+        slices=slices,
+        logical_costs=logical_costs,
+        retrieval=retrieval,
+        generation=generation,
+        break_even=run["cost_taxonomy"]["logical_break_even_vs_b"],
+        observed=observed,
+    )
+    thresholds = registration["decision_rule"]["thresholds"]
+    proposal_clauses = evaluate_registered_thresholds(proposal_values, thresholds)
+    failed_development_clauses = [
+        name for name, clause in proposal_clauses.items() if not clause["passed"]
+    ]
     return {
-        "schema_version": "conversation-memory-development-analysis-v1",
+        "schema_version": "conversation-memory-development-analysis-v2",
         "status": "AWAITING_OPERATOR_PREREGISTRATION_APPROVAL",
-        "scope": "Gate 1 development/calibration only; no held-out result and no GO/STOP verdict",
+        "scope": "Gate 1 final development/calibration iteration only; no held-out result and no GO/STOP verdict",
         "source_run": str(run_path.relative_to(ROOT)),
         "source_run_sha256": sha256_file(run_path),
         "source_run_id": run["run_id"],
+        "source_git_head": run["git_head"],
         "source_registration_sha256": run["registration_sha256"],
         "development_dataset_sha256": run["dataset_sha256"],
         "heldout_inspected": False,
+        "scorer_version": "nested-forbidden-span-safe-v2",
         "selected_parameters_proposal": run["selected_candidate"]["candidate"],
-        "selected_query_variant_proposal": "D1",
-        "query_selection_rationale": (
-            "D1 and D2 tied on answer recall and fact consistency. D1 used fewer input/query "
-            "tokens, lower logical API cost, lower irrelevant/superseded/amplified retrieval, "
-            "and better p95 latency/TTFT. D2's better delivered-source recall did not improve "
-            "the development answer score."
-        ),
-        "heldout_generation_repetitions_proposal": 3,
+        "selected_query_variant_proposal": selected_arm,
+        "query_selection_rule": registration["calibration"]["query_selection_rule"],
+        "query_selection_scorecards": selection_scorecards,
+        "query_selection_rationale": _selection_rationale(selected_arm, selection_scorecards),
+        "heldout_generation_repetitions_proposal": expected_repetitions,
         "quality": quality,
-        "retrieval": run["selected_candidate"]["aggregate"],
+        "retrieval": retrieval,
         "slices": slices,
         "generation": generation,
         "logical_costs": logical_costs,
         "logical_break_even_vs_b": run["cost_taxonomy"]["logical_break_even_vs_b"],
         "observed_execution_current_run": observed,
-        "raw_run_correction": (
-            "The raw run's observed_execution summary included earlier ledger runs. The runner "
-            "is now fixed to filter by run_id; observed_execution_current_run is the corrected "
-            "view. Raw evidence remains append-only and was not overwritten."
-        ),
         "actual_experiment_cash_spend_estimate": _observed_api_cost(observed),
         "threshold_proposal": thresholds,
-        "development_values_against_proposal": proposal_checks,
+        "development_values_against_proposal": proposal_values,
+        "development_threshold_clauses": proposal_clauses,
+        "failed_development_clauses": failed_development_clauses,
         "paired_rule_proposal": (
-            "Average repetitions within each evaluation step; compare D1-C and D1-B on paired "
-            "step scores. Require the D1-C point improvement threshold and a fixed-seed 10,000-"
-            "sample paired-bootstrap 95% lower bound above zero. Apply the B loss, cost, latency, "
-            "retrieval, slice, and safety thresholds independently; every clause must pass."
+            "Average repetitions within each step, then unrounded step values within each "
+            "conversation. Resample conversations for a fixed-seed 10,000-sample paired "
+            "bootstrap and require the one-sided selected-arm-minus-C recall 95 percent lower "
+            "bound above zero. Small slices use exact point aggregates without intervals. Every "
+            "quality, cost, latency, retrieval, slice, and safety clause is conjunctive."
         ),
-        "automatic_no_go": [
-            "any tenant or conversation prompt-bearing leak",
-            "any missing held-out step/arm/repetition",
-            "any null required usage without an approved exclusion",
-            "any failed mandatory decision clause",
-        ],
-        "development_warning": (
-            "Under the proposed thresholds, development would miss the B-quality-loss limit "
-            "and the ambiguous-follow-up floor. This is a warning, not a held-out STOP verdict."
-        ),
+        "automatic_no_go": registration["decision_rule"]["automatic_no_go"],
         "provider_contract_discrepancy": (
             "The unchanged production OpenAI Responses serializer returned HTTP 400 on the first "
             "assistant-history replay because it encodes every role as input_text. Gate 1 uses an "
-            "experiment-only string-content ProviderPort adapter. Any Gate 2 OpenAI history path "
-            "therefore requires separate design review; production was not changed."
+            "experiment-only string-content ProviderPort adapter. Any Gate 2 history path requires "
+            "separate design review and contractual JSON/SSE coverage; production was unchanged."
         ),
         "next_required_action": (
-            "Operator approves or revises the frozen parameters, D1 selection, repetitions, "
-            "thresholds, and paired rule; then the registration is signed and committed before "
-            "held-out execution."
+            "The operator approves or revises the proposed parameters, selected query variant, "
+            "margins, repetitions, and clustered paired rule. Only then may registration be "
+            "signed and committed before a single held-out execution."
         ),
     }
+
+
+def select_query_variant(
+    *,
+    quality: Mapping[str, Mapping[str, Any]],
+    slices: Mapping[str, Mapping[str, Any]],
+    logical_costs: Mapping[str, Mapping[str, Any]],
+    retrieval: Mapping[str, Mapping[str, Any]],
+) -> tuple[str, dict[str, dict[str, float | int]]]:
+    scorecards: dict[str, dict[str, float | int]] = {}
+    for arm in MEMORY_ARMS:
+        scorecards[arm] = {
+            "fact_consistency": quality[arm]["fact_consistency"],
+            "conversational_recall_accuracy": quality[arm][
+                "conversational_recall_accuracy"
+            ],
+            "ambiguous_followup_recall_accuracy": slices["ambiguous_followup"][
+                "recall_accuracy"
+            ][arm],
+            "exact_identifier_recall_accuracy": slices["exact_identifier"][
+                "recall_accuracy"
+            ][arm],
+            "mean_logical_api_cost": logical_costs[arm][
+                "mean_total_estimated_api_cost"
+            ],
+            "irrelevant_memory_injection_rate": retrieval[arm][
+                "irrelevant_memory_injection_rate"
+            ],
+            "superseded_fact_retrieval_rate": retrieval[arm][
+                "superseded_fact_retrieval_rate"
+            ],
+            "repeated_source_amplification_rate": retrieval[arm][
+                "repeated_source_amplification_rate"
+            ],
+            "mean_query_estimated_tokens": retrieval[arm]["mean_query_estimated_tokens"],
+            "tie_priority": QUERY_TIE_PRIORITY[arm],
+        }
+
+    def rank(arm: str) -> tuple[float | int, ...]:
+        item = scorecards[arm]
+        return (
+            -item["fact_consistency"],
+            -item["conversational_recall_accuracy"],
+            -item["ambiguous_followup_recall_accuracy"],
+            -item["exact_identifier_recall_accuracy"],
+            item["mean_logical_api_cost"],
+            item["irrelevant_memory_injection_rate"],
+            item["superseded_fact_retrieval_rate"],
+            item["repeated_source_amplification_rate"],
+            item["mean_query_estimated_tokens"],
+            item["tie_priority"],
+        )
+
+    return min(MEMORY_ARMS, key=rank), scorecards
 
 
 def render_markdown(analysis: Mapping[str, Any]) -> str:
@@ -241,8 +224,9 @@ def render_markdown(analysis: Mapping[str, Any]) -> str:
     retrieval = analysis["retrieval"]
     costs = analysis["logical_costs"]
     generation = analysis["generation"]
+    selected = analysis["selected_query_variant_proposal"]
     lines = [
-        "# ORQ-27 Gate 1 development calibration report",
+        "# ORQ-27 Gate 1 final development calibration report",
         "",
         f"**Status:** {analysis['status']}",
         "",
@@ -253,16 +237,18 @@ def render_markdown(analysis: Mapping[str, Any]) -> str:
         f"- Source run: `{analysis['source_run']}`",
         f"- Source run SHA-256: `{analysis['source_run_sha256']}`",
         f"- Run ID: `{analysis['source_run_id']}`",
+        f"- Instrument commit: `{analysis['source_git_head']}`",
         f"- Registration SHA-256: `{analysis['source_registration_sha256']}`",
         f"- Development dataset SHA-256: `{analysis['development_dataset_sha256']}`",
+        f"- Scorer: `{analysis['scorer_version']}`",
         "- Held-out inspected: `false`",
         "",
         "## Development result",
         "",
-        "| Arm | Recall accuracy | Fact consistency | Mean logical API cost / conversation | p95 latency ms | p95 TTFT ms |",
+        "| Arm | Recall | Consistency | Mean logical API cost/conversation | p95 latency ms | p95 TTFT ms |",
         "|---|---:|---:|---:|---:|---:|",
     ]
-    for arm in ("A", "B", "C", "D1", "D2"):
+    for arm in ARMS:
         lines.append(
             f"| {arm} | {quality[arm]['conversational_recall_accuracy']:.4f} | "
             f"{quality[arm]['fact_consistency']:.4f} | "
@@ -273,14 +259,14 @@ def render_markdown(analysis: Mapping[str, Any]) -> str:
     lines.extend(
         [
             "",
-            "Selected retrieval candidate proposal: `"
+            "Selected parameter proposal: `"
             + json.dumps(analysis["selected_parameters_proposal"], sort_keys=True)
             + "`.",
             "",
-            "Selected primary query proposal: **D1**. " + analysis["query_selection_rationale"],
+            f"Selected query proposal: **{selected}**. {analysis['query_selection_rationale']}",
             "",
-            "| Retrieval metric | D1 | D2 |",
-            "|---|---:|---:|",
+            "| Retrieval metric | D1 | D2_JSON | D2_TEXT |",
+            "|---|---:|---:|---:|",
         ]
     )
     for field in (
@@ -293,47 +279,122 @@ def render_markdown(analysis: Mapping[str, Any]) -> str:
         "superseded_fact_retrieval_rate",
         "repeated_source_amplification_rate",
     ):
-        lines.append(f"| {field} | {retrieval['D1'][field]:.4f} | {retrieval['D2'][field]:.4f} |")
+        lines.append(
+            f"| {field} | "
+            + " | ".join(f"{retrieval[arm][field]:.4f}" for arm in MEMORY_ARMS)
+            + " |"
+        )
     lines.extend(
         [
             "",
-            "## Interpretation before held-out",
+            "## Proposed held-out contract — operator approval required",
             "",
-            "- D1 improved recall accuracy over C by "
-            f"{quality['D1']['conversational_recall_accuracy'] - quality['C']['conversational_recall_accuracy']:.4f} absolute, "
-            "but remained "
-            f"{quality['B']['conversational_recall_accuracy'] - quality['D1']['conversational_recall_accuracy']:.4f} below B.",
-            "- D1 reduced mean logical API cost versus B by "
-            f"{1 - costs['D1']['mean_total_estimated_api_cost'] / costs['B']['mean_total_estimated_api_cost']:.2%}.",
-            "- D1 ambiguous-follow-up recall accuracy was "
-            f"{analysis['slices']['ambiguous_followup']['recall_accuracy']['D1']:.4f}; this is the strongest development warning.",
-            "- Tenant/conversation isolation failures: `0`.",
-            "- Reducing tokens remains an operational-efficiency proxy, not evidence of lower energy or CO2e.",
+            analysis["paired_rule_proposal"],
             "",
-            "## Proposed frozen decision contract (operator approval required)",
+            "Failed development clauses under the proposed held-out margins: `"
+            + json.dumps(analysis["failed_development_clauses"])
+            + "`.",
             "",
-            "The proposal is machine-readable in `development-analysis.json`. Key choices are D1, "
-            "three held-out generation repetitions, paired step-level comparison, fixed-seed paired "
-            "bootstrap, and conjunctive quality/cost/safety thresholds. No threshold is approved by "
-            "this report.",
-            "",
-            "Development warning: " + analysis["development_warning"],
-            "",
-            "## Recorded discrepancy",
+            "## Recorded production-adapter discrepancy",
             "",
             analysis["provider_contract_discrepancy"],
-            "",
-            analysis["raw_run_correction"],
             "",
             "## Next checkpoint",
             "",
             analysis["next_required_action"],
             "",
-            "No Gate 2, Gate 3, semantic memory, cross-conversation memory, migration, `/chat` "
-            "change, or production runtime change was performed.",
+            "No held-out execution, Gate 2, Gate 3, semantic memory, migration, `/chat` change, "
+            "or production runtime change was performed.",
         ]
     )
     return "\n".join(lines) + "\n"
+
+
+def _slice_metrics(
+    evaluations: Mapping[str, Any],
+    step_scores: Mapping[str, Mapping[str, float]],
+    step_consistency: Mapping[str, Mapping[str, float]],
+) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    slice_names = sorted(
+        {slice_name for evaluation in evaluations.values() for slice_name in evaluation.slices}
+    )
+    for slice_name in slice_names:
+        step_ids = [
+            step_id
+            for step_id, evaluation in evaluations.items()
+            if slice_name in evaluation.slices
+        ]
+        result[slice_name] = {
+            "steps": len(step_ids),
+            "recall_accuracy": {
+                arm: mean(step_scores[arm][step_id] for step_id in step_ids) for arm in ARMS
+            },
+            "fact_consistency": {
+                arm: mean(step_consistency[arm][step_id] for step_id in step_ids)
+                for arm in ARMS
+            },
+        }
+    return result
+
+
+def _proposal_values(
+    *,
+    selected_arm: str,
+    quality: Mapping[str, Mapping[str, Any]],
+    slices: Mapping[str, Mapping[str, Any]],
+    logical_costs: Mapping[str, Mapping[str, Any]],
+    retrieval: Mapping[str, Mapping[str, Any]],
+    generation: Mapping[str, Mapping[str, Any]],
+    break_even: Mapping[str, Mapping[str, Any]],
+    observed: Mapping[str, Any],
+) -> dict[str, float | int | None]:
+    selected_cost = logical_costs[selected_arm]["mean_total_estimated_api_cost"]
+    baseline_cost = logical_costs["B"]["mean_total_estimated_api_cost"]
+    break_even_values = [
+        item["break_even_exchange"]
+        for item in break_even.values()
+        if item["arm"] == selected_arm
+    ]
+    retrieval_values = retrieval[selected_arm]
+    return {
+        "d_over_c_recall_improvement": quality[selected_arm][
+            "conversational_recall_accuracy"
+        ]
+        - quality["C"]["conversational_recall_accuracy"],
+        "d_over_c_fact_consistency_improvement": quality[selected_arm]["fact_consistency"]
+        - quality["C"]["fact_consistency"],
+        "d_below_b_quality_loss": quality["B"]["conversational_recall_accuracy"]
+        - quality[selected_arm]["conversational_recall_accuracy"],
+        "d_vs_b_cumulative_api_cost_improvement": 1 - selected_cost / baseline_cost,
+        "worst_break_even_exchange": max(break_even_values)
+        if break_even_values and all(value is not None for value in break_even_values)
+        else None,
+        "observed_retry_or_rebuild_cost_overhead": 0.0
+        if observed["failed_calls"] == 0 and observed["unknown_outcome_calls"] == 0
+        else None,
+        "irrelevant_injection_rate": retrieval_values["irrelevant_memory_injection_rate"],
+        "duplicate_chunk_slot_rate": retrieval_values["duplicate_chunk_slot_rate"],
+        "superseded_retrieval_rate": retrieval_values["superseded_fact_retrieval_rate"],
+        "repeated_source_amplification_rate": retrieval_values[
+            "repeated_source_amplification_rate"
+        ],
+        "message_recall_at_k": retrieval_values["recall_at_k"],
+        "delivered_unique_source_recall": retrieval_values[
+            "delivered_unique_source_recall"
+        ],
+        "ambiguous_followup_recall_accuracy": slices["ambiguous_followup"][
+            "recall_accuracy"
+        ][selected_arm],
+        "exact_identifier_recall_accuracy": slices["exact_identifier"][
+            "recall_accuracy"
+        ][selected_arm],
+        "echo_overlap_p95": generation[selected_arm]["echo_overlap"]["p95"],
+        "p95_latency_regression_ms": generation[selected_arm]["latency_ms"]["p95"]
+        - generation["C"]["latency_ms"]["p95"],
+        "p95_ttft_regression_ms": generation[selected_arm]["ttft_ms"]["p95"]
+        - generation["C"]["ttft_ms"]["p95"],
+    }
 
 
 def _logical_cost_summary(ledgers: Mapping[str, Any]) -> dict[str, Any]:
@@ -357,6 +418,19 @@ def _logical_cost_summary(ledgers: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
+def _selection_rationale(
+    selected_arm: str, scorecards: Mapping[str, Mapping[str, Any]]
+) -> str:
+    selected = scorecards[selected_arm]
+    return (
+        "The predeclared lexicographic rule selected this arm from unrounded development values: "
+        f"consistency={selected['fact_consistency']}, recall={selected['conversational_recall_accuracy']}, "
+        f"ambiguous={selected['ambiguous_followup_recall_accuracy']}, "
+        f"exact_identifier={selected['exact_identifier_recall_accuracy']}, "
+        f"logical_cost={selected['mean_logical_api_cost']}."
+    )
+
+
 def _observed_api_cost(observed: Mapping[str, Any]) -> dict[str, Any]:
     embedding = observed["estimated_embedding_tokens"] * 0.02 / 1_000_000
     generation = (
@@ -368,13 +442,8 @@ def _observed_api_cost(observed: Mapping[str, Any]) -> dict[str, Any]:
         "embedding_cost_estimated": embedding,
         "generation_cost_from_actual_usage": generation,
         "total_estimated_api_cost": embedding + generation,
-        "note": "Physical experiment spend; not a standalone D1 or D2 strategy cost.",
+        "note": "Physical experiment spend; not a standalone memory-strategy cost.",
     }
-
-
-def _percentile(values: Sequence[float], probability: float) -> float:
-    index = round((len(values) - 1) * probability)
-    return values[index]
 
 
 def main() -> int:

@@ -19,16 +19,24 @@ from experiments.conversational_memory.costs import (
     generation_cost,
     nullable_sum,
 )
-from experiments.conversational_memory.analyze_development import paired_bootstrap_interval
 from experiments.conversational_memory.memory import MemoryChunk, RetrievedChunk
 from experiments.conversational_memory.metrics import answer_metrics, ranking_metrics
 from experiments.conversational_memory.run_experiment import (
+    ARMS,
+    MEMORY_ARMS,
+    REGISTERED_THRESHOLD_METRICS,
+    GenerationObservation,
     GuardFailure,
+    _require_heldout_registration,
+    build_heldout_decision,
     compute_break_even,
+    evaluate_registered_thresholds,
     load_registration,
+    paired_bootstrap_interval,
     select_candidate,
 )
 from experiments.conversational_memory.execution import ExecutionLedger, summarize_execution_ledger
+from experiments.conversational_memory.analyze_development import select_query_variant
 from experiments.conversational_memory.providers import ConversationExperimentOpenAIProvider
 
 
@@ -101,6 +109,22 @@ def test_answer_scorer_requires_current_value_and_rejects_superseded_value() -> 
     assert contradictory.fact_consistency == 0.0
 
 
+def test_answer_scorer_does_not_penalize_forbidden_value_nested_in_current_value() -> None:
+    from experiments.conversational_memory.dataset import AnswerExpectation
+
+    expected = AnswerExpectation(("vegan and almond-free",), ("almond-free",))
+    correct = answer_metrics("The current constraint is vegan and almond-free.", expected)
+    assert correct.conversational_recall_accuracy == 1.0
+    assert correct.fact_consistency == 1.0
+
+    repeated_old_value = answer_metrics(
+        "The current constraint is vegan and almond-free; the old value was almond-free.",
+        expected,
+    )
+    assert repeated_old_value.conversational_recall_accuracy == 1.0
+    assert repeated_old_value.fact_consistency == 0.0
+
+
 def test_costs_propagate_missing_usage_and_zero_denominator() -> None:
     prices = PriceTable("USD", "2026-08-12", "g", 0.15, 0.6, "e", 0.02, ())
     assert generation_cost(input_tokens=None, output_tokens=1, prices=prices) is None
@@ -131,31 +155,168 @@ def test_break_even_requires_memory_to_stay_below_bounded_history() -> None:
             "c:B": ledger("B", [1, 3, 6]),
             "c:C": ledger("C", [1, 2, 3]),
             "c:D1": ledger("D1", [2, 2.5, 5]),
-            "c:D2": ledger("D2", [2, 4, 5]),
+            "c:D2_JSON": ledger("D2_JSON", [2, 4, 5]),
+            "c:D2_TEXT": ledger("D2_TEXT", [2, 4, 5.5]),
         }
     )
     assert result["c:D1"]["break_even_exchange"] == 2
-    assert result["c:D2"]["break_even_exchange"] == 3
+    assert result["c:D2_JSON"]["break_even_exchange"] == 3
+    assert result["c:D2_TEXT"]["break_even_exchange"] == 3
 
 
-def test_paired_bootstrap_is_deterministic_and_uses_step_pairing() -> None:
+def test_paired_bootstrap_is_deterministic_and_resamples_conversations() -> None:
     selected = {"a": 1.0, "b": 1.0, "c": 0.0, "d": 1.0}
     comparator = {"a": 0.0, "b": 1.0, "c": 0.0, "d": 0.0}
-    first = paired_bootstrap_interval(selected, comparator, samples=1000, seed=27)
-    second = paired_bootstrap_interval(selected, comparator, samples=1000, seed=27)
+    clusters = {"a": "conversation-1", "b": "conversation-1", "c": "conversation-2", "d": "conversation-2"}
+    first = paired_bootstrap_interval(
+        selected, comparator, step_clusters=clusters, samples=1000, seed=27
+    )
+    second = paired_bootstrap_interval(
+        selected, comparator, step_clusters=clusters, samples=1000, seed=27
+    )
     assert first == second
     assert first["mean_difference"] == 0.5
     assert first["step_count"] == 4
+    assert first["cluster_count"] == 2
+    assert first["resampling_unit"] == "conversation"
 
 
-def test_heldout_guard_rejects_unsigned_registration() -> None:
+def test_heldout_guard_rejects_unsigned_registration_copy() -> None:
+    payload = json.loads(REGISTRATION.read_text(encoding="utf-8"))
+    payload["status"] = "development_calibration"
+    payload["decision_rule"]["status"] = "pending"
+    payload["decision_rule"]["approved_by"] = None
+    payload["decision_rule"]["approved_at"] = None
     with pytest.raises(GuardFailure, match="not approved"):
-        load_registration(REGISTRATION.resolve(), phase="heldout")
+        _require_heldout_registration(REGISTRATION.resolve(), payload)
 
 
-def test_development_registration_is_allowed_before_threshold_signoff() -> None:
+def test_registration_records_revised_unsigned_heldout_proposal() -> None:
     payload = load_registration(REGISTRATION.resolve(), phase="development")
-    assert payload["decision_rule"]["thresholds"]["primary_break_even_exchange"] is None
+    assert payload["status"] == "development_calibration_revision"
+    assert payload["decision_rule"]["status"] == (
+        "revised_preregistration_pending_operator_approval"
+    )
+    assert payload["decision_rule"]["approved_by"] is None
+    assert payload["calibration"]["selected_query_variant"] is None
+    assert payload["calibration"]["managed_generation_repetitions"] == 3
+    assert payload["calibration"]["frozen_parameters"] is None
+    assert set(payload["decision_rule"]["thresholds"]) == set(
+        REGISTERED_THRESHOLD_METRICS
+    )
+    assert all(
+        value is not None for value in payload["decision_rule"]["thresholds"].values()
+    )
+
+
+def test_registered_thresholds_are_conjunctive_and_fail_closed() -> None:
+    payload = json.loads(REGISTRATION.read_text(encoding="utf-8"))
+    thresholds = payload["decision_rule"]["thresholds"]
+    values = {
+        metric: thresholds[threshold_name]
+        for threshold_name, (metric, _direction) in REGISTERED_THRESHOLD_METRICS.items()
+    }
+    clauses = evaluate_registered_thresholds(values, thresholds)
+    assert all(clause["passed"] for clause in clauses.values())
+
+    values["ambiguous_followup_recall_accuracy"] = None
+    clauses = evaluate_registered_thresholds(values, thresholds)
+    assert not clauses["minimum_ambiguous_followup_recall_accuracy"]["passed"]
+
+
+def test_heldout_decision_emits_go_only_when_every_clause_passes() -> None:
+    from experiments.conversational_memory.dataset import load_dataset
+
+    registration = load_registration(REGISTRATION.resolve(), phase="development")
+    registration = copy.deepcopy(registration)
+    registration["calibration"]["selected_query_variant"] = "D1"
+    fixtures = load_dataset(
+        Path("experiments/conversational_memory/data/development.jsonl"),
+        expected_split="development",
+    )
+    generations = []
+    for fixture in fixtures:
+        for evaluation in fixture.evaluations:
+            for arm in ARMS:
+                score = 0.0 if arm in {"A", "C"} else 1.0
+                for repetition in (1, 2, 3):
+                    generations.append(
+                        GenerationObservation(
+                            step_id=evaluation.step_id,
+                            arm=arm,
+                            repetition=repetition,
+                            answer="synthetic",
+                            input_tokens=10,
+                            output_tokens=2,
+                            total_tokens=12,
+                            latency_ms=100,
+                            ttft_ms=50.0,
+                            provider="test",
+                            model="test",
+                            estimated_context_tokens=10,
+                            conversational_recall_accuracy=score,
+                            fact_consistency=score,
+                            echo_overlap=0.0,
+                        )
+                    )
+    aggregate = {
+        "recall_at_k": 0.5,
+        "delivered_unique_source_recall": 0.7,
+        "irrelevant_memory_injection_rate": 0.5,
+        "duplicate_chunk_slot_rate": 0.05,
+        "superseded_fact_retrieval_rate": 0.1,
+        "repeated_source_amplification_rate": 0.1,
+    }
+    selected_report = {
+        "aggregate": {arm: copy.deepcopy(aggregate) for arm in MEMORY_ARMS}
+    }
+    cost_ledgers = {}
+    break_even = {}
+    for fixture in fixtures:
+        for arm in ARMS:
+            cost = 0.8 if arm == "D1" else 1.0
+            cost_ledgers[f"{fixture.conversation_id}:{arm}"] = {
+                "conversation_id": fixture.conversation_id,
+                "arm": arm,
+                "total_estimated_api_cost": cost,
+            }
+        break_even[f"{fixture.conversation_id}:D1"] = {
+            "conversation_id": fixture.conversation_id,
+            "arm": "D1",
+            "break_even_exchange": 5,
+        }
+    observed = {
+        "retries": 0,
+        "rebuild_embedding_cost": 0.0,
+        "failed_calls": 0,
+        "unknown_outcome_calls": 0,
+        "missing_success_usage_calls": 0,
+    }
+    decision = build_heldout_decision(
+        fixtures=fixtures,
+        registration=registration,
+        selected_report=selected_report,
+        generations=generations,
+        cost_ledgers=cost_ledgers,
+        break_even=break_even,
+        observed_execution=observed,
+        isolation_failures=0,
+    )
+    assert decision["verdict"] == "GO"
+    assert decision["failed_clauses"] == []
+
+    incomplete = build_heldout_decision(
+        fixtures=fixtures,
+        registration=registration,
+        selected_report=selected_report,
+        generations=generations[:-1],
+        cost_ledgers=cost_ledgers,
+        break_even=break_even,
+        observed_execution=observed,
+        isolation_failures=0,
+    )
+    assert incomplete["verdict"] == "STOP"
+    assert "complete_step_arm_repetition_coverage" in incomplete["failed_clauses"]
 
 
 def test_selection_follows_declared_recall_first_order() -> None:
@@ -166,6 +327,7 @@ def test_selection_follows_declared_recall_first_order() -> None:
             "delivered_unique_source_recall": recall,
             "irrelevant_memory_injection_rate": 0.0,
             "duplicate_chunk_slot_rate": 0.0,
+            "superseded_fact_retrieval_rate": 0.0,
             "mean_query_estimated_tokens": 10.0,
         }
         return {
@@ -176,12 +338,63 @@ def test_selection_follows_declared_recall_first_order() -> None:
                 "retrieval_top_k_chunks": 4,
                 "similarity_threshold": 0.2,
             },
-            "aggregate": {"D1": copy.deepcopy(aggregate), "D2": copy.deepcopy(aggregate)},
+            "aggregate": {
+                arm: copy.deepcopy(aggregate) for arm in MEMORY_ARMS
+            },
             "isolation_failures": 0,
         }
 
-    selected = select_candidate([report(0.7, 1.0, 240), report(0.8, 0.5, 1000)])
+    registration = json.loads(REGISTRATION.read_text(encoding="utf-8"))
+    reports = [report(0.7, 1.0, 240), report(0.8, 0.5, 1000)]
+    selected = select_candidate(
+        reports, registration
+    )
     assert selected["candidate"]["chunk_max_chars"] == 1000
+
+
+def test_query_selection_prefers_quality_then_cost_and_declared_tie_order() -> None:
+    quality = {
+        arm: {"conversational_recall_accuracy": 0.5, "fact_consistency": 0.5}
+        for arm in MEMORY_ARMS
+    }
+    slices = {
+        name: {"recall_accuracy": {arm: 0.5 for arm in MEMORY_ARMS}}
+        for name in ("ambiguous_followup", "exact_identifier")
+    }
+    logical_costs = {
+        arm: {"mean_total_estimated_api_cost": 1.0} for arm in MEMORY_ARMS
+    }
+    retrieval = {
+        arm: {
+            "irrelevant_memory_injection_rate": 0.2,
+            "superseded_fact_retrieval_rate": 0.1,
+            "repeated_source_amplification_rate": 0.1,
+            "mean_query_estimated_tokens": 10.0,
+        }
+        for arm in MEMORY_ARMS
+    }
+    selected, _scorecards = select_query_variant(
+        quality=quality,
+        slices=slices,
+        logical_costs=logical_costs,
+        retrieval=retrieval,
+    )
+    assert selected == "D1"
+
+    quality["D2_TEXT"]["fact_consistency"] = 0.75
+    logical_costs["D2_TEXT"]["mean_total_estimated_api_cost"] = 2.0
+    selected, _scorecards = select_query_variant(
+        quality=quality,
+        slices=slices,
+        logical_costs=logical_costs,
+        retrieval=retrieval,
+    )
+    assert selected == "D2_TEXT"
+
+
+def test_actual_heldout_registration_remains_closed() -> None:
+    with pytest.raises(GuardFailure, match="not approved"):
+        load_registration(REGISTRATION.resolve(), phase="heldout")
 
 
 def test_production_code_does_not_import_experiment_package() -> None:

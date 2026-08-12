@@ -119,7 +119,21 @@ def answer_metrics(answer: str, expected: AnswerExpectation) -> AnswerMetrics:
     required = [normalize_for_scoring(term) for term in expected.required_terms]
     forbidden = [normalize_for_scoring(term) for term in expected.forbidden_terms]
     required_found = sum(term in normalized for term in required)
-    forbidden_found = sum(term in normalized for term in forbidden)
+    required_spans = [
+        span
+        for term in required
+        for span in _occurrence_spans(normalized, term)
+    ]
+    forbidden_found = sum(
+        any(
+            not any(
+                required_start <= forbidden_start and forbidden_end <= required_end
+                for required_start, required_end in required_spans
+            )
+            for forbidden_start, forbidden_end in _occurrence_spans(normalized, term)
+        )
+        for term in forbidden
+    )
     recall = 1.0 if required_found == len(required) else 0.0
     consistent = 1.0 if recall == 1.0 and forbidden_found == 0 else 0.0
     return AnswerMetrics(recall, consistent, required_found, forbidden_found)
@@ -168,6 +182,12 @@ def aggregate(values: Sequence[float]) -> dict[str, float | None]:
 def normalize_for_scoring(value: str) -> str:
     normalized = unicodedata.normalize("NFKC", value).casefold()
     return re.sub(r"\s+", " ", normalized).strip()
+
+
+def _occurrence_spans(value: str, term: str) -> list[tuple[int, int]]:
+    if not term:
+        return []
+    return [(match.start(), match.end()) for match in re.finditer(re.escape(term), value)]
 
 
 def _word_ngrams(value: str, size: int) -> set[tuple[str, ...]]:

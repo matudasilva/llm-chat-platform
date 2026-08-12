@@ -83,7 +83,7 @@ def test_chunk_rebuild_is_deterministic_and_bounded() -> None:
     assert max(counts.values()) > 1  # The synthetic long-message fixture exercises chunking.
 
 
-def test_d1_and_d2_queries_are_deterministic_and_exclude_current_user() -> None:
+def test_d1_d2_json_and_d2_text_queries_are_deterministic_and_exclude_current_user() -> None:
     fixture = _fixture()
     evaluation = fixture.evaluations[1]
     current = fixture.message_by_id(evaluation.query_message_id)
@@ -92,17 +92,25 @@ def test_d1_and_d2_queries_are_deterministic_and_exclude_current_user() -> None:
     d1 = build_memory_query(
         variant="D1", current_user=current, prefix=prefix, active_messages=active, max_tokens=256
     )
-    d2 = build_memory_query(
-        variant="D2", current_user=current, prefix=prefix, active_messages=active, max_tokens=256
+    d2_json = build_memory_query(
+        variant="D2_JSON", current_user=current, prefix=prefix, active_messages=active, max_tokens=256
+    )
+    d2_text = build_memory_query(
+        variant="D2_TEXT", current_user=current, prefix=prefix, active_messages=active, max_tokens=256
     )
     assert d1.text == "What did we decide?"
-    assert d2.text is not None
-    assert d2.text.count("What did we decide?") == 1
-    assert '"schema":"memory-query-v1"' in d2.text
-    assert d2.included_source_sequences == (13, 14, 15, 16)
+    assert d2_json.text is not None
+    assert d2_text.text is not None
+    assert d2_json.text.count("What did we decide?") == 1
+    assert d2_text.text.count("What did we decide?") == 1
+    assert '"schema":"memory-query-v1"' in d2_json.text
+    assert d2_text.text.startswith("RECENT CONVERSATION\nUSER:")
+    assert "\nCURRENT USER MESSAGE\nUSER: What did we decide?" in d2_text.text
+    assert d2_json.included_source_sequences == (13, 14, 15, 16)
+    assert d2_text.included_source_sequences == (13, 14, 15, 16)
     assert build_memory_query(
-        variant="D2", current_user=current, prefix=prefix, active_messages=active, max_tokens=256
-    ) == d2
+        variant="D2_TEXT", current_user=current, prefix=prefix, active_messages=active, max_tokens=256
+    ) == d2_text
 
 
 def test_d2_removes_oldest_whole_recent_messages_to_fit_budget() -> None:
@@ -112,10 +120,10 @@ def test_d2_removes_oldest_whole_recent_messages_to_fit_budget() -> None:
     prefix = fixture.prefix_before(evaluation.query_message_id)
     active = fit_latest_messages(prefix, max_tokens=320, max_messages=4)
     roomy = build_memory_query(
-        variant="D2", current_user=current, prefix=prefix, active_messages=active, max_tokens=256
+        variant="D2_JSON", current_user=current, prefix=prefix, active_messages=active, max_tokens=256
     )
     tight = build_memory_query(
-        variant="D2", current_user=current, prefix=prefix, active_messages=active, max_tokens=80
+        variant="D2_JSON", current_user=current, prefix=prefix, active_messages=active, max_tokens=80
     )
     assert tight.text is not None
     assert len(tight.included_source_sequences) < len(roomy.included_source_sequences)
@@ -177,7 +185,7 @@ def test_context_current_message_is_exactly_once_and_last() -> None:
         0.9,
     )
     context = compose_context(
-        arm="D2", prefix=prefix, current_user=current, retrieved=(result,), budgets=_budgets()
+        arm="D2_TEXT", prefix=prefix, current_user=current, retrieved=(result,), budgets=_budgets()
     )
     assert context.messages[-1].role == "user"
     assert context.messages[-1].content == current.content

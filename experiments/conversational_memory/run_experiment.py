@@ -5,12 +5,14 @@ import asyncio
 import hashlib
 import itertools
 import json
+import random
 import subprocess
 import time
 from collections import defaultdict
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
+from statistics import mean
 from typing import Any, Iterable, Mapping, Sequence
 from uuid import NAMESPACE_URL, uuid4, uuid5
 
@@ -85,6 +87,50 @@ INSTRUMENT_PATHS = (
     "app/core/providers/openai_embedding_provider.py",
     "app/core/providers/openai_provider.py",
 )
+
+MEMORY_ARMS = ("D1", "D2_JSON", "D2_TEXT")
+ARMS = ("A", "B", "C", *MEMORY_ARMS)
+
+REGISTERED_THRESHOLD_METRICS = {
+    "minimum_d_over_c_recall_improvement": ("d_over_c_recall_improvement", "minimum"),
+    "minimum_d_over_c_fact_consistency_improvement": (
+        "d_over_c_fact_consistency_improvement",
+        "minimum",
+    ),
+    "maximum_d_below_b_quality_loss": ("d_below_b_quality_loss", "maximum"),
+    "minimum_d_vs_b_cumulative_api_cost_improvement": (
+        "d_vs_b_cumulative_api_cost_improvement",
+        "minimum",
+    ),
+    "primary_break_even_exchange": ("worst_break_even_exchange", "maximum"),
+    "maximum_observed_retry_or_rebuild_cost_overhead": (
+        "observed_retry_or_rebuild_cost_overhead",
+        "maximum",
+    ),
+    "maximum_irrelevant_injection_rate": ("irrelevant_injection_rate", "maximum"),
+    "maximum_duplicate_chunk_slot_rate": ("duplicate_chunk_slot_rate", "maximum"),
+    "maximum_superseded_retrieval_rate": ("superseded_retrieval_rate", "maximum"),
+    "maximum_repeated_source_amplification_rate": (
+        "repeated_source_amplification_rate",
+        "maximum",
+    ),
+    "minimum_message_recall_at_k": ("message_recall_at_k", "minimum"),
+    "minimum_delivered_unique_source_recall": (
+        "delivered_unique_source_recall",
+        "minimum",
+    ),
+    "minimum_ambiguous_followup_recall_accuracy": (
+        "ambiguous_followup_recall_accuracy",
+        "minimum",
+    ),
+    "minimum_exact_identifier_recall_accuracy": (
+        "exact_identifier_recall_accuracy",
+        "minimum",
+    ),
+    "maximum_echo_overlap_p95": ("echo_overlap_p95", "maximum"),
+    "maximum_p95_latency_regression_ms": ("p95_latency_regression_ms", "maximum"),
+    "maximum_p95_ttft_regression_ms": ("p95_ttft_regression_ms", "maximum"),
+}
 
 
 class GuardFailure(RuntimeError):
@@ -243,7 +289,7 @@ def collect_embedding_texts(
                     max_tokens=budgets.active_window_tokens,
                     max_messages=window,
                 )
-                for variant in ("D1", "D2"):
+                for variant in MEMORY_ARMS:
                     query = build_memory_query(
                         variant=variant,
                         current_user=current_user,
@@ -325,7 +371,9 @@ def evaluate_candidate(
     candidate: Candidate,
     vectors: Mapping[str, Sequence[float]],
 ) -> dict[str, Any]:
-    per_variant: dict[str, list[dict[str, Any]]] = {"D1": [], "D2": []}
+    per_variant: dict[str, list[dict[str, Any]]] = {
+        variant: [] for variant in MEMORY_ARMS
+    }
     isolation_failures = 0
     query_latency: list[float] = []
     for fixture in fixtures:
@@ -348,7 +396,7 @@ def evaluate_candidate(
             index = ExactMemoryIndex(
                 [VectorizedChunk(chunk=chunk, vector=tuple(vectors[chunk.content])) for chunk in chunks]
             )
-            for variant in ("D1", "D2"):
+            for variant in MEMORY_ARMS:
                 query = build_memory_query(
                     variant=variant,
                     current_user=current,
@@ -438,23 +486,51 @@ def evaluate_candidate(
     }
 
 
-def select_candidate(reports: Sequence[dict[str, Any]]) -> dict[str, Any]:
+def select_candidate(
+    reports: Sequence[dict[str, Any]], registration: Mapping[str, Any]
+) -> dict[str, Any]:
     safe = [report for report in reports if report["isolation_failures"] == 0]
     if not safe:
         raise GuardFailure("every calibration candidate violated isolation")
+    thresholds = registration["decision_rule"]["thresholds"]
+    retrieval_safe = [
+        report
+        for report in safe
+        if all(
+            report["aggregate"][variant]["irrelevant_memory_injection_rate"]
+            <= thresholds["maximum_irrelevant_injection_rate"]
+            and report["aggregate"][variant]["duplicate_chunk_slot_rate"]
+            <= thresholds["maximum_duplicate_chunk_slot_rate"]
+            and report["aggregate"][variant]["superseded_fact_retrieval_rate"]
+            <= thresholds["maximum_superseded_retrieval_rate"]
+            for variant in MEMORY_ARMS
+        )
+    ]
+    if not retrieval_safe:
+        raise GuardFailure("no candidate satisfies the registered retrieval safety ceilings")
 
     def ranking(report: dict[str, Any]) -> tuple[Any, ...]:
         aggregate_values = report["aggregate"]
-        d1 = aggregate_values["D1"]
-        d2 = aggregate_values["D2"]
         candidate = report["candidate"]
         return (
-            -(d1["recall_at_k"] + d2["recall_at_k"]) / 2,
-            -(d1["mrr"] + d2["mrr"]) / 2,
-            -(d1["delivered_unique_source_recall"] + d2["delivered_unique_source_recall"]) / 2,
-            (d1["irrelevant_memory_injection_rate"] + d2["irrelevant_memory_injection_rate"]) / 2,
-            (d1["duplicate_chunk_slot_rate"] + d2["duplicate_chunk_slot_rate"]) / 2,
-            (d1["mean_query_estimated_tokens"] + d2["mean_query_estimated_tokens"]) / 2,
+            -mean(aggregate_values[variant]["recall_at_k"] for variant in MEMORY_ARMS),
+            -mean(aggregate_values[variant]["mrr"] for variant in MEMORY_ARMS),
+            -mean(
+                aggregate_values[variant]["delivered_unique_source_recall"]
+                for variant in MEMORY_ARMS
+            ),
+            mean(
+                aggregate_values[variant]["irrelevant_memory_injection_rate"]
+                for variant in MEMORY_ARMS
+            ),
+            mean(
+                aggregate_values[variant]["duplicate_chunk_slot_rate"]
+                for variant in MEMORY_ARMS
+            ),
+            mean(
+                aggregate_values[variant]["mean_query_estimated_tokens"]
+                for variant in MEMORY_ARMS
+            ),
             candidate["chunk_max_chars"],
             candidate["chunk_overlap_chars"],
             candidate["recent_window_max_messages"],
@@ -462,7 +538,7 @@ def select_candidate(reports: Sequence[dict[str, Any]]) -> dict[str, Any]:
             candidate["similarity_threshold"],
         )
 
-    return min(safe, key=ranking)
+    return min(retrieval_safe, key=ranking)
 
 
 async def run_managed_generation(
@@ -486,7 +562,7 @@ async def run_managed_generation(
             )
         )
     observations: list[GenerationObservation] = []
-    arms = ("A", "B", "C", "D1", "D2")
+    arms = ARMS
     ordinal = 0
     repetitions = registration["calibration"]["managed_generation_repetitions"]
     if not isinstance(repetitions, int) or isinstance(repetitions, bool) or repetitions <= 0:
@@ -542,7 +618,7 @@ def build_cost_ledgers(
         evaluation_by_query = {
             step.query_message_id: step for step in fixture.evaluations
         }
-        for arm in ("A", "B", "C", "D1", "D2"):
+        for arm in ARMS:
             steps: list[dict[str, Any]] = []
             cumulative_cost: float | None = 0.0
             cumulative_input = 0
@@ -596,7 +672,7 @@ def build_cost_ledgers(
                     usage_provenance = "mixed"
                 query_tokens = 0
                 index_tokens = 0
-                if arm in {"D1", "D2"}:
+                if arm in MEMORY_ARMS:
                     budgets = context_budgets(
                         registration, recent_window=selected.recent_window_max_messages
                     )
@@ -642,8 +718,8 @@ def build_cost_ledgers(
                         "usage_provenance": usage_provenance,
                         "input_tokens": input_tokens,
                         "output_tokens": output_tokens,
-                        "index_embedding_estimated_tokens": index_tokens if arm.startswith("D") else "not_applicable",
-                        "query_embedding_estimated_tokens": query_tokens if arm.startswith("D") else "not_applicable",
+                        "index_embedding_estimated_tokens": index_tokens if arm in MEMORY_ARMS else "not_applicable",
+                        "query_embedding_estimated_tokens": query_tokens if arm in MEMORY_ARMS else "not_applicable",
                         **asdict(cost),
                         "embedding_api_cost": cost.embedding_api_cost,
                         "step_total_estimated_api_cost": step_total,
@@ -682,7 +758,7 @@ def compute_break_even(cost_ledgers: Mapping[str, Any]) -> dict[str, Any]:
     result: dict[str, Any] = {}
     for conversation_id, arms in sorted(grouped.items()):
         baseline = arms["B"]["steps"]
-        for memory_arm in ("D1", "D2"):
+        for memory_arm in MEMORY_ARMS:
             memory = arms[memory_arm]["steps"]
             break_even: int | None = None
             for index in range(len(baseline)):
@@ -740,6 +816,290 @@ def summarize_generation(observations: Sequence[GenerationObservation]) -> dict[
     }
 
 
+def paired_bootstrap_interval(
+    selected: Mapping[str, float],
+    comparator: Mapping[str, float],
+    *,
+    step_clusters: Mapping[str, str],
+    samples: int,
+    seed: int,
+) -> dict[str, float | int]:
+    if set(selected) != set(comparator) or not selected:
+        raise ValueError("paired samples must have the same non-empty step IDs")
+    if set(step_clusters) != set(selected):
+        raise ValueError("every paired step must belong to exactly one cluster")
+    if samples <= 0:
+        raise ValueError("samples must be positive")
+    step_ids = sorted(selected)
+    by_cluster: dict[str, list[float]] = defaultdict(list)
+    for step_id in step_ids:
+        by_cluster[step_clusters[step_id]].append(selected[step_id] - comparator[step_id])
+    cluster_differences = [mean(by_cluster[key]) for key in sorted(by_cluster)]
+    rng = random.Random(seed)
+    draws = sorted(
+        mean(rng.choice(cluster_differences) for _ in cluster_differences)
+        for _ in range(samples)
+    )
+    return {
+        "step_count": len(step_ids),
+        "cluster_count": len(cluster_differences),
+        "resampling_unit": "conversation",
+        "samples": samples,
+        "seed": seed,
+        "mean_difference": mean(cluster_differences),
+        "one_sided_ci95_low": _percentile(draws, 0.05),
+    }
+
+
+def evaluate_registered_thresholds(
+    values: Mapping[str, float | int | None],
+    thresholds: Mapping[str, float | int],
+) -> dict[str, dict[str, Any]]:
+    if set(thresholds) != set(REGISTERED_THRESHOLD_METRICS):
+        raise GuardFailure("heldout threshold names differ from the registered instrument")
+    clauses: dict[str, dict[str, Any]] = {}
+    for threshold_name, (metric_name, direction) in REGISTERED_THRESHOLD_METRICS.items():
+        value = values.get(metric_name)
+        threshold = thresholds[threshold_name]
+        if value is None:
+            passed = False
+        elif direction == "minimum":
+            passed = value >= threshold
+        else:
+            passed = value <= threshold
+        clauses[threshold_name] = {
+            "metric": metric_name,
+            "value": value,
+            "operator": ">=" if direction == "minimum" else "<=",
+            "threshold": threshold,
+            "passed": passed,
+        }
+    return clauses
+
+
+def build_heldout_decision(
+    *,
+    fixtures: Sequence[ConversationFixture],
+    registration: Mapping[str, Any],
+    selected_report: Mapping[str, Any],
+    generations: Sequence[GenerationObservation],
+    cost_ledgers: Mapping[str, Any],
+    break_even: Mapping[str, Any],
+    observed_execution: Mapping[str, Any],
+    isolation_failures: int,
+) -> dict[str, Any]:
+    selected_arm = registration["calibration"]["selected_query_variant"]
+    repetitions = registration["calibration"]["managed_generation_repetitions"]
+    expected_steps = {
+        evaluation.step_id: evaluation
+        for fixture in fixtures
+        for evaluation in fixture.evaluations
+    }
+    step_clusters = {
+        evaluation.step_id: fixture.conversation_id
+        for fixture in fixtures
+        for evaluation in fixture.evaluations
+    }
+    observations: dict[tuple[str, str], list[GenerationObservation]] = defaultdict(list)
+    for observation in generations:
+        observations[(observation.step_id, observation.arm)].append(observation)
+    coverage_failures: list[str] = []
+    expected_repetitions = set(range(1, repetitions + 1))
+    for step_id in sorted(expected_steps):
+        for arm in ARMS:
+            items = observations.get((step_id, arm), [])
+            actual_repetitions = {item.repetition for item in items}
+            if len(items) != repetitions or actual_repetitions != expected_repetitions:
+                coverage_failures.append(f"{step_id}/{arm}")
+    unexpected = sorted(
+        f"{step_id}/{arm}"
+        for step_id, arm in observations
+        if step_id not in expected_steps or arm not in ARMS
+    )
+    coverage_failures.extend(f"unexpected:{item}" for item in unexpected)
+
+    step_recall: dict[str, dict[str, float]] = {arm: {} for arm in ARMS}
+    step_consistency: dict[str, dict[str, float]] = {arm: {} for arm in ARMS}
+    if not coverage_failures:
+        for step_id in expected_steps:
+            for arm in ARMS:
+                items = observations[(step_id, arm)]
+                step_recall[arm][step_id] = mean(
+                    item.conversational_recall_accuracy for item in items
+                )
+                step_consistency[arm][step_id] = mean(
+                    item.fact_consistency for item in items
+                )
+
+    paired = registration["decision_rule"]["paired_evaluation"]
+    bootstrap = (
+        paired_bootstrap_interval(
+            step_recall[selected_arm],
+            step_recall["C"],
+            step_clusters=step_clusters,
+            samples=paired["bootstrap_samples"],
+            seed=paired["bootstrap_seed"],
+        )
+        if not coverage_failures
+        else None
+    )
+    quality = {
+        arm: {
+            "conversational_recall_accuracy": mean(step_recall[arm].values())
+            if step_recall[arm]
+            else None,
+            "fact_consistency": mean(step_consistency[arm].values())
+            if step_consistency[arm]
+            else None,
+        }
+        for arm in ARMS
+    }
+
+    slices: dict[str, float | None] = {}
+    for slice_name in ("ambiguous_followup", "exact_identifier"):
+        step_ids = [
+            step_id
+            for step_id, evaluation in expected_steps.items()
+            if slice_name in evaluation.slices
+        ]
+        slices[slice_name] = (
+            mean(step_recall[selected_arm][step_id] for step_id in step_ids)
+            if step_ids and not coverage_failures
+            else None
+        )
+
+    logical_costs: dict[str, float | None] = {}
+    for arm in ARMS:
+        arm_costs = [
+            ledger["total_estimated_api_cost"]
+            for ledger in cost_ledgers.values()
+            if ledger["arm"] == arm
+        ]
+        logical_costs[arm] = (
+            mean(arm_costs)
+            if arm_costs and all(value is not None for value in arm_costs)
+            else None
+        )
+    selected_cost = logical_costs[selected_arm]
+    baseline_cost = logical_costs["B"]
+    cost_improvement = (
+        1 - selected_cost / baseline_cost
+        if selected_cost is not None and baseline_cost not in (None, 0)
+        else None
+    )
+    break_even_values = [
+        item["break_even_exchange"]
+        for item in break_even.values()
+        if item["arm"] == selected_arm
+    ]
+    worst_break_even = (
+        max(break_even_values)
+        if break_even_values and all(value is not None for value in break_even_values)
+        else None
+    )
+    selected_retrieval = selected_report["aggregate"][selected_arm]
+    generation = summarize_generation(generations)
+    selected_generation = generation.get(selected_arm, {})
+    recent_generation = generation.get("C", {})
+
+    retry_count = observed_execution.get("retries")
+    rebuild_cost = observed_execution.get("rebuild_embedding_cost")
+    observed_overhead = 0.0 if retry_count == 0 and rebuild_cost == 0.0 else None
+
+    values: dict[str, float | int | None] = {
+        "d_over_c_recall_improvement": _difference(
+            quality[selected_arm]["conversational_recall_accuracy"],
+            quality["C"]["conversational_recall_accuracy"],
+        ),
+        "d_over_c_fact_consistency_improvement": _difference(
+            quality[selected_arm]["fact_consistency"], quality["C"]["fact_consistency"]
+        ),
+        "d_below_b_quality_loss": _difference(
+            quality["B"]["conversational_recall_accuracy"],
+            quality[selected_arm]["conversational_recall_accuracy"],
+        ),
+        "d_vs_b_cumulative_api_cost_improvement": cost_improvement,
+        "worst_break_even_exchange": worst_break_even,
+        "observed_retry_or_rebuild_cost_overhead": observed_overhead,
+        "irrelevant_injection_rate": selected_retrieval["irrelevant_memory_injection_rate"],
+        "duplicate_chunk_slot_rate": selected_retrieval["duplicate_chunk_slot_rate"],
+        "superseded_retrieval_rate": selected_retrieval["superseded_fact_retrieval_rate"],
+        "repeated_source_amplification_rate": selected_retrieval[
+            "repeated_source_amplification_rate"
+        ],
+        "message_recall_at_k": selected_retrieval["recall_at_k"],
+        "delivered_unique_source_recall": selected_retrieval[
+            "delivered_unique_source_recall"
+        ],
+        "ambiguous_followup_recall_accuracy": slices["ambiguous_followup"],
+        "exact_identifier_recall_accuracy": slices["exact_identifier"],
+        "echo_overlap_p95": _nested_value(selected_generation, "echo_overlap", "p95"),
+        "p95_latency_regression_ms": _difference(
+            _nested_value(selected_generation, "latency_ms", "p95"),
+            _nested_value(recent_generation, "latency_ms", "p95"),
+        ),
+        "p95_ttft_regression_ms": _difference(
+            _nested_value(selected_generation, "ttft_ms", "p95"),
+            _nested_value(recent_generation, "ttft_ms", "p95"),
+        ),
+    }
+    threshold_clauses = evaluate_registered_thresholds(
+        values, registration["decision_rule"]["thresholds"]
+    )
+    automatic_clauses = {
+        "tenant_and_conversation_isolation": {
+            "value": isolation_failures,
+            "expected": 0,
+            "passed": isolation_failures == 0,
+        },
+        "complete_step_arm_repetition_coverage": {
+            "value": coverage_failures,
+            "expected": [],
+            "passed": not coverage_failures,
+        },
+        "no_failed_or_unknown_api_calls": {
+            "value": {
+                "failed_calls": observed_execution.get("failed_calls"),
+                "unknown_outcome_calls": observed_execution.get("unknown_outcome_calls"),
+            },
+            "expected": {"failed_calls": 0, "unknown_outcome_calls": 0},
+            "passed": observed_execution.get("failed_calls") == 0
+            and observed_execution.get("unknown_outcome_calls") == 0,
+        },
+        "complete_generation_usage": {
+            "value": observed_execution.get("missing_success_usage_calls"),
+            "expected": 0,
+            "passed": observed_execution.get("missing_success_usage_calls") == 0,
+        },
+        "conversation_clustered_paired_recall_ci95_low_above_zero": {
+            "value": None if bootstrap is None else bootstrap["one_sided_ci95_low"],
+            "expected": "> 0",
+            "passed": bootstrap is not None and bootstrap["one_sided_ci95_low"] > 0,
+        },
+    }
+    all_passed = all(item["passed"] for item in threshold_clauses.values()) and all(
+        item["passed"] for item in automatic_clauses.values()
+    )
+    return {
+        "verdict": "GO" if all_passed else "STOP",
+        "rule": "conjunctive_fail_closed",
+        "selected_query_variant": selected_arm,
+        "quality": quality,
+        "conversation_clustered_paired_d_over_c_recall": bootstrap,
+        "slice_recall_accuracy": slices,
+        "logical_mean_conversation_api_cost": logical_costs,
+        "values": values,
+        "threshold_clauses": threshold_clauses,
+        "automatic_clauses": automatic_clauses,
+        "failed_clauses": [
+            name
+            for collection in (threshold_clauses, automatic_clauses)
+            for name, item in collection.items()
+            if not item["passed"]
+        ],
+    }
+
+
 async def execute(
     *,
     phase: str,
@@ -747,6 +1107,8 @@ async def execute(
     output_dir: Path,
     with_generation: bool,
 ) -> Path:
+    if phase == "heldout" and not with_generation:
+        raise GuardFailure("heldout execution requires managed generation")
     output_dir.mkdir(parents=True, exist_ok=True)
     run_id = str(uuid4())
     execution_ledger = ExecutionLedger(
@@ -773,7 +1135,9 @@ async def execute(
         reports.append(report)
         if index % 25 == 0 or index == len(candidate_values):
             print(f"calibration candidates={index}/{len(candidate_values)}", flush=True)
-    selected_report = select_candidate(reports) if phase == "development" else reports[0]
+    selected_report = (
+        select_candidate(reports, registration) if phase == "development" else reports[0]
+    )
     selected = Candidate(**selected_report["candidate"])
     generation_observations: list[GenerationObservation] = []
     if with_generation:
@@ -793,6 +1157,29 @@ async def execute(
     )
     recorded_at = datetime.now(timezone.utc).isoformat()
     price_table = _price_table(registration)
+    generation_aggregate = summarize_generation(generation_observations)
+    break_even = compute_break_even(cost_ledgers)
+    observed_execution = {
+        **summarize_execution_ledger(execution_ledger.path, run_id=run_id),
+        "embedding_usage_provenance": "estimated",
+        "retries": 0,
+        "rebuild_embedding_cost": 0.0,
+    }
+    isolation_failures = sum(report["isolation_failures"] for report in reports)
+    heldout_decision = (
+        build_heldout_decision(
+            fixtures=fixtures,
+            registration=registration,
+            selected_report=selected_report,
+            generations=generation_observations,
+            cost_ledgers=cost_ledgers,
+            break_even=break_even,
+            observed_execution=observed_execution,
+            isolation_failures=isolation_failures,
+        )
+        if phase == "heldout"
+        else None
+    )
     result = {
         "schema_version": "conversation-memory-run-v1",
         "run_id": run_id,
@@ -800,7 +1187,7 @@ async def execute(
         "phase": phase,
         "decision_status": "THRESHOLDS_PENDING_OPERATOR_APPROVAL"
         if phase == "development"
-        else "READY_FOR_REGISTERED_GO_STOP",
+        else heldout_decision["verdict"],
         "gate_scope": "Gate 1 offline only",
         "git_head": _git(["rev-parse", "HEAD"]),
         "registration_path": str(registration_path.relative_to(ROOT)),
@@ -822,34 +1209,31 @@ async def execute(
                 for report in reports
             ),
             key=lambda item: (
-                -sum(item["aggregate"][variant]["recall_at_k"] for variant in ("D1", "D2")),
+                -sum(
+                    item["aggregate"][variant]["recall_at_k"]
+                    for variant in MEMORY_ARMS
+                ),
                 item["candidate_key"],
             ),
         ),
         "embedding_observation": embedding_observation,
         "generation_enabled": with_generation,
         "generation_observations": [asdict(item) for item in generation_observations],
-        "generation_aggregate": summarize_generation(generation_observations),
+        "generation_aggregate": generation_aggregate,
         "cost_taxonomy": {
             "price_table": asdict(price_table),
             "logical_strategy_ledgers": cost_ledgers,
-            "logical_break_even_vs_b": compute_break_even(cost_ledgers),
-            "observed_execution": {
-                **summarize_execution_ledger(execution_ledger.path, run_id=run_id),
-                "embedding_usage_provenance": "estimated",
-                "retries": 0,
-                "rebuild_embedding_cost": 0.0,
-            },
-            "actual_experiment_cash_spend_note": "Physical embedding outputs were shared across D1/D2 and the calibration grid; standalone arm ledgers do not discount that sharing.",
+            "logical_break_even_vs_b": break_even,
+            "observed_execution": observed_execution,
+            "actual_experiment_cash_spend_note": "Physical embedding outputs were shared across D1/D2_JSON/D2_TEXT and the calibration grid; standalone arm ledgers do not discount that sharing.",
             "retrieval_cpu_time_is_not_monetized": True,
             "infrastructure_cost": None,
         },
         "storage": _storage_estimate(fixtures, registration, selected),
         "automatic_no_go_failures": {
-            "tenant_or_conversation_isolation": sum(
-                report["isolation_failures"] for report in reports
-            )
+            "tenant_or_conversation_isolation": isolation_failures
         },
+        "heldout_decision": heldout_decision,
         "heldout_inspected": phase == "heldout",
     }
     output_path = output_dir / f"{phase}-{recorded_at.replace(':', '').replace('+00:00', 'Z')}-{run_id}.json"
@@ -899,7 +1283,7 @@ def _contexts_for_step(
             ),
             (),
         )
-    for arm in ("D1", "D2"):
+    for arm in MEMORY_ARMS:
         query = build_memory_query(
             variant=arm,
             current_user=current,
@@ -1147,6 +1531,30 @@ def fixture_step_prefix(fixture: ConversationFixture) -> str:
     return fixture.evaluations[0].step_id.split(":", 1)[0]
 
 
+def _difference(left: float | int | None, right: float | int | None) -> float | None:
+    if left is None or right is None:
+        return None
+    return float(left - right)
+
+
+def _nested_value(values: Mapping[str, Any], first: str, second: str) -> float | None:
+    nested = values.get(first)
+    if not isinstance(nested, Mapping):
+        return None
+    value = nested.get(second)
+    return float(value) if isinstance(value, (int, float)) else None
+
+
+def _percentile(values: Sequence[float], probability: float) -> float:
+    if not values:
+        raise ValueError("percentile requires at least one value")
+    position = (len(values) - 1) * probability
+    lower = int(position)
+    upper = min(lower + 1, len(values) - 1)
+    weight = position - lower
+    return values[lower] * (1 - weight) + values[upper] * weight
+
+
 def _vectors_hash(mapping: Mapping[str, Sequence[float]]) -> str:
     digest = hashlib.sha256()
     for text in sorted(mapping):
@@ -1164,6 +1572,8 @@ def _require_heldout_registration(path: Path, payload: Mapping[str, Any]) -> Non
     thresholds = decision["thresholds"]
     if payload["status"] != "heldout_approved" or decision["status"] != "approved":
         raise GuardFailure("heldout registration is not approved")
+    if set(thresholds) != set(REGISTERED_THRESHOLD_METRICS):
+        raise GuardFailure("heldout threshold names differ from the registered instrument")
     if any(value is None for value in thresholds.values()):
         raise GuardFailure("heldout decision thresholds are null")
     if not decision.get("approved_by") or not decision.get("approved_at"):
@@ -1183,7 +1593,7 @@ def _require_heldout_registration(path: Path, payload: Mapping[str, Any]) -> Non
         raise GuardFailure("heldout parameters are invalid") from exc
     if candidate not in candidates(payload):
         raise GuardFailure("heldout parameters were not in the registered calibration grid")
-    if payload["calibration"].get("selected_query_variant") not in {"D1", "D2"}:
+    if payload["calibration"].get("selected_query_variant") not in set(MEMORY_ARMS):
         raise GuardFailure("heldout query variant is not frozen")
     paths = [str(path.relative_to(ROOT)), *INSTRUMENT_PATHS]
     for instrument_path in sorted(set(paths)):
