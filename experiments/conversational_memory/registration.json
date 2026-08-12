@@ -1,7 +1,7 @@
 {
   "registration_version": 1,
   "orq": "ORQ-27",
-  "status": "development_calibration",
+  "status": "development_calibration_revision",
   "question": "Can a CALMem-inspired episodic strategy improve long-range conversational recall over a recent window while using less cumulative context than bounded history replay?",
   "scope_note": "Gate 1 only. This registration does not authorize runtime integration, semantic memory, cross-conversation memory, Gate 2, or Gate 3.",
   "dataset": {
@@ -18,7 +18,14 @@
     "embedding_usage": "utf8-bytes-ceil-div4-v1 estimate",
     "generation_provider": "openai",
     "generation_model": "gpt-4o-mini-2024-07-18",
-    "generation_mode": "streaming ProviderPort call for TTFT; one attempt; provider defaults; experiment-only string-content serializer required because the unchanged production Responses serializer returned HTTP 400 for assistant-history input",
+    "generation_mode": "streaming ProviderPort call for TTFT; one attempt; experiment-only string-content serializer required because the unchanged production Responses serializer returned HTTP 400 for assistant-history input",
+    "generation_request_snapshot": {
+      "temperature": "provider default; omitted",
+      "top_p": "provider default; omitted",
+      "max_output_tokens": "not sent because the current provider contract does not enforce it",
+      "tool_choice": "not applicable",
+      "response_format": "provider default; omitted"
+    },
     "generation_usage": "actual when returned; otherwise null",
     "output_cap": "not enforced by the current OpenAI adapter",
     "exact_dense_retrieval": true,
@@ -36,12 +43,14 @@
     "evaluation_top_k_messages": 2,
     "similarity_threshold": [0.2, 0.35, 0.5],
     "index_version": "orq27-gate1-pilot-v1",
-    "selection_method": "maximize the mean of D1 and D2 message-level Recall@k, then MRR, then delivered unique-source recall; minimize irrelevant injection, duplicate slots, query tokens, chunk size, overlap, active N, and top-k in that order",
-    "query_variants": ["D1", "D2"],
-    "managed_generation_repetitions": 1,
-    "arm_order": "deterministic rotation of A,B,C,D1,D2 by evaluation-step ordinal and repetition",
+    "selection_method": "first retain only zero-isolation candidates where D1, D2_JSON, and D2_TEXT each meet the proposed irrelevance, duplicate-slot, and superseded-retrieval ceilings; then maximize their mean message Recall@k, mean MRR, and mean delivered unique-source recall; minimize mean irrelevance, mean duplicate slots, mean query tokens, chunk size, overlap, active N, top-k, and threshold in that order",
+    "query_variants": ["D1", "D2_JSON", "D2_TEXT"],
+    "managed_generation_repetitions": 3,
+    "arm_order": "deterministic rotation of A,B,C,D1,D2_JSON,D2_TEXT by evaluation-step ordinal and repetition",
     "frozen_parameters": null,
-    "selected_query_variant": null
+    "selected_query_variant": null,
+    "query_selection_rule": "select exactly once from corrected development evidence by lexicographically maximizing unrounded fact consistency, conversational recall, ambiguous-followup recall, and exact-identifier recall; then minimizing mean logical standalone API cost, irrelevant injection, superseded retrieval, repeated-source amplification, and mean query tokens; an exact tie resolves to D1, then D2_TEXT, then D2_JSON; after approval the selected arm alone determines GO/STOP and other query arms are diagnostic only",
+    "secondary_query_escalation_rule": "a held-out advantage by the diagnostic arm cannot replace the selected arm or rescue STOP; it may only motivate a separately approved, newly pre-registered query-design iteration"
   },
   "budgets": {
     "total_input_tokens": 1024,
@@ -84,32 +93,58 @@
     "cost_basis": "per-arm logical standalone cost; physical sharing disclosed separately"
   },
   "decision_rule": {
-    "status": "pending_operator_threshold_approval_after_development_pilot",
+    "status": "revised_preregistration_pending_operator_approval",
     "thresholds": {
-      "minimum_d_over_c_recall_improvement": null,
-      "maximum_d_below_b_quality_loss": null,
-      "minimum_d_vs_b_cumulative_api_cost_improvement": null,
-      "primary_break_even_exchange": null,
-      "maximum_observed_cost_overhead": null,
-      "maximum_irrelevant_injection_rate": null,
-      "maximum_duplicate_chunk_slot_rate": null,
-      "maximum_superseded_retrieval_rate": null,
-      "maximum_echo_overlap": null,
-      "maximum_p95_latency_regression_ms": null,
-      "maximum_p95_ttft_regression_ms": null
+      "minimum_d_over_c_recall_improvement": 0.2,
+      "minimum_d_over_c_fact_consistency_improvement": 0.2,
+      "maximum_d_below_b_quality_loss": 0.15,
+      "minimum_d_vs_b_cumulative_api_cost_improvement": 0.15,
+      "primary_break_even_exchange": 6,
+      "maximum_observed_retry_or_rebuild_cost_overhead": 0.0,
+      "maximum_irrelevant_injection_rate": 0.5,
+      "maximum_duplicate_chunk_slot_rate": 0.1,
+      "maximum_superseded_retrieval_rate": 0.2,
+      "maximum_repeated_source_amplification_rate": 0.25,
+      "minimum_message_recall_at_k": 0.3,
+      "minimum_delivered_unique_source_recall": 0.6,
+      "minimum_ambiguous_followup_recall_accuracy": 0.5,
+      "minimum_exact_identifier_recall_accuracy": 0.75,
+      "maximum_echo_overlap_p95": 0.7,
+      "maximum_p95_latency_regression_ms": 300,
+      "maximum_p95_ttft_regression_ms": 300
+    },
+    "paired_evaluation": {
+      "resampling_unit": "conversation",
+      "nested_repetition_reduction": "arithmetic mean within each step and arm before conversation aggregation",
+      "conversation_reduction": "arithmetic mean of unrounded step values within each conversation",
+      "primary_comparison": "the development-selected memory query arm minus C",
+      "bootstrap_samples": 10000,
+      "bootstrap_seed": 2701,
+      "confidence_interval": "one-sided 95 percent lower confidence bound",
+      "required_ci_rule": "conversation-clustered paired selected-memory-arm-minus-C recall one_sided_ci95_low must be greater than zero",
+      "small_slice_rule": "report exact unrounded point aggregates without a bootstrap interval; registered slice thresholds remain conjunctive",
+      "rounding_rule": "evaluate all clauses on unrounded machine values; round only presentation values",
+      "decision_combination": "all numeric thresholds, the confidence rule, and every automatic no-go clause must pass"
     },
     "automatic_no_go": [
       "cross-tenant prompt-bearing retrieval",
-      "cross-conversation prompt-bearing retrieval"
+      "cross-conversation prompt-bearing retrieval",
+      "any missing held-out evaluation step, arm, or repetition",
+      "any failed or unknown-outcome API call",
+      "any null required generation usage without a separately approved exclusion",
+      "conversation-clustered paired selected-memory-arm-minus-C recall one_sided_ci95_low not greater than zero",
+      "any failed registered decision clause"
     ],
     "approved_by": null,
-    "approved_at": null
+    "approved_at": null,
+    "approval_evidence": null
   },
   "reporting": {
     "development_may_run_unsigned": true,
     "heldout_requires_committed_clean_signed_registration": true,
     "append_only": true,
     "missing_usage": "null, never zero",
-    "api_cost_per_correct_recall_zero_denominator": "undefined"
+    "api_cost_per_correct_recall_zero_denominator": "undefined",
+    "physical_logical_reconciliation": "every physical API invocation must appear in the append-only ledger; logical standalone D1/D2_JSON/D2_TEXT costs and physically shared experiment spend are reported separately and never silently equated"
   }
 }

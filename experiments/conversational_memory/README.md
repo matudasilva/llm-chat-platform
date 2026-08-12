@@ -10,18 +10,22 @@ The central comparison is teacher-forced fixed-prefix replay:
 - **B:** bounded history replay;
 - **C:** recent-message window;
 - **D1:** recent window plus exact episodic retrieval queried by the current user message; and
-- **D2:** the same memory strategy queried by canonical bounded recent context plus the current
-  user message.
+- **D2-JSON:** the same memory strategy queried by canonical JSON containing bounded recent context
+  plus the current user message; and
+- **D2-TEXT:** the same memory strategy queried by deterministic labelled text containing the same
+  bounded recent context plus the current user message.
 
 Candidate generations are scored but never appended to later prefixes or indexed. The dataset
 advances with the same versioned reference transcript for every arm.
 
 ## Current checkpoint
 
-Development/calibration is complete. Held-out execution is intentionally blocked until the
-operator approves the proposed frozen parameters, primary query variant, repetitions, thresholds,
-and paired decision rule in `development-analysis.json`; the updated registration must then be
-signed, committed, and clean.
+The first development/calibration pass is complete. A subsequent senior methodological review
+suspended held-out approval before any held-out execution. The revised pre-registration is pending
+because the statistical unit must be conversation-clustered, quality/irrelevance margins require
+revision, and the development ambiguity slice exposed a scoring-label defect. Held-out remains
+fail-closed until the corrected development instrument is rerun, explicitly approved, signed,
+committed, and unmodified.
 
 The development pilot selected this candidate:
 
@@ -29,7 +33,9 @@ The development pilot selected this candidate:
 {"chunk_max_chars":1000,"chunk_overlap_chars":0,"recent_window_max_messages":2,"retrieval_top_k_chunks":6,"similarity_threshold":0.2}
 ```
 
-D1 is proposed as the primary query variant. Development results are not a GO/STOP decision.
+D1 remains the first-pass primary-query proposal. The final development iteration compares D1,
+D2-JSON, and D2-TEXT under a predeclared lexicographic selection rule; no query strategy is frozen.
+Development results remain calibration evidence, not a GO/STOP decision.
 
 ## Files
 
@@ -37,7 +43,7 @@ D1 is proposed as the primary query variant. Development results are not a GO/ST
 |---|---|
 | `data/*.jsonl` | Versioned synthetic development and held-out transcript fixtures. |
 | `data/dataset_manifest.json` | Split hashes and counts. |
-| `registration.json` | Calibration grid and the not-yet-signed held-out decision contract. |
+| `registration.json` | Revised held-out decision proposal; unsigned while methodology is reviewed. |
 | `dataset.py` / `build_dataset.py` | Strict schema validation and deterministic dataset build. |
 | `memory.py` | Chunking, query building, exact cosine retrieval, and fair context composition. |
 | `metrics.py` / `costs.py` | Message-level retrieval, answer, latency, and API-cost metrics. |
@@ -61,7 +67,7 @@ pytest -q tests/experiments/test_conversational_memory_dataset.py \
 ```
 
 Run development calibration. This requires `OPENAI_API_KEY` and makes embedding calls; add
-`--with-generation` to execute A/B/C/D1/D2 managed-model responses:
+`--with-generation` to execute A/B/C/D1/D2-JSON/D2-TEXT managed-model responses:
 
 ```bash
 python3 -m experiments.conversational_memory.run_experiment --phase development
@@ -76,24 +82,26 @@ python3 -m experiments.conversational_memory.analyze_development \
   --run experiments/conversational_memory/runs/<development-run>.json
 ```
 
-Held-out remains fail-closed:
+Held-out remains fail-closed and requires managed generation:
 
 ```bash
-python3 -m experiments.conversational_memory.run_experiment --phase heldout
-# RESULT gate1=blocked reason=heldout registration is not approved
+python3 -m experiments.conversational_memory.run_experiment \
+  --phase heldout --with-generation
 ```
 
-After operator approval, `registration.json` must freeze the selected candidate/query,
-repetitions, all thresholds, and signature. The runner then additionally requires every instrument
-path to be committed and unmodified before it reads the held-out dataset.
+The runner requires an explicitly approved, signed registration and every instrument path to be
+committed and unmodified before it reads the held-out dataset. It evaluates all registered numeric
+thresholds, the fixed-seed conversation-clustered paired-bootstrap confidence rule, isolation,
+complete step/arm/repetition coverage, API-call outcomes, and usage completeness. Every clause must
+pass for `GO`; otherwise the result is `STOP`. Neither result authorizes Gate 2 automatically.
 
 ## Measurement boundaries
 
 - Embedding usage is the pinned `ceil(UTF-8 bytes / 4)` estimate because `EmbeddingResult` exposes
   no usage metadata. Missing executed usage remains `null`, never zero.
 - Generation usage uses actual `ProviderResult` fields when returned.
-- Logical D1 and D2 costs each pay a complete standalone index and query cost even when physical
-  vectors are shared by the experiment.
+- Logical D1, D2-JSON, and D2-TEXT costs each pay a complete standalone index and query cost even
+  when physical vectors are shared by the experiment.
 - API charges, retrieval CPU time, latency, and storage growth remain separate dimensions.
 - Token reduction is an operational-efficiency proxy, not a joule or CO2e measurement.
 - Semantic memory, cross-conversation memory, documentary reasoning traces, and production runtime
