@@ -20,12 +20,11 @@ advances with the same versioned reference transcript for every arm.
 
 ## Current checkpoint
 
-The first development/calibration pass is complete. A subsequent senior methodological review
-suspended held-out approval before any held-out execution. The revised pre-registration is pending
-because the statistical unit must be conversation-clustered, quality/irrelevance margins require
-revision, and the development ambiguity slice exposed a scoring-label defect. Held-out remains
-fail-closed until the corrected development instrument is rerun, explicitly approved, signed,
-committed, and unmodified.
+The final approved development/calibration iteration is complete. It used the general corrected
+scorer, compared D1, D2-JSON, and D2-TEXT, nested three repetitions per step, and preserved the
+conversation as the bootstrap unit. Held-out was not inspected and remains fail-closed until the
+operator explicitly approves the resulting parameters, primary query, margins, and statistical
+contract; the registration must then be signed, committed, and unmodified.
 
 The development pilot selected this candidate:
 
@@ -33,9 +32,15 @@ The development pilot selected this candidate:
 {"chunk_max_chars":1000,"chunk_overlap_chars":0,"recent_window_max_messages":2,"retrieval_top_k_chunks":6,"similarity_threshold":0.2}
 ```
 
-D1 remains the first-pass primary-query proposal. The final development iteration compares D1,
-D2-JSON, and D2-TEXT under a predeclared lexicographic selection rule; no query strategy is frozen.
-Development results remain calibration evidence, not a GO/STOP decision.
+The development rule proposes D1 as the primary query. D2-TEXT improved retrieval and ambiguous
+recall but did not surpass D1's overall recall, consistency, or cost. The selected candidate is:
+
+```json
+{"chunk_max_chars":1000,"chunk_overlap_chars":80,"recent_window_max_messages":2,"retrieval_top_k_chunks":6,"similarity_threshold":0.5}
+```
+
+Development misses the proposed non-inferiority, ambiguous-follow-up, p95 latency, and p95 TTFT
+clauses. That is a strong warning, not a formal STOP; development never decides GO/STOP.
 
 ## Files
 
