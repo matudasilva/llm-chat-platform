@@ -1,7 +1,7 @@
 {
   "registration_version": 1,
   "orq": "ORQ-27",
-  "status": "development_calibration_revision",
+  "status": "heldout_approved",
   "question": "Can a CALMem-inspired episodic strategy improve long-range conversational recall over a recent window while using less cumulative context than bounded history replay?",
   "scope_note": "Gate 1 only. This registration does not authorize runtime integration, semantic memory, cross-conversation memory, Gate 2, or Gate 3.",
   "dataset": {
@@ -47,8 +47,14 @@
     "query_variants": ["D1", "D2_JSON", "D2_TEXT"],
     "managed_generation_repetitions": 3,
     "arm_order": "deterministic rotation of A,B,C,D1,D2_JSON,D2_TEXT by evaluation-step ordinal and repetition",
-    "frozen_parameters": null,
-    "selected_query_variant": null,
+    "frozen_parameters": {
+      "chunk_max_chars": 1000,
+      "chunk_overlap_chars": 80,
+      "recent_window_max_messages": 2,
+      "retrieval_top_k_chunks": 6,
+      "similarity_threshold": 0.5
+    },
+    "selected_query_variant": "D1",
     "query_selection_rule": "select exactly once from corrected development evidence by lexicographically maximizing unrounded fact consistency, conversational recall, ambiguous-followup recall, and exact-identifier recall; then minimizing mean logical standalone API cost, irrelevant injection, superseded retrieval, repeated-source amplification, and mean query tokens; an exact tie resolves to D1, then D2_TEXT, then D2_JSON; after approval the selected arm alone determines GO/STOP and other query arms are diagnostic only",
     "secondary_query_escalation_rule": "a held-out advantage by the diagnostic arm cannot replace the selected arm or rescue STOP; it may only motivate a separately approved, newly pre-registered query-design iteration"
   },
@@ -93,7 +99,7 @@
     "cost_basis": "per-arm logical standalone cost; physical sharing disclosed separately"
   },
   "decision_rule": {
-    "status": "revised_preregistration_pending_operator_approval",
+    "status": "approved",
     "thresholds": {
       "minimum_d_over_c_recall_improvement": 0.2,
       "minimum_d_over_c_fact_consistency_improvement": 0.2,
@@ -122,7 +128,30 @@
       "bootstrap_samples": 10000,
       "bootstrap_seed": 2701,
       "confidence_interval": "one-sided 95 percent lower confidence bound",
-      "required_ci_rule": "conversation-clustered paired selected-memory-arm-minus-C recall one_sided_ci95_low must be greater than zero",
+      "confidence_bound_criteria": [
+        "minimum_d_over_c_recall_improvement"
+      ],
+      "confidence_bound_decision": "minimum_d_over_c_recall_improvement requires both its unrounded point estimate to meet the registered 0.20 threshold and the conversation-clustered paired selected-memory-arm-minus-C recall one_sided_ci95_low to be greater than zero",
+      "point_estimate_criteria": [
+        "minimum_d_over_c_fact_consistency_improvement",
+        "maximum_d_below_b_recall_loss",
+        "maximum_d_below_b_fact_consistency_loss",
+        "minimum_d_vs_b_cumulative_api_cost_improvement",
+        "primary_break_even_exchange",
+        "maximum_observed_retry_or_rebuild_cost_overhead",
+        "maximum_irrelevant_injection_rate",
+        "maximum_duplicate_chunk_slot_rate",
+        "maximum_superseded_retrieval_rate",
+        "maximum_repeated_source_amplification_rate",
+        "minimum_message_recall_at_k",
+        "minimum_delivered_unique_source_recall",
+        "minimum_ambiguous_followup_recall_accuracy",
+        "minimum_exact_identifier_recall_accuracy",
+        "maximum_echo_overlap_p95",
+        "maximum_p95_latency_regression_ms",
+        "maximum_p95_ttft_regression_ms"
+      ],
+      "point_estimate_decision": "Every listed criterion is decided from its unrounded held-out point estimate; no confidence bound is substituted or inferred for those criteria.",
       "small_slice_rule": "report exact unrounded point aggregates without a bootstrap interval; registered slice thresholds remain conjunctive",
       "rounding_rule": "evaluate all clauses on unrounded machine values; round only presentation values",
       "decision_combination": "all numeric thresholds, the confidence rule, and every automatic no-go clause must pass"
@@ -130,15 +159,18 @@
     "automatic_no_go": [
       "cross-tenant prompt-bearing retrieval",
       "cross-conversation prompt-bearing retrieval",
-      "any missing held-out evaluation step, arm, or repetition",
-      "any failed or unknown-outcome API call",
-      "any null required generation usage without a separately approved exclusion",
       "conversation-clustered paired selected-memory-arm-minus-C recall one_sided_ci95_low not greater than zero",
       "any failed registered decision clause"
     ],
-    "approved_by": null,
-    "approved_at": null,
-    "approval_evidence": null
+    "invalid_run_conditions": [
+      "any missing held-out evaluation step, arm, or repetition",
+      "any failed or unknown-outcome API call",
+      "any null required generation usage",
+      "an instrument, dataset, configuration, or artifact failure that prevents a complete valid evaluation"
+    ],
+    "approved_by": "operator",
+    "approved_at": "2026-08-12T22:27:22Z",
+    "approval_evidence": "Explicit operator approval in the ORQ-27 session to freeze this pre-registration and execute the held-out exactly once, subject to the declared confidence-bound and invalid-run policies."
   },
   "reporting": {
     "development_may_run_unsigned": true,
@@ -146,6 +178,37 @@
     "append_only": true,
     "missing_usage": "null, never zero",
     "api_cost_per_correct_recall_zero_denominator": "undefined",
-    "physical_logical_reconciliation": "every physical API invocation must appear in the append-only ledger; logical standalone D1/D2_JSON/D2_TEXT costs and physically shared experiment spend are reported separately and never silently equated"
+    "physical_logical_reconciliation": "every physical API invocation must appear in the append-only ledger; logical standalone D1/D2_JSON/D2_TEXT costs and physically shared experiment spend are reported separately and never silently equated",
+    "heldout_attempt_policy": {
+      "maximum_valid_runs": 1,
+      "maximum_total_attempts": 2,
+      "maximum_replacement_attempts": 1,
+      "attempt_start": "an attempt is reserved immediately before the first external API call; the potentially billable boundary is the corresponding started event in execution-ledger.jsonl",
+      "valid_terminal_states": ["GO", "NO_GO"],
+      "invalid_is_not_design_verdict": true,
+      "replacement_eligible_reasons": [
+        "provider_timeout",
+        "provider_network",
+        "provider_rate_limit",
+        "provider_upstream",
+        "provider_usage_unavailable"
+      ],
+      "replacement_ineligible_reasons": [
+        "tenant_or_conversation_isolation_failure",
+        "registered_decision_clause_failure",
+        "provider_auth",
+        "provider_bad_request",
+        "provider_unknown",
+        "instrument_or_artifact_failure",
+        "incomplete_evaluation_coverage",
+        "incomplete_api_call_outcomes",
+        "unexpected_experiment_failure",
+        "operator_interruption"
+      ],
+      "replacement_rule": "Only the first attempt may authorize one complete replacement, and only for a listed eligible accidental provider failure. The replacement receives a new run_id and reruns the full held-out split without reusing partial responses.",
+      "exhaustion_rule": "A second invalid attempt is terminal and cannot be repeated without a new explicit operator decision and a new pre-registration.",
+      "no_repeat_rule": "GO, NO_GO, an isolation failure, a registered threshold failure, a non-eligible invalid run, an unresolved started attempt, or a completed valid run can never be repeated under this registration.",
+      "cost_rule": "Invalid-attempt API calls remain in the physical append-only execution ledger and are reported separately; they do not enter the logical strategy estimates or the quality metrics of the replacement valid run."
+    }
   }
 }

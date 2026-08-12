@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 
 from app.core.domain.provider import ProviderInput
+from app.core.domain.provider_errors import ProviderError, ProviderErrorKind
 from app.core.domain.types import ChatMessage
 from app.core.providers.openai_provider import OpenAIProviderConfig
 from uuid import uuid4
@@ -23,10 +24,13 @@ from experiments.conversational_memory.memory import MemoryChunk, RetrievedChunk
 from experiments.conversational_memory.metrics import answer_metrics, ranking_metrics
 from experiments.conversational_memory.run_experiment import (
     ARMS,
+    CONFIDENCE_BOUND_CRITERIA,
     MEMORY_ARMS,
     REGISTERED_THRESHOLD_METRICS,
     GenerationObservation,
     GuardFailure,
+    InvalidHeldoutRun,
+    _classify_heldout_failure,
     _require_heldout_registration,
     build_heldout_decision,
     compute_break_even,
@@ -35,7 +39,12 @@ from experiments.conversational_memory.run_experiment import (
     paired_bootstrap_interval,
     select_candidate,
 )
-from experiments.conversational_memory.execution import ExecutionLedger, summarize_execution_ledger
+from experiments.conversational_memory.execution import (
+    ExecutionLedger,
+    HeldoutAttemptError,
+    HeldoutAttemptLedger,
+    summarize_execution_ledger,
+)
 from experiments.conversational_memory.analyze_development import select_query_variant
 from experiments.conversational_memory.providers import ConversationExperimentOpenAIProvider
 
@@ -191,21 +200,30 @@ def test_heldout_guard_rejects_unsigned_registration_copy() -> None:
         _require_heldout_registration(REGISTRATION.resolve(), payload)
 
 
-def test_registration_records_revised_unsigned_heldout_proposal() -> None:
+def test_registration_records_frozen_approved_heldout_contract() -> None:
     payload = load_registration(REGISTRATION.resolve(), phase="development")
-    assert payload["status"] == "development_calibration_revision"
-    assert payload["decision_rule"]["status"] == (
-        "revised_preregistration_pending_operator_approval"
-    )
-    assert payload["decision_rule"]["approved_by"] is None
-    assert payload["calibration"]["selected_query_variant"] is None
+    assert payload["status"] == "heldout_approved"
+    assert payload["decision_rule"]["status"] == "approved"
+    assert payload["decision_rule"]["approved_by"] == "operator"
+    assert payload["calibration"]["selected_query_variant"] == "D1"
     assert payload["calibration"]["managed_generation_repetitions"] == 3
-    assert payload["calibration"]["frozen_parameters"] is None
+    assert payload["calibration"]["frozen_parameters"] == {
+        "chunk_max_chars": 1000,
+        "chunk_overlap_chars": 80,
+        "recent_window_max_messages": 2,
+        "retrieval_top_k_chunks": 6,
+        "similarity_threshold": 0.5,
+    }
     assert set(payload["decision_rule"]["thresholds"]) == set(
         REGISTERED_THRESHOLD_METRICS
     )
     assert all(
         value is not None for value in payload["decision_rule"]["thresholds"].values()
+    )
+    paired = payload["decision_rule"]["paired_evaluation"]
+    assert set(paired["confidence_bound_criteria"]) == CONFIDENCE_BOUND_CRITERIA
+    assert set(paired["point_estimate_criteria"]) == (
+        set(REGISTERED_THRESHOLD_METRICS) - CONFIDENCE_BOUND_CRITERIA
     )
 
 
@@ -305,18 +323,17 @@ def test_heldout_decision_emits_go_only_when_every_clause_passes() -> None:
     assert decision["verdict"] == "GO"
     assert decision["failed_clauses"] == []
 
-    incomplete = build_heldout_decision(
-        fixtures=fixtures,
-        registration=registration,
-        selected_report=selected_report,
-        generations=generations[:-1],
-        cost_ledgers=cost_ledgers,
-        break_even=break_even,
-        observed_execution=observed,
-        isolation_failures=0,
-    )
-    assert incomplete["verdict"] == "STOP"
-    assert "complete_step_arm_repetition_coverage" in incomplete["failed_clauses"]
+    with pytest.raises(InvalidHeldoutRun, match="incomplete_evaluation_coverage"):
+        build_heldout_decision(
+            fixtures=fixtures,
+            registration=registration,
+            selected_report=selected_report,
+            generations=generations[:-1],
+            cost_ledgers=cost_ledgers,
+            break_even=break_even,
+            observed_execution=observed,
+            isolation_failures=0,
+        )
 
 
 def test_selection_follows_declared_recall_first_order() -> None:
@@ -392,9 +409,13 @@ def test_query_selection_prefers_quality_then_cost_and_declared_tie_order() -> N
     assert selected == "D2_TEXT"
 
 
-def test_actual_heldout_registration_remains_closed() -> None:
-    with pytest.raises(GuardFailure, match="not approved"):
-        load_registration(REGISTRATION.resolve(), phase="heldout")
+def test_heldout_attempt_policy_is_frozen_to_one_valid_run() -> None:
+    payload = load_registration(REGISTRATION.resolve(), phase="development")
+    policy = payload["reporting"]["heldout_attempt_policy"]
+    assert policy["maximum_valid_runs"] == 1
+    assert policy["maximum_total_attempts"] == 2
+    assert policy["maximum_replacement_attempts"] == 1
+    assert policy["valid_terminal_states"] == ["GO", "NO_GO"]
 
 
 def test_production_code_does_not_import_experiment_package() -> None:
@@ -465,3 +486,84 @@ def test_execution_summary_can_isolate_one_run(tmp_path: Path) -> None:
     second.succeeded(call, estimated_tokens=7)
     assert summarize_execution_ledger(path, run_id="first")["estimated_embedding_tokens"] == 5
     assert summarize_execution_ledger(path, run_id="second")["estimated_embedding_tokens"] == 7
+
+
+def test_heldout_attempt_ledger_allows_only_one_eligible_replacement(
+    tmp_path: Path,
+) -> None:
+    policy = json.loads(REGISTRATION.read_text(encoding="utf-8"))["reporting"][
+        "heldout_attempt_policy"
+    ]
+    ledger = HeldoutAttemptLedger(tmp_path / "heldout-attempts.jsonl")
+    first = ledger.start(
+        run_id="first",
+        registration_sha256="r",
+        dataset_sha256="d",
+        git_head="g",
+        policy=policy,
+    )
+    assert first.attempt_number == 1
+    ledger.invalid(first, reason_code="provider_timeout", retry_eligible=True)
+    second = ledger.start(
+        run_id="second",
+        registration_sha256="r",
+        dataset_sha256="d",
+        git_head="g",
+        policy=policy,
+    )
+    assert second.attempt_number == 2
+    ledger.invalid(second, reason_code="provider_timeout", retry_eligible=False)
+    with pytest.raises(HeldoutAttemptError, match="does not authorize replacement"):
+        ledger.start(
+            run_id="third",
+            registration_sha256="r",
+            dataset_sha256="d",
+            git_head="g",
+            policy=policy,
+        )
+
+
+@pytest.mark.parametrize("verdict", ["GO", "NO_GO"])
+def test_completed_heldout_attempt_is_never_repeatable(
+    tmp_path: Path, verdict: str
+) -> None:
+    policy = json.loads(REGISTRATION.read_text(encoding="utf-8"))["reporting"][
+        "heldout_attempt_policy"
+    ]
+    ledger = HeldoutAttemptLedger(tmp_path / "heldout-attempts.jsonl")
+    attempt = ledger.start(
+        run_id="complete",
+        registration_sha256="r",
+        dataset_sha256="d",
+        git_head="g",
+        policy=policy,
+    )
+    ledger.completed(attempt, verdict=verdict)
+    with pytest.raises(HeldoutAttemptError, match="already completed"):
+        ledger.start(
+            run_id="forbidden",
+            registration_sha256="r",
+            dataset_sha256="d",
+            git_head="g",
+            policy=policy,
+        )
+
+
+def test_only_accidental_provider_failures_are_replacement_eligible() -> None:
+    for kind in (
+        ProviderErrorKind.timeout,
+        ProviderErrorKind.network,
+        ProviderErrorKind.rate_limit,
+        ProviderErrorKind.upstream,
+    ):
+        reason, eligible = _classify_heldout_failure(
+            ProviderError(kind=kind, message="safe")
+        )
+        assert reason == f"provider_{kind.value}"
+        assert eligible is True
+
+    reason, eligible = _classify_heldout_failure(
+        ProviderError(kind=ProviderErrorKind.bad_request, message="safe")
+    )
+    assert reason == "provider_bad_request"
+    assert eligible is False

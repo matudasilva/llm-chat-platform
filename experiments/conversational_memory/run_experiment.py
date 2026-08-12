@@ -18,6 +18,7 @@ from uuid import NAMESPACE_URL, uuid4, uuid5
 
 from app.core.domain.embedding import EmbeddingPort
 from app.core.domain.provider import ProviderInput, ProviderPort
+from app.core.domain.provider_errors import ProviderError, ProviderErrorKind
 from app.core.providers.openai_embedding_provider import (
     OpenAIEmbeddingConfig,
     OpenAIEmbeddingProvider,
@@ -41,7 +42,13 @@ from .dataset import (
     load_dataset,
     sha256_file,
 )
-from .execution import ExecutionLedger, summarize_execution_ledger
+from .execution import (
+    ExecutionLedger,
+    HeldoutAttempt,
+    HeldoutAttemptError,
+    HeldoutAttemptLedger,
+    summarize_execution_ledger,
+)
 from .memory import (
     BASE_SYSTEM_INSTRUCTIONS,
     ChunkingConfig,
@@ -135,10 +142,25 @@ REGISTERED_THRESHOLD_METRICS = {
     "maximum_p95_latency_regression_ms": ("p95_latency_regression_ms", "maximum"),
     "maximum_p95_ttft_regression_ms": ("p95_ttft_regression_ms", "maximum"),
 }
+CONFIDENCE_BOUND_CRITERIA = {"minimum_d_over_c_recall_improvement"}
+HELDOUT_REPLACEMENT_ELIGIBLE_REASONS = {
+    "provider_timeout",
+    "provider_network",
+    "provider_rate_limit",
+    "provider_upstream",
+    "provider_usage_unavailable",
+}
 
 
 class GuardFailure(RuntimeError):
     pass
+
+
+class InvalidHeldoutRun(RuntimeError):
+    def __init__(self, reason_code: str, *, retry_eligible: bool) -> None:
+        super().__init__(reason_code)
+        self.reason_code = reason_code
+        self.retry_eligible = retry_eligible
 
 
 @dataclass(frozen=True, slots=True)
@@ -922,6 +944,18 @@ def build_heldout_decision(
     )
     coverage_failures.extend(f"unexpected:{item}" for item in unexpected)
 
+    if coverage_failures:
+        raise InvalidHeldoutRun(
+            "incomplete_evaluation_coverage", retry_eligible=False
+        )
+    if (
+        observed_execution.get("failed_calls") != 0
+        or observed_execution.get("unknown_outcome_calls") != 0
+    ):
+        raise InvalidHeldoutRun("incomplete_api_call_outcomes", retry_eligible=False)
+    if observed_execution.get("missing_success_usage_calls") != 0:
+        raise InvalidHeldoutRun("provider_usage_unavailable", retry_eligible=True)
+
     step_recall: dict[str, dict[str, float]] = {arm: {} for arm in ARMS}
     step_consistency: dict[str, dict[str, float]] = {arm: {} for arm in ARMS}
     if not coverage_failures:
@@ -1060,25 +1094,6 @@ def build_heldout_decision(
             "expected": 0,
             "passed": isolation_failures == 0,
         },
-        "complete_step_arm_repetition_coverage": {
-            "value": coverage_failures,
-            "expected": [],
-            "passed": not coverage_failures,
-        },
-        "no_failed_or_unknown_api_calls": {
-            "value": {
-                "failed_calls": observed_execution.get("failed_calls"),
-                "unknown_outcome_calls": observed_execution.get("unknown_outcome_calls"),
-            },
-            "expected": {"failed_calls": 0, "unknown_outcome_calls": 0},
-            "passed": observed_execution.get("failed_calls") == 0
-            and observed_execution.get("unknown_outcome_calls") == 0,
-        },
-        "complete_generation_usage": {
-            "value": observed_execution.get("missing_success_usage_calls"),
-            "expected": 0,
-            "passed": observed_execution.get("missing_success_usage_calls") == 0,
-        },
         "conversation_clustered_paired_recall_ci95_low_above_zero": {
             "value": None if bootstrap is None else bootstrap["one_sided_ci95_low"],
             "expected": "> 0",
@@ -1089,8 +1104,17 @@ def build_heldout_decision(
         item["passed"] for item in automatic_clauses.values()
     )
     return {
-        "verdict": "GO" if all_passed else "STOP",
+        "verdict": "GO" if all_passed else "NO_GO",
         "rule": "conjunctive_fail_closed",
+        "criterion_evaluation": {
+            "one_sided_95_percent_lower_bound": [
+                "minimum_d_over_c_recall_improvement"
+            ],
+            "unrounded_point_estimates": sorted(
+                set(REGISTERED_THRESHOLD_METRICS)
+                - {"minimum_d_over_c_recall_improvement"}
+            ),
+        },
         "selected_query_variant": selected_arm,
         "quality": quality,
         "conversation_clustered_paired_d_over_c_recall": bootstrap,
@@ -1108,17 +1132,50 @@ def build_heldout_decision(
     }
 
 
-async def execute(
+def build_isolation_no_go(
+    *, registration: Mapping[str, Any], isolation_failures: int
+) -> dict[str, Any]:
+    if isolation_failures <= 0:
+        raise ValueError("isolation NO_GO requires at least one isolation failure")
+    return {
+        "verdict": "NO_GO",
+        "rule": "automatic_security_no_go",
+        "selected_query_variant": registration["calibration"][
+            "selected_query_variant"
+        ],
+        "criterion_evaluation": {
+            "one_sided_95_percent_lower_bound": [],
+            "unrounded_point_estimates": [],
+            "note": "Quality and economic criteria were not evaluated after the automatic security NO_GO.",
+        },
+        "quality": None,
+        "conversation_clustered_paired_d_over_c_recall": None,
+        "slice_recall_accuracy": None,
+        "logical_mean_conversation_api_cost": None,
+        "values": None,
+        "threshold_clauses": None,
+        "automatic_clauses": {
+            "tenant_and_conversation_isolation": {
+                "value": isolation_failures,
+                "expected": 0,
+                "passed": False,
+            }
+        },
+        "failed_clauses": ["tenant_and_conversation_isolation"],
+    }
+
+
+async def _execute_once(
     *,
     phase: str,
     registration_path: Path,
     output_dir: Path,
     with_generation: bool,
+    run_id: str,
 ) -> Path:
     if phase == "heldout" and not with_generation:
         raise GuardFailure("heldout execution requires managed generation")
     output_dir.mkdir(parents=True, exist_ok=True)
-    run_id = str(uuid4())
     execution_ledger = ExecutionLedger(
         output_dir / "execution-ledger.jsonl",
         run_id=run_id,
@@ -1147,8 +1204,9 @@ async def execute(
         select_candidate(reports, registration) if phase == "development" else reports[0]
     )
     selected = Candidate(**selected_report["candidate"])
+    isolation_failures = sum(report["isolation_failures"] for report in reports)
     generation_observations: list[GenerationObservation] = []
-    if with_generation:
+    if with_generation and not (phase == "heldout" and isolation_failures > 0):
         generation_observations = await run_managed_generation(
             fixtures,
             registration,
@@ -1173,17 +1231,22 @@ async def execute(
         "retries": 0,
         "rebuild_embedding_cost": 0.0,
     }
-    isolation_failures = sum(report["isolation_failures"] for report in reports)
     heldout_decision = (
-        build_heldout_decision(
-            fixtures=fixtures,
-            registration=registration,
-            selected_report=selected_report,
-            generations=generation_observations,
-            cost_ledgers=cost_ledgers,
-            break_even=break_even,
-            observed_execution=observed_execution,
-            isolation_failures=isolation_failures,
+        (
+            build_isolation_no_go(
+                registration=registration, isolation_failures=isolation_failures
+            )
+            if isolation_failures > 0
+            else build_heldout_decision(
+                fixtures=fixtures,
+                registration=registration,
+                selected_report=selected_report,
+                generations=generation_observations,
+                cost_ledgers=cost_ledgers,
+                break_even=break_even,
+                observed_execution=observed_execution,
+                isolation_failures=isolation_failures,
+            )
         )
         if phase == "heldout"
         else None
@@ -1252,6 +1315,87 @@ async def execute(
         encoding="utf-8",
     )
     print(f"run_path={output_path}", flush=True)
+    return output_path
+
+
+async def execute(
+    *,
+    phase: str,
+    registration_path: Path,
+    output_dir: Path,
+    with_generation: bool,
+) -> Path:
+    if phase != "heldout":
+        return await _execute_once(
+            phase=phase,
+            registration_path=registration_path,
+            output_dir=output_dir,
+            with_generation=with_generation,
+            run_id=str(uuid4()),
+        )
+    if not with_generation:
+        raise GuardFailure("heldout execution requires managed generation")
+
+    registration = load_registration(registration_path, phase=phase)
+    dataset_path, _fixtures = verify_dataset(registration, phase=phase)
+    run_id = str(uuid4())
+    attempt_ledger = HeldoutAttemptLedger(output_dir / "heldout-attempts.jsonl")
+    policy = registration["reporting"]["heldout_attempt_policy"]
+    try:
+        attempt = attempt_ledger.start(
+            run_id=run_id,
+            registration_sha256=sha256_file(registration_path),
+            dataset_sha256=sha256_file(dataset_path),
+            git_head=_git(["rev-parse", "HEAD"]),
+            policy=policy,
+        )
+    except HeldoutAttemptError as exc:
+        raise GuardFailure(str(exc)) from exc
+
+    try:
+        output_path = await _execute_once(
+            phase=phase,
+            registration_path=registration_path,
+            output_dir=output_dir,
+            with_generation=with_generation,
+            run_id=run_id,
+        )
+    except InvalidHeldoutRun as exc:
+        retry_eligible = _replacement_is_available(
+            attempt=attempt,
+            policy=policy,
+            requested=exc.retry_eligible,
+        )
+        attempt_ledger.invalid(
+            attempt,
+            reason_code=exc.reason_code,
+            retry_eligible=retry_eligible,
+        )
+        raise InvalidHeldoutRun(
+            exc.reason_code, retry_eligible=retry_eligible
+        ) from exc
+    except Exception as exc:
+        reason_code, requested_retry = _classify_heldout_failure(exc)
+        retry_eligible = _replacement_is_available(
+            attempt=attempt,
+            policy=policy,
+            requested=requested_retry,
+        )
+        attempt_ledger.invalid(
+            attempt,
+            reason_code=reason_code,
+            retry_eligible=retry_eligible,
+        )
+        raise InvalidHeldoutRun(
+            reason_code, retry_eligible=retry_eligible
+        ) from exc
+
+    try:
+        result = json.loads(output_path.read_text(encoding="utf-8"))
+        verdict = result["heldout_decision"]["verdict"]
+        attempt_ledger.completed(attempt, verdict=verdict)
+    except (OSError, json.JSONDecodeError, KeyError, TypeError, HeldoutAttemptError) as exc:
+        raise GuardFailure("held-out result could not be finalized") from exc
     return output_path
 
 
@@ -1575,6 +1719,33 @@ def _vectors_hash(mapping: Mapping[str, Sequence[float]]) -> str:
     return digest.hexdigest()
 
 
+def _replacement_is_available(
+    *, attempt: HeldoutAttempt, policy: Mapping[str, Any], requested: bool
+) -> bool:
+    maximum_total = policy.get("maximum_total_attempts")
+    return (
+        requested
+        and isinstance(maximum_total, int)
+        and not isinstance(maximum_total, bool)
+        and attempt.attempt_number < maximum_total
+    )
+
+
+def _classify_heldout_failure(exc: Exception) -> tuple[str, bool]:
+    if isinstance(exc, ProviderError):
+        if exc.kind in {
+            ProviderErrorKind.timeout,
+            ProviderErrorKind.network,
+            ProviderErrorKind.rate_limit,
+            ProviderErrorKind.upstream,
+        }:
+            return f"provider_{exc.kind.value}", True
+        return f"provider_{exc.kind.value}", False
+    if isinstance(exc, GuardFailure):
+        return "instrument_or_artifact_failure", False
+    return "unexpected_experiment_failure", False
+
+
 def _require_heldout_registration(path: Path, payload: Mapping[str, Any]) -> None:
     decision = payload["decision_rule"]
     thresholds = decision["thresholds"]
@@ -1584,8 +1755,32 @@ def _require_heldout_registration(path: Path, payload: Mapping[str, Any]) -> Non
         raise GuardFailure("heldout threshold names differ from the registered instrument")
     if any(value is None for value in thresholds.values()):
         raise GuardFailure("heldout decision thresholds are null")
+    paired = decision.get("paired_evaluation", {})
+    confidence_criteria = set(paired.get("confidence_bound_criteria", []))
+    point_criteria = set(paired.get("point_estimate_criteria", []))
+    if confidence_criteria != CONFIDENCE_BOUND_CRITERIA:
+        raise GuardFailure("heldout confidence-bound criteria are invalid")
+    if point_criteria != set(thresholds) - CONFIDENCE_BOUND_CRITERIA:
+        raise GuardFailure("heldout point-estimate criteria are invalid")
+    if confidence_criteria & point_criteria or confidence_criteria | point_criteria != set(
+        thresholds
+    ):
+        raise GuardFailure("heldout criterion evaluation modes do not partition thresholds")
     if not decision.get("approved_by") or not decision.get("approved_at"):
         raise GuardFailure("heldout registration is unsigned")
+    attempt_policy = payload.get("reporting", {}).get("heldout_attempt_policy")
+    if not isinstance(attempt_policy, dict):
+        raise GuardFailure("heldout attempt policy is missing")
+    if attempt_policy.get("maximum_valid_runs") != 1:
+        raise GuardFailure("heldout valid-run limit is invalid")
+    if attempt_policy.get("maximum_total_attempts") != 2:
+        raise GuardFailure("heldout total-attempt limit is invalid")
+    if attempt_policy.get("maximum_replacement_attempts") != 1:
+        raise GuardFailure("heldout replacement-attempt limit is invalid")
+    if set(attempt_policy.get("replacement_eligible_reasons", [])) != (
+        HELDOUT_REPLACEMENT_ELIGIBLE_REASONS
+    ):
+        raise GuardFailure("heldout replacement reasons are invalid")
     frozen = payload["calibration"].get("frozen_parameters")
     if not isinstance(frozen, dict) or set(frozen) != {
         "chunk_max_chars",
@@ -1654,6 +1849,13 @@ def main() -> int:
                 with_generation=args.with_generation,
             )
         )
+    except InvalidHeldoutRun as exc:
+        retry = str(exc.retry_eligible).lower()
+        print(
+            f"RESULT gate1=invalid_run reason={exc.reason_code} "
+            f"retry_eligible={retry}"
+        )
+        return 3
     except GuardFailure as exc:
         print(f"RESULT gate1=blocked reason={exc}")
         return 2
