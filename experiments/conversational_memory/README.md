@@ -22,9 +22,9 @@ advances with the same versioned reference transcript for every arm.
 
 The final approved development/calibration iteration is complete. It used the general corrected
 scorer, compared D1, D2-JSON, and D2-TEXT, nested three repetitions per step, and preserved the
-conversation as the bootstrap unit. Held-out was not inspected and remains fail-closed until the
-operator explicitly approves the resulting parameters, primary query, margins, and statistical
-contract; the registration must then be signed, committed, and unmodified.
+conversation as the bootstrap unit. On 2026-08-12 the operator approved D1, the selected parameters,
+the margins, and the statistical contract for one held-out execution. The held-out remains
+fail-closed until the signed registration and runner guards are committed and unmodified.
 
 The development pilot selected this candidate:
 
@@ -48,7 +48,7 @@ clauses. That is a strong warning, not a formal STOP; development never decides 
 |---|---|
 | `data/*.jsonl` | Versioned synthetic development and held-out transcript fixtures. |
 | `data/dataset_manifest.json` | Split hashes and counts. |
-| `registration.json` | Revised held-out decision proposal; unsigned while methodology is reviewed. |
+| `registration.json` | Signed, frozen held-out decision contract and attempt policy. |
 | `dataset.py` / `build_dataset.py` | Strict schema validation and deterministic dataset build. |
 | `memory.py` | Chunking, query building, exact cosine retrieval, and fair context composition. |
 | `metrics.py` / `costs.py` | Message-level retrieval, answer, latency, and API-cost metrics. |
@@ -95,10 +95,19 @@ python3 -m experiments.conversational_memory.run_experiment \
 ```
 
 The runner requires an explicitly approved, signed registration and every instrument path to be
-committed and unmodified before it reads the held-out dataset. It evaluates all registered numeric
-thresholds, the fixed-seed conversation-clustered paired-bootstrap confidence rule, isolation,
-complete step/arm/repetition coverage, API-call outcomes, and usage completeness. Every clause must
-pass for `GO`; otherwise the result is `STOP`. Neither result authorizes Gate 2 automatically.
+committed and unmodified before it reads the held-out dataset. The primary recall improvement over C
+must meet both its unrounded point threshold and a conversation-clustered one-sided 95% lower bound
+greater than zero. Every other registered quality, cost, retrieval, slice, latency, TTFT, echo, and
+break-even criterion uses its unrounded point estimate. All design criteria are conjunctive: every
+clause must pass for `GO`; any failure is `NO_GO`.
+
+An incomplete run is `INVALID_RUN`, never a design verdict. One complete replacement is allowed only
+when the first attempt ends in a pre-registered accidental provider timeout, network/upstream error,
+rate limit, or missing required usage. Partial answers are never reused; the replacement receives a
+new run ID and reruns the full split. Auth/config/instrument errors, operator interruption, an
+unresolved attempt, and a second invalid attempt are not repeatable. A tenant or conversation leak
+is an immediate, non-repeatable `NO_GO`. Physical calls from an invalid attempt remain in the
+append-only ledger. `GO`, `NO_GO`, and `INVALID_RUN` do not authorize Gate 2 automatically.
 
 ## Measurement boundaries
 
