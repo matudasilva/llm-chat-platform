@@ -20,11 +20,10 @@ advances with the same versioned reference transcript for every arm.
 
 ## Current checkpoint
 
-The final approved development/calibration iteration is complete. It used the general corrected
-scorer, compared D1, D2-JSON, and D2-TEXT, nested three repetitions per step, and preserved the
-conversation as the bootstrap unit. On 2026-08-12 the operator approved D1, the selected parameters,
-the margins, and the statistical contract for one held-out execution. The held-out remains
-fail-closed until the signed registration and runner guards are committed and unmodified.
+Gate 1 completed with a valid `NO_GO` held-out verdict on 2026-08-12. The approved run used D1,
+three repetitions per step, and the conversation as the bootstrap unit. It completed on its first
+attempt with 433/433 API calls successful, complete generation usage, and zero tenant/conversation
+isolation failures. The attempt ledger is terminal and prevents another run under this registration.
 
 The development pilot selected this candidate:
 
@@ -39,8 +38,9 @@ recall but did not surpass D1's overall recall, consistency, or cost. The select
 {"chunk_max_chars":1000,"chunk_overlap_chars":80,"recent_window_max_messages":2,"retrieval_top_k_chunks":6,"similarity_threshold":0.5}
 ```
 
-Development misses the proposed non-inferiority, ambiguous-follow-up, p95 latency, and p95 TTFT
-clauses. That is a strong warning, not a formal STOP; development never decides GO/STOP.
+The held-out D1 arm improved recall over C by 0.3472 and reduced logical API cost versus B by 37.12%,
+but failed four conjunctive clauses: recall and consistency loss versus B, ambiguous-follow-up
+recall, and p95 TTFT regression. Gate 1 is therefore `NO_GO`; Gate 2 and Gate 3 remain unauthorized.
 
 ## Files
 
@@ -56,9 +56,12 @@ clauses. That is a strong warning, not a formal STOP; development never decides 
 | `execution.py` | Content-free append-only potentially billable-call ledger. |
 | `run_experiment.py` | Guarded calibration and held-out runner. |
 | `analyze_development.py` | Reproducible pilot analysis and threshold proposal. |
-| `runs/*.json` | Append-only raw development evidence. |
+| `analyze_heldout.py` | Reconciles the frozen run, registration, attempt ledger, and API ledger. |
+| `runs/*.json` | Append-only raw development and held-out evidence. |
 | `development-analysis.json` | Machine-readable calibration analysis. |
 | `development-report.md` | Human-readable calibration report. |
+| `heldout-analysis.json` | Machine-readable Gate 1 decision evidence. |
+| `heldout-report.md` | Human-readable Gate 1 held-out report. |
 
 ## Reproduction
 
@@ -87,11 +90,20 @@ python3 -m experiments.conversational_memory.analyze_development \
   --run experiments/conversational_memory/runs/<development-run>.json
 ```
 
-Held-out remains fail-closed and requires managed generation:
+The historical held-out command was:
 
 ```bash
 python3 -m experiments.conversational_memory.run_experiment \
   --phase heldout --with-generation
+```
+
+It must not be run again. The terminal attempt ledger now makes the runner reject it.
+
+Regenerate and reconcile the held-out report without invoking a provider:
+
+```bash
+python3 -m experiments.conversational_memory.analyze_heldout \
+  --run experiments/conversational_memory/runs/heldout-2026-08-12T224320.447316+0000-99ab1c40-9ca4-4029-b23e-c50bc012fa37.json
 ```
 
 The runner requires an explicitly approved, signed registration and every instrument path to be
