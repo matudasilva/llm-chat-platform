@@ -46,6 +46,7 @@ from experiments.conversational_memory.execution import (
     summarize_execution_ledger,
 )
 from experiments.conversational_memory.analyze_development import select_query_variant
+from experiments.conversational_memory.analyze_heldout import build_analysis
 from experiments.conversational_memory.providers import ConversationExperimentOpenAIProvider
 
 
@@ -567,3 +568,31 @@ def test_only_accidental_provider_failures_are_replacement_eligible() -> None:
     )
     assert reason == "provider_bad_request"
     assert eligible is False
+
+
+def test_heldout_analysis_reconciles_frozen_run_and_ledgers() -> None:
+    run_path = Path(
+        "experiments/conversational_memory/runs/"
+        "heldout-2026-08-12T224320.447316+0000-"
+        "99ab1c40-9ca4-4029-b23e-c50bc012fa37.json"
+    ).resolve()
+    analysis = build_analysis(
+        run_path=run_path,
+        registration_path=REGISTRATION.resolve(),
+        execution_ledger_path=Path(
+            "experiments/conversational_memory/runs/execution-ledger.jsonl"
+        ).resolve(),
+        attempt_ledger_path=Path(
+            "experiments/conversational_memory/runs/heldout-attempts.jsonl"
+        ).resolve(),
+    )
+    assert analysis["verdict"] == "NO_GO"
+    assert analysis["attempt_number"] == 1
+    assert analysis["replacement_used"] is False
+    assert analysis["observed_execution"]["succeeded_calls"] == 433
+    assert analysis["failed_clauses"] == [
+        "maximum_d_below_b_recall_loss",
+        "maximum_d_below_b_fact_consistency_loss",
+        "minimum_ambiguous_followup_recall_accuracy",
+        "maximum_p95_ttft_regression_ms",
+    ]
