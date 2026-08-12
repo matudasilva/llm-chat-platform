@@ -1,0 +1,115 @@
+{
+  "registration_version": 1,
+  "orq": "ORQ-27",
+  "status": "development_calibration",
+  "question": "Can a CALMem-inspired episodic strategy improve long-range conversational recall over a recent window while using less cumulative context than bounded history replay?",
+  "scope_note": "Gate 1 only. This registration does not authorize runtime integration, semantic memory, cross-conversation memory, Gate 2, or Gate 3.",
+  "dataset": {
+    "manifest": "experiments/conversational_memory/data/dataset_manifest.json",
+    "development_sha256": "c4e0864aecf4585a01a31bf6915c2426d9c76024339f475dcd6df3caec1f8c1b",
+    "heldout_sha256": "ea6bbcc631451758f18640073a5cc04aabafa9ef5ea8ffb5269150a7fa55a64f",
+    "synthetic_only": true,
+    "replay": "teacher-forced fixed-prefix; candidate answers never advance the transcript or enter the index"
+  },
+  "instrument": {
+    "embedding_provider": "openai",
+    "embedding_model": "text-embedding-3-small",
+    "embedding_dimensions": 1536,
+    "embedding_usage": "utf8-bytes-ceil-div4-v1 estimate",
+    "generation_provider": "openai",
+    "generation_model": "gpt-4o-mini-2024-07-18",
+    "generation_mode": "streaming ProviderPort call for TTFT; one attempt; provider defaults; experiment-only string-content serializer required because the unchanged production Responses serializer returned HTTP 400 for assistant-history input",
+    "generation_usage": "actual when returned; otherwise null",
+    "output_cap": "not enforced by the current OpenAI adapter",
+    "exact_dense_retrieval": true,
+    "llm_query_rewrite": false,
+    "semantic_memory": false
+  },
+  "calibration": {
+    "chunk_max_chars": [240, 480, 1000],
+    "chunk_overlap_chars": [0, 80],
+    "max_chunks_per_source_message": 4,
+    "max_selected_chunks_per_source_message": 2,
+    "recent_window_max_messages": [2, 4, 6],
+    "memory_query_max_tokens": 256,
+    "retrieval_top_k_chunks": [2, 4, 6],
+    "evaluation_top_k_messages": 2,
+    "similarity_threshold": [0.2, 0.35, 0.5],
+    "index_version": "orq27-gate1-pilot-v1",
+    "selection_method": "maximize the mean of D1 and D2 message-level Recall@k, then MRR, then delivered unique-source recall; minimize irrelevant injection, duplicate slots, query tokens, chunk size, overlap, active N, and top-k in that order",
+    "query_variants": ["D1", "D2"],
+    "managed_generation_repetitions": 1,
+    "arm_order": "deterministic rotation of A,B,C,D1,D2 by evaluation-step ordinal and repetition",
+    "frozen_parameters": null,
+    "selected_query_variant": null
+  },
+  "budgets": {
+    "total_input_tokens": 1024,
+    "system_tokens": 160,
+    "conversation_tokens": 640,
+    "active_window_tokens": 320,
+    "episodic_memory_tokens": 320,
+    "documentary_tokens": 0,
+    "current_user_tokens": 96,
+    "output_reserve_tokens": 128
+  },
+  "pricing": {
+    "currency": "USD",
+    "effective_date": "2026-08-12",
+    "generation_input_per_million": 0.15,
+    "generation_output_per_million": 0.60,
+    "embedding_input_per_million": 0.02,
+    "sources": [
+      "https://developers.openai.com/api/docs/models/gpt-4o-mini",
+      "https://developers.openai.com/api/docs/models/text-embedding-3-small"
+    ]
+  },
+  "primary_metrics": {
+    "retrieval_unit": "source_message_id after truncating to retrieval_top_k_chunks; no backfill",
+    "reported": [
+      "Precision@k",
+      "Recall@k",
+      "MRR",
+      "delivered_unique_source_recall",
+      "duplicate_chunk_slot_rate",
+      "irrelevant_memory_injection_rate",
+      "superseded_fact_retrieval_rate",
+      "conversational_recall_accuracy",
+      "fact_consistency"
+    ],
+    "role_breakdown": ["user", "assistant"],
+    "echo_formula": "maximum word-trigram Jaccard overlap between candidate answer and prior assistant/memory text",
+    "repeated_source_amplification_formula": "irrelevant unique source messages repeated from the immediately preceding evaluated query in the same conversation divided by irrelevant unique sources delivered after the first evaluated query; zero when the denominator is zero",
+    "break_even_formula": "earliest exchange where D cumulative logical API cost is no greater than B and remains no greater through the final exchange; null when no such exchange exists",
+    "cost_basis": "per-arm logical standalone cost; physical sharing disclosed separately"
+  },
+  "decision_rule": {
+    "status": "pending_operator_threshold_approval_after_development_pilot",
+    "thresholds": {
+      "minimum_d_over_c_recall_improvement": null,
+      "maximum_d_below_b_quality_loss": null,
+      "minimum_d_vs_b_cumulative_api_cost_improvement": null,
+      "primary_break_even_exchange": null,
+      "maximum_observed_cost_overhead": null,
+      "maximum_irrelevant_injection_rate": null,
+      "maximum_duplicate_chunk_slot_rate": null,
+      "maximum_superseded_retrieval_rate": null,
+      "maximum_echo_overlap": null,
+      "maximum_p95_latency_regression_ms": null,
+      "maximum_p95_ttft_regression_ms": null
+    },
+    "automatic_no_go": [
+      "cross-tenant prompt-bearing retrieval",
+      "cross-conversation prompt-bearing retrieval"
+    ],
+    "approved_by": null,
+    "approved_at": null
+  },
+  "reporting": {
+    "development_may_run_unsigned": true,
+    "heldout_requires_committed_clean_signed_registration": true,
+    "append_only": true,
+    "missing_usage": "null, never zero",
+    "api_cost_per_correct_recall_zero_denominator": "undefined"
+  }
+}
