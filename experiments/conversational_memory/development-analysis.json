@@ -1,0 +1,592 @@
+{
+  "actual_experiment_cash_spend_estimate": {
+    "currency": "USD",
+    "embedding_cost_estimated": 0.00046734,
+    "generation_cost_from_actual_usage": 0.0068385,
+    "note": "Physical experiment spend; not a standalone D1 or D2 strategy cost.",
+    "total_estimated_api_cost": 0.00730584
+  },
+  "automatic_no_go": [
+    "any tenant or conversation prompt-bearing leak",
+    "any missing held-out step/arm/repetition",
+    "any null required usage without an approved exclusion",
+    "any failed mandatory decision clause"
+  ],
+  "development_dataset_sha256": "c4e0864aecf4585a01a31bf6915c2426d9c76024339f475dcd6df3caec1f8c1b",
+  "development_values_against_proposal": {
+    "d1_ambiguous_followup_recall_accuracy": 0.0,
+    "d1_below_b_quality_loss": 0.29166666666666663,
+    "d1_delivered_unique_source_recall": 0.6458333333333334,
+    "d1_duplicate_chunk_slot_rate": 0.06736111111111111,
+    "d1_echo_overlap_p95": 0.6849999999999997,
+    "d1_exact_identifier_recall_accuracy": 1.0,
+    "d1_irrelevant_injection_rate": 0.7652777777777778,
+    "d1_message_recall_at_k": 0.3333333333333333,
+    "d1_over_c_fact_consistency": 0.33333333333333337,
+    "d1_over_c_recall": 0.3333333333333333,
+    "d1_p95_latency_regression_ms": -238.49999999999932,
+    "d1_p95_ttft_regression_ms": -276.3927945838079,
+    "d1_repeated_source_amplification_rate": 0.21428571428571427,
+    "d1_superseded_retrieval_rate": 0.1111111111111111,
+    "d1_vs_b_logical_cost_improvement": 0.20226169651876125,
+    "observed_failed_calls": 0,
+    "observed_unknown_outcome_calls": 0
+  },
+  "development_warning": "Under the proposed thresholds, development would miss the B-quality-loss limit and the ambiguous-follow-up floor. This is a warning, not a held-out STOP verdict.",
+  "generation": {
+    "A": {
+      "conversational_recall_accuracy": 0.0,
+      "echo_overlap": {
+        "mean": 0.044503459503459505,
+        "p50": 0.0,
+        "p95": 0.19142857142857134
+      },
+      "fact_consistency": 0.0,
+      "input_tokens": 2022,
+      "latency_ms": {
+        "mean": 1384.625,
+        "p50": 1124.0,
+        "p95": 2743.2499999999995
+      },
+      "missing_input_usage": 0,
+      "missing_output_usage": 0,
+      "observations": 24,
+      "output_tokens": 402,
+      "ttft_ms": {
+        "mean": 977.7002419141354,
+        "p50": 753.8475219917018,
+        "p95": 2361.06996158778
+      }
+    },
+    "B": {
+      "conversational_recall_accuracy": 0.9166666666666666,
+      "echo_overlap": {
+        "mean": 0.36300525437038594,
+        "p50": 0.3484848484848485,
+        "p95": 0.6
+      },
+      "fact_consistency": 0.8333333333333334,
+      "input_tokens": 12775,
+      "latency_ms": {
+        "mean": 1470.5,
+        "p50": 1244.0,
+        "p95": 2380.9999999999995
+      },
+      "missing_input_usage": 0,
+      "missing_output_usage": 0,
+      "observations": 24,
+      "output_tokens": 308,
+      "ttft_ms": {
+        "mean": 1047.6973407106318,
+        "p50": 797.8864810138475,
+        "p95": 1928.0822135537162
+      }
+    },
+    "C": {
+      "conversational_recall_accuracy": 0.2916666666666667,
+      "echo_overlap": {
+        "mean": 0.1596829461961041,
+        "p50": 0.02631578947368421,
+        "p95": 0.5933333333333332
+      },
+      "fact_consistency": 0.25,
+      "input_tokens": 4400,
+      "latency_ms": {
+        "mean": 1198.2916666666667,
+        "p50": 1133.0,
+        "p95": 1814.3499999999995
+      },
+      "missing_input_usage": 0,
+      "missing_output_usage": 0,
+      "observations": 24,
+      "output_tokens": 362,
+      "ttft_ms": {
+        "mean": 881.6062604140219,
+        "p50": 787.7049759845249,
+        "p95": 1497.8469285677418
+      }
+    },
+    "D1": {
+      "conversational_recall_accuracy": 0.625,
+      "echo_overlap": {
+        "mean": 0.38033887408887407,
+        "p50": 0.4375,
+        "p95": 0.6849999999999997
+      },
+      "fact_consistency": 0.5833333333333334,
+      "input_tokens": 9508,
+      "latency_ms": {
+        "mean": 1493.5,
+        "p50": 1125.0,
+        "p95": 1575.8500000000001
+      },
+      "missing_input_usage": 0,
+      "missing_output_usage": 0,
+      "observations": 24,
+      "output_tokens": 365,
+      "ttft_ms": {
+        "mean": 1094.283001490112,
+        "p50": 766.8296659830958,
+        "p95": 1221.4541339839338
+      }
+    },
+    "D2": {
+      "conversational_recall_accuracy": 0.625,
+      "echo_overlap": {
+        "mean": 0.39342347467347466,
+        "p50": 0.4460227272727273,
+        "p95": 0.6
+      },
+      "fact_consistency": 0.5833333333333334,
+      "input_tokens": 9817,
+      "latency_ms": {
+        "mean": 1329.9583333333333,
+        "p50": 1105.5,
+        "p95": 2396.0499999999997
+      },
+      "missing_input_usage": 0,
+      "missing_output_usage": 0,
+      "observations": 24,
+      "output_tokens": 330,
+      "ttft_ms": {
+        "mean": 1001.820823000647,
+        "p50": 783.9235265273601,
+        "p95": 1908.8415970065394
+      }
+    }
+  },
+  "heldout_generation_repetitions_proposal": 3,
+  "heldout_inspected": false,
+  "logical_break_even_vs_b": {
+    "1976b82e-94fc-55f4-8644-78b79565f459:D1": {
+      "arm": "D1",
+      "baseline": "B",
+      "break_even_exchange": 5,
+      "conversation_id": "1976b82e-94fc-55f4-8644-78b79565f459"
+    },
+    "1976b82e-94fc-55f4-8644-78b79565f459:D2": {
+      "arm": "D2",
+      "baseline": "B",
+      "break_even_exchange": 6,
+      "conversation_id": "1976b82e-94fc-55f4-8644-78b79565f459"
+    },
+    "2a538487-c5f5-57b1-bbcc-6a253bf99879:D1": {
+      "arm": "D1",
+      "baseline": "B",
+      "break_even_exchange": 5,
+      "conversation_id": "2a538487-c5f5-57b1-bbcc-6a253bf99879"
+    },
+    "2a538487-c5f5-57b1-bbcc-6a253bf99879:D2": {
+      "arm": "D2",
+      "baseline": "B",
+      "break_even_exchange": 6,
+      "conversation_id": "2a538487-c5f5-57b1-bbcc-6a253bf99879"
+    },
+    "700535ef-ad55-549b-8b36-9bf2bd913866:D1": {
+      "arm": "D1",
+      "baseline": "B",
+      "break_even_exchange": 6,
+      "conversation_id": "700535ef-ad55-549b-8b36-9bf2bd913866"
+    },
+    "700535ef-ad55-549b-8b36-9bf2bd913866:D2": {
+      "arm": "D2",
+      "baseline": "B",
+      "break_even_exchange": 6,
+      "conversation_id": "700535ef-ad55-549b-8b36-9bf2bd913866"
+    },
+    "713311e5-f067-5927-9b01-6fad71c92fe6:D1": {
+      "arm": "D1",
+      "baseline": "B",
+      "break_even_exchange": 5,
+      "conversation_id": "713311e5-f067-5927-9b01-6fad71c92fe6"
+    },
+    "713311e5-f067-5927-9b01-6fad71c92fe6:D2": {
+      "arm": "D2",
+      "baseline": "B",
+      "break_even_exchange": 6,
+      "conversation_id": "713311e5-f067-5927-9b01-6fad71c92fe6"
+    },
+    "8ca03460-17ea-5945-abfc-bb29e32de789:D1": {
+      "arm": "D1",
+      "baseline": "B",
+      "break_even_exchange": 5,
+      "conversation_id": "8ca03460-17ea-5945-abfc-bb29e32de789"
+    },
+    "8ca03460-17ea-5945-abfc-bb29e32de789:D2": {
+      "arm": "D2",
+      "baseline": "B",
+      "break_even_exchange": 6,
+      "conversation_id": "8ca03460-17ea-5945-abfc-bb29e32de789"
+    },
+    "b6d7278b-39be-57bd-a431-b4c3b3703b9f:D1": {
+      "arm": "D1",
+      "baseline": "B",
+      "break_even_exchange": 6,
+      "conversation_id": "b6d7278b-39be-57bd-a431-b4c3b3703b9f"
+    },
+    "b6d7278b-39be-57bd-a431-b4c3b3703b9f:D2": {
+      "arm": "D2",
+      "baseline": "B",
+      "break_even_exchange": 6,
+      "conversation_id": "b6d7278b-39be-57bd-a431-b4c3b3703b9f"
+    },
+    "b72e870c-3063-5e3c-af07-f69521a62d7a:D1": {
+      "arm": "D1",
+      "baseline": "B",
+      "break_even_exchange": 5,
+      "conversation_id": "b72e870c-3063-5e3c-af07-f69521a62d7a"
+    },
+    "b72e870c-3063-5e3c-af07-f69521a62d7a:D2": {
+      "arm": "D2",
+      "baseline": "B",
+      "break_even_exchange": 6,
+      "conversation_id": "b72e870c-3063-5e3c-af07-f69521a62d7a"
+    },
+    "d6119888-633f-5bbb-9658-f8fb1d6e7cd6:D1": {
+      "arm": "D1",
+      "baseline": "B",
+      "break_even_exchange": 6,
+      "conversation_id": "d6119888-633f-5bbb-9658-f8fb1d6e7cd6"
+    },
+    "d6119888-633f-5bbb-9658-f8fb1d6e7cd6:D2": {
+      "arm": "D2",
+      "baseline": "B",
+      "break_even_exchange": 6,
+      "conversation_id": "d6119888-633f-5bbb-9658-f8fb1d6e7cd6"
+    }
+  },
+  "logical_costs": {
+    "A": {
+      "conversations": 8,
+      "mean_cumulative_input_tokens": 1352,
+      "mean_cumulative_output_tokens": 164,
+      "mean_total_estimated_api_cost": 0.0003012
+    },
+    "B": {
+      "conversations": 8,
+      "mean_cumulative_input_tokens": 4464.625,
+      "mean_cumulative_output_tokens": 152.25,
+      "mean_total_estimated_api_cost": 0.00076104375
+    },
+    "C": {
+      "conversations": 8,
+      "mean_cumulative_input_tokens": 1868.5,
+      "mean_cumulative_output_tokens": 159,
+      "mean_total_estimated_api_cost": 0.000375675
+    },
+    "D1": {
+      "conversations": 8,
+      "mean_cumulative_input_tokens": 3310.625,
+      "mean_cumulative_output_tokens": 159.375,
+      "mean_total_estimated_api_cost": 0.00060711375
+    },
+    "D2": {
+      "conversations": 8,
+      "mean_cumulative_input_tokens": 3356,
+      "mean_cumulative_output_tokens": 155,
+      "mean_total_estimated_api_cost": 0.0006232874999999999
+    }
+  },
+  "next_required_action": "Operator approves or revises the frozen parameters, D1 selection, repetitions, thresholds, and paired rule; then the registration is signed and committed before held-out execution.",
+  "observed_execution_current_run": {
+    "actual_generation_input_tokens": 38522,
+    "actual_generation_output_tokens": 1767,
+    "estimated_embedding_tokens": 23367,
+    "events": 242,
+    "failed_calls": 0,
+    "missing_success_usage_calls": 0,
+    "potentially_billable_failures": 0,
+    "started_calls": 121,
+    "succeeded_calls": 121,
+    "unknown_outcome_calls": 0
+  },
+  "paired_rule_proposal": "Average repetitions within each evaluation step; compare D1-C and D1-B on paired step scores. Require the D1-C point improvement threshold and a fixed-seed 10,000-sample paired-bootstrap 95% lower bound above zero. Apply the B loss, cost, latency, retrieval, slice, and safety thresholds independently; every clause must pass.",
+  "provider_contract_discrepancy": "The unchanged production OpenAI Responses serializer returned HTTP 400 on the first assistant-history replay because it encodes every role as input_text. Gate 1 uses an experiment-only string-content ProviderPort adapter. Any Gate 2 OpenAI history path therefore requires separate design review; production was not changed.",
+  "quality": {
+    "A": {
+      "conversational_recall_accuracy": 0.0,
+      "fact_consistency": 0.0
+    },
+    "B": {
+      "conversational_recall_accuracy": 0.9166666666666666,
+      "fact_consistency": 0.8333333333333334
+    },
+    "C": {
+      "conversational_recall_accuracy": 0.2916666666666667,
+      "fact_consistency": 0.25
+    },
+    "D1": {
+      "conversational_recall_accuracy": 0.625,
+      "fact_consistency": 0.5833333333333334,
+      "paired_vs_b": {
+        "ci95_high": -0.125,
+        "ci95_low": -0.5,
+        "mean_difference": -0.2916666666666667,
+        "samples": 10000,
+        "seed": 2701,
+        "step_count": 24
+      },
+      "paired_vs_c": {
+        "ci95_high": 0.5416666666666666,
+        "ci95_low": 0.16666666666666666,
+        "mean_difference": 0.3333333333333333,
+        "samples": 10000,
+        "seed": 2701,
+        "step_count": 24
+      }
+    },
+    "D2": {
+      "conversational_recall_accuracy": 0.625,
+      "fact_consistency": 0.5833333333333334
+    }
+  },
+  "query_selection_rationale": "D1 and D2 tied on answer recall and fact consistency. D1 used fewer input/query tokens, lower logical API cost, lower irrelevant/superseded/amplified retrieval, and better p95 latency/TTFT. D2's better delivered-source recall did not improve the development answer score.",
+  "raw_run_correction": "The raw run's observed_execution summary included earlier ledger runs. The runner is now fixed to filter by run_id; observed_execution_current_run is the corrected view. Raw evidence remains append-only and was not overwritten.",
+  "retrieval": {
+    "D1": {
+      "delivered_unique_source_recall": 0.6458333333333334,
+      "duplicate_chunk_slot_rate": 0.06736111111111111,
+      "irrelevant_memory_injection_rate": 0.7652777777777778,
+      "mean_query_estimated_tokens": 9.25,
+      "mrr": 0.3333333333333333,
+      "precision_at_k": 0.3333333333333333,
+      "recall_at_k": 0.3333333333333333,
+      "repeated_source_amplification_rate": 0.21428571428571427,
+      "role_metrics": {
+        "assistant": {
+          "gold_queries": 24,
+          "mrr": 0.3958333333333333,
+          "precision_at_k": 0.22916666666666666,
+          "recall_at_k": 0.4583333333333333,
+          "selected_chunks": 61
+        },
+        "user": {
+          "gold_queries": 24,
+          "mrr": 0.3958333333333333,
+          "precision_at_k": 0.22916666666666666,
+          "recall_at_k": 0.4583333333333333,
+          "selected_chunks": 74
+        }
+      },
+      "superseded_fact_retrieval_rate": 0.1111111111111111,
+      "zero_result_rate": 0.0
+    },
+    "D2": {
+      "delivered_unique_source_recall": 0.7708333333333334,
+      "duplicate_chunk_slot_rate": 0.09027777777777778,
+      "irrelevant_memory_injection_rate": 0.7430555555555555,
+      "mean_query_estimated_tokens": 73.04166666666667,
+      "mrr": 0.4166666666666667,
+      "precision_at_k": 0.3125,
+      "recall_at_k": 0.3125,
+      "repeated_source_amplification_rate": 0.42857142857142855,
+      "role_metrics": {
+        "assistant": {
+          "gold_queries": 24,
+          "mrr": 0.75,
+          "precision_at_k": 0.3958333333333333,
+          "recall_at_k": 0.7916666666666666,
+          "selected_chunks": 54
+        },
+        "user": {
+          "gold_queries": 24,
+          "mrr": 0.1875,
+          "precision_at_k": 0.16666666666666666,
+          "recall_at_k": 0.3333333333333333,
+          "selected_chunks": 90
+        }
+      },
+      "superseded_fact_retrieval_rate": 0.14583333333333334,
+      "zero_result_rate": 0.0
+    }
+  },
+  "schema_version": "conversation-memory-development-analysis-v1",
+  "scope": "Gate 1 development/calibration only; no held-out result and no GO/STOP verdict",
+  "selected_parameters_proposal": {
+    "chunk_max_chars": 1000,
+    "chunk_overlap_chars": 0,
+    "recent_window_max_messages": 2,
+    "retrieval_top_k_chunks": 6,
+    "similarity_threshold": 0.2
+  },
+  "selected_query_variant_proposal": "D1",
+  "slices": {
+    "adversarial_history": {
+      "fact_consistency": {
+        "A": 0.0,
+        "B": 1.0,
+        "C": 0.0,
+        "D1": 0.875,
+        "D2": 0.875
+      },
+      "recall_accuracy": {
+        "A": 0.0,
+        "B": 1.0,
+        "C": 0.0,
+        "D1": 0.875,
+        "D2": 0.875
+      },
+      "steps": 8
+    },
+    "ambiguous_followup": {
+      "fact_consistency": {
+        "A": 0.0,
+        "B": 0.625,
+        "C": 0.0,
+        "D1": 0.0,
+        "D2": 0.0
+      },
+      "recall_accuracy": {
+        "A": 0.0,
+        "B": 0.75,
+        "C": 0.0,
+        "D1": 0.0,
+        "D2": 0.0
+      },
+      "steps": 8
+    },
+    "correction": {
+      "fact_consistency": {
+        "A": 0.0,
+        "B": 0.75,
+        "C": 0.375,
+        "D1": 0.4375,
+        "D2": 0.4375
+      },
+      "recall_accuracy": {
+        "A": 0.0,
+        "B": 0.875,
+        "C": 0.4375,
+        "D1": 0.5,
+        "D2": 0.5
+      },
+      "steps": 16
+    },
+    "direct": {
+      "fact_consistency": {
+        "A": 0.0,
+        "B": 1.0,
+        "C": 0.0,
+        "D1": 0.875,
+        "D2": 0.875
+      },
+      "recall_accuracy": {
+        "A": 0.0,
+        "B": 1.0,
+        "C": 0.0,
+        "D1": 0.875,
+        "D2": 0.875
+      },
+      "steps": 8
+    },
+    "en": {
+      "fact_consistency": {
+        "A": 0.0,
+        "B": 0.6666666666666666,
+        "C": 0.25,
+        "D1": 0.5833333333333334,
+        "D2": 0.5833333333333334
+      },
+      "recall_accuracy": {
+        "A": 0.0,
+        "B": 0.8333333333333334,
+        "C": 0.3333333333333333,
+        "D1": 0.6666666666666666,
+        "D2": 0.6666666666666666
+      },
+      "steps": 12
+    },
+    "es": {
+      "fact_consistency": {
+        "A": 0.0,
+        "B": 1.0,
+        "C": 0.25,
+        "D1": 0.5833333333333334,
+        "D2": 0.5833333333333334
+      },
+      "recall_accuracy": {
+        "A": 0.0,
+        "B": 1.0,
+        "C": 0.25,
+        "D1": 0.5833333333333334,
+        "D2": 0.5833333333333334
+      },
+      "steps": 12
+    },
+    "exact_identifier": {
+      "fact_consistency": {
+        "A": 0.0,
+        "B": 0.875,
+        "C": 0.75,
+        "D1": 0.875,
+        "D2": 0.875
+      },
+      "recall_accuracy": {
+        "A": 0.0,
+        "B": 1.0,
+        "C": 0.875,
+        "D1": 1.0,
+        "D2": 1.0
+      },
+      "steps": 8
+    },
+    "long_range": {
+      "fact_consistency": {
+        "A": 0.0,
+        "B": 0.8125,
+        "C": 0.0,
+        "D1": 0.4375,
+        "D2": 0.4375
+      },
+      "recall_accuracy": {
+        "A": 0.0,
+        "B": 0.875,
+        "C": 0.0,
+        "D1": 0.4375,
+        "D2": 0.4375
+      },
+      "steps": 16
+    },
+    "supersession": {
+      "fact_consistency": {
+        "A": 0.0,
+        "B": 0.75,
+        "C": 0.375,
+        "D1": 0.4375,
+        "D2": 0.4375
+      },
+      "recall_accuracy": {
+        "A": 0.0,
+        "B": 0.875,
+        "C": 0.4375,
+        "D1": 0.5,
+        "D2": 0.5
+      },
+      "steps": 16
+    }
+  },
+  "source_registration_sha256": "b43ab57df779de2a631be64c5564bf2a794632f7555437b2e01a100710a95354",
+  "source_run": "experiments/conversational_memory/runs/development-2026-08-12T204950.323380+0000-84945e5b-a377-4c0c-bdd5-201917b29dff.json",
+  "source_run_id": "84945e5b-a377-4c0c-bdd5-201917b29dff",
+  "source_run_sha256": "161110e23fc3e40e6c2d2c7d6e37ca061061d3b133116f82a2c2ff24e14e96f1",
+  "status": "AWAITING_OPERATOR_PREREGISTRATION_APPROVAL",
+  "threshold_proposal": {
+    "maximum_d_below_b_quality_loss": 0.25,
+    "maximum_duplicate_chunk_slot_rate": 0.1,
+    "maximum_echo_overlap_p95": 0.7,
+    "maximum_irrelevant_injection_rate": 0.8,
+    "maximum_observed_retry_or_rebuild_cost_overhead": 0.0,
+    "maximum_p95_latency_regression_ms": 300,
+    "maximum_p95_ttft_regression_ms": 300,
+    "maximum_repeated_source_amplification_rate": 0.25,
+    "maximum_superseded_retrieval_rate": 0.2,
+    "minimum_ambiguous_followup_recall_accuracy": 0.5,
+    "minimum_d_over_c_fact_consistency_improvement": 0.2,
+    "minimum_d_over_c_recall_improvement": 0.2,
+    "minimum_d_vs_b_cumulative_api_cost_improvement": 0.15,
+    "minimum_delivered_unique_source_recall": 0.6,
+    "minimum_exact_identifier_recall_accuracy": 0.75,
+    "minimum_message_recall_at_k": 0.3,
+    "primary_break_even_exchange": 6
+  }
+}
