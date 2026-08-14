@@ -134,12 +134,13 @@ invariant.
      half of this ORQ is commit `f79f920` in `llm-chat-platform-web`, still
      unpushed; ORQ-26 carries pushing it as a prerequisite.
    - The master doc's single "Evaluation and harness" item was **split into
-     three ORQs by the operator on 2026-08-07**, after an Early Design Review
-     found the combined scope violated this roadmap's own ORQ-23 precedent
-     (narrowing so an item does not grow into a second RAG-baseline-sized ORQ).
-     The split renumbers everything below it by two. The three slices cut on
-     what each one needs: ORQ-26 needs no LLM judge, ORQ-27 introduces one,
-     ORQ-28 needs a second corpus ingestion.
+     three draft slices by the operator on 2026-08-07**, after an Early Design
+     Review found the combined scope violated this roadmap's own ORQ-23
+     precedent. Only ORQ-26 was claimed under that draft sequence. Later
+     operator decisions assigned ORQ-27 to conversational-memory research and
+     ORQ-28 to deterministic message ordering; the answer-quality draft
+     returned to the unnumbered backlog and contextual retrieval moved to the
+     current ORQ-30 draft slot.
    - ✅ done (ORQ-26, 5 review rounds — round 4 blocked on a corpus-fingerprint
      gap that round 5 closed and re-verified live with all three test DSNs and
      `pgvector` installed — merged to `main` 2026-08-10): frozen bilingual golden
@@ -156,7 +157,8 @@ invariant.
      The harness measures `PgVectorStore.hybrid_search` alone; production
      retrieval also rewrites the query and reranks, so a good score here does
      not clear the production path and a poor one does not by itself indict it.
-     Claims about production retrieval belong to ORQ-27. See ADR-009.
+     Claims about production retrieval belong to a future answer-quality
+     proposal, not to ORQ-26. See ADR-009.
 
      **Correction (2026-08-07):** an earlier revision of this bullet said the
      tautological golden-set prompt 5 was "carried as `q016`". That conflated
@@ -176,56 +178,38 @@ invariant.
      share a dependency. It remains an unscheduled follow-up, to ride along
      with a future ORQ that already touches the retrieval path.
 
-     **Pending renumbering note (2026-08-10):** the message-ordering item
-     (Phase 1, "still open") is next in line to be claimed via
-     `fw_claim_orq_number.py`, ahead of any item below. Numbers are assigned
-     strictly by claim order (`max(existing tags/branches) + 1`), not by this
-     document's draft labels — none of ORQ-27 through ORQ-32 below has a
-     branch or reservation tag yet, so claiming the ordering item now will
-     take the number **27**, shifting every draft number below down by one
-     (RAG answer quality becomes ORQ-28, and so on through AI Green becoming
-     ORQ-33). This bullet list keeps its current draft numbers until each item
-     is actually claimed, at which point its real number replaces the draft
-     one here — same convention as every prior renumbering in this section.
-   - **Conversational memory via RAG** (not yet claimed, unnumbered — sequenced
-     after the Phase 1 message-ordering ORQ claims its number): `app/api/routes/chat.py`
-     builds `_messages = [ChatMessage(role="user", content=payload.message)]` —
-     one message, always, regardless of `conversation_id`; `ChatService.run`
-     accepts a full `Sequence[ChatMessage]` and is provider-agnostic, but
-     nothing upstream of it ever supplies more than the current turn.
-     Reproduced live 2026-08-10 against both Bedrock and OpenAI (identical:
-     the model denies being told anything in a prior turn of the same
-     conversation). First named as deferred debt in `ORQ-19` Design Review
-     finding F3 (2026-07-02), candidate for "a future backend ORQ" that was
-     never claimed — see `.framework/learnings.md` (2026-08-10 governance
-     entry) for how it fell out of the V2→V3 transition.
-
-     **Design direction (operator decision 2026-08-10):** solve it with RAG
-     rather than full-history replay — embed each turn and retrieve the top-k
-     most relevant prior turns of the *same* `conversation_id` via
-     `PgVectorStore`/`VectorStorePort`, the same infrastructure already built
-     for `documents`/`chunks`, applied to `messages` instead. Reuses embedding
-     + hybrid retrieval rather than growing token cost linearly with
-     conversation length. **Scoped strictly to within one conversation** —
-     cross-conversation / long-term per-tenant memory ("remember me across
-     sessions") is explicitly *not* included here; noted under §Open decisions
-     as a future RAG improvement candidate, not committed to any ORQ.
-     Needs its own spec (retrieval `top_k`, embedding-write path on every
-     turn or lazy/batched, interaction with the existing Redis response
-     cache's fingerprint, token/cost impact relevant to Phase 3's per-tenant
-     accounting) before implementation — a design decision, not a mechanical
-     fix like the ordering item in Phase 1.
-   - **ORQ-27 — RAG answer quality** (not yet claimed): RAGAS `faithfulness`
-     and `response_relevancy` as LLM-as-judge signals, judged by a non-OpenAI
-     model in an optional dependency group that never reaches any image;
-     diagnostic separation (low recall indicts the retriever, low faithfulness
-     indicts the generator) computed from pre-registered thresholds; and judge
-     *stability* evidence as its own assertion, since replaying cached bytes
-     proves harness determinism and nothing about a managed endpoint — the
-     distinction ORQ-22 §Design decisions 5 already learned. Adjust the RAG
-     prompt/citation guidance only if the evidence shows retrieval is correct
-     but the answer still underuses the best chunks.
-   - **ORQ-28 — Contextual retrieval A/B** (not yet claimed): falsify the
+     **Numbering correction (2026-08-10):** ORQ-28 was claimed and closed for
+     deterministic message ordering. The operator then explicitly authorized
+     reusing the inactive ORQ-27 reservation for conversational memory after
+     verifying it contained no unique product commits; this is an override and
+     intentionally does not call `fw_claim_orq_number.py`. ORQ-29 is now
+     canonically reserved for the independently gated dual-memory successor;
+     subsequent draft labels start at ORQ-30, and ORQ-28 is never reusable.
+   - ✅ **ORQ-27 — CALMem-inspired episodic conversational memory experiment**
+     (**CLOSED / VALIDATED, 2026-08-13; Gate 1 `NO_GO`**): the frozen
+     teacher-forced offline experiment executed correctly, but the selected D1
+     strategy passed only 16/20 conjunctive clauses. It failed registered
+     preservation of recall and fact consistency versus bounded-history B,
+     ambiguous-follow-up recall, and p95 TTFT. Gate 2 and Gate 3 were not
+     authorized, no production runtime changed, ORQ-27 must not reopen, and its
+     consumed held-out remains sealed. The verdict rejects D1 under that
+     protocol; it does not reject all episodic memory or semantic memory.
+   - ⏹ **ORQ-29 — Dual conversational memory successor** (**CLOSED LOCALLY,
+     2026-08-14; `DEVELOPMENT INCONCLUSIVE — TARGET LONG-CONTEXT REGIME NOT
+     EXERCISED`**): the approved development-only calibration completed with
+     traceable evidence, but bounded-history B truncated in `0/48` steps,
+     retained required gold evidence in `48/48`, and reached only `13.34%`
+     maximum usable-capacity pressure. ORQ-29 therefore stopped before final
+     pre-registration: no held-out was generated or accessed, no Gate 1
+     `GO/NO_GO` verdict exists, and Gate 2/Gate 3 remain unauthorized. Results
+     are frozen against post-hoc recalibration or reinterpretation. Any
+     successor must use a different approved hypothesis, protocol, ORQ number,
+     and completely new held-out. See ADR-010.
+   - **Unnumbered candidate — RAG answer quality:** preserve the former ORQ-29
+     draft as backlog: RAGAS `faithfulness` and `response_relevancy`,
+     judge-stability evidence, and diagnostic separation between retrieval and
+     generation. It has no reservation, branch, or implementation approval.
+   - **ORQ-30 — Contextual retrieval A/B** (not yet claimed): falsify the
      `--contextualize` ROI that ADR-006 §Alternative D deliberately left
      unverified, with both arms ingested from one commit under two tenants and
      a pre-registered decision rule. A whole experiment, not a task: the
@@ -236,7 +220,7 @@ invariant.
    - The shared-index partitioning trigger stays deferred until ORQ-26 shows
      measured recall degradation on the shared HNSW index — unchanged from
      ADR-006 §4.
-   - **ORQ-29 — RAG in Production** (not yet claimed): end-to-end observability
+   - **ORQ-31 — RAG in Production** (not yet claimed): end-to-end observability
      and hardening following ORQ-26/27 baseline metrics. Prerequisites: ORQ-23,
      24, 25 operationally stable, baselines established. Scope: complete
      OpenTelemetry instrumentation (`retrieve → rerank → generate` spans —
@@ -245,14 +229,14 @@ invariant.
      dashboard, adversarial robustness hardening, cost/latency tuning. Design
      Review prompt deferred pending Module 5 of the RAG course. Numbered ORQ-27
      before the 2026-08-07 split.
-2. **ORQ-30 — Routing evidence dataset** (not yet claimed): `RoutingPolicy`
+2. **ORQ-32 — Routing evidence dataset** (not yet claimed): `RoutingPolicy`
    interface with heuristic and static implementations by default; collect real
    signal before any model. Numbered ORQ-22 in the original plan, then ORQ-28
    before the 2026-08-07 split. Convergence note: the Agentic RAG LLM router is
-   conceptually the same classifier, so once ORQ-29/ORQ-30 produce real signal,
+   conceptually the same classifier, so once ORQ-31/ORQ-32 produce real signal,
    the RAG router design follows at no extra cost.
-3. **ORQ-31 — Offline ML routing baseline** (not yet claimed): a simple,
-   explainable model, and only if ORQ-30's evidence dataset shows real signal.
+3. **ORQ-33 — Offline ML routing baseline** (not yet claimed): a simple,
+   explainable model, and only if ORQ-32's evidence dataset shows real signal.
    Numbered ORQ-23 in the original plan, then ORQ-29.
 
 Reusable precedent: for broad or multilingual queries, reranking alone is not
@@ -262,9 +246,9 @@ that worked. Relevant here because project documentation is bilingual.
 
 ## Phase 3 — AI Green extension
 
-**ORQ-32 — AI Green extension** (not yet claimed). Numbered ORQ-24 in the
+**ORQ-34 — AI Green extension** (not yet claimed). Numbered ORQ-24 in the
 original plan, then ORQ-30 before the 2026-08-07 evaluation split. Sequenced as
-energy telemetry → carbon-aware routing → scheduler, and gated on ORQ-30
+energy telemetry → carbon-aware routing → scheduler, and gated on ORQ-32
 producing real routing signal. Convergence note: Adaptive RAG rests on the same
 principle — spend the cheapest resource that still answers the question.
 
@@ -283,16 +267,11 @@ CO2e) this phase depends on.
 
 - Energy/CO2e estimation methodology per request.
 - Default model and routing escalation thresholds.
-- **Cross-conversation / long-term memory via RAG** (raised 2026-08-10, operator
-  decision when scoping "Conversational memory via RAG" in Phase 2). Same
-  retrieval mechanism as within-conversation memory, but over a corpus that
-  spans a tenant's conversations rather than one `conversation_id` — "remember
-  what I told you last week" instead of "remember what I told you five
-  messages ago". Deliberately not committed to any ORQ yet: needs its own
-  privacy/retention model (how long a fact persists, whether a user can clear
-  it) that within-conversation memory does not, and depends on the
-  within-conversation version shipping first to reuse its embedding-write
-  path rather than building two parallel mechanisms.
+- **Cross-conversation / long-term memory** remains outside ORQ-29. It requires
+  a trusted subject identity plus independent consent, authorization,
+  retention, correction, revocation, export, and deletion decisions. It must
+  not be inferred from tenant ownership or reuse ORQ-29's conversation scope
+  silently; any future proposal needs a separately assigned ORQ and approval.
 - **Moving the embedding provider off OpenAI** (raised 2026-08-07). The operator
   intends to consolidate GenAI spend on Bedrock/GCP, where credits are
   available; generation already runs on Bedrock, so embeddings are the last

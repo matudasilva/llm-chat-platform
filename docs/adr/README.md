@@ -80,3 +80,4 @@ Ver [`template.md`](template.md) para la estructura mínima de un nuevo ADR.
 | [007](007-reranker-availability-cascade.md) | Reranker Availability — GCP Primary, AWS Fallback Cascade | Aceptada | 2026-08-06 |
 | [008](008-rag-generation-and-feedback-boundaries.md) | RAG Generation and Feedback Boundaries | Aceptada | 2026-08-06 |
 | [009](009-rag-evaluation-harness.md) | RAG Evaluation Harness — Instrument, Store, and Pre-registration | Propuesta | 2026-08-08 |
+| [010](010-orq27-no-go-and-orq29-gated-successor.md) | Close ORQ-27 and Evaluate ORQ-29 as a Gated Successor | Aceptada | 2026-08-14 |
