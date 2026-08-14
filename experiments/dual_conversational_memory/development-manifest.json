@@ -1,0 +1,215 @@
+{
+  "artifact": "orq-29-development-manifest",
+  "approved_at": "2026-08-13",
+  "approved_scope": "authoring and development only",
+  "arms": [
+    "A",
+    "B",
+    "C",
+    "D-EVT",
+    "E-EVT",
+    "F-MSG",
+    "F-EVT",
+    "G-SEM",
+    "G-ADAPT",
+    "G-FALLBACK",
+    "R"
+  ],
+  "budgets": {
+    "active_window_events": [1, 2],
+    "current_user_tokens": 256,
+    "documentary_tokens": 0,
+    "output_reserve_tokens": 512,
+    "query_tokens": [192, 320],
+    "system_tokens": 384,
+    "total_input_tokens": 4096
+  },
+  "dataset": {
+    "authoring_conversations": 4,
+    "authoring_evaluation_steps": 16,
+    "development_conversations": 12,
+    "development_evaluation_steps": 48,
+    "languages": [
+      "en",
+      "es"
+    ],
+    "synthetic_only": true,
+    "tenant_count": 4
+  },
+  "dense": {
+    "dimensions": 1536,
+    "distance": "cosine",
+    "model": "text-embedding-3-small",
+    "similarity_thresholds": [
+      0.2,
+      0.35,
+      0.5
+    ]
+  },
+  "external_call_limits": {
+    "embedding_batch": 120,
+    "generation": 528,
+    "semantic_extraction": 144,
+    "total": 792
+  },
+  "execution": {
+    "embedding_batch_size": 128,
+    "external_timeout_seconds": 60,
+    "generation_concurrency": 4,
+    "semantic_extraction_concurrency": 1
+  },
+  "generation": {
+    "max_output_tokens": 160,
+    "model": "gpt-4o-mini",
+    "repetitions": 1
+  },
+  "heldout": {
+    "bundle": null,
+    "hash": null,
+    "path": null,
+    "seed": null,
+    "status": "not_generated_not_accessible"
+  },
+  "hybrid": {
+    "candidate_depth": 12,
+    "fusion": "reciprocal_rank_fusion",
+    "rrf_constants": [
+      10,
+      60
+    ]
+  },
+  "indexing": {
+    "chunk_profiles": [
+      {
+        "max_chars": 600,
+        "overlap_chars": 0
+      },
+      {
+        "max_chars": 1000,
+        "overlap_chars": 0
+      },
+      {
+        "max_chars": 1000,
+        "overlap_chars": 80
+      }
+    ],
+    "max_chunks_per_event": 2,
+    "retrieval_top_k_chunks": [
+      4,
+      6
+    ]
+  },
+  "lexical": {
+    "bm25_b": [
+      0.65,
+      0.75
+    ],
+    "bm25_k1": [
+      1.2,
+      1.5
+    ],
+    "tokenizer": "nfkc-casefold-word-v1"
+  },
+  "origin": {
+    "expected_commit": "e640cd3c7cf5c7668d0b017000e28a606c35cf0f",
+    "required_refs": [
+      "refs/heads/main",
+      "refs/heads/orq/ORQ-29-dual-conversational-memory",
+      "refs/tags/ait-orq-number-ORQ-29"
+    ],
+    "verify_before_first_external_call": true
+  },
+  "pricing": {
+    "currency": "USD",
+    "effective_date": "2026-08-13",
+    "embedding_input_per_million": 0.02,
+    "generation_input_per_million": 0.15,
+    "generation_output_per_million": 0.6,
+    "source_urls": [
+      "https://developers.openai.com/api/docs/models/gpt-4o-mini",
+      "https://developers.openai.com/api/docs/models/text-embedding-3-small"
+    ]
+  },
+  "protocol": {
+    "candidate_profiles_maximum": 30,
+    "current_query": "Q2-TEXT",
+    "diagnostic_query": "Q1",
+    "fallback_policy_selection": {
+      "eligible_candidates": "the two frozen fallback_policies only",
+      "ordered_objectives": [
+        "maximize recall against pre-authored fallback_required labels",
+        "maximize precision",
+        "minimize activation rate",
+        "ascending policy identifier"
+      ]
+    },
+    "late_change_policy": "No candidates, profiles, repetitions, selection objectives, or tie-breakers may be added or changed after the first external call.",
+    "profile_generation": {
+      "count": 30,
+      "formula": "For zero-based i in [0,29]: chunk=i%3; active=(i//3)%2; query=i%2; top_k=(i//2)%2; threshold=i%3; k1=(i//5)%2; b=(i//7)%2; rrf=(i//11)%2. Resolve indexes against their manifest arrays.",
+      "order": "profile-00 through profile-29"
+    },
+    "retrieval_profile_selection": {
+      "metric_source": "development hybrid event retrieval with Q2-TEXT",
+      "ordered_objectives": [
+        "maximize event-level Recall@k",
+        "maximize event-level MRR",
+        "minimize irrelevant-memory injection rate",
+        "minimize duplicate chunk slot rate",
+        "minimize estimated query tokens",
+        "ascending profile_id"
+      ],
+      "primary_unit": "source_event_id"
+    },
+    "replay": "teacher-forced-fixed-prefix",
+    "semantic_threshold_selection": {
+      "eligibility": "zero prohibited-data extractions",
+      "ordered_objectives": [
+        "maximize deterministic extraction F1",
+        "maximize deterministic extraction precision",
+        "ascending confidence threshold"
+      ]
+    },
+    "statistical_unit": "conversation"
+  },
+  "semantic": {
+    "confidence_thresholds": [
+      0.6,
+      0.75
+    ],
+    "extract_every_authoritative_event_once": true,
+    "model": "gpt-4o-mini",
+    "prompt_version": "orq29-semantic-extractor-v1",
+    "response_format": "strict_json_schema",
+    "source_policy": "direct_user_assertions_and_explicit_user_corrections_only"
+  },
+  "adaptive_fallback": {
+    "ambiguity_signals": [
+      "registered_deictic_phrase",
+      "no_result_above_threshold",
+      "dense_bm25_top_event_disagreement",
+      "active_semantic_conflict"
+    ],
+    "fallback_policies": [
+      "deictic_or_no_result",
+      "deictic_or_no_result_or_retriever_disagreement"
+    ],
+    "injection_tiers": [
+      {
+        "minimum_headroom_tokens": 768,
+        "semantic_fraction": 0.35
+      },
+      {
+        "minimum_headroom_tokens": 384,
+        "semantic_fraction": 0.5
+      },
+      {
+        "minimum_headroom_tokens": 0,
+        "semantic_fraction": 1.0
+      }
+    ]
+  },
+  "schema_version": "orq29-development-manifest-v1",
+  "status": "frozen_operator_approved",
+  "zero_retry_policy": true
+}
