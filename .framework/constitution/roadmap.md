@@ -209,14 +209,14 @@ invariant.
      draft as backlog: RAGAS `faithfulness` and `response_relevancy`,
      judge-stability evidence, and diagnostic separation between retrieval and
      generation. It has no reservation, branch, or implementation approval.
-   - **ORQ-30 — Contextual retrieval A/B** (not yet claimed): falsify the
-     `--contextualize` ROI that ADR-006 §Alternative D deliberately left
-     unverified, with both arms ingested from one commit under two tenants and
-     a pre-registered decision rule. A whole experiment, not a task: the
-     contextualized arm is roughly 1817 provider calls, and the arm must prove
-     it contextualized with a real provider — the default is still `stub`, and
-     `indexing_mode` is set from the CLI flag without checking that
-     contextualization produced anything.
+   - **ORQ-30 — Long-context conversational memory under operational context
+     pressure — CLOSED — DEVELOPMENT STOP — REGISTERED 48-CONVERSATION
+     CONFIRMATION UNDERPOWERED** (claimed by `ait-orq-number-ORQ-30`):
+     independent successor to the closed ORQ-29, with a different hypothesis
+     and protocol for evidence that is verifiably outside a bounded history
+     window. This assignment supersedes the earlier unclaimed “Contextual
+     retrieval A/B” placeholder; that experiment has no ORQ number or
+     implementation authorization.
    - The shared-index partitioning trigger stays deferred until ORQ-26 shows
      measured recall degradation on the shared HNSW index — unchanged from
      ADR-006 §4.
