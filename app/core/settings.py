@@ -200,6 +200,16 @@ class Settings(BaseSettings):
         "stub": TokenRates(input_per_1k=0.0, output_per_1k=0.0),
     }
 
+    def __init__(self, **data: Any) -> None:
+        data = dict(data)
+        for field_name, alias in (
+            ("provider", "PRIMARY_PROVIDER"),
+            ("fallback_provider", "FALLBACK_PROVIDER"),
+        ):
+            if alias in data:
+                data.pop(field_name, None)
+        super().__init__(**data)
+
     @field_validator("provider", "fallback_provider")
     @classmethod
     def validate_provider(cls, value: str | None) -> str | None:

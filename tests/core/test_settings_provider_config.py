@@ -50,6 +50,49 @@ def test_settings_fallback_provider_alias_takes_precedence() -> None:
     assert settings.fallback_provider == "bedrock"
 
 
+def test_settings_fallback_provider_field_name_only() -> None:
+    assert Settings(fallback_provider="openai").fallback_provider == "openai"
+
+
+def test_settings_fallback_provider_alias_only() -> None:
+    assert Settings(FALLBACK_PROVIDER="bedrock").fallback_provider == "bedrock"
+
+
+def test_settings_primary_provider_field_name_only() -> None:
+    assert Settings(provider="openai").provider == "openai"
+
+
+def test_settings_primary_provider_alias_only() -> None:
+    assert Settings(PRIMARY_PROVIDER="bedrock").provider == "bedrock"
+
+
+def test_settings_provider_aliases_from_real_environment(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("PRIMARY_PROVIDER", "bedrock")
+    monkeypatch.setenv("FALLBACK_PROVIDER", "openai")
+
+    settings = Settings()
+
+    assert settings.provider == "bedrock"
+    assert settings.fallback_provider == "openai"
+
+
+def test_settings_kwargs_take_precedence_over_environment(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("FALLBACK_PROVIDER", "bedrock")
+
+    assert Settings(fallback_provider="openai").fallback_provider == "openai"
+
+
+def test_settings_environment_takes_precedence_over_dotenv(monkeypatch: pytest.MonkeyPatch, tmp_path) -> None:
+    (tmp_path / ".env").write_text("FALLBACK_PROVIDER=openai\n", encoding="utf-8")
+    monkeypatch.setenv("FALLBACK_PROVIDER", "bedrock")
+
+    assert Settings(_env_file=tmp_path / ".env").fallback_provider == "bedrock"
+
+
+def test_settings_unrelated_field_is_unchanged() -> None:
+    assert Settings(routing_policy="heuristic").routing_policy == "heuristic"
+
+
 def test_settings_default_routing_policy_is_static() -> None:
     settings = Settings()
 
