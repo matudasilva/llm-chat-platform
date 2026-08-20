@@ -98,6 +98,15 @@ def _body(prepared: PreparedDevelopmentRequest) -> bytes:
     return api_request_body(prepared.context.prompt_text)
 
 
+def _require_configured_api_key() -> str:
+    value = _configured_api_key()
+    if not value:
+        raise DevelopmentRunError(
+            "OPENAI_API_KEY is unavailable through the configured settings"
+        )
+    return value
+
+
 def _request(prepared: PreparedDevelopmentRequest, api_key: str) -> Request:
     return Request(
         CHAT_COMPLETIONS_URL,
@@ -293,9 +302,6 @@ def execute(
 ) -> dict[str, object]:
     """Generate the development split and perform its single permitted 256-call pass."""
 
-    api_key = _configured_api_key()
-    if not api_key:
-        raise DevelopmentRunError("OPENAI_API_KEY is unavailable through the configured settings")
     if output_dir.exists():
         if any(output_dir.iterdir()):
             raise DevelopmentRunError("development output directory is non-empty; reruns are prohibited")
@@ -358,7 +364,10 @@ def execute(
                 prepared_request,
                 prior_reserved_cost=prior_reserved_cost,
             )
-            with urlopen(_request(prepared_request, api_key), timeout=60) as response:
+            with urlopen(
+                _request(prepared_request, _require_configured_api_key()),
+                timeout=60,
+            ) as response:
                 status = response.status
                 payload = json.loads(response.read().decode("utf-8"))
             if not isinstance(payload, dict):
