@@ -216,11 +216,52 @@ invariant.
      and protocol for evidence that is verifiably outside a bounded history
      window. This assignment supersedes the earlier unclaimed “Contextual
      retrieval A/B” placeholder; that experiment has no ORQ number or
-     implementation authorization.
+     implementation authorization. **Closed 2026-08-20:** the valid
+     replacement development execution showed event-level BM25 recovering
+     out-of-window evidence (E-BM25 16/32 primary versus bounded-history B
+     0/32, gold delivery 32/32, zero cross-tenant or cross-conversation
+     delivery), but the effect was entirely heterogeneous by language — 16/16
+     Spanish, 0/16 English — and the registered 48-conversation confirmation
+     was underpowered. There was no pre-registration, held-out, confirmatory
+     execution, Gate, or `GO`/`NO_GO` verdict; ORQ-30 must not reopen and its
+     development evidence must not be reinterpreted as confirmatory. Full
+     numbers and hashes:
+     `.framework/orqs/ORQ-30-long-context-conversational-memory/closure.md`
+     (single source of fact, not restated here). The EN/ES asymmetry is
+     carried forward as ORQ-31 below.
+   - **ORQ-31 — English-language failure diagnosis after ORQ-30** (not yet
+     claimed): small, bounded diagnostic successor to the closed ORQ-30.
+     Question: why did ORQ-30's E-BM25 development configuration resolve every
+     Spanish primary out-of-window case while failing every English one, even
+     though gold evidence was delivered in all of them? Preliminary roadmap
+     hypothesis, deliberately **not** a pre-registered one: the English failure
+     comes from a bounded, language-sensitive stage of the existing
+     experimental pipeline rather than from absence of the required gold
+     evidence. It must localize the first EN/ES divergence across
+     retrieval/candidate selection, query construction and lexical matching,
+     context assembly and evidence placement, generation behaviour, and answer
+     evaluation/scoring — without assuming a layer in advance. Smallest useful
+     progression: reproduce the observed behaviour from the existing permitted
+     ORQ-30 development evidence, inspect deterministic intermediate outputs,
+     localize the divergence, then formulate the smallest follow-up fix or
+     experimental hypothesis. Reproduction needs no provider calls: the
+     replacement run's `results.jsonl` joins to the per-conversation `language`
+     field in `development-dataset.json` on `conversation_index`, so the
+     language split is recomputable offline. Boundaries: no ORQ-30 reopening,
+     no new ORQ-30 runs, no modification of ORQ-30 evidence, no upgraded ORQ-30
+     conclusion, no broadening of the memory architecture, and no production
+     behaviour change. Evidence reuse is unchanged — ORQ-27's consumed held-out
+     stays sealed and must not serve as a hidden test set or drive successor
+     selection, and ORQ-29 remains contextual development-only prior work.
+     Explicitly **not** a replacement long-context memory experiment. Takes the
+     number the "RAG in Production" bullet below previously held; per this
+     roadmap's established renumbering convention that item moves to ORQ-32,
+     the routing items to ORQ-33/ORQ-34, and AI Green to ORQ-35. None of those
+     four had a reservation tag or branch, so no claimed number was disturbed.
    - The shared-index partitioning trigger stays deferred until ORQ-26 shows
      measured recall degradation on the shared HNSW index — unchanged from
      ADR-006 §4.
-   - **ORQ-31 — RAG in Production** (not yet claimed): end-to-end observability
+   - **ORQ-32 — RAG in Production** (not yet claimed): end-to-end observability
      and hardening following ORQ-26/27 baseline metrics. Prerequisites: ORQ-23,
      24, 25 operationally stable, baselines established. Scope: complete
      OpenTelemetry instrumentation (`retrieve → rerank → generate` spans —
@@ -228,16 +269,20 @@ invariant.
      here so instrumentation is designed once with its backend), Phoenix/Grafana
      dashboard, adversarial robustness hardening, cost/latency tuning. Design
      Review prompt deferred pending Module 5 of the RAG course. Numbered ORQ-27
-     before the 2026-08-07 split.
-2. **ORQ-32 — Routing evidence dataset** (not yet claimed): `RoutingPolicy`
+     before the 2026-08-07 split, then ORQ-31 until ORQ-31 was reassigned to the
+     English-failure diagnosis above (2026-08-20). Deferred and reordered, not
+     discarded — purpose and prerequisites unchanged.
+2. **ORQ-33 — Routing evidence dataset** (not yet claimed): `RoutingPolicy`
    interface with heuristic and static implementations by default; collect real
    signal before any model. Numbered ORQ-22 in the original plan, then ORQ-28
-   before the 2026-08-07 split. Convergence note: the Agentic RAG LLM router is
-   conceptually the same classifier, so once ORQ-31/ORQ-32 produce real signal,
-   the RAG router design follows at no extra cost.
-3. **ORQ-33 — Offline ML routing baseline** (not yet claimed): a simple,
-   explainable model, and only if ORQ-32's evidence dataset shows real signal.
-   Numbered ORQ-23 in the original plan, then ORQ-29.
+   before the 2026-08-07 split, then ORQ-32 before the 2026-08-20 replan.
+   Convergence note: the Agentic RAG LLM router is conceptually the same
+   classifier, so once ORQ-32/ORQ-33 produce real signal, the RAG router design
+   follows at no extra cost.
+3. **ORQ-34 — Offline ML routing baseline** (not yet claimed): a simple,
+   explainable model, and only if ORQ-33's evidence dataset shows real signal.
+   Numbered ORQ-23 in the original plan, then ORQ-29, then ORQ-33 before the
+   2026-08-20 replan.
 
 Reusable precedent: for broad or multilingual queries, reranking alone is not
 enough when the initial candidate set is poor — intent detection plus an
@@ -246,11 +291,12 @@ that worked. Relevant here because project documentation is bilingual.
 
 ## Phase 3 — AI Green extension
 
-**ORQ-34 — AI Green extension** (not yet claimed). Numbered ORQ-24 in the
-original plan, then ORQ-30 before the 2026-08-07 evaluation split. Sequenced as
-energy telemetry → carbon-aware routing → scheduler, and gated on ORQ-32
-producing real routing signal. Convergence note: Adaptive RAG rests on the same
-principle — spend the cheapest resource that still answers the question.
+**ORQ-35 — AI Green extension** (not yet claimed). Numbered ORQ-24 in the
+original plan, then ORQ-30 before the 2026-08-07 evaluation split, then ORQ-34
+before the 2026-08-20 replan. Sequenced as energy telemetry → carbon-aware
+routing → scheduler, and gated on ORQ-33 producing real routing signal.
+Convergence note: Adaptive RAG rests on the same principle — spend the cheapest
+resource that still answers the question.
 
 Fits as an extension, not a rewrite; each piece maps to an existing component.
 
