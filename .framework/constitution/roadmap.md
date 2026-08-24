@@ -229,35 +229,49 @@ invariant.
      `.framework/orqs/ORQ-30-long-context-conversational-memory/closure.md`
      (single source of fact, not restated here). The EN/ES asymmetry is
      carried forward as ORQ-31 below.
-   - **ORQ-31 — English-language failure diagnosis after ORQ-30** (not yet
-     claimed): small, bounded diagnostic successor to the closed ORQ-30.
-     Question: why did ORQ-30's E-BM25 development configuration resolve every
-     Spanish primary out-of-window case while failing every English one, even
-     though gold evidence was delivered in all of them? Preliminary roadmap
-     hypothesis, deliberately **not** a pre-registered one: the English failure
-     comes from a bounded, language-sensitive stage of the existing
-     experimental pipeline rather than from absence of the required gold
-     evidence. It must localize the first EN/ES divergence across
-     retrieval/candidate selection, query construction and lexical matching,
-     context assembly and evidence placement, generation behaviour, and answer
-     evaluation/scoring — without assuming a layer in advance. Smallest useful
-     progression: reproduce the observed behaviour from the existing permitted
-     ORQ-30 development evidence, inspect deterministic intermediate outputs,
-     localize the divergence, then formulate the smallest follow-up fix or
-     experimental hypothesis. Reproduction needs no provider calls: the
-     replacement run's `results.jsonl` joins to the per-conversation `language`
-     field in `development-dataset.json` on `conversation_index`, so the
-     language split is recomputable offline. Boundaries: no ORQ-30 reopening,
-     no new ORQ-30 runs, no modification of ORQ-30 evidence, no upgraded ORQ-30
-     conclusion, no broadening of the memory architecture, and no production
-     behaviour change. Evidence reuse is unchanged — ORQ-27's consumed held-out
-     stays sealed and must not serve as a hidden test set or drive successor
-     selection, and ORQ-29 remains contextual development-only prior work.
-     Explicitly **not** a replacement long-context memory experiment. Takes the
-     number the "RAG in Production" bullet below previously held; per this
-     roadmap's established renumbering convention that item moves to ORQ-32,
-     the routing items to ORQ-33/ORQ-34, and AI Green to ORQ-35. None of those
-     four had a reservation tag or branch, so no claimed number was disturbed.
+   - **ORQ-31 — English-language failure diagnosis after ORQ-30 — CLOSED
+     LOCALLY — FIRST OFFLINE DIVERGENCE LOCALIZED** (`ait-orq-number-ORQ-31`,
+     closed 2026-08-21): the bounded diagnostic successor to ORQ-30 ran
+     entirely offline, at zero provider/model/embedding cost, by
+     deterministically reproducing ORQ-30's frozen E-BM25 replacement-development
+     pipeline (dataset identity, 128/128 rebuilt requests, 64/64 primary
+     request-hash matches — all confirmed against the recorded evidence).
+     Retrieval and context assembly delivered the required gold evidence in
+     16/16 primary steps for **both** languages; the frozen scorer reproduced
+     the recorded outcome in 32/32 cases. The first observable EN/ES
+     divergence in pipeline order is at **generation behaviour**: 16/16
+     English primary steps recorded a uniform `abstain` decision, versus 16/16
+     Spanish primary steps recording a correct answer. This is an
+     **association, not a validated cause** — language stays confounded with
+     `conversation_index`, and the underlying event/filler corpus content is
+     English in both language groups, so only the query surface varies by
+     language. ORQ-31 does not establish that query language causes the
+     generation behaviour, does not reopen ORQ-30, and did not modify ORQ-30's
+     evidence (integrity manifest identical open/close). Full evidence:
+     `.framework/orqs/ORQ-31-english-failure-diagnosis/validation.md`
+     (single source of fact, not restated further here).
+   - **Unclaimed successor candidate — Controlled EN/ES generation-behaviour
+     probe** (no reservation, no branch, no spec; not authorized): the
+     research direction ORQ-31 motivates. Purpose: isolate the generation-stage
+     language/query effect from the confounds ORQ-30/ORQ-31 could not
+     disentangle, by comparing matched conditions where the same relevant
+     evidence is delivered, retrieval success and context are held fixed as
+     tightly as practical, only the query surface varies EN vs ES, and
+     generation behaviour is observed — to determine whether the
+     generation-stage divergence persists under a controlled, matched design.
+     This is a roadmap-level candidate only; scope, protocol, and any
+     pre-registration are `fw-plan` decisions for a future, separately
+     authorized session, not decided here. Positioned as the immediate
+     successor to ORQ-31 and ahead of "RAG in Production" below, per operator
+     research-priority decision (2026-08-21): the EN/ES asymmetry is a
+     concrete, freshly localized development finding, while RAG-in-Production
+     hardening has no equivalent time pressure. When claimed, this candidate
+     takes the next reservable number (currently ORQ-32, per
+     `ait-orq-number-ORQ-31` being the highest reserved tag at replan time);
+     "RAG in Production" and the routing items below cascade down by one
+     position each, following the same renumbering convention already used
+     twice in this roadmap. None of those items has a reservation tag or
+     branch, so no claimed number is disturbed by this reordering.
    - The shared-index partitioning trigger stays deferred until ORQ-26 shows
      measured recall degradation on the shared HNSW index — unchanged from
      ADR-006 §4.
