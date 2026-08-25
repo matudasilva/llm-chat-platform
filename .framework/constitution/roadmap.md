@@ -250,53 +250,104 @@ invariant.
      evidence (integrity manifest identical open/close). Full evidence:
      `.framework/orqs/ORQ-31-english-failure-diagnosis/validation.md`
      (single source of fact, not restated further here).
-   - **Unclaimed successor candidate — Controlled EN/ES generation-behaviour
-     probe** (no reservation, no branch, no spec; not authorized): the
-     research direction ORQ-31 motivates. Purpose: isolate the generation-stage
-     language/query effect from the confounds ORQ-30/ORQ-31 could not
-     disentangle, by comparing matched conditions where the same relevant
-     evidence is delivered, retrieval success and context are held fixed as
-     tightly as practical, only the query surface varies EN vs ES, and
-     generation behaviour is observed — to determine whether the
-     generation-stage divergence persists under a controlled, matched design.
-     This is a roadmap-level candidate only; scope, protocol, and any
-     pre-registration are `fw-plan` decisions for a future, separately
-     authorized session, not decided here. Positioned as the immediate
-     successor to ORQ-31 and ahead of "RAG in Production" below, per operator
-     research-priority decision (2026-08-21): the EN/ES asymmetry is a
-     concrete, freshly localized development finding, while RAG-in-Production
-     hardening has no equivalent time pressure. When claimed, this candidate
-     takes the next reservable number (currently ORQ-32, per
-     `ait-orq-number-ORQ-31` being the highest reserved tag at replan time);
-     "RAG in Production" and the routing items below cascade down by one
-     position each, following the same renumbering convention already used
-     twice in this roadmap. None of those items has a reservation tag or
-     branch, so no claimed number is disturbed by this reordering.
+   - **ORQ-32 — Controlled EN/ES generation-behaviour probe under matched
+     retrieval success — CLOSED LOCALLY — LANGUAGE SWAP PARTIALLY REPRODUCES
+     DIVERGENCE** (`ait-orq-number-ORQ-32`, closed 2026-08-25): the bounded,
+     within-conversation matched-pair probe ORQ-31 proposed as its follow-up.
+     For each of ORQ-30's 16 conversations, both primary steps were re-asked
+     in the opposite language — same conversation, same delivered evidence
+     (gold event delivered in 32/32 swapped requests), same frozen
+     retrieval/assembly/framing code, only the query's language changed —
+     dispatched for real (32 OpenAI `gpt-4o-mini-2024-07-18` calls, ≈USD
+     0.0093 actual cost, well under the authorized USD 0.10 ceiling). Result:
+     the Spanish-corpus→English-question direction reproduced ORQ-31's
+     divergence fully (16/16 flipped to abstain); the English-corpus→
+     Spanish-question direction reproduced it mostly, not fully (14/16
+     flipped to a correct answer; conversations 01 and 04, step `_S00`
+     only, did not flip). Per the classification rule fixed in the spec
+     before dispatch, this mixed result closes as **partial**, not full,
+     reproduction. This is a **stronger, more directly matched association
+     than ORQ-31's, but still not a validated cause** — the design removes
+     ORQ-31's `conversation_index` and corpus-language confounds by reusing
+     the same conversation for both conditions, but the two-pair residual
+     (n=2, no repeated sampling, one step type) leaves an interaction
+     between query language and conversation-specific content unruled-out.
+     ORQ-32 does not reopen ORQ-30 or ORQ-31, and neither's evidence was
+     modified (integrity manifests identical open/close for both). Full
+     evidence: `.framework/orqs/ORQ-32-controlled-en-es-generation-probe/validation.md`
+     (single source of fact, not restated further here).
    - The shared-index partitioning trigger stays deferred until ORQ-26 shows
      measured recall degradation on the shared HNSW index — unchanged from
      ADR-006 §4.
-   - **ORQ-32 — RAG in Production** (not yet claimed): end-to-end observability
+   - **ORQ-33 — Conversational RAG Memory: residual diagnosis and minimal fix
+     candidate** (not yet claimed): the memory investigation is not closed —
+     ORQ-32 left two concrete, unexplained residuals (conversations 01 and
+     04, step `_S00`/"atlas", en→es direction only, both still abstaining
+     under matched retrieval and delivered evidence) rather than a full
+     30/32→32/32 reproduction. Question: what distinguishes these two
+     residual pairs, and what is the smallest change that removes the
+     English-language generation failure without degrading retrieval,
+     abstention correctness, isolation, or Spanish-language behaviour?
+     Priorities: inspect the two residuals first; compare their assembled
+     context/prompt/evidence placement against the 14 pairs that did flip;
+     look for a reproducible explanation; identify at most one or a few fix
+     candidates. Boundaries: stays diagnostic and small — no broad parameter
+     sweep, no memory-architecture redesign, no retrieval change while the
+     evidence keeps pointing at generation rather than retrieval, provider-
+     agnosticism preserved, no production change. A fix candidate may be
+     formulated (not executed as a confirmatory run) if the residual
+     diagnosis supports one within this same bounded scope.
+   - **ORQ-34 — Conversational RAG Memory: confirmatory preregistered
+     evaluation** (not yet claimed): the single ORQ whose purpose is to
+     answer whether Conversational RAG Memory is finally validated, given
+     ORQ-33's diagnosis and candidate fix. Minimum required design: frozen
+     baseline, frozen memory candidate, frozen fix; EN and ES evaluated;
+     out-of-window recall, recent-evidence control, abstention correctness,
+     tenant/conversation isolation, and correctness as measured outcomes;
+     latency/TTFT if still part of the contract; cost; a sample sized by a
+     power/sizing analysis performed before execution; pre-registration;
+     exclusion criteria; thresholds; a predefined `GO`/`NO_GO`; a properly
+     isolated held-out or confirmatory dataset; a single valid execution if
+     the protocol defines one that way. Success is only claimed as something
+     equivalent to: "the conversational-memory approach improves
+     out-of-window recall over the agreed baseline, preserves isolation and
+     abstention correctness, removes the previously observed English-language
+     generation failure, and passes a preregistered confirmatory evaluation
+     under the agreed latency and cost constraints" — and only if the
+     predefined criteria are actually met. A failed confirmatory is recorded
+     as a failed confirmatory; the design must not be shaped to guarantee a
+     `GO`.
+   - **ORQ-35 — RAG in Production** (not yet claimed): end-to-end observability
      and hardening following ORQ-26/27 baseline metrics. Prerequisites: ORQ-23,
-     24, 25 operationally stable, baselines established. Scope: complete
-     OpenTelemetry instrumentation (`retrieve → rerank → generate` spans —
-     including the emission the master doc assigned to the evaluation item, moved
-     here so instrumentation is designed once with its backend), Phoenix/Grafana
-     dashboard, adversarial robustness hardening, cost/latency tuning. Design
-     Review prompt deferred pending Module 5 of the RAG course. Numbered ORQ-27
-     before the 2026-08-07 split, then ORQ-31 until ORQ-31 was reassigned to the
-     English-failure diagnosis above (2026-08-20). Deferred and reordered, not
-     discarded — purpose and prerequisites unchanged.
-2. **ORQ-33 — Routing evidence dataset** (not yet claimed): `RoutingPolicy`
+     24, 25 operationally stable, baselines established, **and** the
+     Conversational RAG Memory investigation closed (ORQ-33/ORQ-34 above) —
+     per operator priority decision (2026-08-25), production hardening work
+     follows the memory investigation's close rather than running ahead of it.
+     Scope: complete OpenTelemetry instrumentation (`retrieve → rerank →
+     generate` spans — including the emission the master doc assigned to the
+     evaluation item, moved here so instrumentation is designed once with its
+     backend), Phoenix/Grafana dashboard, adversarial robustness hardening,
+     cost/latency tuning. Design Review prompt deferred pending Module 5 of
+     the RAG course. Numbered ORQ-27 before the 2026-08-07 split, then ORQ-31
+     until reassigned to the English-failure diagnosis (2026-08-20), then
+     ORQ-32 until claimed by the controlled EN/ES probe (2026-08-25), then
+     ORQ-33 before this replan inserted the two Memory-closure candidates
+     ahead of it (2026-08-25). Deferred and reordered, not discarded —
+     purpose and prerequisites unchanged.
+2. **ORQ-36 — Routing evidence dataset** (not yet claimed): `RoutingPolicy`
    interface with heuristic and static implementations by default; collect real
    signal before any model. Numbered ORQ-22 in the original plan, then ORQ-28
-   before the 2026-08-07 split, then ORQ-32 before the 2026-08-20 replan.
+   before the 2026-08-07 split, then ORQ-32 before the 2026-08-20 replan, then
+   ORQ-33 before this replan's first pass, then ORQ-34 after the Memory-closure
+   candidates were inserted ahead of it (2026-08-25).
    Convergence note: the Agentic RAG LLM router is conceptually the same
-   classifier, so once ORQ-32/ORQ-33 produce real signal, the RAG router design
+   classifier, so once ORQ-35/ORQ-36 produce real signal, the RAG router design
    follows at no extra cost.
-3. **ORQ-34 — Offline ML routing baseline** (not yet claimed): a simple,
-   explainable model, and only if ORQ-33's evidence dataset shows real signal.
+3. **ORQ-37 — Offline ML routing baseline** (not yet claimed): a simple,
+   explainable model, and only if ORQ-36's evidence dataset shows real signal.
    Numbered ORQ-23 in the original plan, then ORQ-29, then ORQ-33 before the
-   2026-08-20 replan.
+   2026-08-20 replan, then ORQ-34 before this replan's first pass, then ORQ-35
+   after the Memory-closure candidates were inserted ahead of it (2026-08-25).
 
 Reusable precedent: for broad or multilingual queries, reranking alone is not
 enough when the initial candidate set is poor — intent detection plus an
@@ -305,12 +356,14 @@ that worked. Relevant here because project documentation is bilingual.
 
 ## Phase 3 — AI Green extension
 
-**ORQ-35 — AI Green extension** (not yet claimed). Numbered ORQ-24 in the
+**ORQ-38 — AI Green extension** (not yet claimed). Numbered ORQ-24 in the
 original plan, then ORQ-30 before the 2026-08-07 evaluation split, then ORQ-34
-before the 2026-08-20 replan. Sequenced as energy telemetry → carbon-aware
-routing → scheduler, and gated on ORQ-33 producing real routing signal.
-Convergence note: Adaptive RAG rests on the same principle — spend the cheapest
-resource that still answers the question.
+before the 2026-08-20 replan, then ORQ-35 before this replan's first pass, then
+ORQ-36 after the Memory-closure candidates were inserted ahead of it
+(2026-08-25). Sequenced as energy telemetry → carbon-aware routing →
+scheduler, and gated on ORQ-36 producing real routing signal. Convergence
+note: Adaptive RAG rests on the same principle — spend the cheapest resource
+that still answers the question.
 
 Fits as an extension, not a rewrite; each piece maps to an existing component.
 
