@@ -300,9 +300,9 @@ invariant.
      causal claim made for either pair. Full evidence:
      `.framework/orqs/ORQ-33-memory-residual-diagnosis/validation.md`
      (single source of fact, not restated further here).
-   - **Unclaimed successor candidate — Final offline residual
-     characterization (`DEV_04_S00_LANGSWAP`)** (not yet claimed; operator
-     framing recorded 2026-08-26): the memory-experimentation line continues
+   - **ORQ-34 — Final offline residual characterization
+     (`DEV_04_S00_LANGSWAP`)** (`ait-orq-number-ORQ-34`, claimed 2026-08-26,
+     operator framing recorded 2026-08-26): the memory-experimentation line continues
      only far enough to determine whether ORQ-33's one remaining stable
      residual has any concrete, reproducible, offline-visible discriminator
      from its nearest flipped controls (`DEV_00_S00_LANGSWAP`,
@@ -336,18 +336,23 @@ invariant.
      successful-retrieval should be observable separately from retrieval
      failure; no language-specific routing, retry policy, prompt hack, or
      provider-specific production logic has yet been validated. Does not
-     reopen or reinterpret ORQ-30 through ORQ-33. Inserted as an unclaimed,
-     unnumbered candidate ahead of ORQ-34 (below) — no existing roadmap
-     number is reassigned or renumbered by this insertion; ORQ-34 keeps its
-     own placeholder number and stays gated on this candidate's outcome for
+     reopen or reinterpret ORQ-30 through ORQ-33. Claiming this number
+     (`ait-orq-number-ORQ-34`) collided with the placeholder number
+     previously held by the confirmatory-evaluation candidate below —
+     renumbered to ORQ-35 as a direct consequence (operator-confirmed
+     2026-08-26), cascading through ORQ-36/37/38/39 below; no other
+     ordering or scope change. ORQ-35 stays gated on this ORQ's outcome for
      what counts as a "frozen fix" going into confirmatory evaluation (per
      ORQ-33 spec's own correction: a formulated-only candidate is not a
      frozen fix — see `.framework/orqs/ORQ-33-memory-residual-diagnosis/spec.md`
      §Non-scope).
-   - **ORQ-34 — Conversational RAG Memory: confirmatory preregistered
+   - **ORQ-35 — Conversational RAG Memory: confirmatory preregistered
      evaluation** (not yet claimed): the single ORQ whose purpose is to
      answer whether Conversational RAG Memory is finally validated, given
-     ORQ-33's diagnosis and candidate fix. Minimum required design: frozen
+     ORQ-33's diagnosis and, if ORQ-34 produces one, its bounded causal
+     hypothesis — through a development-and-freezing step not yet
+     sequenced (per ORQ-33 spec's Non-scope correction; not decided here).
+     Minimum required design: frozen
      baseline, frozen memory candidate, frozen fix; EN and ES evaluated;
      out-of-window recall, recent-evidence control, abstention correctness,
      tenant/conversation isolation, and correctness as measured outcomes;
@@ -364,13 +369,13 @@ invariant.
      predefined criteria are actually met. A failed confirmatory is recorded
      as a failed confirmatory; the design must not be shaped to guarantee a
      `GO`.
-   - **ORQ-35 — RAG in Production** (not yet claimed): end-to-end observability
+   - **ORQ-36 — RAG in Production** (not yet claimed): end-to-end observability
      and hardening following ORQ-26/27 baseline metrics. Prerequisites: ORQ-23,
      24, 25 operationally stable, baselines established, **and** the
-     Conversational RAG Memory investigation closed (ORQ-33, its unclaimed
-     offline-residual-characterization successor, and ORQ-34 above) — per
-     operator priority decision (2026-08-25), production hardening work
-     follows the memory investigation's close rather than running ahead of it.
+     Conversational RAG Memory investigation closed (ORQ-33, ORQ-34, and
+     ORQ-35 above) — per operator priority decision (2026-08-25), production
+     hardening work follows the memory investigation's close rather than
+     running ahead of it.
      Scope: complete OpenTelemetry instrumentation (`retrieve → rerank →
      generate` spans — including the emission the master doc assigned to the
      evaluation item, moved here so instrumentation is designed once with its
@@ -379,23 +384,27 @@ invariant.
      the RAG course. Numbered ORQ-27 before the 2026-08-07 split, then ORQ-31
      until reassigned to the English-failure diagnosis (2026-08-20), then
      ORQ-32 until claimed by the controlled EN/ES probe (2026-08-25), then
-     ORQ-33 before this replan inserted the two Memory-closure candidates
-     ahead of it (2026-08-25). Deferred and reordered, not discarded —
+     ORQ-33 before the 2026-08-25 replan inserted the two Memory-closure
+     candidates ahead of it, then ORQ-35 before this replan's ORQ-34 claim
+     bumped it again (2026-08-26). Deferred and reordered, not discarded —
      purpose and prerequisites unchanged.
-2. **ORQ-36 — Routing evidence dataset** (not yet claimed): `RoutingPolicy`
+2. **ORQ-37 — Routing evidence dataset** (not yet claimed): `RoutingPolicy`
    interface with heuristic and static implementations by default; collect real
    signal before any model. Numbered ORQ-22 in the original plan, then ORQ-28
    before the 2026-08-07 split, then ORQ-32 before the 2026-08-20 replan, then
-   ORQ-33 before this replan's first pass, then ORQ-34 after the Memory-closure
-   candidates were inserted ahead of it (2026-08-25).
+   ORQ-33 before the 2026-08-25 replan's first pass, then ORQ-34 after the
+   Memory-closure candidates were inserted ahead of it (2026-08-25), then
+   ORQ-36 after this replan's ORQ-34 claim bumped it again (2026-08-26).
    Convergence note: the Agentic RAG LLM router is conceptually the same
-   classifier, so once ORQ-35/ORQ-36 produce real signal, the RAG router design
+   classifier, so once ORQ-36/ORQ-37 produce real signal, the RAG router design
    follows at no extra cost.
-3. **ORQ-37 — Offline ML routing baseline** (not yet claimed): a simple,
-   explainable model, and only if ORQ-36's evidence dataset shows real signal.
+3. **ORQ-38 — Offline ML routing baseline** (not yet claimed): a simple,
+   explainable model, and only if ORQ-37's evidence dataset shows real signal.
    Numbered ORQ-23 in the original plan, then ORQ-29, then ORQ-33 before the
-   2026-08-20 replan, then ORQ-34 before this replan's first pass, then ORQ-35
-   after the Memory-closure candidates were inserted ahead of it (2026-08-25).
+   2026-08-20 replan, then ORQ-34 before the 2026-08-25 replan's first pass,
+   then ORQ-35 after the Memory-closure candidates were inserted ahead of it
+   (2026-08-25), then ORQ-37 after this replan's ORQ-34 claim bumped it again
+   (2026-08-26).
 
 Reusable precedent: for broad or multilingual queries, reranking alone is not
 enough when the initial candidate set is poor — intent detection plus an
@@ -404,12 +413,13 @@ that worked. Relevant here because project documentation is bilingual.
 
 ## Phase 3 — AI Green extension
 
-**ORQ-38 — AI Green extension** (not yet claimed). Numbered ORQ-24 in the
+**ORQ-39 — AI Green extension** (not yet claimed). Numbered ORQ-24 in the
 original plan, then ORQ-30 before the 2026-08-07 evaluation split, then ORQ-34
-before the 2026-08-20 replan, then ORQ-35 before this replan's first pass, then
-ORQ-36 after the Memory-closure candidates were inserted ahead of it
-(2026-08-25). Sequenced as energy telemetry → carbon-aware routing →
-scheduler, and gated on ORQ-36 producing real routing signal. Convergence
+before the 2026-08-20 replan, then ORQ-35 before the 2026-08-25 replan's first
+pass, then ORQ-36 after the Memory-closure candidates were inserted ahead of
+it (2026-08-25), then ORQ-38 after this replan's ORQ-34 claim bumped it again
+(2026-08-26). Sequenced as energy telemetry → carbon-aware routing →
+scheduler, and gated on ORQ-37 producing real routing signal. Convergence
 note: Adaptive RAG rests on the same principle — spend the cheapest resource
 that still answers the question.
 
