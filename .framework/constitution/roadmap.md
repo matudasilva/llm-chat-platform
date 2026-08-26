@@ -280,23 +280,70 @@ invariant.
      measured recall degradation on the shared HNSW index — unchanged from
      ADR-006 §4.
    - **ORQ-33 — Conversational RAG Memory: residual diagnosis and minimal fix
-     candidate** (not yet claimed): the memory investigation is not closed —
-     ORQ-32 left two concrete, unexplained residuals (conversations 01 and
-     04, step `_S00`/"atlas", en→es direction only, both still abstaining
-     under matched retrieval and delivered evidence) rather than a full
-     30/32→32/32 reproduction. Question: what distinguishes these two
-     residual pairs, and what is the smallest change that removes the
-     English-language generation failure without degrading retrieval,
-     abstention correctness, isolation, or Spanish-language behaviour?
-     Priorities: inspect the two residuals first; compare their assembled
-     context/prompt/evidence placement against the 14 pairs that did flip;
-     look for a reproducible explanation; identify at most one or a few fix
-     candidates. Boundaries: stays diagnostic and small — no broad parameter
-     sweep, no memory-architecture redesign, no retrieval change while the
-     evidence keeps pointing at generation rather than retrieval, provider-
-     agnosticism preserved, no production change. A fix candidate may be
-     formulated (not executed as a confirmatory run) if the residual
-     diagnosis supports one within this same bounded scope.
+     candidate — CLOSED LOCALLY — RESIDUAL DIAGNOSED, SAMPLING VARIANCE
+     OBSERVED** (`ait-orq-number-ORQ-33`, closed 2026-08-26): repeated
+     ORQ-32's exact recorded request 10 times each for the 2 residual pairs
+     (conversations 01, 04) and 2 flipped controls (conversations 00, 02),
+     40 OpenAI `gpt-4o-mini-2024-07-18` calls, ≈USD 0.0116 actual cost. The
+     two residuals turned out to be qualitatively different, not one
+     phenomenon: conversation 01 (`DEV_01_S00_LANGSWAP`) showed 9/10 answer,
+     1/10 abstain — **run-to-run generation variability**, not a stable
+     divergence; conversation 04 (`DEV_04_S00_LANGSWAP`) showed 10/10
+     abstain — a **stable residual** repeated sampling does not explain. An
+     offline structural comparison (token count, delivered-event-id
+     sequence, full prompt text) against the 2 flipped controls found no
+     structural or content anomaly beyond the expected per-conversation
+     suffix — inconclusive on its own. Terminal label selected mechanically
+     by the precommitted rule (triggered because at least one residual's
+     samples included an answer) and does **not** mean both residuals were
+     explained — conv04 remains open. No production fix validated; no
+     causal claim made for either pair. Full evidence:
+     `.framework/orqs/ORQ-33-memory-residual-diagnosis/validation.md`
+     (single source of fact, not restated further here).
+   - **Unclaimed successor candidate — Final offline residual
+     characterization (`DEV_04_S00_LANGSWAP`)** (not yet claimed; operator
+     framing recorded 2026-08-26): the memory-experimentation line continues
+     only far enough to determine whether ORQ-33's one remaining stable
+     residual has any concrete, reproducible, offline-visible discriminator
+     from its nearest flipped controls (`DEV_00_S00_LANGSWAP`,
+     `DEV_02_S00_LANGSWAP`, optionally one more `_S00_LANGSWAP` flip if
+     needed to check uniqueness) — explicit goal is to **end** this
+     experimentation line, not extend it indefinitely. Offline-first and
+     diagnostic only: read-only inspection of already-produced ORQ-30/31/
+     32/33 artifacts, deterministic recomputation via frozen tracked
+     modules, token/structural/lexical/ranking/serialization comparison,
+     nonce/suffix normalization — no provider/model/embedding calls, no
+     repeated sampling, no new language swaps, no parameter sweeps, no
+     retries, no ORQ-27 held-out, no ORQ-30–33 mutation, no production
+     change, no fix implementation. Precommitted terminal rule, fixed before
+     this candidate is planned: `CLOSED — OFFLINE DISCRIMINATOR FOUND` only
+     if a concrete, reproducible, conv04-only, control-absent difference
+     survives deterministic re-check and suggests exactly one narrowly
+     testable mechanism (recorded as an unauthorized, untested hypothesis —
+     returned to the operator for a separate authorization decision, at
+     most one further bounded causal probe, no open-ended chain);
+     otherwise `CLOSED — NO ACTIONABLE OFFLINE MECHANISM FOUND`, which
+     explicitly recommends ending the line and returns to the main roadmap
+     with no further experimentation proposed. No difference is ever
+     labeled causal on its own — only structural, lexical/content-specific,
+     ranking/position-specific, serialization-specific, or "no actionable
+     discriminator." Standing engineering conclusions already supported by
+     the accumulated ORQ-30–33 evidence, to be restated (not re-derived) in
+     this candidate's closing documentation: retrieval success does not
+     guarantee generation success; generation reliability should be
+     evaluated conditioned on successful evidence delivery; multilingual
+     behaviour must be included in production evaluation; abstention-after-
+     successful-retrieval should be observable separately from retrieval
+     failure; no language-specific routing, retry policy, prompt hack, or
+     provider-specific production logic has yet been validated. Does not
+     reopen or reinterpret ORQ-30 through ORQ-33. Inserted as an unclaimed,
+     unnumbered candidate ahead of ORQ-34 (below) — no existing roadmap
+     number is reassigned or renumbered by this insertion; ORQ-34 keeps its
+     own placeholder number and stays gated on this candidate's outcome for
+     what counts as a "frozen fix" going into confirmatory evaluation (per
+     ORQ-33 spec's own correction: a formulated-only candidate is not a
+     frozen fix — see `.framework/orqs/ORQ-33-memory-residual-diagnosis/spec.md`
+     §Non-scope).
    - **ORQ-34 — Conversational RAG Memory: confirmatory preregistered
      evaluation** (not yet claimed): the single ORQ whose purpose is to
      answer whether Conversational RAG Memory is finally validated, given
@@ -320,8 +367,9 @@ invariant.
    - **ORQ-35 — RAG in Production** (not yet claimed): end-to-end observability
      and hardening following ORQ-26/27 baseline metrics. Prerequisites: ORQ-23,
      24, 25 operationally stable, baselines established, **and** the
-     Conversational RAG Memory investigation closed (ORQ-33/ORQ-34 above) —
-     per operator priority decision (2026-08-25), production hardening work
+     Conversational RAG Memory investigation closed (ORQ-33, its unclaimed
+     offline-residual-characterization successor, and ORQ-34 above) — per
+     operator priority decision (2026-08-25), production hardening work
      follows the memory investigation's close rather than running ahead of it.
      Scope: complete OpenTelemetry instrumentation (`retrieve → rerank →
      generate` spans — including the emission the master doc assigned to the
@@ -424,6 +472,13 @@ CO2e) this phase depends on.
   primary via `CascadingRerankerAdapter`; AWS stays as an automatic availability fallback.
   Amends, does not supersede, ADR-006's quality rationale for AWS (unchanged, per ORQ-22).
   Full rationale: `docs/adr/007-reranker-availability-cascade.md`.
+- **ORQ-32's two-pair residual is not one phenomenon** (ORQ-33, 2026-08-26): repeated sampling
+  (10x each) split the residual into run-to-run generation variability (conversation 01, 9/10
+  answer) and a stable, unexplained abstention (conversation 04, 10/10 abstain). No production
+  fix validated; the memory-experimentation line continues only as far as a single further
+  offline, no-call diagnostic of conversation 04 against its nearest flipped controls, with an
+  explicit end-of-line default if no discriminator is found — not an open-ended chain of ORQs.
+  Full evidence: `.framework/orqs/ORQ-33-memory-residual-diagnosis/validation.md`.
 
 ## Related
 
