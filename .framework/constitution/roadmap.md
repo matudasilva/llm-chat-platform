@@ -301,81 +301,94 @@ invariant.
      `.framework/orqs/ORQ-33-memory-residual-diagnosis/validation.md`
      (single source of fact, not restated further here).
    - **ORQ-34 — Final offline residual characterization
-     (`DEV_04_S00_LANGSWAP`)** (`ait-orq-number-ORQ-34`, claimed 2026-08-26,
-     operator framing recorded 2026-08-26): the memory-experimentation line continues
-     only far enough to determine whether ORQ-33's one remaining stable
-     residual has any concrete, reproducible, offline-visible discriminator
-     from its nearest flipped controls (`DEV_00_S00_LANGSWAP`,
-     `DEV_02_S00_LANGSWAP`, optionally one more `_S00_LANGSWAP` flip if
-     needed to check uniqueness) — explicit goal is to **end** this
-     experimentation line, not extend it indefinitely. Offline-first and
-     diagnostic only: read-only inspection of already-produced ORQ-30/31/
-     32/33 artifacts, deterministic recomputation via frozen tracked
-     modules, token/structural/lexical/ranking/serialization comparison,
-     nonce/suffix normalization — no provider/model/embedding calls, no
-     repeated sampling, no new language swaps, no parameter sweeps, no
-     retries, no ORQ-27 held-out, no ORQ-30–33 mutation, no production
-     change, no fix implementation. Precommitted terminal rule, fixed before
-     this candidate is planned: `CLOSED — OFFLINE DISCRIMINATOR FOUND` only
-     if a concrete, reproducible, conv04-only, control-absent difference
-     survives deterministic re-check and suggests exactly one narrowly
-     testable mechanism (recorded as an unauthorized, untested hypothesis —
-     returned to the operator for a separate authorization decision, at
-     most one further bounded causal probe, no open-ended chain);
-     otherwise `CLOSED — NO ACTIONABLE OFFLINE MECHANISM FOUND`, which
-     explicitly recommends ending the line and returns to the main roadmap
-     with no further experimentation proposed. No difference is ever
-     labeled causal on its own — only structural, lexical/content-specific,
-     ranking/position-specific, serialization-specific, or "no actionable
-     discriminator." Standing engineering conclusions already supported by
-     the accumulated ORQ-30–33 evidence, to be restated (not re-derived) in
-     this candidate's closing documentation: retrieval success does not
-     guarantee generation success; generation reliability should be
-     evaluated conditioned on successful evidence delivery; multilingual
-     behaviour must be included in production evaluation; abstention-after-
-     successful-retrieval should be observable separately from retrieval
-     failure; no language-specific routing, retry policy, prompt hack, or
-     provider-specific production logic has yet been validated. Does not
-     reopen or reinterpret ORQ-30 through ORQ-33. Claiming this number
-     (`ait-orq-number-ORQ-34`) collided with the placeholder number
-     previously held by the confirmatory-evaluation candidate below —
-     renumbered to ORQ-35 as a direct consequence (operator-confirmed
-     2026-08-26), cascading through ORQ-36/37/38/39 below; no other
-     ordering or scope change. ORQ-35 stays gated on this ORQ's outcome for
-     what counts as a "frozen fix" going into confirmatory evaluation (per
-     ORQ-33 spec's own correction: a formulated-only candidate is not a
-     frozen fix — see `.framework/orqs/ORQ-33-memory-residual-diagnosis/spec.md`
-     §Non-scope).
+     (`DEV_04_S00_LANGSWAP`) — CLOSED LOCALLY — NO ACTIONABLE OFFLINE
+     MECHANISM FOUND** (`ait-orq-number-ORQ-34`, closed 2026-08-27): the
+     bounded, offline-only, zero-provider-call characterization of ORQ-33's
+     one remaining stable residual (conversation 04, `_S00`/"atlas",
+     en→es direction) against its two nearest flipped controls
+     (conversations 00, 02), across all 12 precommitted dimensions (token
+     count, event ordering, gold-event position, BM25 rank/score, lexical
+     overlap, old-vs-current evidence position, competing-nonce count,
+     serialization after suffix normalization, id/suffix patterns,
+     conv04-only text patterns, normalized request-body diff, post-
+     normalization distinguishability). Every dimension came back
+     indistinguishable from both controls, each finding independently
+     recomputed twice with identical results; USD 0.00 spent, zero
+     provider/model/embedding calls. Per the precommitted terminal rule,
+     this closes as `CLOSED — NO ACTIONABLE OFFLINE MECHANISM FOUND`, not
+     `OFFLINE DISCRIMINATOR FOUND` — no causal hypothesis is recorded, none
+     is warranted. **This closes the memory-experimentation diagnostic
+     line ORQ-30 opened.** Conversation 04's abstention cause remains
+     genuinely unknown and stays documented as such — this is an accepted,
+     disclosed limitation of the `E-BM25` candidate (§ORQ-35 below), not a
+     solved problem and not a reason to reopen diagnosis. No further
+     diagnostic ORQ on this residual is authorized by this closure: no more
+     repeated sampling, no broader sweep, no further offline inspection
+     without a new, previously-justified discriminator (operator directive,
+     2026-08-27 — see `.framework/orqs/ORQ-34-conv04-offline-characterization/validation.md`
+     for the full bounded conclusion, single source of fact, not restated
+     further here). Does not reopen or reinterpret ORQ-30 through ORQ-33.
+     Claiming this number (`ait-orq-number-ORQ-34`) collided with the
+     placeholder number previously held by the confirmatory-evaluation
+     candidate below — renumbered to ORQ-35 as a direct consequence
+     (operator-confirmed 2026-08-26), cascading through ORQ-36/37/38/39
+     below; no other ordering or scope change.
    - **ORQ-35 — Conversational RAG Memory: confirmatory preregistered
      evaluation** (not yet claimed): the single ORQ whose purpose is to
-     answer whether Conversational RAG Memory is finally validated, given
-     ORQ-33's diagnosis and, if ORQ-34 produces one, its bounded causal
-     hypothesis — through a development-and-freezing step not yet
-     sequenced (per ORQ-33 spec's Non-scope correction; not decided here).
-     Minimum required design: frozen
-     baseline, frozen memory candidate, frozen fix; EN and ES evaluated;
-     out-of-window recall, recent-evidence control, abstention correctness,
-     tenant/conversation isolation, and correctness as measured outcomes;
-     latency/TTFT if still part of the contract; cost; a sample sized by a
-     power/sizing analysis performed before execution; pre-registration;
-     exclusion criteria; thresholds; a predefined `GO`/`NO_GO`; a properly
-     isolated held-out or confirmatory dataset; a single valid execution if
-     the protocol defines one that way. Success is only claimed as something
-     equivalent to: "the conversational-memory approach improves
-     out-of-window recall over the agreed baseline, preserves isolation and
-     abstention correctness, removes the previously observed English-language
-     generation failure, and passes a preregistered confirmatory evaluation
-     under the agreed latency and cost constraints" — and only if the
-     predefined criteria are actually met. A failed confirmatory is recorded
-     as a failed confirmatory; the design must not be shaped to guarantee a
-     `GO`.
+     answer whether Conversational RAG Memory is finally validated. Central
+     question: does the frozen `E-BM25` candidate outperform the agreed
+     baseline while preserving the preregistered functional and
+     operational constraints? **Candidate-selection question resolved by
+     this replan (operator-confirmed 2026-08-27, evidence-only, no new
+     work): `E-BM25` is the single defensible candidate** — the only arm
+     with positive out-of-window development evidence (ORQ-30: 16/32 vs.
+     `B`'s 0/32, 32/32 gold-event delivery), its configuration unchanged in
+     tracked code across ORQ-30–34, and no fix or variant was ever
+     formulated against it (ORQ-33/34 both closed without a fix
+     candidate). No intermediate candidate-development/freeze ORQ is
+     inserted — there is nothing left to develop, only to formally freeze
+     and preregister, which this ORQ's own Plan phase does before any
+     execution. Conversation 04's unexplained, stable residual
+     (`.framework/orqs/ORQ-34-conv04-offline-characterization/validation.md`)
+     is carried into this ORQ as a **disclosed, accepted-risk exclusion
+     note** — not a defect to fix, not a reason to delay, and not grounds
+     to reopen diagnosis. Minimum required design, to be frozen explicitly
+     before execution: agreed baseline; memory candidate (`E-BM25`);
+     retrieval configuration; generation configuration; language coverage
+     (EN and ES); dataset/version (an isolated confirmatory/held-out
+     dataset — never ORQ-27's already-consumed held-out); evaluation
+     protocol; metrics (out-of-window recall, recent-evidence control,
+     no-evidence/abstention correctness, tenant/conversation isolation,
+     answer correctness, generation reliability conditioned on successful
+     evidence delivery, latency/TTFT if still part of the accepted
+     contract, cost); a sample sized by a power/sizing analysis performed
+     before execution; pre-registration; exclusion criteria; fixed
+     thresholds; a predefined `GO`/`NO_GO` decision rule; a single valid
+     execution if the protocol defines one that way; no tuning after
+     seeing confirmatory results. A `NO_GO` is an acceptable, valid
+     result — the design must not be shaped to guarantee a `GO`. Success
+     is only claimed as something equivalent to: "the frozen
+     conversational-memory candidate improves out-of-window recall over
+     the agreed baseline, preserves tenant/conversation isolation and
+     abstention correctness, maintains acceptable multilingual generation
+     reliability under successful evidence delivery, and passes the
+     preregistered latency and cost constraints" — and only if the
+     predefined criteria are actually met, without asserting this before
+     the confirmatory runs.
    - **ORQ-36 — RAG in Production** (not yet claimed): end-to-end observability
      and hardening following ORQ-26/27 baseline metrics. Prerequisites: ORQ-23,
      24, 25 operationally stable, baselines established, **and** the
      Conversational RAG Memory investigation closed (ORQ-33, ORQ-34, and
      ORQ-35 above) — per operator priority decision (2026-08-25), production
      hardening work follows the memory investigation's close rather than
-     running ahead of it.
+     running ahead of it. Receives ORQ-35's `GO`/`NO_GO` as an already-made
+     scientific decision, not an open question — `GO` means productize the
+     frozen `E-BM25` candidate as ORQ-35 froze it; `NO_GO` means no
+     productization of that candidate. This ORQ is explicitly not where
+     candidate selection, retrieval strategy, multilingual generation
+     behaviour, abstention mitigation, prompt tuning, or retry policy get
+     decided or re-litigated (operator directive, 2026-08-27) — those
+     questions are closed by ORQ-35, not reopened here.
      Scope: complete OpenTelemetry instrumentation (`retrieve → rerank →
      generate` spans — including the emission the master doc assigned to the
      evaluation item, moved here so instrumentation is designed once with its
@@ -489,6 +502,18 @@ CO2e) this phase depends on.
   offline, no-call diagnostic of conversation 04 against its nearest flipped controls, with an
   explicit end-of-line default if no discriminator is found — not an open-ended chain of ORQs.
   Full evidence: `.framework/orqs/ORQ-33-memory-residual-diagnosis/validation.md`.
+- **Memory-experimentation diagnostic line closed; `E-BM25` confirmed as the sole candidate**
+  (ORQ-34, 2026-08-27): the offline, zero-provider-call characterization of conversation 04's
+  residual against its 2 nearest flipped controls found no discriminator across all 12
+  precommitted dimensions — `CLOSED — NO ACTIONABLE OFFLINE MECHANISM FOUND`. Per the
+  precommitted terminal rule, this closes the diagnostic line ORQ-30 opened: no further
+  diagnostic ORQ on this residual without a new, previously-justified discriminator. Replan
+  resolution (2026-08-27, evidence-only): `E-BM25` is the single defensible Conversational RAG
+  Memory candidate (only arm with positive out-of-window evidence, unchanged in tracked code
+  since ORQ-30); no candidate-development ORQ is inserted before the confirmatory. Conversation
+  04's cause remains genuinely unknown and is carried into ORQ-35 as a disclosed, accepted-risk
+  exclusion note, not a solved problem. Full evidence:
+  `.framework/orqs/ORQ-34-conv04-offline-characterization/validation.md`.
 
 ## Related
 
