@@ -406,9 +406,18 @@ invariant.
      Interpretation is capped at: *"On this fixed stimulus set, the observed
      EN/ES behaviour reproduces or does not reproduce under model
      substitution."* It must **not** assert model independence or
-     generalization to other prompts or datasets, and must state that the
-     effective number of distinct items is 1 (`development.py`'s generator is
-     index-parameterized only — the same finding that terminated ORQ-35).
+     generalization to other prompts or datasets. **Correction (2026-08-28,
+     ORQ-36 design review R2):** this entry previously required the ORQ to
+     state that the effective number of distinct items is 1, carried over from
+     ORQ-35's finding about the 48-conversation confirmatory set. That figure
+     is false of the 32-row artifact ORQ-36 actually consumes. Counted from
+     `swapped-requests.json`: 2 fact families, each bound to one step id
+     (`ATLAS`⟺`S00`, `BEACON`⟺`S01`), in 4 surface forms, each replicated 8
+     times by conversation index — and the two question directions use
+     disjoint conversation sets (0–7 and 8–15), so the language contrast is
+     confounded with conversation identity. ORQ-36 must state that structure,
+     not the inherited "1". ORQ-35's own finding is unaffected: it concerned a
+     different subset and stands as recorded.
      Requires the operator override recorded in the decisions log below,
      because the `k=10` touches the conversation-04 residual that ORQ-34's
      closure declared off-limits.
