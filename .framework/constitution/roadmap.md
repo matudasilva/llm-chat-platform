@@ -333,62 +333,58 @@ invariant.
      candidate below — renumbered to ORQ-35 as a direct consequence
      (operator-confirmed 2026-08-26), cascading through ORQ-36/37/38/39
      below; no other ordering or scope change.
-   - **ORQ-35 — Conversational RAG Memory: confirmatory preregistered
-     evaluation** (not yet claimed): the single ORQ whose purpose is to
-     answer whether Conversational RAG Memory is finally validated. Central
-     question: does the frozen `E-BM25` candidate outperform the agreed
-     baseline while preserving the preregistered functional and
-     operational constraints? **Candidate-selection question resolved by
-     this replan (operator-confirmed 2026-08-27, evidence-only, no new
-     work): `E-BM25` is the single defensible candidate** — the only arm
+   - **ORQ-35 — Conversational RAG Memory: confirmatory evaluation**
+     (claimed, `ait-orq-number-ORQ-35`; **terminated in Plan, not
+     executed**): intended to answer whether Conversational RAG Memory is
+     finally validated. Terminal state `BLOCKED — NO CONFIRMATORY
+     EVALUATION IS POSSIBLE WITH THE INHERITED APPARATUS`. Two rounds of
+     independent design review established, against source rather than
+     against the protocol charter's prose, that the inherited confirmatory
+     apparatus cannot support a population inference at any sample size:
+     `development.py`'s generator is index-parameterized only, so any `n`
+     conversations are `n` renamings of a single item, and the frozen
+     `GO` comparison passes deterministically. No pre-registration was
+     frozen, no dataset generated, no provider call made, zero cost, no
+     production change, and **no `GO`/`NO_GO` exists**. The Conversational
+     RAG Memory line therefore closes **without confirmatory validation**;
+     its standing evidence is development-grade only (ORQ-30) plus the
+     ORQ-31–34 diagnostics. Full record, including the retracted
+     Spanish-only scope: `.framework/orqs/ORQ-35-memory-confirmatory-evaluation/spec.md`;
+     decision entry in the log below. Superseded design detail, retained
+     only as the historical reason the ORQ was opened: `E-BM25` was
+     resolved as the single defensible candidate — the only arm
      with positive out-of-window development evidence (ORQ-30: 16/32 vs.
      `B`'s 0/32, 32/32 gold-event delivery), its configuration unchanged in
      tracked code across ORQ-30–34, and no fix or variant was ever
      formulated against it (ORQ-33/34 both closed without a fix
-     candidate). No intermediate candidate-development/freeze ORQ is
-     inserted — there is nothing left to develop, only to formally freeze
-     and preregister, which this ORQ's own Plan phase does before any
-     execution. Conversation 04's unexplained, stable residual
-     (`.framework/orqs/ORQ-34-conv04-offline-characterization/validation.md`)
-     is carried into this ORQ as a **disclosed, accepted-risk exclusion
-     note** — not a defect to fix, not a reason to delay, and not grounds
-     to reopen diagnosis. Minimum required design, to be frozen explicitly
-     before execution: agreed baseline; memory candidate (`E-BM25`);
-     retrieval configuration; generation configuration; language coverage
-     (EN and ES); dataset/version (an isolated confirmatory/held-out
-     dataset — never ORQ-27's already-consumed held-out); evaluation
-     protocol; metrics (out-of-window recall, recent-evidence control,
-     no-evidence/abstention correctness, tenant/conversation isolation,
-     answer correctness, generation reliability conditioned on successful
-     evidence delivery, latency/TTFT if still part of the accepted
-     contract, cost); a sample sized by a power/sizing analysis performed
-     before execution; pre-registration; exclusion criteria; fixed
-     thresholds; a predefined `GO`/`NO_GO` decision rule; a single valid
-     execution if the protocol defines one that way; no tuning after
-     seeing confirmatory results. A `NO_GO` is an acceptable, valid
-     result — the design must not be shaped to guarantee a `GO`. Success
-     is only claimed as something equivalent to: "the frozen
-     conversational-memory candidate improves out-of-window recall over
-     the agreed baseline, preserves tenant/conversation isolation and
-     abstention correctness, maintains acceptable multilingual generation
-     reliability under successful evidence delivery, and passes the
-     preregistered latency and cost constraints" — and only if the
-     predefined criteria are actually met, without asserting this before
-     the confirmatory runs.
+     candidate). That candidate resolution is not overturned by this
+     termination — it is simply never put to a confirmatory test.
    - **ORQ-36 — RAG in Production** (not yet claimed): end-to-end observability
      and hardening following ORQ-26/27 baseline metrics. Prerequisites: ORQ-23,
      24, 25 operationally stable, baselines established, **and** the
      Conversational RAG Memory investigation closed (ORQ-33, ORQ-34, and
      ORQ-35 above) — per operator priority decision (2026-08-25), production
      hardening work follows the memory investigation's close rather than
-     running ahead of it. Receives ORQ-35's `GO`/`NO_GO` as an already-made
-     scientific decision, not an open question — `GO` means productize the
-     frozen `E-BM25` candidate as ORQ-35 froze it; `NO_GO` means no
-     productization of that candidate. This ORQ is explicitly not where
-     candidate selection, retrieval strategy, multilingual generation
-     behaviour, abstention mitigation, prompt tuning, or retry policy get
-     decided or re-litigated (operator directive, 2026-08-27) — those
-     questions are closed by ORQ-35, not reopened here.
+     running ahead of it. That prerequisite is now met: the line is closed,
+     though **without** a confirmatory validation. **This ORQ inherits no
+     confirmatory decision — ORQ-35 produced no `GO`/`NO_GO` and authorized
+     nothing** (see ORQ-35 above). The available memory evidence is
+     development-grade (ORQ-30) plus the ORQ-31–34 diagnostics, and
+     **`E-BM25` is not scientifically confirmed**. This ORQ *may*
+     nonetheless evaluate a controlled production adoption of `E-BM25`, on
+     its own authority and against its own production-readiness gates —
+     observability, isolation, latency, cost, rollback and operational
+     risk. Such an adoption would be **this ORQ's own engineering decision
+     under uncertainty**, and must never be presented, documented or
+     communicated as confirmatory validation, as scientific evidence that
+     the candidate works, or as the execution of a decision made
+     elsewhere. Any claim about the candidate's effectiveness stays bounded
+     by the development-grade evidence that actually exists.
+     This ORQ remains explicitly not where candidate selection, retrieval
+     strategy, multilingual generation behaviour, abstention mitigation,
+     prompt tuning, or retry policy get decided or re-litigated (operator
+     directive, 2026-08-27) — the memory line is closed, and this ORQ is
+     not the place to reopen it.
      Scope: complete OpenTelemetry instrumentation (`retrieve → rerank →
      generate` spans — including the emission the master doc assigned to the
      evaluation item, moved here so instrumentation is designed once with its
@@ -401,6 +397,49 @@ invariant.
      candidates ahead of it, then ORQ-35 before this replan's ORQ-34 claim
      bumped it again (2026-08-26). Deferred and reordered, not discarded —
      purpose and prerequisites unchanged.
+   - **Cross-model diagnostic replication of the EN/ES asymmetry** (not yet
+     claimed, **no number assigned**): does the EN/ES behaviour observed with
+     GPT-4o-mini reproduce when only the generation model changes? Sequenced
+     **after ORQ-36** and explicitly **not a blocker for it** — it is
+     diagnostic and descriptive, cannot produce a productization
+     `GO`/`NO_GO`, and does not repair ORQ-35's limitation. May run
+     concurrently with ORQ-36 if `max_concurrent_orqs` allows (currently `2`,
+     with `Blocked` ORQs not counting).
+     Three arms over the **frozen** 32 `request_body_excluding_credentials`
+     of ORQ-32: Arm 0 re-anchors `gpt-4o-mini-2024-07-18`; Stage 1 is Gemini
+     2.5 Flash (Vertex AI); Stage 2 is Amazon Nova Lite (AWS Bedrock). No new
+     retrieval, embeddings, dataset or sweeps; no production change; ORQ-30–35
+     untouched. One call per request for the main comparison, plus a focused
+     `k=10` replication of `DEV_04_S00_LANGSWAP` with `DEV_00_S00_LANGSWAP` as
+     its **single** control (operator decision 2026-08-28: `conv02` is **not**
+     added — `conv00` alone establishes the model's answer propensity, which
+     is the only calibration the `k=10` needs; minimum sufficient scope).
+     Repeated sampling is confined to those two cells. 52 calls per arm.
+     Structured output is harmonized by **removing the provider-side
+     mechanism in all three arms** — the JSON instruction already lives in the
+     prompt text, and the three vendors' JSON modes have different binding
+     strength, so equalizing at "none" is the only equal-force option;
+     `non_conforming` becomes a first-class metric with a preregistered
+     threshold that can invalidate an arm's comparison. Prompt semantics
+     unchanged.
+     **Arm 0 is a hard gate (operator decision 2026-08-28):** if the
+     harmonized GPT-4o-mini arm does not reproduce the asymmetry after
+     `response_format` is removed, the ORQ closes there and **Gemini and Nova
+     are not executed** — without a comparable baseline there is nothing for a
+     cross-model replication to replicate. Later stages may abort an earlier
+     one for invalidity or cost, but may **never** modify a subsequent stage's
+     prompts, dataset, metrics, scoring, comparable parameters, `k=10`
+     protocol or terminal rule. Hard cost cap per arm, checked before each
+     dispatch.
+     Interpretation is capped at: *"On this fixed stimulus set, the observed
+     EN/ES behaviour reproduces or does not reproduce under model
+     substitution."* It must **not** assert model independence or
+     generalization to other prompts or datasets, and must state that the
+     effective number of distinct items is 1 (`development.py`'s generator is
+     index-parameterized only — the same finding that terminated ORQ-35).
+     Requires the operator override recorded in the decisions log below,
+     because the `k=10` touches the conversation-04 residual that ORQ-34's
+     closure declared off-limits.
 2. **ORQ-37 — Routing evidence dataset** (not yet claimed): `RoutingPolicy`
    interface with heuristic and static implementations by default; collect real
    signal before any model. Numbered ORQ-22 in the original plan, then ORQ-28
@@ -514,6 +553,43 @@ CO2e) this phase depends on.
   04's cause remains genuinely unknown and is carried into ORQ-35 as a disclosed, accepted-risk
   exclusion note, not a solved problem. Full evidence:
   `.framework/orqs/ORQ-34-conv04-offline-characterization/validation.md`.
+- **Conversational RAG Memory closes without confirmatory validation** (ORQ-35,
+  2026-08-27): the confirmatory evaluation was terminated in its Plan phase,
+  before any pre-registration was frozen and before any provider call, at
+  `BLOCKED — NO CONFIRMATORY EVALUATION IS POSSIBLE WITH THE INHERITED
+  APPARATUS`. Verified cause: `development.py`'s dataset generator is
+  index-parameterized only (`_language_questions()` takes the language, not the
+  conversation), so any `n` conversations are `n` renamings of one item; the
+  protocol charter's premise that "conversation is the independent unit" is
+  false by construction, the bootstrap measures within-item repeatability, and
+  the frozen `GO` comparison passes deterministically. The frozen selector
+  cannot detect this — ORQ-30's paired differences are eight `0` and eight `1`,
+  so `s = 0` within either language subset and `sigma_plan` floors at its
+  hardcoded minimum, producing an identical power figure for the English subset
+  in which the candidate never won. `guards.py` and `determinism.py` contain
+  zero references to language, so **no scope choice repairs this** — a
+  Spanish-only framing was proposed, disproved, and is recorded as rejected so
+  it cannot be revived as an open option. Consequences: `E-BM25` remains
+  scientifically unconfirmed and no confirmatory decision authorizes it;
+  ORQ-36 inherits no `GO`/`NO_GO` and may only adopt it, if at all, as its
+  own engineering decision under its own production-readiness gates, never
+  as confirmatory validation (see ORQ-36 above); repairing the apparatus
+  would need a genuinely new dataset design with real item variation, which
+  the operator declined. Zero provider calls, USD 0, no production change.
+  Full record:
+  `.framework/orqs/ORQ-35-memory-confirmatory-evaluation/spec.md`.
+- **Bounded override of ORQ-34's no-further-diagnostics directive, for a
+  cross-model replication only** (2026-08-28): ORQ-34's closure authorized no
+  further diagnostic ORQ on the conversation-04 residual. The operator
+  overrides that directive **once and narrowly**, to permit the cross-model
+  diagnostic replication candidate above, whose `k=10` cell necessarily touches
+  that residual. Scope of the override: the frozen ORQ-32 stimulus set, three
+  generation models, and repeated sampling confined to `DEV_04_S00_LANGSWAP`
+  and its single control `DEV_00_S00_LANGSWAP`. It does **not** reopen offline
+  inspection of the residual, does not authorize broader sweeps or repeated
+  sampling elsewhere, and does not restore the memory-experimentation line —
+  which stays closed. Recorded here because without it the roadmap would carry
+  a standing prohibition and a candidate that violates it.
 
 ## Related
 
