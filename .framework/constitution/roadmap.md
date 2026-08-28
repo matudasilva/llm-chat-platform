@@ -331,8 +331,10 @@ invariant.
      Claiming this number (`ait-orq-number-ORQ-34`) collided with the
      placeholder number previously held by the confirmatory-evaluation
      candidate below — renumbered to ORQ-35 as a direct consequence
-     (operator-confirmed 2026-08-26), cascading through ORQ-36/37/38/39
-     below; no other ordering or scope change.
+     (operator-confirmed 2026-08-26), cascading through the then-numbered
+     ORQ-36/37/38/39 below; no other ordering or scope change. Those four
+     were renumbered again on 2026-08-28 — see the reordering decision in
+     the log below.
    - **ORQ-35 — Conversational RAG Memory: confirmatory evaluation**
      (claimed, `ait-orq-number-ORQ-35`; **terminated in Plan, not
      executed**): intended to answer whether Conversational RAG Memory is
@@ -359,52 +361,22 @@ invariant.
      formulated against it (ORQ-33/34 both closed without a fix
      candidate). That candidate resolution is not overturned by this
      termination — it is simply never put to a confirmatory test.
-   - **ORQ-36 — RAG in Production** (not yet claimed): end-to-end observability
-     and hardening following ORQ-26/27 baseline metrics. Prerequisites: ORQ-23,
-     24, 25 operationally stable, baselines established, **and** the
-     Conversational RAG Memory investigation closed (ORQ-33, ORQ-34, and
-     ORQ-35 above) — per operator priority decision (2026-08-25), production
-     hardening work follows the memory investigation's close rather than
-     running ahead of it. That prerequisite is now met: the line is closed,
-     though **without** a confirmatory validation. **This ORQ inherits no
-     confirmatory decision — ORQ-35 produced no `GO`/`NO_GO` and authorized
-     nothing** (see ORQ-35 above). The available memory evidence is
-     development-grade (ORQ-30) plus the ORQ-31–34 diagnostics, and
-     **`E-BM25` is not scientifically confirmed**. This ORQ *may*
-     nonetheless evaluate a controlled production adoption of `E-BM25`, on
-     its own authority and against its own production-readiness gates —
-     observability, isolation, latency, cost, rollback and operational
-     risk. Such an adoption would be **this ORQ's own engineering decision
-     under uncertainty**, and must never be presented, documented or
-     communicated as confirmatory validation, as scientific evidence that
-     the candidate works, or as the execution of a decision made
-     elsewhere. Any claim about the candidate's effectiveness stays bounded
-     by the development-grade evidence that actually exists.
-     This ORQ remains explicitly not where candidate selection, retrieval
-     strategy, multilingual generation behaviour, abstention mitigation,
-     prompt tuning, or retry policy get decided or re-litigated (operator
-     directive, 2026-08-27) — the memory line is closed, and this ORQ is
-     not the place to reopen it.
-     Scope: complete OpenTelemetry instrumentation (`retrieve → rerank →
-     generate` spans — including the emission the master doc assigned to the
-     evaluation item, moved here so instrumentation is designed once with its
-     backend), Phoenix/Grafana dashboard, adversarial robustness hardening,
-     cost/latency tuning. Design Review prompt deferred pending Module 5 of
-     the RAG course. Numbered ORQ-27 before the 2026-08-07 split, then ORQ-31
-     until reassigned to the English-failure diagnosis (2026-08-20), then
-     ORQ-32 until claimed by the controlled EN/ES probe (2026-08-25), then
-     ORQ-33 before the 2026-08-25 replan inserted the two Memory-closure
-     candidates ahead of it, then ORQ-35 before this replan's ORQ-34 claim
-     bumped it again (2026-08-26). Deferred and reordered, not discarded —
-     purpose and prerequisites unchanged.
-   - **Cross-model diagnostic replication of the EN/ES asymmetry** (not yet
-     claimed, **no number assigned**): does the EN/ES behaviour observed with
+   - **ORQ-36 — Cross-model diagnostic replication of the EN/ES asymmetry**
+     (claimed, `ait-orq-number-ORQ-36`): does the EN/ES behaviour observed with
      GPT-4o-mini reproduce when only the generation model changes? Sequenced
-     **after ORQ-36** and explicitly **not a blocker for it** — it is
-     diagnostic and descriptive, cannot produce a productization
-     `GO`/`NO_GO`, and does not repair ORQ-35's limitation. May run
-     concurrently with ORQ-36 if `max_concurrent_orqs` allows (currently `2`,
-     with `Blocked` ORQs not counting).
+     **ahead of ORQ-37 (RAG in Production)** by operator decision
+     (2026-08-28): whether multilingual generation reliability is
+     model-sensitive is an input to how production evaluation is designed, and
+     that input is largely wasted if it arrives after the observability and
+     evaluation surface is already built. This reverses the earlier sequencing,
+     which placed it after production hardening.
+     It remains **diagnostic and descriptive**: it cannot produce a
+     productization `GO`/`NO_GO` and does not repair ORQ-35's limitation, so
+     ORQ-37 must not be held indefinitely on it — if this ORQ stalls, is
+     invalidated, or closes at the Arm 0 gate, ORQ-37 proceeds on its own
+     production-readiness criteria. The two may run concurrently if
+     `max_concurrent_orqs` allows (currently `2`, with `Blocked` ORQs not
+     counting).
      Three arms over the **frozen** 32 `request_body_excluding_credentials`
      of ORQ-32: Arm 0 re-anchors `gpt-4o-mini-2024-07-18`; Stage 1 is Gemini
      2.5 Flash (Vertex AI); Stage 2 is Amazon Nova Lite (AWS Bedrock). No new
@@ -440,23 +412,62 @@ invariant.
      Requires the operator override recorded in the decisions log below,
      because the `k=10` touches the conversation-04 residual that ORQ-34's
      closure declared off-limits.
-2. **ORQ-37 — Routing evidence dataset** (not yet claimed): `RoutingPolicy`
+   - **ORQ-37 — RAG in Production** (claimed, `ait-orq-number-ORQ-37`):
+     end-to-end observability and hardening following ORQ-26/27 baseline
+     metrics. Prerequisites: ORQ-23, 24, 25 operationally stable, baselines established, **and** the
+     Conversational RAG Memory investigation closed (ORQ-33, ORQ-34, and
+     ORQ-35 above) — per operator priority decision (2026-08-25), production
+     hardening work follows the memory investigation's close rather than
+     running ahead of it. That prerequisite is now met: the line is closed,
+     though **without** a confirmatory validation. **This ORQ inherits no
+     confirmatory decision — ORQ-35 produced no `GO`/`NO_GO` and authorized
+     nothing** (see ORQ-35 above). The available memory evidence is
+     development-grade (ORQ-30) plus the ORQ-31–34 diagnostics, and
+     **`E-BM25` is not scientifically confirmed**. This ORQ *may*
+     nonetheless evaluate a controlled production adoption of `E-BM25`, on
+     its own authority and against its own production-readiness gates —
+     observability, isolation, latency, cost, rollback and operational
+     risk. Such an adoption would be **this ORQ's own engineering decision
+     under uncertainty**, and must never be presented, documented or
+     communicated as confirmatory validation, as scientific evidence that
+     the candidate works, or as the execution of a decision made
+     elsewhere. Any claim about the candidate's effectiveness stays bounded
+     by the development-grade evidence that actually exists.
+     This ORQ remains explicitly not where candidate selection, retrieval
+     strategy, multilingual generation behaviour, abstention mitigation,
+     prompt tuning, or retry policy get decided or re-litigated (operator
+     directive, 2026-08-27) — the memory line is closed, and this ORQ is
+     not the place to reopen it.
+     Scope: complete OpenTelemetry instrumentation (`retrieve → rerank →
+     generate` spans — including the emission the master doc assigned to the
+     evaluation item, moved here so instrumentation is designed once with its
+     backend), Phoenix/Grafana dashboard, adversarial robustness hardening,
+     cost/latency tuning. Design Review prompt deferred pending Module 5 of
+     the RAG course. Numbered ORQ-27 before the 2026-08-07 split, then ORQ-31
+     until reassigned to the English-failure diagnosis (2026-08-20), then
+     ORQ-32 until claimed by the controlled EN/ES probe (2026-08-25), then
+     ORQ-33 before the 2026-08-25 replan inserted the two Memory-closure
+     candidates ahead of it, then ORQ-35 before this replan's ORQ-34 claim
+     bumped it again (2026-08-26). Deferred and reordered, not discarded —
+     purpose and prerequisites unchanged.
+2. **ORQ-38 — Routing evidence dataset** (not yet claimed): `RoutingPolicy`
    interface with heuristic and static implementations by default; collect real
    signal before any model. Numbered ORQ-22 in the original plan, then ORQ-28
    before the 2026-08-07 split, then ORQ-32 before the 2026-08-20 replan, then
    ORQ-33 before the 2026-08-25 replan's first pass, then ORQ-34 after the
    Memory-closure candidates were inserted ahead of it (2026-08-25), then
-   ORQ-36 after this replan's ORQ-34 claim bumped it again (2026-08-26).
-   Convergence note: the Agentic RAG LLM router is conceptually the same
-   classifier, so once ORQ-36/ORQ-37 produce real signal, the RAG router design
+   ORQ-36 after this replan's ORQ-34 claim bumped it again (2026-08-26), then
+   ORQ-38 when ORQ-36/37 were claimed by the cross-model replication and RAG in
+   Production (2026-08-28). Convergence note: the Agentic RAG LLM router is
+   conceptually the same classifier, so once ORQ-38/ORQ-39 produce real signal, the RAG router design
    follows at no extra cost.
-3. **ORQ-38 — Offline ML routing baseline** (not yet claimed): a simple,
-   explainable model, and only if ORQ-37's evidence dataset shows real signal.
+3. **ORQ-39 — Offline ML routing baseline** (not yet claimed): a simple,
+   explainable model, and only if ORQ-38's evidence dataset shows real signal.
    Numbered ORQ-23 in the original plan, then ORQ-29, then ORQ-33 before the
    2026-08-20 replan, then ORQ-34 before the 2026-08-25 replan's first pass,
    then ORQ-35 after the Memory-closure candidates were inserted ahead of it
    (2026-08-25), then ORQ-37 after this replan's ORQ-34 claim bumped it again
-   (2026-08-26).
+   (2026-08-26), then ORQ-39 on the 2026-08-28 reordering.
 
 Reusable precedent: for broad or multilingual queries, reranking alone is not
 enough when the initial candidate set is poor — intent detection plus an
@@ -465,13 +476,13 @@ that worked. Relevant here because project documentation is bilingual.
 
 ## Phase 3 — AI Green extension
 
-**ORQ-39 — AI Green extension** (not yet claimed). Numbered ORQ-24 in the
+**ORQ-40 — AI Green extension** (not yet claimed). Numbered ORQ-24 in the
 original plan, then ORQ-30 before the 2026-08-07 evaluation split, then ORQ-34
 before the 2026-08-20 replan, then ORQ-35 before the 2026-08-25 replan's first
 pass, then ORQ-36 after the Memory-closure candidates were inserted ahead of
 it (2026-08-25), then ORQ-38 after this replan's ORQ-34 claim bumped it again
-(2026-08-26). Sequenced as energy telemetry → carbon-aware routing →
-scheduler, and gated on ORQ-37 producing real routing signal. Convergence
+(2026-08-26), then ORQ-40 on the 2026-08-28 reordering. Sequenced as energy
+telemetry → carbon-aware routing → scheduler, and gated on ORQ-38 producing real routing signal. Convergence
 note: Adaptive RAG rests on the same principle — spend the cheapest resource
 that still answers the question.
 
@@ -571,9 +582,9 @@ CO2e) this phase depends on.
   Spanish-only framing was proposed, disproved, and is recorded as rejected so
   it cannot be revived as an open option. Consequences: `E-BM25` remains
   scientifically unconfirmed and no confirmatory decision authorizes it;
-  ORQ-36 inherits no `GO`/`NO_GO` and may only adopt it, if at all, as its
+  ORQ-37 inherits no `GO`/`NO_GO` and may only adopt it, if at all, as its
   own engineering decision under its own production-readiness gates, never
-  as confirmatory validation (see ORQ-36 above); repairing the apparatus
+  as confirmatory validation (see ORQ-37 above); repairing the apparatus
   would need a genuinely new dataset design with real item variation, which
   the operator declined. Zero provider calls, USD 0, no production change.
   Full record:
@@ -590,6 +601,26 @@ CO2e) this phase depends on.
   sampling elsewhere, and does not restore the memory-experimentation line —
   which stays closed. Recorded here because without it the roadmap would carry
   a standing prohibition and a candidate that violates it.
+- **Cross-model replication sequenced ahead of RAG in Production; Phase 2/3
+  renumbered** (2026-08-28): the cross-model diagnostic replication takes
+  ORQ-36 and RAG in Production takes ORQ-37, reversing the order set earlier
+  the same day. Operator rationale: whether multilingual generation
+  reliability is model-sensitive is an input to how production evaluation and
+  observability are designed, and that input is largely wasted if it arrives
+  after that surface is already built. The reversal does not upgrade the
+  cross-model ORQ's authority — it stays diagnostic and descriptive, produces
+  no `GO`/`NO_GO`, and must not hold ORQ-37 indefinitely: if it stalls, is
+  invalidated, or closes at its Arm 0 gate, ORQ-37 proceeds on its own
+  production-readiness criteria. Consequent renumbering, no scope change:
+  Routing evidence dataset ORQ-37→38, Offline ML routing baseline ORQ-38→39,
+  AI Green extension ORQ-39→40. Correction recorded for the record: the
+  2026-08-28 claim of ORQ-37 for the cross-model candidate collided with the
+  number Routing evidence dataset already held in this roadmap, and the agent
+  had stated before claiming that no renumbering would be needed — that
+  statement was wrong, and the cascade above was required regardless of the
+  reordering. Both numbers are reserved on `origin`
+  (`ait-orq-number-ORQ-36`, `ait-orq-number-ORQ-37`); neither ORQ has a branch
+  or folder yet.
 
 ## Related
 
