@@ -54,13 +54,26 @@ the `v1.1-stable` tag.
   2026-08-10 (ordinary chat + the multi-turn-memory probe below), but that was
   ad hoc testing during a review session, not a dedicated ORQ's evidence — this
   item stays open until one exists.
-- Backend sequencing via `GENERATED ALWAYS AS IDENTITY` instead of
-  timestamp-based ordering (proposed follow-up from the SSE fix, `ORQ-19.2` in
-  the original V2 numbering, never claimed). **Next to be claimed** (operator
-  decision 2026-08-10) as a narrowly-scoped ORQ — schema + `ORDER BY` change
-  only, no RLS, no `usage_events` work folded in even though both touch
-  adjacent tables, per the same narrow-scope precedent as the ORQ-26 split
-  (see Phase 2 item 1).
+- ~~Backend sequencing via `GENERATED ALWAYS AS IDENTITY`~~ — **closed by
+  ORQ-28** (2026-08-10) for every message written after its migration, not open
+  debt. **Correction (2026-09-01):** this bullet survived ORQ-28's closure
+  unchanged and was still being read as an unclaimed follow-up; it was cited as
+  open debt during the ORQ-38 replan before being checked against source.
+  Verified: `Message.sequence` is `BigInteger, Identity(always=True)`
+  (`app/models/message.py:31-34`), added by migration `f1e2d3c4b5a6`, and every
+  reader orders by it (`app/services/conversation_query_service.py:47`).
+- **Messages predating migration `f1e2d3c4b5a6` have no defensible historical
+  ordering guarantee.** That migration used `add_column` with
+  `Identity(always=True)`, so PostgreSQL assigned identity values to the rows
+  that already existed in physical heap order — an order that does not
+  represent, and cannot be assumed to represent, real chronological order. The
+  ordering guarantee delivered by ORQ-28 is therefore **forward-only**. This is
+  a standing platform constraint, not merely context for one ORQ: any consumer
+  that reconstructs conversation order across that migration boundary inherits
+  it. Recorded here 2026-09-01, having previously gone unrecorded anywhere.
+  ORQ-38 carries the obligation to analyse the affected rows and state the
+  resulting guarantee explicitly; it must not fabricate a retroactive order,
+  and no additional migration is presumed.
 - **Conversation history is never sent to the provider.** Moved to Phase 2 as
   RAG work (operator decision 2026-08-10) — see "Conversational memory via RAG"
   below. Kept as a one-line pointer here, not restated, so a reader scanning
@@ -443,9 +456,46 @@ invariant.
      Requires the operator override recorded in the decisions log below,
      because the `k=10` touches the conversation-04 residual that ORQ-34's
      closure declared off-limits.
+   - **ORQ-38 — Conversation History Substrate** (not yet claimed;
+     **execution prerequisite of ORQ-37 despite carrying a higher number** —
+     see the numbering decision in the log below): build the minimal
+     production substrate that returns deterministically ordered, tenant-safe
+     conversation history, without integrating `E-BM25` and without touching
+     prompts. It exists because ORQ-37's Block B has no substrate to stand on:
+     verified 2026-09-01 by exhaustive grep, every `/chat` path builds exactly
+     `[ChatMessage(role="user", content=payload.message)]`
+     (`app/api/routes/chat.py:113` streaming, `:257` non-streaming), and
+     `ChatService` only forwards what it is given — so no conversation history
+     is assembled anywhere in the request path, and `E-BM25`, whose entire
+     purpose is recovering out-of-window evidence from a long history, would
+     have nothing to retrieve from.
+     Scope: (1) a provider-agnostic domain component that assembles ordered
+     history from persistence, mirroring `RetrievalPipeline`'s no-DB/no-HTTP
+     shape; (2) query-level tenant scoping —
+     `list_messages_for_conversation()` accepts `tenant_id` and never uses it
+     in the `WHERE`, so today's safety is caller-enforced by the
+     `get_conversation` guard at `app/api/routes/conversations.py:68`, not
+     query-enforced, and a new caller that omits the guard would leak
+     silently; (3) an explicit, verified guarantee about historical ordering
+     integrity (constraint below); (4) assembly bounds; (5) deterministic
+     order and cross-tenant / cross-conversation isolation tests; (6) an ADR.
+     **Deterministic message ordering is explicitly not reimplemented** —
+     ORQ-28 closed it; see the corrected Phase 1 bullet above.
+     **Historical-data constraint (operator directive, 2026-09-01):** the
+     guarantee is forward-only, because `f1e2d3c4b5a6` assigned identity
+     values to pre-existing rows in heap order. This ORQ must analyse the
+     integrity of messages predating that migration and state the resulting
+     guarantee explicitly; it must **not** fabricate a retroactive order. **No
+     additional migration is assumed** — one may only be proposed if that
+     analysis proves it necessary.
+     Non-scope: `E-BM25`; wiring history into generation (that is ORQ-37
+     Block B); prompts; providers/models; RAG strategy changes; streaming
+     semantics; routing; and reopening ORQ-30–36.
    - **ORQ-37 — RAG in Production** (claimed, `ait-orq-number-ORQ-37`):
      end-to-end observability and hardening following ORQ-26/27 baseline
-     metrics. Prerequisites: ORQ-23, 24, 25 operationally stable, baselines established, **and** the
+     metrics. Prerequisites: ORQ-23, 24, 25 operationally stable, baselines
+     established, **ORQ-38 (Conversation History Substrate) closed** — Block B
+     cannot integrate `E-BM25` until that substrate exists — **and** the
      Conversational RAG Memory investigation closed (ORQ-33, ORQ-34, and
      ORQ-35 above) — per operator priority decision (2026-08-25), production
      hardening work follows the memory investigation's close rather than
@@ -518,7 +568,7 @@ invariant.
      candidates ahead of it, then ORQ-35 before this replan's ORQ-34 claim
      bumped it again (2026-08-26). Deferred and reordered, not discarded —
      purpose and prerequisites unchanged.
-2. **ORQ-38 — Routing evidence dataset** (not yet claimed): `RoutingPolicy`
+2. **ORQ-39 — Routing evidence dataset** (not yet claimed): `RoutingPolicy`
    interface with heuristic and static implementations by default; collect real
    signal before any model. Numbered ORQ-22 in the original plan, then ORQ-28
    before the 2026-08-07 split, then ORQ-32 before the 2026-08-20 replan, then
@@ -526,16 +576,18 @@ invariant.
    Memory-closure candidates were inserted ahead of it (2026-08-25), then
    ORQ-36 after this replan's ORQ-34 claim bumped it again (2026-08-26), then
    ORQ-38 when ORQ-36/37 were claimed by the cross-model replication and RAG in
-   Production (2026-08-28). Convergence note: the Agentic RAG LLM router is
-   conceptually the same classifier, so once ORQ-38/ORQ-39 produce real signal, the RAG router design
-   follows at no extra cost.
-3. **ORQ-39 — Offline ML routing baseline** (not yet claimed): a simple,
-   explainable model, and only if ORQ-38's evidence dataset shows real signal.
+   Production (2026-08-28), then ORQ-39 when the Conversation History Substrate
+   took ORQ-38 (2026-09-01). Convergence note: the Agentic RAG LLM router is
+   conceptually the same classifier, so once ORQ-39/ORQ-40 produce real signal,
+   the RAG router design follows at no extra cost.
+3. **ORQ-40 — Offline ML routing baseline** (not yet claimed): a simple,
+   explainable model, and only if ORQ-39's evidence dataset shows real signal.
    Numbered ORQ-23 in the original plan, then ORQ-29, then ORQ-33 before the
    2026-08-20 replan, then ORQ-34 before the 2026-08-25 replan's first pass,
    then ORQ-35 after the Memory-closure candidates were inserted ahead of it
    (2026-08-25), then ORQ-37 after this replan's ORQ-34 claim bumped it again
-   (2026-08-26), then ORQ-39 on the 2026-08-28 reordering.
+   (2026-08-26), then ORQ-39 on the 2026-08-28 reordering, then ORQ-40 when the
+   Conversation History Substrate took ORQ-38 (2026-09-01).
 
 Reusable precedent: for broad or multilingual queries, reranking alone is not
 enough when the initial candidate set is poor — intent detection plus an
@@ -544,13 +596,15 @@ that worked. Relevant here because project documentation is bilingual.
 
 ## Phase 3 — AI Green extension
 
-**ORQ-40 — AI Green extension** (not yet claimed). Numbered ORQ-24 in the
+**ORQ-41 — AI Green extension** (not yet claimed). Numbered ORQ-24 in the
 original plan, then ORQ-30 before the 2026-08-07 evaluation split, then ORQ-34
 before the 2026-08-20 replan, then ORQ-35 before the 2026-08-25 replan's first
 pass, then ORQ-36 after the Memory-closure candidates were inserted ahead of
 it (2026-08-25), then ORQ-38 after this replan's ORQ-34 claim bumped it again
-(2026-08-26), then ORQ-40 on the 2026-08-28 reordering. Sequenced as energy
-telemetry → carbon-aware routing → scheduler, and gated on ORQ-38 producing real routing signal. Convergence
+(2026-08-26), then ORQ-40 on the 2026-08-28 reordering, then ORQ-41 when the
+Conversation History Substrate took ORQ-38 (2026-09-01). Sequenced as energy
+telemetry → carbon-aware routing → scheduler, and gated on ORQ-39 producing
+real routing signal. Convergence
 note: Adaptive RAG rests on the same principle — spend the cheapest resource
 that still answers the question.
 
@@ -724,6 +778,25 @@ CO2e) this phase depends on.
   unchanged: adoption under uncertainty, never confirmatory validation. The
   concrete metric set and its storage (extended `UsageEvent` vs. a dedicated
   table) are deliberately left open for `/fw-plan`.
+- **Conversation History Substrate inserted as ORQ-37's execution prerequisite;
+  Phase 2/3 relabelled** (operator decision, 2026-09-01): planning ORQ-37
+  established that `E-BM25` has no production substrate — no conversation
+  history is assembled in the request path at all. The operator declined to
+  solve that inside an `E-BM25`-local adapter: history assembly and
+  tenant-scoped history retrieval are real platform capabilities and must be
+  built explicitly first. Numbering mechanism verified before assigning:
+  `fw_claim_orq_number.py`'s `claim_local()` computes `max(numbers) + 1` over
+  remote tags and `orq/ORQ-*` branches (l.90), so it **cannot** allocate an
+  intermediate number; with `origin` currently at 37, the next claim is
+  necessarily 38. The prerequisite therefore takes **ORQ-38 and executes
+  before ORQ-37** — number order and execution order are deliberately
+  inverted here, the first such case in this roadmap. Option rejected:
+  reassigning the reserved ORQ-37 tag to the prerequisite and moving RAG in
+  Production to 38, which cascades identically but would renumber ORQ-37 for
+  a seventh time. Consequent relabelling of unclaimed candidates, applied in
+  the same edit to avoid a third numbering collision: Routing evidence dataset
+  38→39, Offline ML routing baseline 39→40, AI Green 40→41. Nothing is claimed
+  by this decision; ORQ-38's tag is claimed at its `/fw-plan`.
 
 ## Related
 
