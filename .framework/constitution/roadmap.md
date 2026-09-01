@@ -361,9 +361,31 @@ invariant.
      formulated against it (ORQ-33/34 both closed without a fix
      candidate). That candidate resolution is not overturned by this
      termination — it is simply never put to a confirmatory test.
-   - **ORQ-36 — Cross-model diagnostic replication of the EN/ES asymmetry**
-     (claimed, `ait-orq-number-ORQ-36`): does the EN/ES behaviour observed with
-     GPT-4o-mini reproduce when only the generation model changes? Sequenced
+   - **ORQ-36 — Cross-model diagnostic replication of the EN/ES asymmetry —
+     CLOSED LOCALLY — `B9 INCONCLUSIVE_INTERMEDIATE`**
+     (`ait-orq-number-ORQ-36`, closed 2026-08-28): asked whether the EN/ES
+     behaviour observed with GPT-4o-mini reproduces when only the generation
+     model changes. **It did not resolve either way.** Arm 0
+     (`gpt-4o-mini-2024-07-18`, harmonized) reproduced the asymmetry strongly
+     (`Δ_base = 0.9375`) and opened the gate; Stage 1 (`gemini-2.5-flash`,
+     Vertex) closed `VALID` with `Δ = -0.3125` — **opposite in sign** to the
+     baseline, and neither a reproduction, a clean non-reproduction, nor a
+     clean reversal under the preregistered ±0.50 thresholds; Stage 2
+     (`amazon.nova-lite-v1:0`, Bedrock) produced **no scientific result at
+     all** — 19/32 main-comparison responses came back wrapped in Markdown
+     code fences under prompt-only JSON instructions, past the preregistered
+     non-conforming threshold, closing that arm `INVALID_NON_CONFORMING` for a
+     reason unrelated to the EN/ES question. It was deliberately **not**
+     retried: a systematic ~40% formatting failure is a model-behaviour
+     finding, not a transient one, and re-dispatching it would have been the
+     post-hoc adjustment the design prohibits. Per the preregistered terminal
+     rule this lands on the unconditional catch-all `B9`. **Explicitly not
+     established:** that the asymmetry is model-independent, model-specific,
+     or caused by any mechanism — and nothing whatsoever about Nova Lite's
+     EN/ES behaviour. Real spend ≈ USD 0.377, well under the USD 1.50
+     cumulative ceiling. Full decision trace:
+     `.framework/orqs/ORQ-36-cross-model-en-es-replication/comparison.md`
+     (single source of fact, not restated further here). Sequenced
      **ahead of ORQ-37 (RAG in Production)** by operator decision
      (2026-08-28): whether multilingual generation reliability is
      model-sensitive is an input to how production evaluation is designed, and
@@ -665,8 +687,43 @@ CO2e) this phase depends on.
   had stated before claiming that no renumbering would be needed — that
   statement was wrong, and the cascade above was required regardless of the
   reordering. Both numbers are reserved on `origin`
-  (`ait-orq-number-ORQ-36`, `ait-orq-number-ORQ-37`); neither ORQ has a branch
-  or folder yet.
+  (`ait-orq-number-ORQ-36`, `ait-orq-number-ORQ-37`). **Status update
+  (2026-09-01):** ORQ-36 now has a branch and folder and is closed; ORQ-37
+  still has neither.
+- **Cross-model replication closes without resolving the EN/ES question**
+  (ORQ-36, 2026-08-28): three arms over ORQ-32's frozen 32-request stimulus,
+  with structured output harmonized by removing the provider-side JSON
+  mechanism in all three. Terminal state `B9 INCONCLUSIVE_INTERMEDIATE`,
+  selected by the preregistered catch-all after Arm 0 reproduced the
+  asymmetry (`Δ = 0.9375`), Gemini 2.5 Flash returned an opposite-sign
+  `Δ = -0.3125` that clears none of the ±0.50 thresholds, and Nova Lite
+  returned no usable result. Consequences: **no cross-model conclusion is
+  available to any downstream ORQ**, and none may be inferred from these
+  numbers. What does carry forward is operational, not causal — structured-
+  output reliability under prompt-only instructions is model-sensitive, and
+  successful retrieval does not imply successful or equivalent generation
+  across models; ORQ-37 uses that to justify observing retrieval and
+  generation as **separately** classifiable outcomes, and for nothing else.
+  Also recorded: this ORQ needed three full Stage 1 dispatch attempts (a
+  Vertex API-not-enabled block, a rate-limit storm, then one isolated `403`)
+  before a valid arm — no generation was ever re-rolled, only whole failed
+  dispatch attempts. Full evidence:
+  `.framework/orqs/ORQ-36-cross-model-en-es-replication/comparison.md` and
+  `validation.md`.
+- **ORQ-37's `E-BM25` work is an integration, not a conditional evaluation**
+  (operator decision, 2026-09-01): `E-BM25` is to be wired into the production
+  runtime behind its own feature flag so it can be evaluated under real
+  conditions, with a failed production-readiness gate resolving to
+  *disabled or reverted*, never to *never integrated*. The flag must define
+  two comparable operational modes (A: documental RAG only; B: same pipeline
+  plus `E-BM25`) differing by that single boolean and nothing else, with the
+  active mode recorded per request so a future cost/quality comparison is
+  reconstructible without inference. Traffic splitting, experiment
+  orchestration and a full A/B platform stay out of scope. The premise is
+  recorded verbatim in the ORQ-37 entry above and must reach `spec.md`
+  unchanged: adoption under uncertainty, never confirmatory validation. The
+  concrete metric set and its storage (extended `UsageEvent` vs. a dedicated
+  table) are deliberately left open for `/fw-plan`.
 
 ## Related
 
