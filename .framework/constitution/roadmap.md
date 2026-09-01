@@ -432,26 +432,46 @@ invariant.
      confirmatory decision — ORQ-35 produced no `GO`/`NO_GO` and authorized
      nothing** (see ORQ-35 above). The available memory evidence is
      development-grade (ORQ-30) plus the ORQ-31–34 diagnostics, and
-     **`E-BM25` is not scientifically confirmed**. This ORQ *may*
-     nonetheless evaluate a controlled production adoption of `E-BM25`, on
-     its own authority and against its own production-readiness gates —
-     observability, isolation, latency, cost, rollback and operational
-     risk. Such an adoption would be **this ORQ's own engineering decision
-     under uncertainty**, and must never be presented, documented or
-     communicated as confirmatory validation, as scientific evidence that
-     the candidate works, or as the execution of a decision made
-     elsewhere. Any claim about the candidate's effectiveness stays bounded
-     by the development-grade evidence that actually exists.
+     **`E-BM25` is not scientifically confirmed**.
+     **Scope correction (2026-09-01):** this ORQ integrates `E-BM25` into
+     the production runtime for controlled evaluation — it is not a
+     conditional evaluation that may end without integration. Premise,
+     verbatim, to be carried into `spec.md` unchanged: *"E-BM25 is being
+     integrated for controlled production evaluation under uncertainty, not
+     because it has been scientifically confirmed."* The integration must
+     never be presented, documented or communicated as confirmatory
+     validation, as scientific evidence that the candidate works, or as the
+     execution of a decision made elsewhere; any claim about its
+     effectiveness stays bounded by the development-grade evidence that
+     actually exists (ORQ-30 plus the ORQ-31–34 diagnostics). If this ORQ's
+     own production-readiness gates fail, the outcome is that the
+     integration is disabled or reverted — a valid, in-scope terminal
+     state — not that the integration was skipped. `E-BM25` today exists
+     only in `experiments/long_context_conversational_memory/`, never wired
+     to any runtime path; "integration" means bringing it, behind a feature
+     flag, into the request path `/chat` already governs.
      This ORQ remains explicitly not where candidate selection, retrieval
      strategy, multilingual generation behaviour, abstention mitigation,
      prompt tuning, or retry policy get decided or re-litigated (operator
      directive, 2026-08-27) — the memory line is closed, and this ORQ is
      not the place to reopen it.
-     Scope: complete OpenTelemetry instrumentation (`retrieve → rerank →
-     generate` spans — including the emission the master doc assigned to the
-     evaluation item, moved here so instrumentation is designed once with its
-     backend), Phoenix/Grafana dashboard, adversarial robustness hardening,
-     cost/latency tuning. Design Review prompt deferred pending Module 5 of
+     Scope, two blocks (2026-09-01): **Block A** — production readiness of
+     the already-integrated documental RAG pipeline (ORQ-21/23/24/25):
+     complete OpenTelemetry instrumentation (`retrieve → rerank → generate`
+     spans — including the emission the master doc assigned to the
+     evaluation item, moved here so instrumentation is designed once with
+     its backend), Phoenix/Grafana dashboard, adversarial robustness
+     hardening, cost/latency tuning. **Block B** — controlled production
+     integration of `E-BM25` behind its own feature flag, under the same
+     invariants as Block A (`/chat` single write-path, atomic persistence,
+     provider-agnostic domain, best-effort telemetry, SSE streaming intact,
+     tenant isolation, no silent semantic change) plus: immediate rollback
+     without a destructive migration, and observability able to distinguish
+     retrieval/memory success from generation failure, latency, cost and
+     operational failures for the integrated path specifically. Both blocks
+     share the same gate categories — isolation, correctness, latency,
+     cost, observability, rollback — evaluated independently per block.
+     Design Review prompt deferred pending Module 5 of
      the RAG course. Numbered ORQ-27 before the 2026-08-07 split, then ORQ-31
      until reassigned to the English-failure diagnosis (2026-08-20), then
      ORQ-32 until claimed by the controlled EN/ES probe (2026-08-25), then
