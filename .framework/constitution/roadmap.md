@@ -471,6 +471,23 @@ invariant.
      operational failures for the integrated path specifically. Both blocks
      share the same gate categories — isolation, correctness, latency,
      cost, observability, rollback — evaluated independently per block.
+     **Future cost-comparability requirement (2026-09-01):** `E-BM25`'s
+     flag must define two operationally comparable modes — Mode A
+     (`ebm25_enabled=false`, traditional documental RAG) and Mode B
+     (`ebm25_enabled=true`, same base pipeline plus `E-BM25`) — toggling
+     `E-BM25` alone, never changing model, provider, generation config,
+     documental pipeline, reranker or fallback policy as a side effect
+     (single-boolean-diff acceptance criterion). Every request's telemetry
+     must record which mode was active, so a future cost/quality comparison
+     can be reconstructed without ambiguous inference; the concrete metric
+     set (estimated cost, input/output tokens, total latency, `E-BM25`-
+     attributable latency, per-stage call counts, fallback usage,
+     operational outcome) and its storage (extended `UsageEvent` vs. a
+     dedicated table) are resolved in `spec.md` at `/fw-plan`, not fixed
+     here. Doubles as the rollback mechanism (disabling `E-BM25` is the
+     same toggle, not a separate procedure). Explicitly out of scope: automatic
+     traffic splitting, experiment orchestration, or a full A/B platform —
+     manual, config-driven activation is sufficient for this ORQ.
      Design Review prompt deferred pending Module 5 of
      the RAG course. Numbered ORQ-27 before the 2026-08-07 split, then ORQ-31
      until reassigned to the English-failure diagnosis (2026-08-20), then
