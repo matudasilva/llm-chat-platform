@@ -6,12 +6,40 @@ existing diagram.
 
 | tipo | alcance | archivo | generado/manual | última actualización | refresh_pending | refresh_baseline |
 |---|---|---|---|---|---|---|
-| context | producto | `context.svg` | generado | 2026-08-07 | sí (deferred) | `sha256:6096ce9ea9c68868dd5216f05b946195f01a2d2db874d05e7612d69274ddf957` |
+| context | producto | `context.svg` | generado | 2026-09-03 | no | `sha256:511c6dc9275e1c3f0d456817006d512b5eec21834892a07848ffbdaacfd94787` |
 | architecture | framework | `architecture.svg` | generado | 2026-08-07 | sí (deferred) | `sha256:6096ce9ea9c68868dd5216f05b946195f01a2d2db874d05e7612d69274ddf957` |
 | structural | producto | `structural.svg` | manual | 2026-08-07 | sí (deferred) | `sha256:6096ce9ea9c68868dd5216f05b946195f01a2d2db874d05e7612d69274ddf957` |
-| deployment | producto | `deployment.svg` | manual | 2026-08-07 | sí (deferred) | `sha256:6096ce9ea9c68868dd5216f05b946195f01a2d2db874d05e7612d69274ddf957` |
+| deployment | producto | `deployment.svg` | manual | 2026-09-03 | no | `sha256:511c6dc9275e1c3f0d456817006d512b5eec21834892a07848ffbdaacfd94787` |
 | behavior | producto | `behavior.svg` | manual | 2026-08-07 | sí (deferred) | `sha256:6096ce9ea9c68868dd5216f05b946195f01a2d2db874d05e7612d69274ddf957` |
 | erd | producto | `erd.svg` | manual | 2026-08-07 | sí (deferred) | `sha256:6096ce9ea9c68868dd5216f05b946195f01a2d2db874d05e7612d69274ddf957` |
+
+## ORQ-38 replan result (2026-09-03)
+
+`context.svg` and `deployment.svg` were reviewed and **acknowledged** (`ack`): ORQ-38 adds no
+actor and no deployable component — it ships two modules that nothing calls. Both rows are
+rebaselined to the current Constitution signature `sha256:511c6dc9…` and now read
+`refresh_pending: no`.
+
+`architecture.svg`, `structural.svg`, `behavior.svg` and `erd.svg` stay **deferred until ORQ-37
+closes** (operator decision, 2026-09-03). The reason is that ORQ-38 deliberately shipped an
+*unwired* conversation-history substrate: `ConversationHistoryAssembler` and
+`SqlConversationHistoryAdapter` exist with no production caller, and ORQ-37 Block B is the named
+consumer that will wire them. ORQ-37 may also resolve D-3, the missing
+`(conversation_id, sequence)` index. Refreshing these four now would draw a transitional
+architecture and require drawing it again a few weeks later; the four rows keep their
+2026-08-07 baseline so the pending signal stays observable rather than being silently cleared.
+
+This deferral is narrower than the ORQ-26 one below, which held all six. Two are now current.
+
+**Detector note:** this is the first replan since 2026-08-10 whose diagram step actually ran.
+`fw_check_diagram_refresh.py` had raised `ERROR detector-contract` on every invocation since
+those six rows were annotated `sí (deferred)` — `parse_index()` compared the whole cell against
+`{"no", "sí", "indeterminado"}` — which blocked step 8.b of every `fw-validate` and step 2 of
+every `fw-replan` for three consecutive replans. The parser was fixed to accept an optional
+parenthesised annotation while treating only the leading token as the contract, with 14
+regression tests. The fix lives in `.framework/local-tools/`, which is gitignored under
+`artifact_policy: hybrid`, so it is local-only and carries no commit. The annotation itself was
+never the defect and was not altered.
 
 ## ORQ-26 replan result (2026-08-10) — deferred by operator
 
