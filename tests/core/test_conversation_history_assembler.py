@@ -101,9 +101,7 @@ def test_domain_module_has_no_created_at_reference() -> None:
     import app.core.domain.conversation_history as module
 
     source = Path(module.__file__).read_text(encoding="utf-8")
-    # Named only in the docstring explaining why it is absent as a field.
-    assert "created_at: " not in source
-    assert "self.created_at" not in source
+    assert "created_at" not in source
 
 
 # --- AC9: every row of the bounds table ---

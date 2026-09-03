@@ -30,9 +30,9 @@ class ConversationNotFoundError(Exception):
 class HistoryMessage:
     """One persisted turn message, provider-neutral.
 
-    Carries no ``created_at``: it is not an ordering key and cannot corroborate
-    order (``func.now()`` is transaction-stable, so both messages of a turn
-    share a timestamp). ``sequence`` is the only ordering source.
+    Carries no timestamp: a timestamp is not an ordering key here and cannot
+    corroborate order (``func.now()`` is transaction-stable, so both messages
+    of a turn share one). ``sequence`` is the only ordering source.
     """
 
     sequence: int
