@@ -41,9 +41,15 @@ class ConversationQueryService:
         return conv
 
     async def list_messages_for_conversation(self, conversation_id: UUID, tenant_id: str) -> list[Message]:
+        # ORQ-38 (T3 measured 0 divergent rows): query-level tenant scoping,
+        # amending ADR-004 §3, which deliberately omitted this filter while the
+        # route guard was the single call site. It no longer is.
         stmt = (
             select(Message)
-            .where(Message.conversation_id == conversation_id)
+            .where(
+                Message.conversation_id == conversation_id,
+                Message.tenant_id == tenant_id,
+            )
             .order_by(Message.sequence.asc())
         )
         res = await self._db.execute(stmt)

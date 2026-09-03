@@ -71,9 +71,11 @@ the `v1.1-stable` tag.
   a standing platform constraint, not merely context for one ORQ: any consumer
   that reconstructs conversation order across that migration boundary inherits
   it. Recorded here 2026-09-01, having previously gone unrecorded anywhere.
-  ORQ-38 carries the obligation to analyse the affected rows and state the
-  resulting guarantee explicitly; it must not fabricate a retroactive order,
-  and no additional migration is presumed.
+  ORQ-38 documents this constraint and builds only forward on it; it does not
+  analyse, classify or repair the affected rows, and must not fabricate a
+  retroactive order (operator decision 2026-09-02, superseding the analysis
+  obligation recorded here on 2026-09-01 — see "Legacy conversation-order
+  characterization" in Phase 2). No additional migration is presumed.
 - **Conversation history is never sent to the provider.** Moved to Phase 2 as
   RAG work (operator decision 2026-08-10) — see "Conversational memory via RAG"
   below. Kept as a one-line pointer here, not restated, so a reader scanning
@@ -476,21 +478,36 @@ invariant.
      in the `WHERE`, so today's safety is caller-enforced by the
      `get_conversation` guard at `app/api/routes/conversations.py:68`, not
      query-enforced, and a new caller that omits the guard would leak
-     silently; (3) an explicit, verified guarantee about historical ordering
-     integrity (constraint below); (4) assembly bounds; (5) deterministic
-     order and cross-tenant / cross-conversation isolation tests; (6) an ADR.
+     silently, so the adapter validates ownership itself before reading
+     messages rather than relying on an external guard; (3) assembly bounds;
+     (4) deterministic order and cross-tenant / cross-conversation isolation
+     tests; (5) an ADR.
      **Deterministic message ordering is explicitly not reimplemented** —
      ORQ-28 closed it; see the corrected Phase 1 bullet above.
-     **Historical-data constraint (operator directive, 2026-09-01):** the
-     guarantee is forward-only, because `f1e2d3c4b5a6` assigned identity
-     values to pre-existing rows in heap order. This ORQ must analyse the
-     integrity of messages predating that migration and state the resulting
-     guarantee explicitly; it must **not** fabricate a retroactive order. **No
-     additional migration is assumed** — one may only be proposed if that
-     analysis proves it necessary.
+     **Historical-data constraint (operator directive, 2026-09-01; scope
+     amended 2026-09-02):** the guarantee is forward-only, because
+     `f1e2d3c4b5a6` assigned identity values to pre-existing rows in heap
+     order. This ORQ **states** that constraint and builds forward on it. It
+     does **not** analyse, classify or repair pre-migration rows, and must
+     **not** fabricate a retroactive order — three design-review rounds each
+     defeated a different mechanism for characterizing them, so that work
+     moved out (see "Legacy conversation-order characterization" below). **No
+     additional migration is assumed.**
      Non-scope: `E-BM25`; wiring history into generation (that is ORQ-37
      Block B); prompts; providers/models; RAG strategy changes; streaming
-     semantics; routing; and reopening ORQ-30–36.
+     semantics; routing; reopening ORQ-30–36; and any characterization of
+     historical message order.
+   - **Legacy conversation-order characterization** (unclaimed, no number
+     reserved): a read-only ORQ that would characterize the ordering of
+     messages predating `f1e2d3c4b5a6`. Split out of ORQ-38 by operator
+     decision (2026-09-02) after R1, R2 and R3 each defeated a different
+     detection mechanism: `created_at` cannot corroborate order because
+     `func.now()` is transaction-stable, equivalence classes are blind to the
+     intra-turn inversion ORQ-28 actually fixed, and the legacy boundary
+     cannot be inferred from the data in either direction. **Not a
+     prerequisite of ORQ-37**, and to be opened only if ORQ-37's scope turns
+     out to depend on the answer. A commit date is not evidence of when a
+     migration ran against a dataset and must not be used as a data boundary.
    - **ORQ-37 — RAG in Production** (claimed, `ait-orq-number-ORQ-37`):
      end-to-end observability and hardening following ORQ-26/27 baseline
      metrics. Prerequisites: ORQ-23, 24, 25 operationally stable, baselines
@@ -797,6 +814,26 @@ CO2e) this phase depends on.
   the same edit to avoid a third numbering collision: Routing evidence dataset
   38→39, Offline ML routing baseline 39→40, AI Green 40→41. Nothing is claimed
   by this decision; ORQ-38's tag is claimed at its `/fw-plan`.
+- **Historical-order characterization split out of ORQ-38; the adapter becomes
+  tenant-safe by construction** (operator decision, 2026-09-02): three
+  fresh-context design-review rounds each defeated a different mechanism for
+  characterizing pre-`f1e2d3c4b5a6` message order — R1, a direct
+  `created_at`/`sequence` comparison, invalid because `func.now()` is
+  transaction-stable so both rows of a turn share a timestamp
+  (`ORQ-28/spec.md:43-50`); R2, equivalence classes over equal timestamps,
+  structurally blind to the intra-turn role inversion ORQ-28 actually fixed;
+  R3, an inferred legacy watermark, unsound in both directions, since the
+  migration is a bare `add_column` with no backfill
+  (`f1e2d3c4b5a6_add_message_sequence.py:25-33`). Rather than refine it a
+  fourth time inside a substrate ORQ, the analysis leaves ORQ-38 entirely and
+  becomes an unclaimed read-only successor, not a prerequisite of ORQ-37. The
+  forward-only constraint stays a standing platform fact (Phase 1) and ORQ-38
+  states it without acting on it. Separately, R4 established that ORQ-38's
+  adapter is exactly the unguarded second caller ADR-004 §3 anticipated
+  (`docs/adr/004-tenant-scoping-read-endpoints.md:36,61`), so the adapter must
+  validate conversation ownership itself before reading messages; a
+  query-level `tenant_id` filter is additional defence, never the only one,
+  and the port is tenant-safe whether or not that filter ships.
 
 ## Related
 

@@ -3,7 +3,7 @@
 **Date:** 2026-07-01
 **Status:** Accepted
 **ORQ reference:** ORQ-18.2
-**Superseded by / Supersedes:** —
+**Superseded by / Supersedes:** Amended by ADR-011 (§3 — `list_messages_for_conversation` now filters on `tenant_id`; ORQ-38 became the unguarded second caller this ADR anticipated)
 
 ---
 
