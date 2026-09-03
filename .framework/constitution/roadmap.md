@@ -458,7 +458,8 @@ invariant.
      Requires the operator override recorded in the decisions log below,
      because the `k=10` touches the conversation-04 residual that ORQ-34's
      closure declared off-limits.
-   - **ORQ-38 — Conversation History Substrate** (not yet claimed;
+   - **ORQ-38 — Conversation History Substrate** (closed 2026-09-03,
+     `Fully Synced`, merged as `ae9e280`; 17/17 acceptance criteria met;
      **execution prerequisite of ORQ-37 despite carrying a higher number** —
      see the numbering decision in the log below): build the minimal
      production substrate that returns deterministically ordered, tenant-safe
@@ -511,8 +512,8 @@ invariant.
    - **ORQ-37 — RAG in Production** (claimed, `ait-orq-number-ORQ-37`):
      end-to-end observability and hardening following ORQ-26/27 baseline
      metrics. Prerequisites: ORQ-23, 24, 25 operationally stable, baselines
-     established, **ORQ-38 (Conversation History Substrate) closed** — Block B
-     cannot integrate `E-BM25` until that substrate exists — **and** the
+     established, **ORQ-38 (Conversation History Substrate) closed — satisfied
+     2026-09-03**, so the substrate Block B needs now exists — **and** the
      Conversational RAG Memory investigation closed (ORQ-33, ORQ-34, and
      ORQ-35 above) — per operator priority decision (2026-08-25), production
      hardening work follows the memory investigation's close rather than
@@ -834,6 +835,22 @@ CO2e) this phase depends on.
   validate conversation ownership itself before reading messages; a
   query-level `tenant_id` filter is additional defence, never the only one,
   and the port is tenant-safe whether or not that filter ships.
+
+- **ORQ-38 closed; the history substrate exists and ADR-011 records its
+  architecture** (2026-09-03): the substrate ships as a provider-agnostic domain
+  component that nothing calls, with ORQ-37 Block B named as its consumer.
+  `ADR-011` is the single home of the architectural decision and **amends
+  ADR-004 §3**: that ADR conditioned its no-filter decision on the route being
+  the single call site and named the trigger that would change it, and ORQ-38's
+  adapter is that second caller. Ownership validation is therefore a
+  `ConversationHistoryPort` contract rather than adapter behaviour, so isolation
+  does not depend on a future consumer applying an external guard; the
+  query-level `tenant_id` filter is redundant defence, shipped because the
+  pre-change measurement returned zero divergent rows. Two items stay open and
+  are carried to ORQ-37, not to this ORQ: the missing
+  `(conversation_id, sequence)` index, disclosed as debt to be measured against
+  real assembly latency; and the forward-only ordering constraint recorded in
+  Phase 1, which no component detects or signals.
 
 ## Related
 
