@@ -167,6 +167,12 @@ class Settings(BaseSettings):
     chat_rag_max_source_chars: int = 4_000
     chat_rag_max_context_chars: int = 12_000
 
+    # ORQ-38: bounds for the conversation history substrate. Inert in this
+    # ORQ -- nothing consumes the assembler yet; ORQ-37 re-derives them against
+    # the production model's token accounting.
+    conversation_history_max_messages: int = 20
+    conversation_history_max_chars: int = 12_000
+
     # Controlled Web Read (MVP): read-only, bounded external fetch surface.
     web_read_enabled: bool = True
     web_read_allow_http: bool = False
@@ -261,6 +267,16 @@ class Settings(BaseSettings):
     def validate_chat_rag_limits(cls, value: int) -> int:
         if value <= 0:
             raise ValueError("chat RAG limits must be > 0")
+        return value
+
+    @field_validator(
+        "conversation_history_max_messages",
+        "conversation_history_max_chars",
+    )
+    @classmethod
+    def validate_conversation_history_limits(cls, value: int) -> int:
+        if value <= 0:
+            raise ValueError("conversation history limits must be > 0")
         return value
 
     @field_validator("web_read_timeout_s")
