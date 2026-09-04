@@ -10,6 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.ops import router as ops_router
 from app.api.router import api_router
 from app.api.runtime_ops import router as runtime_ops_router
+from app.core.observability.tracing import init_tracing, shutdown_tracing
 from app.core.settings import settings
 from app.http.middleware.request_context import RequestContextMiddleware
 from app.http.middleware.request_size_limit import RequestSizeLimitMiddleware
@@ -65,6 +66,14 @@ async def lifespan(app: FastAPI):
     logger.info("app starting application")
     init_db(app)          # <-- crea engine + sessionmaker en app.state
 
+    # ORQ-37 Gate A: tracing bootstrap. The provider/exporter setup lives inside
+    # the seam module so the tracing SDK keeps exactly one importer under app/
+    # (AC1) -- which is also why this file names no SDK symbol, not even in a
+    # comment: AC1's evidence is a raw grep. It never raises, and returns False
+    # when disabled or unavailable; observability is additive and must not
+    # become a boot dependency.
+    init_tracing(app)
+
     # Initialize Notion Read service (optional, MVP)
     notion_mcp_client = None
     if settings.notion_mcp_enabled:
@@ -98,6 +107,9 @@ async def lifespan(app: FastAPI):
                 await notion_mcp_client.stop()
             except Exception as e:
                 logger.error(f"Error during Notion Read service shutdown: {e}")
+
+        # Bounded flush + shutdown; a hung exporter cannot stall shutdown.
+        shutdown_tracing(app)
 
         await close_db(app)  # <-- dispose engine
 

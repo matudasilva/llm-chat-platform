@@ -16,3 +16,9 @@ httpx>=0.27,<1
 boto3>=1.35,<2
 
 mcp>=1.27.0
+
+# ORQ-37 Gate A: tracing seam. Import is lazy and the feature is disabled by
+# default, so these are runtime-optional; T3 pins them in the lock file.
+opentelemetry-api>=1.27,<2
+opentelemetry-sdk>=1.27,<2
+opentelemetry-exporter-otlp-proto-http>=1.27,<2

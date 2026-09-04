@@ -173,6 +173,24 @@ class Settings(BaseSettings):
     conversation_history_max_messages: int = 20
     conversation_history_max_chars: int = 12_000
 
+    # ORQ-37 (Gate A): the tracing seam. Disabled by default, matching every
+    # RAG flag -- no existing deployment starts exporting merely by updating.
+    # The export target is pure configuration: no endpoint or hostname is
+    # committed (tech-stack.md §Constraints, public repository).
+    otel_enabled: bool = False
+    otel_service_name: str = "llm-chat-platform"
+    otel_exporter_otlp_endpoint: str | None = None
+    # Bounded queue: a full queue drops spans rather than blocking the request.
+    otel_max_queue_size: int = 2_048
+    otel_max_export_batch_size: int = 512
+    otel_schedule_delay_ms: int = 5_000
+    # Bounded export, init, flush and shutdown. Invariant 9 covers latency, so
+    # a stalling exporter must cost a bounded wait, not an open-ended one.
+    otel_export_timeout_ms: int = 10_000
+    otel_init_timeout_s: float = 5.0
+    otel_flush_timeout_s: float = 5.0
+    otel_shutdown_timeout_s: float = 5.0
+
     # Controlled Web Read (MVP): read-only, bounded external fetch surface.
     web_read_enabled: bool = True
     web_read_allow_http: bool = False
