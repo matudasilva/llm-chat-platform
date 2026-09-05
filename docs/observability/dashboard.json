@@ -1,0 +1,105 @@
+{
+  "artifact_version": "1",
+  "title": "RAG pipeline — stage observability",
+  "description": "Panel definitions for the ORQ-37 Gate A tracing seam. Tool-neutral on purpose: D-4 ships no hosted backend and no Compose service, so this artifact declares WHAT each panel reads, not which product renders it. Every span name, attribute key and span-intrinsic field below is checked against app/core/observability/schema.py by app/scripts/check_dashboard_schema.py (AC5).",
+  "notes": [
+    "Panels read attributes only from the declared allow-list; the same artifact AC4 asserts emissions against.",
+    "Duration is a span-intrinsic field, never an attribute. `stage.duration_ms` was deliberately removed from the schema so no panel can reference a key nothing emits.",
+    "Panels marked \"pending\" reference spans that exist in the schema but are not emitted until a later gate. They are listed so the dashboard is designed once, and the checker reports them separately from valid panels."
+  ],
+  "panels": [
+    {
+      "id": "request_overview",
+      "title": "Requests — volume and latency",
+      "gate": "A",
+      "spans": ["request"],
+      "span_fields": ["name", "duration", "status"],
+      "attributes": ["request.instance_id", "request.correlation_id"],
+      "status": "pending",
+      "pending_reason": "The request span is minted by RequestContextMiddleware at T8; the schema declares it now so the panel is not redesigned later."
+    },
+    {
+      "id": "stage_latency",
+      "title": "Stage latency (p50/p95) by stage",
+      "gate": "A",
+      "spans": ["rag.rewrite", "rag.retrieve", "rag.rerank", "rag.evaluate", "rag.generate"],
+      "span_fields": ["name", "duration"],
+      "attributes": [],
+      "status": "active"
+    },
+    {
+      "id": "stage_completeness",
+      "title": "Stage completeness — spans entered per request",
+      "gate": "A",
+      "spans": ["rag.rewrite", "rag.retrieve", "rag.rerank", "rag.evaluate", "rag.generate"],
+      "span_fields": ["name"],
+      "attributes": [],
+      "status": "active",
+      "measurement_note": "Counts spans ENTERED, not spans that succeeded. A rerank that fell back is reached and must appear here; see §Diseño 1 'Expected spans'."
+    },
+    {
+      "id": "rewrite_outcomes",
+      "title": "Query rewrite — outcome breakdown",
+      "gate": "A",
+      "spans": ["rag.rewrite"],
+      "span_fields": ["name"],
+      "attributes": ["rag.rewrite_outcome"],
+      "status": "active"
+    },
+    {
+      "id": "retrieval_yield",
+      "title": "Retrieval — candidate yield and empty-corpus rate",
+      "gate": "A",
+      "spans": ["rag.retrieve"],
+      "span_fields": ["name"],
+      "attributes": ["rag.candidate_count", "rag.top_k_candidates", "rag.retrieval_outcome"],
+      "status": "active"
+    },
+    {
+      "id": "rerank_fallback",
+      "title": "Reranker — fallback rate and ranked count",
+      "gate": "A",
+      "spans": ["rag.rerank"],
+      "span_fields": ["name", "status"],
+      "attributes": ["rag.fallback_used", "rag.ranked_count", "rag.top_n"],
+      "status": "active",
+      "measurement_note": "A fallback is a designed degradation, not a span error: it is counted via rag.fallback_used, never via span status."
+    },
+    {
+      "id": "evaluator",
+      "title": "Evaluator — trigger rate and verdict split",
+      "gate": "A",
+      "spans": ["rag.evaluate"],
+      "span_fields": ["name"],
+      "attributes": ["rag.evaluator_triggered", "rag.evaluator_verdict", "rag.evaluate_outcome"],
+      "status": "active"
+    },
+    {
+      "id": "generation_outcomes",
+      "title": "Generation — outcome breakdown by provider",
+      "gate": "A",
+      "spans": ["rag.generate"],
+      "span_fields": ["name", "duration", "status"],
+      "attributes": ["rag.generation_outcome", "provider.name", "provider.model"],
+      "status": "active"
+    },
+    {
+      "id": "memory_stages",
+      "title": "Conversation memory — assembly and ranking",
+      "gate": "B1/B2",
+      "spans": ["memory.assemble", "memory.rank"],
+      "span_fields": ["name", "duration"],
+      "attributes": [
+        "memory.mode",
+        "memory.outcome",
+        "memory.window_turn_count",
+        "memory.corpus_turn_count",
+        "memory.selected_count",
+        "memory.history_truncated",
+        "memory.history_row_cap_reached"
+      ],
+      "status": "pending",
+      "pending_reason": "memory.assemble arrives at Gate B1 and memory.rank at Gate B2. Out of scope for T4; declared so the panel is not invented twice."
+    }
+  ]
+}
