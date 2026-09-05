@@ -58,7 +58,9 @@ STAGE_ATTRIBUTES: frozenset[str] = frozenset(
         "rag.fallback_used",
         "rag.evaluator_triggered",
         "rag.evaluator_verdict",
+        "rag.rewrite_outcome",
         "rag.retrieval_outcome",
+        "rag.evaluate_outcome",
         "rag.generation_outcome",
         "memory.mode",
         "memory.outcome",
@@ -69,8 +71,12 @@ STAGE_ATTRIBUTES: frozenset[str] = frozenset(
         "memory.history_row_cap_reached",
         "provider.name",
         "provider.model",
-        "stage.duration_ms",
     }
+# `stage.duration_ms` is deliberately NOT declared: a span already carries its
+# own start and end, so an attribute duplicating it would mean adding timing
+# code at every call site for information the exporter already has. Duration is
+# read from the span, and AC5's dashboard must reference it that way rather than
+# as an emitted field.
 )
 
 ALLOWED_ATTRIBUTE_KEYS: frozenset[str] = IDENTITY_ATTRIBUTES | STAGE_ATTRIBUTES

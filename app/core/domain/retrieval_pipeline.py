@@ -6,6 +6,8 @@ from dataclasses import dataclass
 from typing import Sequence
 from uuid import UUID
 
+from app.core.observability.tracing import set_attribute, span
+
 from .embedding import EmbeddingPort
 from .provider import ProviderInput, ProviderPort
 from .reranker import RankedDocument, RerankerError, RerankerPort, RerankRequest
@@ -93,10 +95,22 @@ class RetrievalPipeline:
 
         rewritten = await self._rewrite(request_id=request_id, query=query)
 
-        embedding = await self._embedding.embed_one(rewritten)
-        candidates = await self._vector_store.hybrid_search(
-            rewritten, embedding, top_k=self._top_k_candidates
-        )
+        # Stage boundary only -- the pipeline is not restructured to make
+        # tracing convenient. An embedding or search failure propagates exactly
+        # as before; the seam reports it to the span and re-raises.
+        with span(
+            "rag.retrieve", **{"rag.top_k_candidates": self._top_k_candidates}
+        ) as retrieve_span:
+            embedding = await self._embedding.embed_one(rewritten)
+            candidates = await self._vector_store.hybrid_search(
+                rewritten, embedding, top_k=self._top_k_candidates
+            )
+            set_attribute(retrieve_span, "rag.candidate_count", len(candidates))
+            set_attribute(
+                retrieve_span,
+                "rag.retrieval_outcome",
+                "candidates" if candidates else "empty",
+            )
 
         if not candidates:
             self._log_completed(
@@ -151,29 +165,38 @@ class RetrievalPipeline:
         )
 
     async def _rewrite(self, *, request_id: UUID, query: str) -> str:
-        try:
-            result = await self._provider.generate(
-                ProviderInput(
-                    request_id=request_id,
-                    messages=[
-                        ChatMessage(role="system", content=_REWRITE_PROMPT),
-                        ChatMessage(role="user", content=query),
-                    ],
+        # The span opens where the stage is *attempted*, so a rewrite that
+        # falls back to the original query still counts as reached.
+        with span("rag.rewrite") as rewrite_span:
+            try:
+                result = await self._provider.generate(
+                    ProviderInput(
+                        request_id=request_id,
+                        messages=[
+                            ChatMessage(role="system", content=_REWRITE_PROMPT),
+                            ChatMessage(role="user", content=query),
+                        ],
+                    )
                 )
+            except Exception:
+                # Best-effort: a broken rewrite call must not break retrieval
+                # (tech-stack invariant 9) -- fall back to the original query.
+                set_attribute(rewrite_span, "rag.rewrite_outcome", "failed")
+                logger.warning(
+                    "retrieval_pipeline.rewrite_failed",
+                    extra={
+                        "event": "retrieval_pipeline.rewrite_failed",
+                        "request_id": str(request_id),
+                    },
+                )
+                return query
+            rewritten = result.content.strip()
+            set_attribute(
+                rewrite_span,
+                "rag.rewrite_outcome",
+                "rewritten" if rewritten else "unchanged",
             )
-        except Exception:
-            # Best-effort: a broken rewrite call must not break retrieval
-            # (tech-stack invariant 9) -- fall back to the original query.
-            logger.warning(
-                "retrieval_pipeline.rewrite_failed",
-                extra={
-                    "event": "retrieval_pipeline.rewrite_failed",
-                    "request_id": str(request_id),
-                },
-            )
-            return query
-        rewritten = result.content.strip()
-        return rewritten or query
+            return rewritten or query
 
     async def _rerank(
         self,
@@ -183,63 +206,88 @@ class RetrievalPipeline:
         candidates: Sequence[RetrievedChunk],
         top_n: int,
     ) -> tuple[list[RankedChunk], bool]:
-        try:
-            ranked: Sequence[RankedDocument] = await self._reranker.rerank(
-                RerankRequest(
-                    query=query,
-                    documents=[c.text for c in candidates],
-                    top_n=top_n,
+        # The span wraps the whole body, fallback branch included: this stage is
+        # entered unconditionally once candidates exist, so a reranker that
+        # falls back is *reached*, not skipped. Emitting the span only on the
+        # success path would exclude the fallback from its own denominator and
+        # make a missing span undetectable (§Diseño 1, "Expected spans").
+        with span("rag.rerank", **{"rag.top_n": top_n}) as rerank_span:
+            try:
+                ranked: Sequence[RankedDocument] = await self._reranker.rerank(
+                    RerankRequest(
+                        query=query,
+                        documents=[c.text for c in candidates],
+                        top_n=top_n,
+                    )
                 )
-            )
-        except RerankerError:
-            logger.warning(
-                "retrieval_pipeline.rerank_fallback",
-                extra={
-                    "event": "retrieval_pipeline.rerank_fallback",
-                    "request_id": str(request_id),
-                    "candidate_count": len(candidates),
-                },
-            )
-            fallback_chunks = [
-                RankedChunk(chunk=chunk, rank=i + 1)
-                for i, chunk in enumerate(candidates[:top_n])
-            ]
-            return fallback_chunks, True
+            except RerankerError:
+                logger.warning(
+                    "retrieval_pipeline.rerank_fallback",
+                    extra={
+                        "event": "retrieval_pipeline.rerank_fallback",
+                        "request_id": str(request_id),
+                        "candidate_count": len(candidates),
+                    },
+                )
+                fallback_chunks = [
+                    RankedChunk(chunk=chunk, rank=i + 1)
+                    for i, chunk in enumerate(candidates[:top_n])
+                ]
+                set_attribute(rerank_span, "rag.fallback_used", True)
+                set_attribute(rerank_span, "rag.ranked_count", len(fallback_chunks))
+                return fallback_chunks, True
 
-        ordered = sorted(ranked, key=lambda item: item.rank)
-        ranked_chunks = [
-            RankedChunk(chunk=candidates[item.index], rank=item.rank) for item in ordered
-        ]
-        return ranked_chunks, False
+            ordered = sorted(ranked, key=lambda item: item.rank)
+            ranked_chunks = [
+                RankedChunk(chunk=candidates[item.index], rank=item.rank)
+                for item in ordered
+            ]
+            set_attribute(rerank_span, "rag.fallback_used", False)
+            set_attribute(rerank_span, "rag.ranked_count", len(ranked_chunks))
+            return ranked_chunks, False
 
     async def _evaluate(
         self, *, request_id: UUID, query: str, chunks: Sequence[RankedChunk]
     ) -> str | None:
         context = "\n\n".join(ranked.chunk.text for ranked in chunks)
-        try:
-            result = await self._provider.generate(
-                ProviderInput(
-                    request_id=request_id,
-                    messages=[
-                        ChatMessage(role="system", content=_EVALUATOR_PROMPT),
-                        ChatMessage(
-                            role="user",
-                            content=f"Query: {query}\n\nPassages:\n{context}",
-                        ),
-                    ],
+        # Reached only when the evaluator actually triggered -- unlike rerank,
+        # this stage is genuinely conditional, so no span is emitted when the
+        # caller skipped it.
+        with span(
+            "rag.evaluate", **{"rag.evaluator_triggered": True}
+        ) as evaluate_span:
+            try:
+                result = await self._provider.generate(
+                    ProviderInput(
+                        request_id=request_id,
+                        messages=[
+                            ChatMessage(role="system", content=_EVALUATOR_PROMPT),
+                            ChatMessage(
+                                role="user",
+                                content=f"Query: {query}\n\nPassages:\n{context}",
+                            ),
+                        ],
+                    )
                 )
+            except Exception:
+                set_attribute(evaluate_span, "rag.evaluate_outcome", "failed")
+                logger.warning(
+                    "retrieval_pipeline.evaluator_failed",
+                    extra={
+                        "event": "retrieval_pipeline.evaluator_failed",
+                        "request_id": str(request_id),
+                    },
+                )
+                return None
+            verdict = result.content.strip().upper()
+            set_attribute(
+                evaluate_span,
+                "rag.evaluate_outcome",
+                "verdict" if verdict else "empty",
             )
-        except Exception:
-            logger.warning(
-                "retrieval_pipeline.evaluator_failed",
-                extra={
-                    "event": "retrieval_pipeline.evaluator_failed",
-                    "request_id": str(request_id),
-                },
-            )
-            return None
-        verdict = result.content.strip().upper()
-        return verdict or None
+            # A one-word classification (SUFFICIENT / INSUFFICIENT), not content.
+            set_attribute(evaluate_span, "rag.evaluator_verdict", verdict or None)
+            return verdict or None
 
     def _log_completed(
         self,
