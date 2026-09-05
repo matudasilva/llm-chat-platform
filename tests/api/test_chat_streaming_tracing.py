@@ -152,3 +152,90 @@ async def test_sse_body_is_byte_identical_with_tracing_disabled_and_enabled():
     # The body is real, so equality is not equality of two empty strings.
     assert "event: token" in disabled and "event: done" in disabled
     assert disabled.count("event: token") == len(_TOKENS)
+
+
+# --- AC2's remaining halves: non-streaming /chat and /retrieval -------------
+
+
+async def _non_streaming_body() -> str:
+    response = await chat(
+        ChatRequest(message="hello", stream=False),
+        db=_FakeAsyncSession(),
+        chat_service=ChatService(provider=_StreamingProvider(), timeout_s=1.0),
+    )
+    return _UUID.sub("<uuid>", response.model_dump_json())
+
+
+@pytest.mark.asyncio
+async def test_non_streaming_chat_is_identical_with_tracing_disabled_and_enabled():
+    tracing.configure_for_testing(None)
+    try:
+        disabled = await _non_streaming_body()
+
+        tracing.configure_for_testing(_WorkingTracer())
+        enabled = await _non_streaming_body()
+
+        tracing.configure_for_testing(_RaisingTracer())
+        broken = await _non_streaming_body()
+    finally:
+        tracing.configure_for_testing(None)
+
+    assert enabled == disabled
+    assert broken == disabled
+    assert "hello mundo" in disabled  # a real body, not two empty strings
+
+
+@pytest.mark.asyncio
+async def test_retrieval_is_identical_with_tracing_disabled_and_enabled(monkeypatch):
+    """`/rag/retrieve` runs the same four stages `/chat` augments with, so it is
+    the second surface AC2 names. Driven at the handler with a real pipeline
+    over fake ports; the route's own dependencies are what a live corpus would
+    provide, and they are not what this criterion is about."""
+    import uuid as _uuid
+
+    from app.api.routes.retrieval import retrieve
+    from app.core.domain.reranker import RankedDocument
+    from app.core.domain.retrieval_pipeline import RetrievalPipeline
+    from app.http.middleware.tenant import tenant_scope
+    from app.schemas.retrieval import RetrieveRequest
+    from tests.core.test_tracing_pipeline_stages import (
+        _FakeEmbedding,
+        _FakeProvider,
+        _FakeReranker,
+        _FakeVectorStore,
+        _chunk,
+    )
+
+    def _pipeline() -> RetrievalPipeline:
+        return RetrievalPipeline(
+            provider=_FakeProvider(rewritten="rewritten query"),
+            embedding=_FakeEmbedding(),
+            vector_store=_FakeVectorStore([_chunk(i) for i in range(3)]),
+            reranker=_FakeReranker(results=[RankedDocument(index=0, rank=1)]),
+            min_reranked_results=5,
+        )
+
+    async def _body() -> str:
+        with tenant_scope("tenant-a"):
+            response = await retrieve(
+                RetrieveRequest(query="why capabilities first?"),
+                _enabled=None,
+                pipeline=_pipeline(),
+            )
+        return _UUID.sub("<uuid>", response.model_dump_json())
+
+    tracing.configure_for_testing(None)
+    try:
+        disabled = await _body()
+
+        tracing.configure_for_testing(_WorkingTracer())
+        enabled = await _body()
+
+        tracing.configure_for_testing(_RaisingTracer())
+        broken = await _body()
+    finally:
+        tracing.configure_for_testing(None)
+
+    assert enabled == disabled
+    assert broken == disabled
+    assert "rewritten query" in disabled
