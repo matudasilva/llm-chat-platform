@@ -87,8 +87,17 @@ def test_no_pre_existing_default_changed():
     """AC30's real claim. Parses the previous and current settings.py and
     compares every field default, so a silent edit anywhere in the file fails
     here and not in production."""
+    # Baseline is the branch point, NOT HEAD. An earlier version compared
+    # against HEAD, which is self-invalidating: once this task's own commit
+    # landed, HEAD already contained the new fields and the assertion silently
+    # changed meaning. AC30's claim is "no default changed *by this ORQ*", so
+    # the reference has to be where the ORQ started.
+    base = subprocess.run(
+        ["git", "merge-base", "main", "HEAD"],
+        cwd=REPO_ROOT, capture_output=True, text=True, check=True,
+    ).stdout.strip()
     previous_source = subprocess.run(
-        ["git", "show", "HEAD:app/core/settings.py"],
+        ["git", "show", f"{base}:app/core/settings.py"],
         cwd=REPO_ROOT,
         capture_output=True,
         text=True,
@@ -113,11 +122,28 @@ def test_no_pre_existing_default_changed():
     removed = sorted(set(before) - set(after))
     assert removed == [], f"settings fields disappeared: {removed}"
 
-    added = sorted(set(after) - set(before))
-    assert added == [
+    # Every field this ORQ is authorized to add: T1's tracing seam and T6's two
+    # exposed retrieval parameters. Anything else appearing here is scope creep
+    # in settings.py, which is what AC30 is really guarding.
+    authorized_additions = {
+        "otel_enabled",
+        "otel_service_name",
+        "otel_exporter_otlp_endpoint",
+        "otel_max_queue_size",
+        "otel_max_export_batch_size",
+        "otel_schedule_delay_ms",
+        "otel_export_timeout_ms",
+        "otel_init_timeout_s",
+        "otel_flush_timeout_s",
+        "otel_shutdown_timeout_s",
         "retrieval_pipeline_top_k_candidates",
         "retrieval_pipeline_top_n",
-    ], f"unexpected new settings fields: {added}"
+    }
+    added = set(after) - set(before)
+    assert added <= authorized_additions, (
+        f"unauthorized new settings fields: {sorted(added - authorized_additions)}"
+    )
+    assert {"retrieval_pipeline_top_k_candidates", "retrieval_pipeline_top_n"} <= added
 
 
 # --- AC23 boundary: the harness must not live under app/ -------------------
