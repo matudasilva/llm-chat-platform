@@ -159,6 +159,17 @@ class Settings(BaseSettings):
     # evaluator.
     retrieval_pipeline_min_reranked_results: int = 5
 
+    # ORQ-37 T6 (D-3): `top_k_candidates` and `top_n` were constructor defaults
+    # that `build_retrieval_pipeline` never passed, so they were not tunable at
+    # all. Exposing them adds settings fields; both ship with the values already
+    # in force (`retrieval_pipeline.py`), so exposing them changes no behaviour.
+    # **D-3 resolved: this ORQ may not change any shipped default.** Tuning
+    # produces measured recommendations, and every value change comes back to
+    # the operator with that evidence rather than shipping here. AC30 asserts
+    # both values and that no pre-existing default moved.
+    retrieval_pipeline_top_k_candidates: int = 20
+    retrieval_pipeline_top_n: int = 5
+
     # ORQ-25: chat augmentation is independent from the read-only retrieval
     # endpoint and the corpus rollout flag. Disabled by default.
     chat_rag_augmentation_enabled: bool = False

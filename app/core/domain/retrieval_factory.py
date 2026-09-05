@@ -68,5 +68,12 @@ def build_retrieval_pipeline(db: AsyncSession, cfg=None) -> RetrievalPipeline:
         embedding=build_embedding_provider(cfg),
         vector_store=PgVectorStore(db),
         reranker=build_reranker(cfg),
+        # Passed explicitly from settings rather than left to the constructor
+        # defaults: before ORQ-37 these two were unreachable configuration --
+        # the fields existed on RetrievalPipeline but nothing ever supplied
+        # them, so no deployment could tune them. The shipped values are
+        # identical to those defaults, so this wiring changes no behaviour.
+        top_k_candidates=cfg.retrieval_pipeline_top_k_candidates,
+        top_n=cfg.retrieval_pipeline_top_n,
         min_reranked_results=cfg.retrieval_pipeline_min_reranked_results,
     )
