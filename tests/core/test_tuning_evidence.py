@@ -122,9 +122,11 @@ def test_no_pre_existing_default_changed():
     removed = sorted(set(before) - set(after))
     assert removed == [], f"settings fields disappeared: {removed}"
 
-    # Every field this ORQ is authorized to add: T1's tracing seam and T6's two
-    # exposed retrieval parameters. Anything else appearing here is scope creep
-    # in settings.py, which is what AC30 is really guarding.
+    # Every field this ORQ is authorized to add: T1's tracing seam, T6's two
+    # exposed retrieval parameters and T7's operational credential. Anything
+    # else appearing here is scope creep in settings.py, which is what AC30 is
+    # really guarding. The list is extended per task, deliberately: an addition
+    # has to be argued for once, here, rather than slipping in unremarked.
     authorized_additions = {
         "otel_enabled",
         "otel_service_name",
@@ -138,6 +140,9 @@ def test_no_pre_existing_default_changed():
         "otel_shutdown_timeout_s",
         "retrieval_pipeline_top_k_candidates",
         "retrieval_pipeline_top_n",
+        # T7 / §Diseño 7: the least-privilege operational credential. Inert by
+        # default (None), so it changes no shipped behaviour.
+        "database_url_ops",
     }
     added = set(after) - set(before)
     assert added <= authorized_additions, (

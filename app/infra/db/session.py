@@ -27,6 +27,8 @@ _ENGINE_KEY = "db_engine"
 _SESSIONMAKER_KEY = "db_sessionmaker"
 _RAG_ENGINE_KEY = "rag_db_engine"
 _RAG_SESSIONMAKER_KEY = "rag_db_sessionmaker"
+_OPS_ENGINE_KEY = "ops_db_engine"
+_OPS_SESSIONMAKER_KEY = "ops_db_sessionmaker"
 
 
 class TenantScopedSession(SyncSession):
@@ -105,6 +107,37 @@ def init_db(app) -> None:
         setattr(app.state, _RAG_ENGINE_KEY, None)
         setattr(app.state, _RAG_SESSIONMAKER_KEY, None)
 
+    # Operational path (ORQ-37 §Diseño 7): a THIRD engine and pool, bound to
+    # the least-privilege `database_url_ops` role. Its own engine, not a
+    # sessionmaker over an existing one, for two independent reasons:
+    #
+    #   * credential — `database_url_app` cannot read conversations/messages
+    #     at all, and `database_url` is over-privileged for a read path;
+    #   * pool — sharing the primary pool would double per-request concurrency
+    #     on the pool the atomic `/chat` write needs, converting a best-effort
+    #     read into a write-path failure. Neither engine sets
+    #     `pool_size`/`max_overflow`, so the isolation IS the mitigation.
+    #
+    # No `TenantScopedSession` here: §Diseño 7 introduces no RLS on
+    # `conversations`/`messages` (that debt stays ADR-004 §5's), tenant scoping
+    # is the query service's explicit WHERE, and the GUC handler would raise
+    # `TenantContextError` off-route where this session is legitimately used.
+    if settings.database_url_ops:
+        ops_engine: AsyncEngine = create_async_engine(
+            settings.database_url_ops,
+            pool_pre_ping=True,
+        )
+        ops_sessionmaker = async_sessionmaker(
+            bind=ops_engine,
+            class_=AsyncSession,
+            expire_on_commit=False,
+        )
+        setattr(app.state, _OPS_ENGINE_KEY, ops_engine)
+        setattr(app.state, _OPS_SESSIONMAKER_KEY, ops_sessionmaker)
+    else:
+        setattr(app.state, _OPS_ENGINE_KEY, None)
+        setattr(app.state, _OPS_SESSIONMAKER_KEY, None)
+
 
 async def close_db(app) -> None:
     """
@@ -117,6 +150,13 @@ async def close_db(app) -> None:
     rag_engine: AsyncEngine | None = getattr(app.state, _RAG_ENGINE_KEY, None)
     if rag_engine is not None:
         await rag_engine.dispose()
+
+    # AC9: the operational engine is disposed too. An undisposed third pool
+    # leaks connections across the lifespan boundary exactly as the other two
+    # would.
+    ops_engine: AsyncEngine | None = getattr(app.state, _OPS_ENGINE_KEY, None)
+    if ops_engine is not None:
+        await ops_engine.dispose()
 
 
 def _get_sessionmaker_from_app(app) -> async_sessionmaker[AsyncSession]:
@@ -150,6 +190,61 @@ async def short_lived_rag_session(request: Request) -> AsyncGenerator[AsyncSessi
     if sm is None:
         raise RuntimeError("RAG DB is not configured. Set DATABASE_URL_APP before use.")
     async with sm() as session:
+        try:
+            yield session
+        finally:
+            if session.in_transaction():
+                await session.rollback()
+
+
+class OperationalDatabaseNotConfigured(RuntimeError):
+    """`DATABASE_URL_OPS` is unset, so no operational engine exists.
+
+    A distinct type rather than a bare ``RuntimeError`` so callers can tell
+    "not configured" from "configured and broken". The two deserve opposite
+    treatment: the first is the shipped inert default, the second is a fault.
+    """
+
+
+def get_history_sessionmaker(request: Request) -> async_sessionmaker[AsyncSession]:
+    """The overridable seam of §Diseño 7 — a FastAPI dependency on purpose.
+
+    `tests/conftest.py` pins `DATABASE_URL="sqlite+aiosqlite:///:memory:"` and
+    lets the real lifespan run. A second engine on that URL is a **separate,
+    schema-less** in-memory database, so every hermetic history read would fail
+    and the never-raising dependency above it would swallow the failure into
+    empty history: the whole of Gate B1 could go green with the feature dead.
+
+    Resolving the sessionmaker through a dependency — the mechanism `get_db`
+    already uses — lets the harness substitute a seeded database instead, which
+    is what makes AC28 ("a seeded conversation yields NON-empty history") an
+    assertion the harness cannot silently satisfy.
+    """
+    sm = getattr(request.app.state, _OPS_SESSIONMAKER_KEY, None)
+    if sm is None:
+        raise OperationalDatabaseNotConfigured(
+            "Operational DB is not configured. Set DATABASE_URL_OPS before use."
+        )
+    return sm
+
+
+@asynccontextmanager
+async def short_lived_history_session(
+    sessionmaker: async_sessionmaker[AsyncSession],
+) -> AsyncGenerator[AsyncSession, None]:
+    """Own and close a history session BEFORE `/chat` enters its write transaction.
+
+    Takes the sessionmaker rather than the `Request` that
+    `short_lived_rag_session` takes: the resolution step is
+    `get_history_sessionmaker` above, and keeping the two separate is what
+    makes the seam overridable and this context manager testable without an
+    ASGI request at all.
+
+    The `finally` rollback matters even on a read-only path — SQLAlchemy opens
+    an implicit transaction on first execute, and an idle-in-transaction
+    connection returned to the pool holds a snapshot open.
+    """
+    async with sessionmaker() as session:
         try:
             yield session
         finally:

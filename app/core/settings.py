@@ -93,6 +93,23 @@ class Settings(BaseSettings):
     database_url_app: str | None = Field(default=None, alias="DATABASE_URL_APP")
     rag_embedding_dimensions: int = 1536
 
+    # ORQ-37 §Diseño 7: the OPERATIONAL credential — the least-privilege role
+    # the request path uses to READ conversations/messages (and, from Gate B2,
+    # to insert metrics). Deliberately its own setting with no fallback in
+    # either direction:
+    #
+    #   * not `database_url` — the broad primary credential would make tenant
+    #     isolation rest entirely on one application-level guard, with nothing
+    #     stopping a future query path from bypassing the adapter.
+    #   * not `database_url_app` — `rag_app`'s grants are exactly
+    #     `documents`/`chunks` (`b7f3c9d1a204:116-117`), so reading
+    #     `conversations`/`messages` there raises `permission denied`, which
+    #     the best-effort layer would swallow into empty history: the feature
+    #     permanently dead in production while every hermetic test passes.
+    #
+    # Inert by default: unset means no operational engine is created at all.
+    database_url_ops: str | None = Field(default=None, alias="DATABASE_URL_OPS")
+
     # Isolated reranking benchmark (ORQ-22). Backend toggles are all inert by
     # default; these fields do not wire reranking into the application.
     reranker_aws_region: str = Field(
@@ -529,6 +546,28 @@ class Settings(BaseSettings):
         if (self.rag_enabled or self.chat_rag_augmentation_enabled) and not self.database_url_app:
             raise ValueError(
                 "DATABASE_URL_APP is required when RAG_ENABLED or CHAT_RAG_AUGMENTATION_ENABLED is true"
+            )
+        return self
+
+    @model_validator(mode="after")
+    def validate_ops_database_url(self) -> "Settings":
+        # ORQ-37 §Diseño 7 / AC9. Equality with either existing credential is
+        # rejected loudly rather than tolerated: both failure modes are silent
+        # in production. Pointing this at the primary credential dissolves the
+        # least-privilege boundary while every test still passes; pointing it
+        # at `rag_app` produces `permission denied` on every history read,
+        # which the best-effort layer turns into empty history.
+        if not self.database_url_ops:
+            return self
+        if self.database_url_ops == self.database_url:
+            raise ValueError(
+                "DATABASE_URL_OPS must not equal the primary application database URL; "
+                "the operational path requires its own least-privilege role (ORQ-37 §Diseño 7)"
+            )
+        if self.database_url_app and self.database_url_ops == self.database_url_app:
+            raise ValueError(
+                "DATABASE_URL_OPS must not equal DATABASE_URL_APP; the rag_app role has no "
+                "grants on conversations/messages, so history reads would fail permission-denied"
             )
         return self
 
