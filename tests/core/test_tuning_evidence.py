@@ -143,6 +143,10 @@ def test_no_pre_existing_default_changed():
         # T7 / §Diseño 7: the least-privilege operational credential. Inert by
         # default (None), so it changes no shipped behaviour.
         "database_url_ops",
+        # T9 / §Diseño 7: the memory rollout flag and its degradation bound.
+        # Both inert by default (off, and a bound that only applies when on).
+        "conversation_history_enabled",
+        "conversation_history_timeout_s",
     }
     added = set(after) - set(before)
     assert added <= authorized_additions, (

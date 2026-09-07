@@ -201,6 +201,21 @@ class Settings(BaseSettings):
     conversation_history_max_messages: int = 20
     conversation_history_max_chars: int = 12_000
 
+    # ORQ-37 T9 (Gate B1): the rollout flag for conversation memory, and its
+    # degradation bound. `conversation_history_enabled` is **independent** of
+    # `chat_rag_augmentation_enabled` -- the same independence ORQ-25
+    # established between chat augmentation and the corpus/retrieval flags. A
+    # deployment may want documental RAG without conversational memory, or the
+    # reverse, and coupling them would make one impossible to roll back
+    # without the other.
+    #
+    # `conversation_history_timeout_s` is dedicated rather than shared with
+    # `chat_rag_retrieval_timeout_s`: a history read is one indexed SELECT, so
+    # borrowing the 30 s retrieval budget would let a slow database hold the
+    # request far past the point where empty history is the better answer.
+    conversation_history_enabled: bool = False
+    conversation_history_timeout_s: float = 5.0
+
     # ORQ-37 (Gate A): the tracing seam. Disabled by default, matching every
     # RAG flag -- no existing deployment starts exporting merely by updating.
     # The export target is pure configuration: no endpoint or hostname is
@@ -323,6 +338,16 @@ class Settings(BaseSettings):
     def validate_conversation_history_limits(cls, value: int) -> int:
         if value <= 0:
             raise ValueError("conversation history limits must be > 0")
+        return value
+
+    @field_validator("conversation_history_timeout_s")
+    @classmethod
+    def validate_conversation_history_timeout_s(cls, value: float) -> float:
+        # Non-positive would make `asyncio.wait_for` expire immediately, which
+        # degrades to empty history on every request -- the feature dead in
+        # production with nothing failing loudly.
+        if value <= 0:
+            raise ValueError("conversation_history_timeout_s must be > 0")
         return value
 
     @field_validator("web_read_timeout_s")

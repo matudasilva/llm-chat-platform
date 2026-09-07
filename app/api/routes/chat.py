@@ -8,7 +8,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import get_chat_rag_context, get_chat_service
+from app.api.deps import get_chat_memory_context, get_chat_rag_context, get_chat_service
+from app.core.domain.chat_memory import ChatMemoryContext
 from app.core.domain.chat_service import ChatService
 from app.core.domain.chat_types import ChatServiceResult
 from app.core.domain.errors import ProviderExecutionError, ProviderTimeoutError
@@ -59,6 +60,7 @@ async def chat(
     db: AsyncSession = Depends(get_db),
     chat_service: ChatService = Depends(get_chat_service),
     rag_context: RagGenerationContext = Depends(get_chat_rag_context),
+    memory_context: ChatMemoryContext = Depends(get_chat_memory_context),
 ) -> ChatResponse:
     start = time.perf_counter()
     rid = get_request_id()
@@ -80,6 +82,19 @@ async def chat(
         # The route remains fail-closed if a dependency override supplies
         # context while the independent rollout flag is disabled.
         rag_context = RagGenerationContext()
+    if not isinstance(memory_context, ChatMemoryContext):
+        # Direct unit calls bypass FastAPI dependency resolution.
+        memory_context = ChatMemoryContext()
+    if not settings.conversation_history_enabled:
+        # The same fail-closed reset the RAG channel has, for the independent
+        # memory flag: an override must not be able to inject memory into the
+        # prompt while the rollout flag is off.
+        memory_context = ChatMemoryContext()
+    # Prior turns precede the current message. They enter the messages list
+    # rather than `metadata`, so `_cache_key` fingerprints them by
+    # construction (§Diseño 7) -- two conversations sharing a last user
+    # message no longer collide on either cache gate.
+    memory_messages = list(memory_context.messages)
     provider_metadata = rag_context.provider_metadata
     public_sources = [
         RagSourceOut(
@@ -110,7 +125,10 @@ async def chat(
                 # 1) Stream from provider (no DB, no transaction)
                 stream_kwargs: dict[str, Any] = {
                     "request_id": request_id,
-                    "messages": [ChatMessage(role="user", content=payload.message)],
+                    "messages": [
+                        *memory_messages,
+                        ChatMessage(role="user", content=payload.message),
+                    ],
                 }
                 if provider_metadata is not None:
                     stream_kwargs["provider_metadata"] = provider_metadata
@@ -254,7 +272,7 @@ async def chat(
     try:
         cache_write_result: ChatServiceResult | None = None
         # Single transaction: either everything is persisted, or nothing is.
-        _messages = [ChatMessage(role="user", content=payload.message)]
+        _messages = [*memory_messages, ChatMessage(role="user", content=payload.message)]
         async with db.begin():
             # 1) Conversation: create or validate (tenant-scoped)
             if is_new_conversation:

@@ -1,19 +1,36 @@
 # app/api/deps.py
+import asyncio
+import logging
 import uuid
 
 from fastapi import Request
 
+from app.core.domain.chat_memory import ChatMemoryContext
+from app.core.domain.conversation_history import (
+    ConversationHistoryAssembler,
+    ConversationNotFoundError,
+)
 from app.core.domain.provider import ProviderPort
 from app.core.domain.provider_factory import build_provider, build_provider_resolver
 from app.core.domain.chat_service import ChatService
 from app.core.domain.rag_generation import RagGenerationAugmentor, RagGenerationContext
 from app.core.domain.retrieval_factory import build_retrieval_pipeline
 from app.core.settings import settings
+from app.http.middleware.tenant import get_tenant_id
 from app.http.request_context import get_request_id
+from app.http import pipeline_metrics
+from app.infra.db.session import (
+    get_history_sessionmaker,
+    short_lived_history_session,
+)
 from app.infra.db.session import short_lived_rag_session
+from app.services.conversation_history_adapter import SqlConversationHistoryAdapter
+from app.services.conversation_query_service import ConversationQueryService
 from app.schemas.chat import ChatRequest
 from app.services.notion_write import NotionWriteService
 from app.services.routing_signals import build_routing_context_builder
+
+logger = logging.getLogger(__name__)
 
 
 def get_provider() -> ProviderPort:
@@ -52,6 +69,116 @@ async def get_chat_rag_context(payload: ChatRequest, request: Request) -> RagGen
             reason=type(exc).__name__,
         )
         return RagGenerationContext()
+
+
+async def get_chat_memory_context(
+    payload: ChatRequest, request: Request
+) -> ChatMemoryContext:
+    """Assemble conversation memory OUTSIDE the write transaction.
+
+    A FastAPI dependency, exactly like `get_chat_rag_context` above, and for
+    the same structural reason: dependencies resolve **before** the handler
+    body runs, so the assembly provably happens before `async with db.begin()`
+    is entered on either path (`chat.py:134` streaming, `:258` non-streaming).
+    AC11's Gate B1 half is therefore satisfied by construction rather than by
+    reviewer discipline. Assembling inside the handler to reuse `db` would
+    break it and would also put a best-effort read on the pool the atomic
+    write needs (§Diseño 7).
+
+    **It never raises.** The streaming path answers not-found as an SSE `error`
+    frame on HTTP 200 (`chat.py:141-143`), never a 404, so a dependency raising
+    `HTTPException` would convert that into a real 404 for streaming clients --
+    an observable SSE-contract change (invariant 7). Every failure yields empty
+    memory and the request proceeds.
+
+    That is not the silent-empty ADR-011 §2 forbids. The port still raises
+    `ConversationNotFoundError`; this layer catches it **distinctly** from the
+    generic handler, records the outcome, and the route's own ownership guard
+    re-checks against the database and answers in its existing shape on both
+    paths.
+
+    Ordering matters on the streaming path in a way response assertions cannot
+    show: the provider is invoked at `chat.py:117`, **before** the guard at
+    `:141`. So for a cross-tenant conversation the guard cannot stop memory
+    from reaching the model -- only this function returning empty can. AC12
+    captures `ProviderInput` for exactly that reason.
+    """
+    if not settings.conversation_history_enabled:
+        return ChatMemoryContext()
+
+    # The RAW payload value, never the handler's derived `conversation_id`.
+    # `chat.py:71` does `payload.conversation_id or uuid.uuid4()`, and that
+    # generated id is not persisted until inside the write transaction. Reading
+    # the derived value would make every FIRST turn call `fetch_ordered` with a
+    # nonexistent id, degrade through the not-found branch, and record
+    # `conversation_not_found` for what is simply a new conversation -- one
+    # wasted round-trip per first turn and a misleading outcome. ADR-011
+    # requires skipping, not catching.
+    conversation_id = payload.conversation_id
+    if conversation_id is None:
+        await _record_memory_outcome("skipped_first_turn")
+        return ChatMemoryContext()
+
+    tenant_id = get_tenant_id()
+    rid = get_request_id()
+    request_id = uuid.UUID(rid) if rid else uuid.uuid4()
+
+    try:
+        sessionmaker = get_history_sessionmaker(request)
+        async with short_lived_history_session(sessionmaker) as db:
+            assembler = ConversationHistoryAssembler(
+                max_messages=settings.conversation_history_max_messages,
+                max_chars=settings.conversation_history_max_chars,
+            )
+            adapter = SqlConversationHistoryAdapter(ConversationQueryService(db))
+            assembled = await asyncio.wait_for(
+                assembler.assemble(adapter, conversation_id, tenant_id),
+                timeout=settings.conversation_history_timeout_s,
+            )
+    except ConversationNotFoundError:
+        # Caught DISTINCTLY from the generic handler below (AC13). The two are
+        # not the same event: this one is an ownership answer the route will
+        # also produce, while the generic branch is a degradation.
+        await _record_memory_outcome("conversation_not_found")
+        return ChatMemoryContext()
+    except asyncio.TimeoutError:
+        await _record_memory_outcome("timeout")
+        _log_memory_degraded(request_id=request_id, reason="timeout")
+        return ChatMemoryContext()
+    except Exception as exc:
+        await _record_memory_outcome("error")
+        _log_memory_degraded(request_id=request_id, reason=type(exc).__name__)
+        return ChatMemoryContext()
+
+    context = ChatMemoryContext.from_assembled(assembled)
+    await _record_memory_outcome("empty" if context.is_empty else "ok")
+    return context
+
+
+async def _record_memory_outcome(outcome: str) -> None:
+    # Uses only the collector T8 already shipped. Nothing here writes a row:
+    # the `rag_request_metrics` table and its write sites are T14's.
+    #
+    # `async def` although every caller is already async and a sync helper
+    # would work today: AC26's scan forbids *any* sync writer outside
+    # `pipeline_metrics.py`, deliberately bluntly, because the failure it
+    # guards against -- a copied context silently swallowing every field -- is
+    # invisible at runtime. Keeping that rule unarguable is worth an `await`.
+    pipeline_metrics.record(memory_outcome=outcome)
+
+
+def _log_memory_degraded(*, request_id: uuid.UUID, reason: str) -> None:
+    try:
+        logger.warning(
+            "chat_memory.degraded",
+            extra={
+                "event": "chat_memory.degraded",
+                "request_id": str(request_id),
+                "reason": reason,
+            },
+        )
+    except Exception:
+        pass
 
 
 def get_notion_write_service() -> NotionWriteService:
