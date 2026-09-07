@@ -162,6 +162,20 @@ async def get_chat_memory_context(
         partition, truncated=truncated, history_row_cap_reached=cap_reached
     )
 
+    # T15: the Mode B corpus exists (`RetrievalCorpus.from_partition`), built
+    # from the SAME `partition` T10 already produced -- never a second
+    # grouping pass. Its emptiness is NOT recorded into `memory_outcome` here,
+    # deliberately: `ebm25_enabled` does not exist until T18, so Mode B is
+    # unreachable, and an empty corpus is the ordinary case for nearly every
+    # Gate B1 request today (a short conversation whose whole history sits
+    # inside the window). Recording `no_out_of_window_corpus` unconditionally
+    # would clobber the "ok"/"empty" outcome B1 traffic already relies on --
+    # replacing the common case with a Mode-B-only label before Mode B can
+    # even run. T18 (which adds the flag) or T16 (which adds selection) is
+    # where `memory_outcome` gains this branch, gated on Mode B actually being
+    # in effect. `RetrievalCorpus.is_empty` is exposed and tested so that
+    # wiring is a one-line call, not a redesign.
+
     # T13: the hard added-context cap, applied to the recent-window term only
     # (§Diseño 7 "Combined budget"). `reserved_chars` stays at its default of
     # 0 -- the documental RAG channel's own budget is not combined with this
