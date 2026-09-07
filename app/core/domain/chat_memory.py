@@ -6,16 +6,16 @@ Every failure path in `get_chat_memory_context` returns `ChatMemoryContext()`
 rather than raising, which is what keeps invariant 7 intact -- see the module
 docstring of `app/api/deps.py`.
 
-Scope note: this carries the assembled window as ordered prior turns. The
-turn-snapping rule and the role-shape contract of §Diseño 8/§Diseño 11 are
-T10's, and the hard added-context cap is T13's. Nothing here anticipates them.
+Scope note: since T10 this carries the **materialized** window -- turn-snapped
+and then well-formedness-filtered (§Diseño 8 steps 2-3). The hard
+added-context cap is still T13's and nothing here anticipates it.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 
-from .conversation_history import AssembledHistory
+from .conversation_turns import WindowPartition
 from .types import ChatMessage
 
 
@@ -31,15 +31,27 @@ class ChatMemoryContext:
         return not self.messages
 
     @classmethod
-    def from_assembled(cls, assembled: AssembledHistory) -> "ChatMemoryContext":
-        # `HistoryMessage.role` is already a plain `Role` string (the adapter
-        # calls `.value` on the ORM enum), so no further coercion happens here.
-        # `sequence` is deliberately dropped: it is the ordering key, not
-        # content, and the provider has no use for it.
+    def from_partition(
+        cls, partition: WindowPartition, *, truncated: bool
+    ) -> "ChatMemoryContext":
+        """Materialize the well-formed window as ordered prior turns.
+
+        Takes the partition rather than the raw `AssembledHistory` it took
+        before T10: the assembler's output is message-atomic and can begin on
+        any role, while what reaches the provider must be the snapped,
+        filtered window (§Diseño 8). Converting from the assembler directly
+        would put `system` rows and assistant-first openings into the turn
+        list -- exactly what §Diseño 11 forbids.
+
+        `HistoryMessage.role` is already a plain `Role` string (the adapter
+        calls `.value` on the ORM enum), so no coercion happens here.
+        `sequence` is dropped deliberately: it is the ordering key, not
+        content, and the provider has no use for it.
+        """
         return cls(
             messages=tuple(
                 ChatMessage(role=message.role, content=message.content)
-                for message in assembled.messages
+                for message in partition.window
             ),
-            truncated=assembled.truncated,
+            truncated=truncated,
         )

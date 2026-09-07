@@ -2,6 +2,7 @@
 import asyncio
 import logging
 import uuid
+from typing import Sequence
 
 from fastapi import Request
 
@@ -9,7 +10,9 @@ from app.core.domain.chat_memory import ChatMemoryContext
 from app.core.domain.conversation_history import (
     ConversationHistoryAssembler,
     ConversationNotFoundError,
+    HistoryMessage,
 )
+from app.core.domain.conversation_turns import build_materialized_window
 from app.core.domain.provider import ProviderPort
 from app.core.domain.provider_factory import build_provider, build_provider_resolver
 from app.core.domain.chat_service import ChatService
@@ -131,8 +134,8 @@ async def get_chat_memory_context(
                 max_chars=settings.conversation_history_max_chars,
             )
             adapter = SqlConversationHistoryAdapter(ConversationQueryService(db))
-            assembled = await asyncio.wait_for(
-                assembler.assemble(adapter, conversation_id, tenant_id),
+            partition, truncated = await asyncio.wait_for(
+                _materialize_window(adapter, assembler, conversation_id, tenant_id),
                 timeout=settings.conversation_history_timeout_s,
             )
     except ConversationNotFoundError:
@@ -150,9 +153,46 @@ async def get_chat_memory_context(
         _log_memory_degraded(request_id=request_id, reason=type(exc).__name__)
         return ChatMemoryContext()
 
-    context = ChatMemoryContext.from_assembled(assembled)
+    context = ChatMemoryContext.from_partition(partition, truncated=truncated)
     await _record_memory_outcome("empty" if context.is_empty else "ok")
     return context
+
+
+class _PrefetchedHistoryPort:
+    """Hands the assembler rows already fetched, so the DB is read once.
+
+    §Diseño 8 step 1 groups the **full** SQL-bounded `fetch_ordered` output,
+    while the assembler returns only its bounded slice. Both are needed, and a
+    second `fetch_ordered` call would be a second query against a conversation
+    that may have changed between them -- the window and the grouped set would
+    then come from different snapshots.
+
+    Kept here rather than pushed into `ConversationHistoryAssembler`: ORQ-38
+    owns that class and its bounds are ADR-011's, which this ORQ explicitly
+    does not amend.
+    """
+
+    __slots__ = ("_messages",)
+
+    def __init__(self, messages: Sequence[HistoryMessage]) -> None:
+        self._messages = messages
+
+    async def fetch_ordered(self, conversation_id, tenant_id):
+        return self._messages
+
+
+async def _materialize_window(adapter, assembler, conversation_id, tenant_id):
+    """Fetch once, bound with ADR-011's rules, then snap and filter (T10)."""
+    # The real adapter first: this is the call that raises
+    # `ConversationNotFoundError` for a conversation the tenant does not own.
+    all_messages = await adapter.fetch_ordered(conversation_id, tenant_id)
+    assembled = await assembler.assemble(
+        _PrefetchedHistoryPort(all_messages), conversation_id, tenant_id
+    )
+    partition = build_materialized_window(
+        all_messages=all_messages, bounded_messages=assembled.messages
+    )
+    return partition, assembled.truncated
 
 
 async def _record_memory_outcome(outcome: str) -> None:

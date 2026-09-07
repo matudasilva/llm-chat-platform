@@ -19,7 +19,6 @@ from app.api import deps
 from app.api.deps import get_chat_memory_context
 from app.core.domain.chat_memory import ChatMemoryContext
 from app.core.domain.conversation_history import (
-    AssembledHistory,
     ConversationNotFoundError,
     HistoryIntegrityError,
     HistoryMessage,
@@ -63,21 +62,28 @@ def memory_on(monkeypatch):
     return None
 
 
-def _install_assembler(monkeypatch, result):
-    """Replace the assembly with a controlled outcome, keeping the seam real."""
+def _install_source(monkeypatch, result):
+    """Drive the outcome from `fetch_ordered`, the way production does.
 
-    class _Assembler:
-        def __init__(self, **_kwargs) -> None:
+    T10 moved the assembly into `_materialize_window`, which calls the adapter
+    first and then runs the REAL assembler and the REAL partition builder. The
+    double therefore replaces only the **port** -- the layer ADR-011 says
+    raises `ConversationNotFoundError` -- and everything above it is shipped
+    code. Doubling the assembler instead, as this file did before T10, coupled
+    the tests to where the call happened rather than to what it produced, and
+    that is exactly what broke when T10 landed.
+    """
+
+    class _Adapter:
+        def __init__(self, queries) -> None:
             pass
 
-        async def assemble(self, port, conversation_id, tenant_id):
+        async def fetch_ordered(self, conversation_id, tenant_id):
             if isinstance(result, BaseException):
                 raise result
             if callable(result):
                 return await result(conversation_id, tenant_id)
             return result
-
-    monkeypatch.setattr(deps, "ConversationHistoryAssembler", _Assembler)
 
     class _Session:
         pass
@@ -91,19 +97,15 @@ def _install_assembler(monkeypatch, result):
 
     monkeypatch.setattr(deps, "get_history_sessionmaker", lambda request: object())
     monkeypatch.setattr(deps, "short_lived_history_session", lambda sm: _CM())
-    monkeypatch.setattr(deps, "SqlConversationHistoryAdapter", lambda queries: object())
+    monkeypatch.setattr(deps, "SqlConversationHistoryAdapter", _Adapter)
     monkeypatch.setattr(deps, "ConversationQueryService", lambda db: object())
 
 
-def _assembled(*pairs, truncated=False):
-    return AssembledHistory(
-        messages=tuple(
-            HistoryMessage(sequence=index, role=role, content=content)
-            for index, (role, content) in enumerate(pairs, start=1)
-        ),
-        total_available=len(pairs),
-        truncated=truncated,
-    )
+def _messages(*pairs):
+    return [
+        HistoryMessage(sequence=index, role=role, content=content)
+        for index, (role, content) in enumerate(pairs, start=1)
+    ]
 
 
 # --- AC13: never raises, and not-found is caught DISTINCTLY
@@ -118,7 +120,7 @@ async def test_returns_empty_when_the_flag_is_off(monkeypatch) -> None:
 async def test_conversation_not_found_is_caught_and_recorded(
     memory_on, collector, monkeypatch
 ) -> None:
-    _install_assembler(monkeypatch, ConversationNotFoundError(str(CONVERSATION_ID)))
+    _install_source(monkeypatch, ConversationNotFoundError(str(CONVERSATION_ID)))
     result = await get_chat_memory_context(_payload(), _request())
     assert result.is_empty
     assert collector.snapshot()["memory_outcome"] == "conversation_not_found"
@@ -129,7 +131,7 @@ async def test_not_found_is_distinct_from_the_generic_handler(
 ) -> None:
     # AC13's word is "distinctly". A single `except Exception` would satisfy
     # "never raises" while collapsing an ownership answer into a degradation.
-    _install_assembler(monkeypatch, HistoryIntegrityError("bad sequence"))
+    _install_source(monkeypatch, HistoryIntegrityError("bad sequence"))
     result = await get_chat_memory_context(_payload(), _request())
     assert result.is_empty
     assert collector.snapshot()["memory_outcome"] == "error"
@@ -139,7 +141,7 @@ async def test_timeout_degrades_to_empty(memory_on, collector, monkeypatch) -> N
     async def _slow(conversation_id, tenant_id):
         await asyncio.sleep(1)
 
-    _install_assembler(monkeypatch, _slow)
+    _install_source(monkeypatch, _slow)
     monkeypatch.setattr(deps.settings, "conversation_history_timeout_s", 0.01, raising=False)
     result = await get_chat_memory_context(_payload(), _request())
     assert result.is_empty
@@ -156,7 +158,7 @@ async def test_timeout_degrades_to_empty(memory_on, collector, monkeypatch) -> N
     ],
 )
 async def test_never_raises_for_any_failure(memory_on, collector, monkeypatch, failure) -> None:
-    _install_assembler(monkeypatch, failure)
+    _install_source(monkeypatch, failure)
     result = await get_chat_memory_context(_payload(), _request())
     assert result == ChatMemoryContext()
 
@@ -209,29 +211,42 @@ async def test_first_turn_is_not_reported_as_not_found(
 async def test_assembled_history_becomes_ordered_prior_turns(
     memory_on, collector, monkeypatch
 ) -> None:
-    _install_assembler(
+    _install_source(
         monkeypatch,
-        _assembled(("user", "first"), ("assistant", "answer"), ("user", "second")),
+        _messages(("user", "first"), ("assistant", "answer"), ("user", "second")),
     )
     result = await get_chat_memory_context(_payload(), _request())
+    # Since T10 the trailing "second" is an odd tail: a singleton unit, so it
+    # is excluded from the MATERIALIZED window and returned to the complement.
+    # Before T10 this asserted all three messages; the change is deliberate.
     assert [(m.role, m.content) for m in result.messages] == [
         ("user", "first"),
         ("assistant", "answer"),
-        ("user", "second"),
     ]
     assert collector.snapshot()["memory_outcome"] == "ok"
 
 
 async def test_truncation_flag_is_carried(memory_on, collector, monkeypatch) -> None:
-    _install_assembler(monkeypatch, _assembled(("user", "only"), truncated=True))
+    monkeypatch.setattr(
+        deps.settings, "conversation_history_max_messages", 2, raising=False
+    )
+    _install_source(
+        monkeypatch,
+        _messages(
+            ("user", "old"), ("assistant", "old reply"),
+            ("user", "new"), ("assistant", "new reply"),
+        ),
+    )
     result = await get_chat_memory_context(_payload(), _request())
+    # ADR-011's message bound dropped the older turn, so the assembler reports
+    # truncation and the context carries it through unchanged.
     assert result.truncated is True
 
 
 async def test_empty_conversation_records_empty_not_ok(
     memory_on, collector, monkeypatch
 ) -> None:
-    _install_assembler(monkeypatch, _assembled())
+    _install_source(monkeypatch, [])
     result = await get_chat_memory_context(_payload(), _request())
     assert result.is_empty
     assert collector.snapshot()["memory_outcome"] == "empty"
