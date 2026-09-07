@@ -276,3 +276,133 @@ async def test_chat_cache_write_failure_is_non_fatal(monkeypatch) -> None:
     assert response.status == chat_routes.ChatStatus.success
     assert response.assistant_content == "write fallback"
     assert chat_service.run_calls == 1
+
+
+# --- ORQ-37 T11 (Gate B1 half): AC17 clause 1 -- the window is in the key --
+#
+# Uses the REAL `ChatResponseCache`, not `FakeCache`: the property under test
+# is `_cache_key`'s actual behaviour, and a double would only prove that the
+# double behaves as written. `FakeRedisClient` above returns `None`
+# unconditionally, so it cannot show non-reuse; this uses a tiny dict-backed
+# stand-in instead, keyed exactly as Redis would be.
+#
+# Clause 2 (bypassing the cache when `ebm25_enabled` is on) is NOT attempted
+# here. `settings.py` has no `ebm25_enabled` field -- it is introduced by
+# T18 -- so there is nothing to gate on yet. See the note in
+# `implementation.md` recording the deferral.
+
+
+@dataclass
+class _DictRedis:
+    """Minimal stand-in with real key-based storage, unlike `FakeRedisClient`."""
+
+    store: dict[str, str] = field(default_factory=dict)
+
+    async def get(self, key: str) -> str | None:
+        return self.store.get(key)
+
+    async def set(self, key: str, value: str, ex: int | None = None) -> bool:
+        self.store[key] = value
+        return True
+
+
+def _memory_context(*pairs: tuple[str, str]):
+    from app.core.domain.chat_memory import ChatMemoryContext
+    from app.core.domain.types import ChatMessage as _CM
+
+    return ChatMemoryContext(
+        messages=tuple(_CM(role=role, content=content) for role, content in pairs)
+    )
+
+
+@pytest.mark.asyncio
+async def test_cache_key_differs_when_only_the_memory_window_differs(monkeypatch) -> None:
+    """`_cache_key` directly: same tenant, same current message, different windows."""
+    monkeypatch.setattr(cache_module, "redis_client", _DictRedis())
+    cache = ChatResponseCache()
+
+    current = ChatMessage(role="user", content="what did we decide?")
+    messages_a = [
+        ChatMessage(role="user", content="topic is X"),
+        ChatMessage(role="assistant", content="noted, X"),
+        current,
+    ]
+    messages_b = [
+        ChatMessage(role="user", content="topic is Y"),
+        ChatMessage(role="assistant", content="noted, Y"),
+        current,
+    ]
+
+    key_a = cache._cache_key(messages=messages_a, tenant_id="acme")
+    key_b = cache._cache_key(messages=messages_b, tenant_id="acme")
+
+    assert key_a != key_b, "identical latest message must not collide across windows"
+
+
+@pytest.mark.asyncio
+async def test_end_to_end_no_reuse_across_differing_windows(monkeypatch) -> None:
+    """The read AND write gates (`chat.py:302-305`, `:373-374`), not `_cache_key` alone.
+
+    Two real requests through `chat_routes.chat`, same current message, memory
+    windows that differ only in their out-of-window content. The second must
+    not reuse the first response -- the failure this would catch is `_messages`
+    someday being built from only the current message, silently restoring the
+    pre-T9 collision.
+    """
+    monkeypatch.setattr(cache_module, "redis_client", _DictRedis())
+    monkeypatch.setattr(chat_routes, "get_chat_response_cache", lambda: cache_module._cache)
+    monkeypatch.setattr(chat_routes.settings, "chat_rag_augmentation_enabled", False)
+    # Without this the route's fail-closed reset (chat.py:79-82, mirrored for
+    # memory) empties BOTH windows to `ChatMemoryContext()` before the cache
+    # ever sees them, which would make the two requests collide for a reason
+    # that has nothing to do with `_cache_key` -- the very failure this test
+    # exists to catch, reached by a different door.
+    monkeypatch.setattr(chat_routes.settings, "conversation_history_enabled", True)
+
+    request = ChatRequest(message="what did we decide?")
+
+    service_a = FakeChatService(content="response for window A")
+    response_a = await chat_routes.chat(
+        request,
+        db=FakeAsyncSession(),
+        chat_service=service_a,
+        memory_context=_memory_context(("user", "topic is X"), ("assistant", "noted, X")),
+    )
+    assert response_a.assistant_content == "response for window A"
+    assert service_a.run_calls == 1
+
+    service_b = FakeChatService(content="response for window B")
+    response_b = await chat_routes.chat(
+        request,
+        db=FakeAsyncSession(),
+        chat_service=service_b,
+        memory_context=_memory_context(("user", "topic is Y"), ("assistant", "noted, Y")),
+    )
+
+    # Not reused: the service ran again and the (different) result came back.
+    assert service_b.run_calls == 1, "a cache hit would have skipped the provider call"
+    assert response_b.assistant_content == "response for window B"
+
+
+@pytest.mark.asyncio
+async def test_end_to_end_reuse_when_the_window_is_identical(monkeypatch) -> None:
+    """Control for the previous test: it must be ABLE to hit, or non-reuse proves nothing."""
+    monkeypatch.setattr(cache_module, "redis_client", _DictRedis())
+    monkeypatch.setattr(chat_routes, "get_chat_response_cache", lambda: cache_module._cache)
+    monkeypatch.setattr(chat_routes.settings, "chat_rag_augmentation_enabled", False)
+    monkeypatch.setattr(chat_routes.settings, "conversation_history_enabled", True)
+
+    request = ChatRequest(message="what did we decide?")
+    window = _memory_context(("user", "topic is X"), ("assistant", "noted, X"))
+
+    service_a = FakeChatService(content="first answer")
+    await chat_routes.chat(
+        request, db=FakeAsyncSession(), chat_service=service_a, memory_context=window
+    )
+
+    service_b = ExplodingChatService()
+    response_b = await chat_routes.chat(
+        request, db=FakeAsyncSession(), chat_service=service_b, memory_context=window
+    )
+
+    assert response_b.assistant_content == "first answer"
