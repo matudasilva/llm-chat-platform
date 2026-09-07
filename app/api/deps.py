@@ -133,8 +133,11 @@ async def get_chat_memory_context(
                 max_messages=settings.conversation_history_max_messages,
                 max_chars=settings.conversation_history_max_chars,
             )
-            adapter = SqlConversationHistoryAdapter(ConversationQueryService(db))
-            partition, truncated = await asyncio.wait_for(
+            adapter = SqlConversationHistoryAdapter(
+                ConversationQueryService(db),
+                max_rows=settings.conversation_history_max_rows,
+            )
+            partition, truncated, cap_reached = await asyncio.wait_for(
                 _materialize_window(adapter, assembler, conversation_id, tenant_id),
                 timeout=settings.conversation_history_timeout_s,
             )
@@ -153,7 +156,9 @@ async def get_chat_memory_context(
         _log_memory_degraded(request_id=request_id, reason=type(exc).__name__)
         return ChatMemoryContext()
 
-    context = ChatMemoryContext.from_partition(partition, truncated=truncated)
+    context = ChatMemoryContext.from_partition(
+        partition, truncated=truncated, history_row_cap_reached=cap_reached
+    )
     await _record_memory_outcome("empty" if context.is_empty else "ok")
     return context
 
@@ -182,9 +187,11 @@ class _PrefetchedHistoryPort:
 
 
 async def _materialize_window(adapter, assembler, conversation_id, tenant_id):
-    """Fetch once, bound with ADR-011's rules, then snap and filter (T10)."""
+    """Fetch once, bound with ADR-011's rules, then snap and filter (T10/T12)."""
     # The real adapter first: this is the call that raises
-    # `ConversationNotFoundError` for a conversation the tenant does not own.
+    # `ConversationNotFoundError` for a conversation the tenant does not own,
+    # and -- since T12 -- the call that applies the SQL row cap
+    # (`conversation_history_max_rows`), not the assembler.
     all_messages = await adapter.fetch_ordered(conversation_id, tenant_id)
     assembled = await assembler.assemble(
         _PrefetchedHistoryPort(all_messages), conversation_id, tenant_id
@@ -192,7 +199,11 @@ async def _materialize_window(adapter, assembler, conversation_id, tenant_id):
     partition = build_materialized_window(
         all_messages=all_messages, bounded_messages=assembled.messages
     )
-    return partition, assembled.truncated
+    # AC36: the cap is reached when the SQL read returned exactly the limit --
+    # not "close to it", since a shorter conversation legitimately returns
+    # fewer rows than the cap without ever having been bounded.
+    cap_reached = len(all_messages) == settings.conversation_history_max_rows
+    return partition, assembled.truncated, cap_reached
 
 
 async def _record_memory_outcome(outcome: str) -> None:

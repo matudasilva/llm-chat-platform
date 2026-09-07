@@ -147,6 +147,9 @@ def test_no_pre_existing_default_changed():
         # Both inert by default (off, and a bound that only applies when on).
         "conversation_history_enabled",
         "conversation_history_timeout_s",
+        # T12 / AC36: bounds the SQL history read. Inert until a conversation
+        # exceeds it (default 2 000, far above the assembler's own window).
+        "conversation_history_max_rows",
     }
     added = set(after) - set(before)
     assert added <= authorized_additions, (

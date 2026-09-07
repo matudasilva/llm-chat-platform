@@ -63,4 +63,10 @@ class Message(Base):
 
     __table_args__ = (
         Index("ix_messages_conversation_id_created_at", "conversation_id", "created_at"),
+        # ORQ-37 T12 / AC15: supports the operational history read's
+        # `ORDER BY sequence DESC LIMIT n` (`d29e6a1f4c87`). Declared here too
+        # so ORM metadata and the migration chain agree -- an autogenerate
+        # diff against a model missing this would otherwise propose dropping
+        # it.
+        Index("ix_messages_conversation_id_sequence", "conversation_id", "sequence"),
     )

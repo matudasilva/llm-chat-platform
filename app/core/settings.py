@@ -216,6 +216,15 @@ class Settings(BaseSettings):
     conversation_history_enabled: bool = False
     conversation_history_timeout_s: float = 5.0
 
+    # ORQ-37 T12 (Gate B1): bounds the history read **in SQL**, upstream of the
+    # assembler's own message/char caps. Today `list_messages_for_conversation`
+    # carries no `LIMIT` at all, so an arbitrarily long conversation is fetched
+    # whole (§Diseño 7, R22) -- the character cap bounds the prompt, not rows
+    # scanned, memory, or cancellation cleanup. 2 000 is comfortably above the
+    # 20-message assembler window, so this cap is inert until a conversation is
+    # genuinely enormous.
+    conversation_history_max_rows: int = 2_000
+
     # ORQ-37 (Gate A): the tracing seam. Disabled by default, matching every
     # RAG flag -- no existing deployment starts exporting merely by updating.
     # The export target is pure configuration: no endpoint or hostname is
@@ -338,6 +347,13 @@ class Settings(BaseSettings):
     def validate_conversation_history_limits(cls, value: int) -> int:
         if value <= 0:
             raise ValueError("conversation history limits must be > 0")
+        return value
+
+    @field_validator("conversation_history_max_rows")
+    @classmethod
+    def validate_conversation_history_max_rows(cls, value: int) -> int:
+        if value <= 0:
+            raise ValueError("conversation_history_max_rows must be > 0")
         return value
 
     @field_validator("conversation_history_timeout_s")

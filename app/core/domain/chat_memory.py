@@ -25,6 +25,11 @@ class ChatMemoryContext:
 
     messages: tuple[ChatMessage, ...] = ()
     truncated: bool = False
+    # ORQ-37 T12 / AC36: True when the SQL read hit `conversation_history_max_rows`
+    # -- a bound distinct from `truncated`, which is the assembler's own
+    # message/char cap (ORQ-38). At the SQL cap the Mode B corpus is explicitly
+    # the capped set, never a silently truncated one.
+    history_row_cap_reached: bool = False
 
     @property
     def is_empty(self) -> bool:
@@ -32,7 +37,11 @@ class ChatMemoryContext:
 
     @classmethod
     def from_partition(
-        cls, partition: WindowPartition, *, truncated: bool
+        cls,
+        partition: WindowPartition,
+        *,
+        truncated: bool,
+        history_row_cap_reached: bool = False,
     ) -> "ChatMemoryContext":
         """Materialize the well-formed window as ordered prior turns.
 
@@ -54,4 +63,5 @@ class ChatMemoryContext:
                 for message in partition.window
             ),
             truncated=truncated,
+            history_row_cap_reached=history_row_cap_reached,
         )

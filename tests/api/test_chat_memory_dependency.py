@@ -75,7 +75,10 @@ def _install_source(monkeypatch, result):
     """
 
     class _Adapter:
-        def __init__(self, queries) -> None:
+        def __init__(self, queries, *, max_rows=None) -> None:
+            # T12 added `max_rows`; this double ignores it -- the SQL cap is
+            # exercised in `test_conversation_history_row_cap.py` instead,
+            # against the real adapter and query service.
             pass
 
         async def fetch_ordered(self, conversation_id, tenant_id):
@@ -251,3 +254,45 @@ async def test_empty_conversation_records_empty_not_ok(
     assert result.is_empty
     assert collector.snapshot()["memory_outcome"] == "empty"
 
+
+
+# --- AC36 (T12): history_row_cap_reached, at the dependency boundary -------
+
+
+async def test_history_row_cap_reached_when_sql_returns_exactly_the_cap(
+    memory_on, collector, monkeypatch
+) -> None:
+    monkeypatch.setattr(
+        deps.settings, "conversation_history_max_rows", 4, raising=False
+    )
+    _install_source(
+        monkeypatch,
+        _messages(
+            ("user", "u1"), ("assistant", "a1"),
+            ("user", "u2"), ("assistant", "a2"),
+        ),
+    )
+    result = await get_chat_memory_context(_payload(), _request())
+    assert result.history_row_cap_reached is True
+
+
+async def test_history_row_cap_not_reached_below_the_cap(
+    memory_on, collector, monkeypatch
+) -> None:
+    monkeypatch.setattr(
+        deps.settings, "conversation_history_max_rows", 2_000, raising=False
+    )
+    _install_source(
+        monkeypatch, _messages(("user", "u1"), ("assistant", "a1"))
+    )
+    result = await get_chat_memory_context(_payload(), _request())
+    assert result.history_row_cap_reached is False
+
+
+async def test_cap_flag_is_false_on_every_degradation_path(
+    memory_on, collector, monkeypatch
+) -> None:
+    # A degraded (empty) context must never falsely claim the cap was hit.
+    _install_source(monkeypatch, ConversationNotFoundError("x"))
+    result = await get_chat_memory_context(_payload(), _request())
+    assert result.history_row_cap_reached is False

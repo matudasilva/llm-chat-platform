@@ -55,6 +55,36 @@ class ConversationQueryService:
         res = await self._db.execute(stmt)
         return list(res.scalars().all())
 
+    async def list_recent_messages_for_conversation(
+        self, conversation_id: UUID, tenant_id: str, *, max_rows: int
+    ) -> list[Message]:
+        """The operational history read (ORQ-37 T12), bounded in SQL.
+
+        A NEW method rather than a change to `list_messages_for_conversation`
+        above: that method is shared with the non-RAG conversation flow, and
+        this ORQ does not own its contract. Its shape also differs on purpose
+        -- "most recent N, in order" needs `ORDER BY sequence DESC LIMIT n`
+        re-sorted ascending, not `ORDER BY sequence ASC LIMIT n`, which would
+        return the OLDEST `max_rows` messages instead (AC36).
+
+        `sequence` is a database-generated `Identity`, strictly increasing
+        (`message.py:31-34`), so the re-sort is a total, stable order with no
+        tie-breaking to get wrong.
+        """
+        stmt = (
+            select(Message)
+            .where(
+                Message.conversation_id == conversation_id,
+                Message.tenant_id == tenant_id,
+            )
+            .order_by(Message.sequence.desc())
+            .limit(max_rows)
+        )
+        res = await self._db.execute(stmt)
+        rows = list(res.scalars().all())
+        rows.reverse()
+        return rows
+
     async def list_conversations(self, *, limit: int, offset: int, tenant_id: str) -> list[ConversationListRow]:
         stmt = (
             select(
