@@ -43,10 +43,20 @@ def test_route_resolves_memory_as_a_dependency() -> None:
 
 
 def test_history_assembly_is_not_inside_any_transaction_block() -> None:
-    """AC11 read as a property of the file, not of a reviewer's attention."""
+    """AC11 read as a property of the handler, not of a reviewer's attention.
+
+    Scoped to `chat()` itself, not the whole module: T14 added
+    `_write_rag_request_metrics`, a separate function with its own `db`
+    variable bound to the OPERATIONAL session, whose own `async with
+    db.begin()` performs the metrics INSERT that AC11's B2 half requires to
+    run *after* the business transaction has unwound. That is a different
+    session, a different variable, and a different transaction than the one
+    AC11 forbids memory/metrics from touching -- scanning the whole module
+    would flag the very site AC11 mandates exist.
+    """
     from app.api.routes import chat as chat_route
 
-    lines = inspect.getsource(chat_route).splitlines()
+    lines = inspect.getsource(chat_route.chat).splitlines()
     depth_stack: list[int] = []
     offenders: list[int] = []
     for number, line in enumerate(lines, start=1):

@@ -1,10 +1,11 @@
+import asyncio
 import json
 import logging
 import time
 import uuid
 from typing import Any, AsyncIterator
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -13,6 +14,7 @@ from app.core.domain.chat_memory import ChatMemoryContext
 from app.core.domain.chat_service import ChatService
 from app.core.domain.chat_types import ChatServiceResult
 from app.core.domain.errors import ProviderExecutionError, ProviderTimeoutError
+from app.core.domain.provider import ProviderResult
 from app.core.domain.provider_errors import ProviderError
 from app.core.domain.rag_generation import RagGenerationContext
 from app.core.domain.types import ChatMessage
@@ -20,9 +22,11 @@ from app.core.settings import settings
 from app.core.utils.limits import sanitize_error_message, truncate
 from app.http.middleware.tenant import get_tenant_id
 from app.http.request_context import get_request_id
-from app.infra.db.session import get_db
+from app.http import pipeline_metrics
+from app.infra.db.session import get_db, get_history_sessionmaker, short_lived_history_session
 from app.models.conversation import Conversation
 from app.models.message import Message, MessageRole
+from app.models.rag_request_metrics import RagRequestMetrics
 from app.models.usage_event import UsageEvent
 from app.schemas.chat import ChatRequest, ChatResponse, ChatStatus, RagSourceOut
 from app.services.chat_response_cache import get_chat_response_cache
@@ -54,9 +58,92 @@ def _error_provider_name(chat_service: ChatService) -> str:
     return settings.provider
 
 
+async def _write_rag_request_metrics(
+    request: Request,
+    *,
+    tenant_id: str,
+    generation_outcome: str,
+    provider_result: ProviderResult | None,
+    memory_context: ChatMemoryContext,
+    total_latency_ms: int,
+) -> None:
+    """The single post-transaction write site's logic, shared by both paths (T14).
+
+    Runs on the OPERATIONAL session (`chat_ops`, INSERT-only on this table per
+    the split grants of `e4b7f21c9a06`) -- never the primary session, which the
+    atomic write already used and released by the time this runs. Never
+    raises: telemetry is best-effort (invariant 4) and must not put the
+    request at risk of a metrics bug.
+
+    Identity is server-side: `request_instance_id`/`request_id` come from the
+    collector's snapshot -- the `RequestContextMiddleware`-minted identity
+    (§Diseño 3) -- never from this function's own `request_id` local, which is
+    the OLDER, client-influenced fallback the near-collision note in
+    `request_context.py` warns about.
+
+    `mode` is hardcoded `"A"`: `ebm25_enabled` does not exist until T18, so
+    Mode B cannot occur yet. `rewrite_calls`/`retrieve_calls`/`rerank_calls`/
+    `evaluate_calls`/`generate_calls`/`fallback_used`/`ebm25_selected_count`
+    have no producer yet -- those columns exist per §Diseño 6's full schema
+    but stay NULL until a later task wires them, which is not scope creep:
+    writing to modules outside `chat.py`/`deps.py` is exactly what T14 does
+    not do.
+    """
+    if not settings.rag_request_metrics_enabled:
+        return
+    if request is None:
+        return
+    collector = pipeline_metrics.get_collector()
+    if collector is None:
+        return
+    snapshot = collector.snapshot()
+    raw_instance_id = snapshot.get("request_instance_id")
+    if not raw_instance_id:
+        return
+    try:
+        request_instance_id = uuid.UUID(str(raw_instance_id))
+        raw_request_id = snapshot.get("request_id")
+        correlation_request_id = uuid.UUID(str(raw_request_id)) if raw_request_id else None
+        sessionmaker = get_history_sessionmaker(request)
+        async with short_lived_history_session(sessionmaker) as db:
+            async with db.begin():
+                db.add(
+                    RagRequestMetrics(
+                        id=uuid.uuid4(),
+                        request_instance_id=request_instance_id,
+                        request_id=correlation_request_id,
+                        tenant_id=tenant_id,
+                        mode="A",
+                        memory_outcome=snapshot.get("memory_outcome"),
+                        generation_outcome=generation_outcome,
+                        input_tokens=(
+                            provider_result.input_tokens if provider_result else None
+                        ),
+                        output_tokens=(
+                            provider_result.output_tokens if provider_result else None
+                        ),
+                        total_latency_ms=total_latency_ms,
+                        history_truncated=memory_context.truncated,
+                        history_row_cap_reached=memory_context.history_row_cap_reached,
+                    )
+                )
+    except Exception:
+        # Telemetry must never break /chat. A raised exception here is
+        # swallowed exactly like the existing UsageEvent writes.
+        pass
+
+
 @router.post("", response_model=ChatResponse)
 async def chat(
     payload: ChatRequest,
+    # `Request | None = None`, not a bare required `Request`: FastAPI still
+    # injects the real ASGI request via this type annotation regardless of
+    # the default, and the default is what lets every existing direct
+    # unit-call test -- the same convention `rag_context`/`memory_context`
+    # already use for calls that bypass DI -- keep calling `chat(...)`
+    # without constructing one. `_write_rag_request_metrics` treats `None`
+    # as "skip the write" (T14).
+    request: Request = None,  # type: ignore[assignment]
     db: AsyncSession = Depends(get_db),
     chat_service: ChatService = Depends(get_chat_service),
     rag_context: RagGenerationContext = Depends(get_chat_rag_context),
@@ -69,6 +156,9 @@ async def chat(
 
     status = ChatStatus.error
     error_message: str | None = None
+    # T14: set at each terminal point; the write-site finally reads it.
+    generation_outcome: str | None = None
+    metrics_provider_result: ProviderResult | None = None
     is_new_conversation = payload.conversation_id is None
     conversation_id = payload.conversation_id or uuid.uuid4()
     user_message_id: uuid.UUID | None = None
@@ -112,6 +202,8 @@ async def chat(
         )
 
         async def event_generator() -> AsyncIterator[str]:
+            generation_outcome: str | None = None
+            metrics_provider_result: ProviderResult | None = None
             logger.info(
                 "chat_streaming_start request_id=%s conversation_id=%s is_new=%s",
                 str(request_id),
@@ -158,6 +250,7 @@ async def chat(
                     else:
                         conv = await db.get(Conversation, conversation_id)
                         if conv is None or conv.tenant_id != tenant_id:
+                            generation_outcome = "not_found"
                             yield _sse_json("error", {"error_kind": "not_found"})
                             return
 
@@ -193,6 +286,8 @@ async def chat(
                         if stream_result.provider_result is not None
                         else None
                     )
+                    metrics_provider_result = provider_result
+                    generation_outcome = "ok"
 
                     try:
                         db.add(
@@ -250,6 +345,7 @@ async def chat(
                 )
 
             except ProviderError as e:
+                generation_outcome = "error"
                 yield _sse_json(
                     "error",
                     {
@@ -259,6 +355,7 @@ async def chat(
                 )
                 return
             except Exception:
+                generation_outcome = "error"
                 logger.exception(
                     "chat_streaming_unhandled_error request_id=%s conversation_id=%s",
                     str(request_id),
@@ -266,6 +363,32 @@ async def chat(
                 )
                 yield _sse_json("error", {"error_kind": "internal"})
                 return
+            finally:
+                # AC18 outcome 8: on client disconnect the generator is
+                # finalized under cancellation, and any unshielded `await`
+                # here can be aborted before it completes. `asyncio.shield`
+                # lets the write survive that -- best-effort, zero-or-one row,
+                # per the weaker contract outcome 8 carries. Every other
+                # outcome (1-7) reaches this normally and the write is
+                # effectively synchronous.
+                try:
+                    await asyncio.shield(
+                        asyncio.wait_for(
+                            _write_rag_request_metrics(
+                                request,
+                                tenant_id=tenant_id,
+                                generation_outcome=generation_outcome or "cancelled",
+                                provider_result=metrics_provider_result,
+                                memory_context=memory_context,
+                                total_latency_ms=max(
+                                    0, int((time.perf_counter() - start_stream) * 1000)
+                                ),
+                            ),
+                            timeout=settings.rag_request_metrics_timeout_s,
+                        )
+                    )
+                except Exception:
+                    pass
 
         return StreamingResponse(event_generator(), media_type="text/event-stream")
 
@@ -282,6 +405,7 @@ async def chat(
             else:
                 conv = await db.get(Conversation, conversation_id)
                 if conv is None or conv.tenant_id != tenant_id:
+                    generation_outcome = "not_found"
                     raise HTTPException(status_code=404, detail="conversation_id not found")
 
             # 2) Persist user message
@@ -334,6 +458,8 @@ async def chat(
             assistant_message_id = assistant_msg.id
 
             status = ChatStatus.success
+            generation_outcome = "ok"
+            metrics_provider_result = provider_result
 
             # 5) UsageEvent WITH valid FKs (best-effort)
             latency_ms = max(0, int((time.perf_counter() - start) * 1000))
@@ -388,6 +514,7 @@ async def chat(
         raise
 
     except (ProviderTimeoutError, ProviderExecutionError) as e:
+        generation_outcome = "timeout" if isinstance(e, ProviderTimeoutError) else "error"
         error_message = sanitize_error_message(str(e), settings.max_error_message_chars)
 
         try:
@@ -427,6 +554,7 @@ async def chat(
         )
 
     except Exception as e:
+        generation_outcome = "error"
 
         logger.exception(
             "chat_unhandled_error request_id=%s conversation_id=%s",
@@ -470,3 +598,19 @@ async def chat(
             status=ChatStatus.error,
             error_message=error_message,
         )
+
+    finally:
+        try:
+            await asyncio.wait_for(
+                _write_rag_request_metrics(
+                    request,
+                    tenant_id=tenant_id,
+                    generation_outcome=generation_outcome or "error",
+                    provider_result=metrics_provider_result,
+                    memory_context=memory_context,
+                    total_latency_ms=max(0, int((time.perf_counter() - start) * 1000)),
+                ),
+                timeout=settings.rag_request_metrics_timeout_s,
+            )
+        except Exception:
+            pass

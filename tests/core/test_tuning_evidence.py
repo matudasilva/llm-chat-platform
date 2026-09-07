@@ -154,6 +154,13 @@ def test_no_pre_existing_default_changed():
         # RAG alone already had, so this is a new NAME on an existing value,
         # not a new limit in practice.
         "chat_prompt_max_added_context_chars",
+        # T14 / §Diseño 6: per-request metrics. Inert by default (flag off);
+        # the retention window and write timeout are configuration only until
+        # the flag is on, which Gate B2's production-readiness condition
+        # separately gates.
+        "rag_request_metrics_enabled",
+        "rag_request_metrics_retention_days",
+        "rag_request_metrics_timeout_s",
     }
     added = set(after) - set(before)
     assert added <= authorized_additions, (

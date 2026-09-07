@@ -235,6 +235,19 @@ class Settings(BaseSettings):
     # the user asked.
     chat_prompt_max_added_context_chars: int = 12_000
 
+    # ORQ-37 T14 (Gate B2). D-7 resolved: matches the repo's uniform
+    # convention, so no existing deployment starts writing an extra row per
+    # request merely by updating. §Diseño 6's retention window; enforcement is
+    # an OPERATIONAL statement (docs/), never a scheduler or background job --
+    # no automatic retention is claimed.
+    rag_request_metrics_enabled: bool = False
+    rag_request_metrics_retention_days: int = 30
+    # Bounds the write, not the request: the streaming site runs INSIDE the
+    # ASGI response, so an unbounded metrics session would extend /chat's
+    # wall-clock latency, which fault injection (a fast failure) does not
+    # cover (invariant 9).
+    rag_request_metrics_timeout_s: float = 5.0
+
     # ORQ-37 (Gate A): the tracing seam. Disabled by default, matching every
     # RAG flag -- no existing deployment starts exporting merely by updating.
     # The export target is pure configuration: no endpoint or hostname is
@@ -357,6 +370,20 @@ class Settings(BaseSettings):
     def validate_conversation_history_limits(cls, value: int) -> int:
         if value <= 0:
             raise ValueError("conversation history limits must be > 0")
+        return value
+
+    @field_validator("rag_request_metrics_retention_days")
+    @classmethod
+    def validate_rag_request_metrics_retention_days(cls, value: int) -> int:
+        if value <= 0:
+            raise ValueError("rag_request_metrics_retention_days must be > 0")
+        return value
+
+    @field_validator("rag_request_metrics_timeout_s")
+    @classmethod
+    def validate_rag_request_metrics_timeout_s(cls, value: float) -> float:
+        if value <= 0:
+            raise ValueError("rag_request_metrics_timeout_s must be > 0")
         return value
 
     @field_validator("chat_prompt_max_added_context_chars")
