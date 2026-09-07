@@ -150,6 +150,10 @@ def test_no_pre_existing_default_changed():
         # T12 / AC36: bounds the SQL history read. Inert until a conversation
         # exceeds it (default 2 000, far above the assembler's own window).
         "conversation_history_max_rows",
+        # T13 / AC14: the hard added-context cap. 12 000 matches the ceiling
+        # RAG alone already had, so this is a new NAME on an existing value,
+        # not a new limit in practice.
+        "chat_prompt_max_added_context_chars",
     }
     added = set(after) - set(before)
     assert added <= authorized_additions, (

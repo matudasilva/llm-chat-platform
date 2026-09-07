@@ -296,3 +296,101 @@ async def test_cap_flag_is_false_on_every_degradation_path(
     _install_source(monkeypatch, ConversationNotFoundError("x"))
     result = await get_chat_memory_context(_payload(), _request())
     assert result.history_row_cap_reached is False
+
+
+# --- AC14 (T13): the packer is wired into get_chat_memory_context ----------
+
+
+async def test_window_exceeding_the_added_context_cap_is_packed(
+    memory_on, collector, monkeypatch
+) -> None:
+    monkeypatch.setattr(
+        deps.settings, "chat_prompt_max_added_context_chars", 20, raising=False
+    )
+    _install_source(
+        monkeypatch,
+        _messages(
+            ("user", "old " * 20), ("assistant", "old reply " * 20),
+            ("user", "new"), ("assistant", "reply"),
+        ),
+    )
+    result = await get_chat_memory_context(_payload(), _request())
+    assert sum(len(m.content) for m in result.messages) <= 20
+    assert result.truncated is True
+
+
+async def test_window_within_the_added_context_cap_is_unaffected(
+    memory_on, collector, monkeypatch
+) -> None:
+    monkeypatch.setattr(
+        deps.settings, "chat_prompt_max_added_context_chars", 12_000, raising=False
+    )
+    _install_source(
+        monkeypatch, _messages(("user", "u1"), ("assistant", "a1"))
+    )
+    result = await get_chat_memory_context(_payload(), _request())
+    assert [(m.role, m.content) for m in result.messages] == [
+        ("user", "u1"),
+        ("assistant", "a1"),
+    ]
+    assert result.truncated is False
+
+
+async def test_packing_to_zero_is_reported_as_empty_outcome(
+    memory_on, collector, monkeypatch
+) -> None:
+    monkeypatch.setattr(
+        deps.settings, "chat_prompt_max_added_context_chars", 0, raising=False
+    )
+    _install_source(
+        monkeypatch, _messages(("user", "u1"), ("assistant", "a1"))
+    )
+    result = await get_chat_memory_context(_payload(), _request())
+    assert result.is_empty
+    assert collector.snapshot()["memory_outcome"] == "empty"
+
+
+async def test_packer_truncation_ors_into_the_existing_truncated_flag(
+    memory_on, collector, monkeypatch
+) -> None:
+    # `truncated` already carries the assembler's own (ORQ-38) cap; packing
+    # must not clobber a True set upstream, and must set it True on its own.
+    monkeypatch.setattr(
+        deps.settings, "conversation_history_max_messages", 2, raising=False
+    )
+    monkeypatch.setattr(
+        deps.settings, "chat_prompt_max_added_context_chars", 12_000, raising=False
+    )
+    _install_source(
+        monkeypatch,
+        _messages(
+            ("user", "old"), ("assistant", "old reply"),
+            ("user", "new"), ("assistant", "new reply"),
+        ),
+    )
+    result = await get_chat_memory_context(_payload(), _request())
+    # The assembler's own cap already dropped the older turn; the packer had
+    # nothing left to do, but the flag must still read True.
+    assert result.truncated is True
+
+
+async def test_history_row_cap_reached_survives_packing(
+    memory_on, collector, monkeypatch
+) -> None:
+    monkeypatch.setattr(
+        deps.settings, "conversation_history_max_rows", 4, raising=False
+    )
+    monkeypatch.setattr(
+        deps.settings, "chat_prompt_max_added_context_chars", 5, raising=False
+    )
+    _install_source(
+        monkeypatch,
+        _messages(
+            ("user", "u1"), ("assistant", "a1"),
+            ("user", "u2"), ("assistant", "a2"),
+        ),
+    )
+    result = await get_chat_memory_context(_payload(), _request())
+    # A field computed upstream of the packer must not be lost by it, even
+    # when the packer empties the window entirely.
+    assert result.history_row_cap_reached is True

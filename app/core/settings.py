@@ -225,6 +225,16 @@ class Settings(BaseSettings):
     # genuinely enormous.
     conversation_history_max_rows: int = 2_000
 
+    # ORQ-37 T13 / AC14 (§Diseño 7 "Combined budget"). A HARD cap on the
+    # ADDED CONTEXT only -- recent-window turns, retrieved out-of-window
+    # evidence (B2), and documental RAG context -- never on the whole prompt.
+    # The current user message is deliberately outside this budget and is
+    # never truncated or dropped: `max_request_bytes` is 64 KiB of bytes
+    # (`settings.py:68`), so a message can exceed 12 000 characters on its
+    # own, and this ORQ does not make a large request fit by discarding what
+    # the user asked.
+    chat_prompt_max_added_context_chars: int = 12_000
+
     # ORQ-37 (Gate A): the tracing seam. Disabled by default, matching every
     # RAG flag -- no existing deployment starts exporting merely by updating.
     # The export target is pure configuration: no endpoint or hostname is
@@ -347,6 +357,13 @@ class Settings(BaseSettings):
     def validate_conversation_history_limits(cls, value: int) -> int:
         if value <= 0:
             raise ValueError("conversation history limits must be > 0")
+        return value
+
+    @field_validator("chat_prompt_max_added_context_chars")
+    @classmethod
+    def validate_chat_prompt_max_added_context_chars(cls, value: int) -> int:
+        if value <= 0:
+            raise ValueError("chat_prompt_max_added_context_chars must be > 0")
         return value
 
     @field_validator("conversation_history_max_rows")

@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import uuid
 from collections.abc import AsyncIterator
+from types import SimpleNamespace
 
 import pytest
 
@@ -419,3 +420,74 @@ async def test_a_mid_turn_bound_still_delivers_whole_turns(memory_on) -> None:
     )
     prior = service.run_messages[:-1]
     assert [m.content for m in prior] == ["u2", "a2"]
+
+
+# --- T13: the provider never receives more than the hard added-context cap -
+
+
+async def test_provider_never_receives_more_than_the_added_context_cap(memory_on, monkeypatch) -> None:
+    """End to end through the REAL `get_chat_memory_context`, not a hand-built context.
+
+    Packing happens inside the dependency (T13), not in `chat.py` -- passing a
+    pre-built oversized `ChatMemoryContext` directly into the route would
+    bypass the packer entirely and prove nothing. This calls the dependency
+    the way `chat.py`'s `Depends(get_chat_memory_context)` would, with its
+    collaborators doubled at the same seams `test_chat_memory_dependency.py`
+    uses (`get_history_sessionmaker`, `SqlConversationHistoryAdapter`).
+    """
+    from app.api import deps
+    from app.api.deps import get_chat_memory_context
+    from app.core.domain.conversation_history import HistoryMessage
+
+    monkeypatch.setattr(chat_routes.settings, "chat_prompt_max_added_context_chars", 30)
+    monkeypatch.setattr(deps.settings, "conversation_history_enabled", True, raising=False)
+    monkeypatch.setattr(deps.settings, "chat_prompt_max_added_context_chars", 30, raising=False)
+    monkeypatch.setattr(deps, "get_tenant_id", lambda: "acme")
+
+    huge_rows = [
+        HistoryMessage(sequence=1, role="user", content="u" * 10_000),
+        HistoryMessage(sequence=2, role="assistant", content="a" * 10_000),
+    ]
+
+    class _Adapter:
+        def __init__(self, queries, *, max_rows=None) -> None:
+            pass
+
+        async def fetch_ordered(self, conversation_id, tenant_id):
+            return huge_rows
+
+    class _HistorySession:
+        pass
+
+    class _CM:
+        async def __aenter__(self):
+            return _HistorySession()
+
+        async def __aexit__(self, *exc):
+            return False
+
+    monkeypatch.setattr(deps, "get_history_sessionmaker", lambda request: object())
+    monkeypatch.setattr(deps, "short_lived_history_session", lambda sm: _CM())
+    monkeypatch.setattr(deps, "SqlConversationHistoryAdapter", _Adapter)
+    monkeypatch.setattr(deps, "ConversationQueryService", lambda db: object())
+
+    memory_context = await get_chat_memory_context(
+        ChatRequest(message="current", conversation_id=uuid.uuid4()),
+        SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace())),
+    )
+    assert sum(len(m.content) for m in memory_context.messages) <= 30, (
+        "the dependency itself must already have packed the window -- "
+        "if this fails, the packer is not wired into get_chat_memory_context"
+    )
+
+    service = _CapturingChatService()
+    await chat_routes.chat(
+        ChatRequest(message="current"),
+        db=_Session(),
+        chat_service=service,
+        memory_context=memory_context,
+    )
+    prior = service.run_messages[:-1]
+    assert sum(len(m.content) for m in prior) <= 30
+    # The current message is untouched regardless of how the window was capped.
+    assert service.run_messages[-1] == ChatMessage(role="user", content="current")

@@ -1,5 +1,6 @@
 # app/api/deps.py
 import asyncio
+import dataclasses
 import logging
 import uuid
 from typing import Sequence
@@ -12,6 +13,7 @@ from app.core.domain.conversation_history import (
     ConversationNotFoundError,
     HistoryMessage,
 )
+from app.core.domain.context_packer import pack_recent_window
 from app.core.domain.conversation_turns import build_materialized_window
 from app.core.domain.provider import ProviderPort
 from app.core.domain.provider_factory import build_provider, build_provider_resolver
@@ -159,6 +161,20 @@ async def get_chat_memory_context(
     context = ChatMemoryContext.from_partition(
         partition, truncated=truncated, history_row_cap_reached=cap_reached
     )
+
+    # T13: the hard added-context cap, applied to the recent-window term only
+    # (§Diseño 7 "Combined budget"). `reserved_chars` stays at its default of
+    # 0 -- the documental RAG channel's own budget is not combined with this
+    # one in this pass; see `context_packer.py`'s module docstring.
+    packed = pack_recent_window(
+        context.messages, max_chars=settings.chat_prompt_max_added_context_chars
+    )
+    context = dataclasses.replace(
+        context,
+        messages=packed.messages,
+        truncated=context.truncated or packed.truncated,
+    )
+
     await _record_memory_outcome("empty" if context.is_empty else "ok")
     return context
 
