@@ -3,7 +3,7 @@
 **Date:** 2026-09-03
 **Status:** Accepted
 **ORQ reference:** ORQ-38
-**Superseded by / Supersedes:** Amends ADR-004 §3
+**Superseded by / Supersedes:** Amends ADR-004 §3; Amended by ADR-012 (`total_available` narrowed to "available within the cap" under ORQ-37's SQL row bound)
 
 ---
 

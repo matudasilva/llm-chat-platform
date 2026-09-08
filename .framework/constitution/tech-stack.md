@@ -23,6 +23,12 @@
 **Configuration**
 - `pydantic` v2 + `pydantic-settings`, centralized in `app/core/settings.py`
 
+**Observability**
+- OpenTelemetry (`opentelemetry-api`/`sdk`/`exporter-otlp-proto-http`, pinned
+  `1.44.0`), disabled by default (`otel_enabled=False`). The only module under
+  `app/` importing `opentelemetry` is `app/core/observability/tracing.py`
+  (ORQ-37 / ADR-012).
+
 **Packaging and local ops**
 - Docker + Docker Compose (`docker-compose.yml` prod, `docker-compose.dev.yml` dev)
 - Pinned dependencies in `app/requirements.txt` / `app/requirements.lock`
@@ -66,7 +72,9 @@ docs/adr/          ADR-001 … ADR-005
 - The production and dev Compose stacks share host port mappings — they must not
   run in parallel on the same machine.
 - Cache keys are tenant-namespaced (`chat:response:{tenant_id}:{sha256}`) and
-  fingerprint the full conversation history, not just the last message.
+  fingerprint the bounded recent-window turns entering the messages list —
+  not an unbounded history, and not just the last message (ORQ-37 / ADR-012
+  corrects this sentence to what is actually enforced).
 
 ## Technical invariants
 
