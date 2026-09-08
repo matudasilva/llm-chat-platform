@@ -161,6 +161,9 @@ def test_no_pre_existing_default_changed():
         "rag_request_metrics_enabled",
         "rag_request_metrics_retention_days",
         "rag_request_metrics_timeout_s",
+        # T18 / §Diseño 10: the Mode B flag itself. Inert by default -- Mode A
+        # is exactly Gate B1's shipped behaviour until an operator turns it on.
+        "ebm25_enabled",
     }
     added = set(after) - set(before)
     assert added <= authorized_additions, (

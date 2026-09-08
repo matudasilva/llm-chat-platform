@@ -248,6 +248,11 @@ class Settings(BaseSettings):
     # cover (invariant 9).
     rag_request_metrics_timeout_s: float = 5.0
 
+    # ORQ-37 T18 (Gate B2). D-nothing new: matches the repo's uniform
+    # convention -- disabled by default, so no deployment enters Mode B
+    # merely by updating. Gate B2 requires it on; AC16 is evaluated with it on.
+    ebm25_enabled: bool = False
+
     # ORQ-37 (Gate A): the tracing seam. Disabled by default, matching every
     # RAG flag -- no existing deployment starts exporting merely by updating.
     # The export target is pure configuration: no endpoint or hostname is

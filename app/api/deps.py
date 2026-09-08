@@ -7,7 +7,8 @@ from typing import Sequence
 
 from fastapi import Request
 
-from app.core.domain.chat_memory import ChatMemoryContext
+from app.core.domain.bm25_ranking import pack_selected_events, query_tokens, rank_events
+from app.core.domain.chat_memory import ChatMemoryContext, RetrievedMemoryEvent
 from app.core.domain.conversation_history import (
     ConversationHistoryAssembler,
     ConversationNotFoundError,
@@ -15,6 +16,7 @@ from app.core.domain.conversation_history import (
 )
 from app.core.domain.context_packer import pack_recent_window
 from app.core.domain.conversation_turns import build_materialized_window
+from app.core.domain.retrieval_corpus import RetrievalCorpus
 from app.core.domain.provider import ProviderPort
 from app.core.domain.provider_factory import build_provider, build_provider_resolver
 from app.core.domain.chat_service import ChatService
@@ -162,24 +164,13 @@ async def get_chat_memory_context(
         partition, truncated=truncated, history_row_cap_reached=cap_reached
     )
 
-    # T15: the Mode B corpus exists (`RetrievalCorpus.from_partition`), built
-    # from the SAME `partition` T10 already produced -- never a second
-    # grouping pass. Its emptiness is NOT recorded into `memory_outcome` here,
-    # deliberately: `ebm25_enabled` does not exist until T18, so Mode B is
-    # unreachable, and an empty corpus is the ordinary case for nearly every
-    # Gate B1 request today (a short conversation whose whole history sits
-    # inside the window). Recording `no_out_of_window_corpus` unconditionally
-    # would clobber the "ok"/"empty" outcome B1 traffic already relies on --
-    # replacing the common case with a Mode-B-only label before Mode B can
-    # even run. T18 (which adds the flag) or T16 (which adds selection) is
-    # where `memory_outcome` gains this branch, gated on Mode B actually being
-    # in effect. `RetrievalCorpus.is_empty` is exposed and tested so that
-    # wiring is a one-line call, not a redesign.
-
-    # T13: the hard added-context cap, applied to the recent-window term only
-    # (§Diseño 7 "Combined budget"). `reserved_chars` stays at its default of
-    # 0 -- the documental RAG channel's own budget is not combined with this
-    # one in this pass; see `context_packer.py`'s module docstring.
+    # T13: the hard added-context cap, applied to the recent-window term
+    # FIRST, against the FULL combined cap (§Diseño 7 "Combined budget"). The
+    # window is protected, not squeezed: `reserved_chars` stays at its default
+    # of 0 here specifically so Mode B's evidence -- packed below, against
+    # whatever remains -- is what yields when space is tight, never the
+    # window. This call is identical whether `ebm25_enabled` is on or off,
+    # which is what keeps AC16's byte-identity claim true by construction.
     packed = pack_recent_window(
         context.messages, max_chars=settings.chat_prompt_max_added_context_chars
     )
@@ -189,7 +180,50 @@ async def get_chat_memory_context(
         truncated=context.truncated or packed.truncated,
     )
 
-    await _record_memory_outcome("empty" if context.is_empty else "ok")
+    # T18: Mode B, gated on `ebm25_enabled`. Built from the SAME `partition`
+    # T10 already produced -- never a second grouping pass. Off by default,
+    # so Mode A's outcome/prompt are exactly B1's, unchanged by any of this.
+    #
+    # `mode_b_outcome`, once set, OVERRIDES the window's own "ok"/"empty"
+    # outcome below -- it is the more specific, Mode-B fact about the same
+    # request. Tracked explicitly rather than calling `_record_memory_outcome`
+    # twice, which would let the final unconditional call silently clobber
+    # whichever of these two fired (`record()` is last-write-wins).
+    mode_b_outcome: str | None = None
+    if settings.ebm25_enabled:
+        corpus = RetrievalCorpus.from_partition(partition)
+        if corpus.is_empty:
+            # §Diseño 8's first inert state: the snapped window already
+            # covers the whole conversation, so there is nothing left to
+            # retrieve.
+            mode_b_outcome = "no_out_of_window_corpus"
+            await _record_ebm25_selected_count(0)
+        else:
+            remaining_budget = settings.chat_prompt_max_added_context_chars - sum(
+                len(m.content) for m in context.messages
+            )
+            ranked = rank_events(corpus.events, query_tokens(payload.message))
+            selected, _ = pack_selected_events(ranked, max_chars=max(remaining_budget, 0))
+            if not selected:
+                # §Diseño 8's second inert state: evidence existed and was
+                # ranked, but the budget -- after the window took its
+                # (protected) share -- left no room for any of it.
+                mode_b_outcome = "budget_starved"
+                await _record_ebm25_selected_count(0)
+            else:
+                context = dataclasses.replace(
+                    context,
+                    retrieved_events=tuple(
+                        RetrievedMemoryEvent(event_id=event.event_id, content=event.document_text)
+                        for event in selected
+                    ),
+                )
+                await _record_ebm25_selected_count(len(selected))
+
+    if mode_b_outcome is not None:
+        await _record_memory_outcome(mode_b_outcome)
+    else:
+        await _record_memory_outcome("empty" if context.is_empty else "ok")
     return context
 
 
@@ -234,6 +268,11 @@ async def _materialize_window(adapter, assembler, conversation_id, tenant_id):
     # fewer rows than the cap without ever having been bounded.
     cap_reached = len(all_messages) == settings.conversation_history_max_rows
     return partition, assembled.truncated, cap_reached
+
+
+async def _record_ebm25_selected_count(count: int) -> None:
+    # T18: 0 for both inert states; N for a successful Mode B selection.
+    pipeline_metrics.record(ebm25_selected_count=count)
 
 
 async def _record_memory_outcome(outcome: str) -> None:

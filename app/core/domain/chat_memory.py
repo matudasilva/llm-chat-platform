@@ -15,8 +15,22 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from typing import Any
+
 from .conversation_turns import WindowPartition
+from .provider_prompt import MEMORY_SCHEMA_VERSION
 from .types import ChatMessage
+
+
+@dataclass(frozen=True, slots=True)
+class RetrievedMemoryEvent:
+    """One Mode B out-of-window turn selected for the evidence envelope (T18)."""
+
+    event_id: int
+    content: str
+
+    def provider_dict(self) -> dict[str, Any]:
+        return {"event_id": self.event_id, "content": self.content}
 
 
 @dataclass(frozen=True, slots=True)
@@ -30,10 +44,33 @@ class ChatMemoryContext:
     # message/char cap (ORQ-38). At the SQL cap the Mode B corpus is explicitly
     # the capped set, never a silently truncated one.
     history_row_cap_reached: bool = False
+    # ORQ-37 T18 (Gate B2): Mode B's selected out-of-window evidence. Empty by
+    # default -- Mode A (the shipped default, `ebm25_enabled=False`) never
+    # populates this, which is what keeps AC16's byte-identity claim true by
+    # construction rather than by a second code path.
+    retrieved_events: tuple[RetrievedMemoryEvent, ...] = ()
 
     @property
     def is_empty(self) -> bool:
         return not self.messages
+
+    @property
+    def provider_metadata(self) -> dict[str, Any] | None:
+        """`metadata["memory"]`, rendered by `provider_prompt` (T17).
+
+        `None` when there is nothing to render -- mirrors
+        `RagGenerationContext.provider_metadata`'s own "no sources, no key"
+        rule, and is what makes `messages_for_provider` emit no envelope at
+        all rather than an empty one.
+        """
+        if not self.retrieved_events:
+            return None
+        return {
+            "memory": {
+                "schema_version": MEMORY_SCHEMA_VERSION,
+                "events": [event.provider_dict() for event in self.retrieved_events],
+            }
+        }
 
     @classmethod
     def from_partition(

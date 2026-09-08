@@ -185,7 +185,16 @@ async def chat(
     # construction (§Diseño 7) -- two conversations sharing a last user
     # message no longer collide on either cache gate.
     memory_messages = list(memory_context.messages)
-    provider_metadata = rag_context.provider_metadata
+    # T18: the two metadata sources are independent optional dicts, merged
+    # into one -- `metadata["rag"]` (documental) and `metadata["memory"]`
+    # (Mode B out-of-window evidence) coexist as sibling keys, and
+    # `messages_for_provider` (T17) renders whichever are present, in its own
+    # fixed order. `None` when neither channel has anything to contribute,
+    # unchanged from before T18.
+    provider_metadata = {
+        **(memory_context.provider_metadata or {}),
+        **(rag_context.provider_metadata or {}),
+    } or None
     public_sources = [
         RagSourceOut(
             citation=source.citation,

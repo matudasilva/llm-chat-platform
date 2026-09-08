@@ -10,12 +10,16 @@ packing rule downstream of both, not a second soft one.
 
 The rule, applied in order until the added context fits:
 
-1. Drop out-of-window retrieved evidence, newest-selected last. **Not
-   implemented here** -- retrieved evidence does not exist until Gate B2
-   (T15/T16); this module packs the recent-window term only. `reserved_chars`
-   exists so a future budget contributor (documental RAG, retrieved evidence)
-   can be subtracted without redesigning this function -- it is NOT wired to
-   anything yet, by instruction (T13 wires the history-assembly path only).
+1. Drop out-of-window retrieved evidence, newest-selected last. **The window
+   is protected, not squeezed, to make room for it**: T18 packs THIS window
+   first, against the full combined cap (`reserved_chars=0`, unchanged), and
+   only then packs evidence against whatever remains. An earlier draft of this
+   docstring assumed the opposite -- evidence's usage subtracted from the
+   window's own budget via `reserved_chars` -- which would have dropped window
+   turns before evidence, the reverse of the order this section states.
+   `reserved_chars` stays unused for evidence; it remains available only for a
+   genuinely independent future contributor to this same cap (documental RAG
+   context, per §Diseño 7's "Combined budget" -- still not wired).
 2. Drop oldest complete recent turns, whole turns at a time.
 3. If the single remaining turn still exceeds the cap, truncate its content
    deterministically until the cap is met.
