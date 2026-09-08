@@ -6,12 +6,30 @@ existing diagram.
 
 | tipo | alcance | archivo | generado/manual | última actualización | refresh_pending | refresh_baseline |
 |---|---|---|---|---|---|---|
-| context | producto | `context.svg` | generado | 2026-09-03 | no | `sha256:511c6dc9275e1c3f0d456817006d512b5eec21834892a07848ffbdaacfd94787` |
+| context | producto | `context.svg` | generado | 2026-09-08 | no | `sha256:b7860c8b78c250020b27719dce1057d8c39c2408274451284112b6b6571b966c` |
 | architecture | framework | `architecture.svg` | generado | 2026-08-07 | sí (deferred) | `sha256:6096ce9ea9c68868dd5216f05b946195f01a2d2db874d05e7612d69274ddf957` |
 | structural | producto | `structural.svg` | manual | 2026-08-07 | sí (deferred) | `sha256:6096ce9ea9c68868dd5216f05b946195f01a2d2db874d05e7612d69274ddf957` |
-| deployment | producto | `deployment.svg` | manual | 2026-09-03 | no | `sha256:511c6dc9275e1c3f0d456817006d512b5eec21834892a07848ffbdaacfd94787` |
+| deployment | producto | `deployment.svg` | manual | 2026-09-08 | no | `sha256:b7860c8b78c250020b27719dce1057d8c39c2408274451284112b6b6571b966c` |
 | behavior | producto | `behavior.svg` | manual | 2026-08-07 | sí (deferred) | `sha256:6096ce9ea9c68868dd5216f05b946195f01a2d2db874d05e7612d69274ddf957` |
 | erd | producto | `erd.svg` | manual | 2026-08-07 | sí (deferred) | `sha256:6096ce9ea9c68868dd5216f05b946195f01a2d2db874d05e7612d69274ddf957` |
+
+## ORQ-37 closure audit (2026-09-08) — context/deployment acknowledged, rebaselined
+
+`fw_check_diagram_refresh.py` flagged all six rows `sí` after the closure
+audit below added two prose-only entries to `roadmap.md` (§Open decisions and
+§Decisions closed by ORQ). `context.svg` and `deployment.svg` were reviewed
+and **acknowledged** (`ack`): the diff between the prior baseline
+(`sha256:511c6dc9…`, 2026-09-03) and the current signature is exactly those
+two roadmap bullets (`git diff 622f5f7 HEAD -- .framework/constitution/roadmap.md`)
+— no actor, external system, or deployable-component change, so neither
+diagram's content needs to change. Both rows are rebaselined to the current
+signature (`sha256:b7860c8b…`) and read `refresh_pending: no` again.
+
+`architecture.svg`, `structural.svg`, `behavior.svg` and `erd.svg` are
+**not** rebaselined here — their staleness predates today's roadmap edits and
+reflects ORQ-37's real architectural/structural/behavioural changes (see the
+entry below), which do need a real redraw. They keep their 2026-08-07
+baseline and stay deferred, per the entry immediately below.
 
 ## ORQ-37 replan result (2026-09-08) — deferred again by operator
 
