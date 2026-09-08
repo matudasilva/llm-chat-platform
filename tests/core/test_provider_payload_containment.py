@@ -25,6 +25,7 @@ import uuid
 import pytest
 
 from app.core.domain.provider import ProviderInput
+from app.core.domain.provider_prompt import MEMORY_SCHEMA_VERSION
 from app.core.domain.rag_generation import RagGenerationContext, RagSource
 from app.core.domain.types import ChatMessage
 from app.core.providers.bedrock_provider import _build_payload as bedrock_payload
@@ -185,3 +186,113 @@ def test_all_three_shipped_providers_are_covered_here():
     for name in ("BedrockProvider", "OpenAIProvider", "StubProvider"):
         assert name in source
     assert "DisabledProvider" in source  # not a generating provider; no payload to assert
+
+
+# --- T17: the memory channel's row in this matrix, per §Diseño 11 ----------
+#
+# Same corpus, same three providers. The memory channel is prior USER-AUTHORED
+# text re-entering the prompt as evidence (§Diseño 11) -- the harder surface
+# Gate A's `rag` channel does not have, since Gate A's evidence is retrieved
+# document chunks, never something a user wrote. Both channels are exercised
+# together, because that is when ordering (memory before rag) and hoisting
+# interact.
+
+
+def _memory_metadata(*contents: str) -> dict:
+    return {
+        "memory": {
+            "schema_version": MEMORY_SCHEMA_VERSION,
+            "events": [
+                {"event_id": i + 1, "content": content} for i, content in enumerate(contents)
+            ],
+        }
+    }
+
+
+def _input_with_memory(memory_contents: tuple[str, ...], rag_contents: tuple[str, ...] = ()) -> ProviderInput:
+    metadata = _memory_metadata(*memory_contents)
+    if rag_contents:
+        context = RagGenerationContext(
+            sources=tuple(
+                RagSource(
+                    citation=f"S{i + 1}",
+                    document_id=uuid.uuid4(),
+                    chunk_id=uuid.uuid4(),
+                    rank=i + 1,
+                    content=content,
+                    truncated=False,
+                )
+                for i, content in enumerate(rag_contents)
+            )
+        )
+        metadata = {**metadata, **context.provider_metadata}
+    return ProviderInput(
+        request_id=uuid.uuid4(),
+        messages=[ChatMessage(role="user", content=_USER_TURN)],
+        metadata=metadata,
+    )
+
+
+def test_bedrock_hoists_the_memory_envelope_as_its_own_system_block():
+    payload = bedrock_payload(input=_input_with_memory((*_ALL,)), model="anthropic.test")
+    assert len(payload["system"]) == 1
+    assert "memory_evidence" in payload["system"][0]["text"]
+
+
+def test_bedrock_orders_memory_before_rag_in_the_hoisted_system_list():
+    payload = bedrock_payload(
+        input=_input_with_memory(("memory evidence",), ("rag source",)), model="anthropic.test"
+    )
+    assert len(payload["system"]) == 2
+    assert "memory_evidence" in payload["system"][0]["text"]
+    assert "Retrieved sources (JSON):" in payload["system"][1]["text"]
+
+
+@pytest.mark.parametrize("entry", ADVERSARIAL_PAYLOADS, ids=lambda e: e.name)
+def test_bedrock_keeps_every_memory_payload_inside_its_envelope(entry):
+    """Prior user-authored text -- the harder surface: it must stay contained
+    even though it is exactly the kind of text a real user turn would carry."""
+    payload = bedrock_payload(input=_input_with_memory((entry.payload,)), model="anthropic.test")
+    assert _contains(payload["system"][0]["text"], entry.payload)
+    for message in payload["messages"]:
+        for block in message["content"]:
+            assert not _contains(block["text"], entry.payload)
+
+
+def test_bedrock_turn_list_still_starts_at_user_with_memory_present():
+    payload = bedrock_payload(input=_input_with_memory((*_ALL,)), model="anthropic.test")
+    assert [m["role"] for m in payload["messages"]] == ["user"]
+
+
+def test_openai_renders_memory_before_rag_inline():
+    payload = _openai()._build_payload(
+        _input_with_memory(("memory evidence",), ("rag source",))
+    )
+    assert [entry["role"] for entry in payload["input"]] == ["system", "system", "user"]
+    assert "memory_evidence" in payload["input"][0]["content"][0]["text"]
+    assert "Retrieved sources (JSON):" in payload["input"][1]["content"][0]["text"]
+
+
+@pytest.mark.parametrize("entry", ADVERSARIAL_PAYLOADS, ids=lambda e: e.name)
+def test_openai_keeps_every_memory_payload_in_a_system_entry_only(entry):
+    payload = _openai()._build_payload(_input_with_memory((entry.payload,)))
+    carriers = [
+        item["role"]
+        for item in payload["input"]
+        if any(_contains(block["text"], entry.payload) for block in item["content"])
+    ]
+    assert carriers == ["system"]
+
+
+@pytest.mark.asyncio
+async def test_stub_behaviour_is_unchanged_by_the_memory_envelope():
+    stub = StubProvider()
+    result = await stub.generate(_input_with_memory((*_ALL,)))
+    assert result.content.endswith(_USER_TURN)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("entry", ADVERSARIAL_PAYLOADS, ids=lambda e: e.name)
+async def test_stub_output_never_carries_a_memory_injection_payload(entry):
+    result = await StubProvider().generate(_input_with_memory((entry.payload,)))
+    assert not _contains(result.content, entry.payload)
