@@ -39,6 +39,12 @@ services:
       CHAT_RAG_MAX_SOURCES: ${CHAT_RAG_MAX_SOURCES:-5}
       CHAT_RAG_MAX_SOURCE_CHARS: ${CHAT_RAG_MAX_SOURCE_CHARS:-4000}
       CHAT_RAG_MAX_CONTEXT_CHARS: ${CHAT_RAG_MAX_CONTEXT_CHARS:-12000}
+      # ORQ-37 manual Mode A/B comparison (config-only, T9/T18 flags already
+      # shipped): CONVERSATION_HISTORY_ENABLED alone re-enables Gate B1's
+      # recent-window assembly for this manual test. EBM25_ENABLED stays
+      # unset (defaults to false) so this step is Mode A with history, not B.
+      CONVERSATION_HISTORY_ENABLED: ${CONVERSATION_HISTORY_ENABLED:-false}
+      EBM25_ENABLED: ${EBM25_ENABLED:-false}
       PYTEST_ADDOPTS: "-o cache_dir=/tmp/pytest_cache"
       PROVIDER: ${PROVIDER:-stub}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}

@@ -660,6 +660,18 @@ CO2e) this phase depends on.
   injected `EmbeddingPort` instead, so this decision stays unmade rather than
   half-made. Amends ADR-006 when taken. Related: the same rationale drives the
   reranker's planned AWS→GCP swap.
+- **Model faithfulness to present context** (raised 2026-09-08, ORQ-37 manual
+  A/B testing). Across five manual conversations exercising Gate B1's window
+  and Mode B (`E-BM25`), the operator observed the provider (Bedrock)
+  repeatedly ignoring or denying conversational context that was verifiably
+  present in its own input — read-only-reconstructed and confirmed against the
+  exact messages sent, not inferred. Distinct from every failure ORQ-37 itself
+  targets: the retrieval/assembly pipeline correctly delivered the evidence in
+  each case: this is the model declining or failing to use it. `§No-alcance`
+  forbids ORQ-37 from touching prompt tuning, `_RAG_INSTRUCTIONS`, or retry
+  policy, so this cannot be diagnosed or addressed inside it. Not scheduled in
+  any ORQ; needs its own scoped investigation (prompt/instruction design,
+  provider/model choice, or a faithfulness eval) before any fix is attempted.
 
 ## Decisions closed by ORQ
 
