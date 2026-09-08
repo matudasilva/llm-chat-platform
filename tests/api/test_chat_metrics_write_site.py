@@ -292,13 +292,67 @@ async def test_tokens_come_from_the_provider_result(metrics_on, collector) -> No
     assert rows[0].output_tokens == 20
 
 
-async def test_mode_is_a_hardcoded_until_t18(metrics_on, collector) -> None:
+async def test_mode_reflects_ebm25_enabled_false(monkeypatch, metrics_on, collector) -> None:
+    monkeypatch.setattr(chat_routes.settings, "ebm25_enabled", False, raising=False)
     await chat_routes._write_rag_request_metrics(
         object(), tenant_id=TENANT, generation_outcome="ok", provider_result=None,
         memory_context=ChatMemoryContext(), total_latency_ms=1,
     )
     rows = await _rows(metrics_on)
     assert rows[0].mode == "A"
+
+
+async def test_mode_reflects_ebm25_enabled_true(monkeypatch, metrics_on, collector) -> None:
+    monkeypatch.setattr(chat_routes.settings, "ebm25_enabled", True, raising=False)
+    await chat_routes._write_rag_request_metrics(
+        object(), tenant_id=TENANT, generation_outcome="ok", provider_result=None,
+        memory_context=ChatMemoryContext(), total_latency_ms=1,
+    )
+    rows = await _rows(metrics_on)
+    assert rows[0].mode == "B"
+
+
+async def test_mode_is_b_even_when_mode_b_selected_no_evidence(
+    monkeypatch, metrics_on, collector
+) -> None:
+    """`mode` marks the active configuration, not whether Mode B's ranking
+    actually selected evidence -- that finer distinction is
+    `memory_outcome`/`ebm25_selected_count`'s job, not `mode`'s. A
+    `no_out_of_window_corpus`/`budget_starved` request is still mode "B"."""
+    monkeypatch.setattr(chat_routes.settings, "ebm25_enabled", True, raising=False)
+    await chat_routes._write_rag_request_metrics(
+        object(), tenant_id=TENANT, generation_outcome="ok", provider_result=None,
+        memory_context=ChatMemoryContext(),  # no retrieved_events -- nothing selected
+        total_latency_ms=1,
+    )
+    rows = await _rows(metrics_on)
+    assert rows[0].mode == "B"
+
+
+async def test_mode_is_consistent_between_the_shared_write_site(
+    monkeypatch, metrics_on
+) -> None:
+    """Both /chat paths (streaming and non-streaming) call the SAME
+    `_write_rag_request_metrics` -- a single call site, not two independent
+    hardcodes. Calling it twice with different `ebm25_enabled` values, each
+    under its own collector identity (AC25: `request_instance_id` is the
+    uniqueness column), proves it reads the flag fresh each time rather than
+    caching a stale value."""
+    for enabled in (False, True):
+        monkeypatch.setattr(chat_routes.settings, "ebm25_enabled", enabled, raising=False)
+        instance, token = pipeline_metrics.init_collector(
+            request_instance_id=str(uuid.uuid4()), correlation_id=str(uuid.uuid4())
+        )
+        try:
+            await chat_routes._write_rag_request_metrics(
+                object(), tenant_id=TENANT, generation_outcome="ok", provider_result=None,
+                memory_context=ChatMemoryContext(), total_latency_ms=1,
+            )
+        finally:
+            pipeline_metrics.reset_collector(token)
+    rows = await _rows(metrics_on)
+    modes = sorted(row.mode for row in rows)
+    assert modes == ["A", "B"]
 
 
 # --- best-effort: a forced write failure never propagates -------------------

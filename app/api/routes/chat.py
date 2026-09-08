@@ -81,8 +81,17 @@ async def _write_rag_request_metrics(
     the OLDER, client-influenced fallback the near-collision note in
     `request_context.py` warns about.
 
-    `mode` is hardcoded `"A"`: `ebm25_enabled` does not exist until T18, so
-    Mode B cannot occur yet. `rewrite_calls`/`retrieve_calls`/`rerank_calls`/
+    `mode` reflects `settings.ebm25_enabled` at write time (H1/AC18 fix,
+    2026-09-08) -- the same, only gate Mode B has anywhere in this codebase
+    (`deps.py:255`), read fresh here rather than threaded through
+    `memory_context`. It marks the **active configuration** for this
+    request, not whether Mode B's ranking actually selected evidence: that
+    finer distinction already has its own columns
+    (`memory_outcome`/`ebm25_selected_count`), and folding it into `mode`
+    too would make them redundant. Originally hardcoded `"A"` because
+    `ebm25_enabled` did not exist until T18 shipped it -- a documented
+    placeholder that outlived the flag it was waiting for.
+    `rewrite_calls`/`retrieve_calls`/`rerank_calls`/
     `evaluate_calls`/`generate_calls`/`fallback_used`/`ebm25_selected_count`
     have no producer yet -- those columns exist per §Diseño 6's full schema
     but stay NULL until a later task wires them, which is not scope creep:
@@ -113,7 +122,7 @@ async def _write_rag_request_metrics(
                         request_instance_id=request_instance_id,
                         request_id=correlation_request_id,
                         tenant_id=tenant_id,
-                        mode="A",
+                        mode="B" if settings.ebm25_enabled else "A",
                         memory_outcome=snapshot.get("memory_outcome"),
                         generation_outcome=generation_outcome,
                         input_tokens=(
