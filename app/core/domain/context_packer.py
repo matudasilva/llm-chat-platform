@@ -11,15 +11,15 @@ packing rule downstream of both, not a second soft one.
 The rule, applied in order until the added context fits:
 
 1. Drop out-of-window retrieved evidence, newest-selected last. **The window
-   is protected, not squeezed, to make room for it**: T18 packs THIS window
-   first, against the full combined cap (`reserved_chars=0`, unchanged), and
-   only then packs evidence against whatever remains. An earlier draft of this
-   docstring assumed the opposite -- evidence's usage subtracted from the
-   window's own budget via `reserved_chars` -- which would have dropped window
-   turns before evidence, the reverse of the order this section states.
-   `reserved_chars` stays unused for evidence; it remains available only for a
-   genuinely independent future contributor to this same cap (documental RAG
-   context, per §Diseño 7's "Combined budget" -- still not wired).
+   is protected, not squeezed, to make room for it.** This function implements
+   only steps 2 and 3 below; step 1, and the documental RAG channel that
+   shares the same cap (§Diseño 7's "Combined budget"), are handled by
+   `added_context_budget.enforce_added_context_cap`, which is the single
+   authority over all three contributors and calls this function with
+   everything else that still occupies the budget passed as
+   `reserved_chars`. Enforcing the combined cap from inside the memory
+   dependency instead was attempted twice and was incomplete both times: that
+   dependency cannot see the documental channel.
 2. Drop oldest complete recent turns, whole turns at a time.
 3. If the single remaining turn still exceeds the cap, truncate its content
    deterministically until the cap is met.

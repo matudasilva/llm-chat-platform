@@ -52,17 +52,8 @@ def messages_for_provider(input: ProviderInput) -> Sequence[ChatMessage]:
 
     memory_events = _validated_memory_events(input.metadata)
     if memory_events is not None:
-        serialized = json.dumps(
-            memory_events,
-            sort_keys=True,
-            separators=(",", ":"),
-            ensure_ascii=False,
-        )
         prefix.append(
-            ChatMessage(
-                role="system",
-                content=_MEMORY_ENVELOPE_TEMPLATE.format(retrieved_memory=serialized),
-            )
+            ChatMessage(role="system", content=render_memory_events_block(memory_events))
         )
 
     sources = _validated_sources(input.metadata)
@@ -74,6 +65,27 @@ def messages_for_provider(input: ProviderInput) -> Sequence[ChatMessage]:
     if not prefix:
         return input.messages
     return (*prefix, *input.messages)
+
+
+def render_memory_events_block(memory_events: list[dict[str, Any]]) -> str:
+    """The exact text `messages_for_provider` renders for the `memory` channel.
+
+    Symmetrical to `render_rag_sources_block` below, and public for the same
+    reason: the combined added-context cap
+    (`app.core.domain.added_context_budget`) must measure what will actually
+    be sent. The D-6b envelope template is fixed operator-approved text and
+    the JSON adds per-event structural overhead, neither of which appears in
+    the raw `RetrievedMemoryEvent.content` an earlier version of that budget
+    measured. One function, two callers, so measurement and render cannot
+    drift apart. The template itself is unchanged and is not re-worded here.
+    """
+    serialized = json.dumps(
+        memory_events,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+    )
+    return _MEMORY_ENVELOPE_TEMPLATE.format(retrieved_memory=serialized)
 
 
 def render_rag_sources_block(sources: list[dict[str, Any]]) -> str:

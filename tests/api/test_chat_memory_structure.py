@@ -27,13 +27,14 @@ def test_dependency_takes_no_db_session() -> None:
     # pool the atomic write needs and, worse, make the assembly reachable from
     # inside the handler's transaction.
     #
-    # `rag_context` (H2/AC14 fix) is allowed: it is a *nested* `Depends`
-    # resolving `get_chat_rag_context`, which owns its own short-lived RAG
-    # session (`short_lived_rag_session`) -- never the primary `db`/`get_db`
-    # session this test exists to forbid. The point of the assertion is
-    # narrowed to what it actually guards against, named explicitly below.
+    # The H2/AC14 fix briefly added a nested `rag_context` dependency here so
+    # the combined cap could be enforced from inside this function. That was
+    # incomplete twice over (the documental channel is only fully visible at
+    # the route), so enforcement moved to
+    # `added_context_budget.enforce_added_context_cap`, called once from
+    # `chat.py`, and this signature returned to its original two parameters.
     parameters = inspect.signature(get_chat_memory_context).parameters
-    assert set(parameters) == {"payload", "request", "rag_context"}
+    assert set(parameters) == {"payload", "request"}
     assert "db" not in parameters
 
 

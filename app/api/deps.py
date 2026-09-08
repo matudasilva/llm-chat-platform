@@ -5,7 +5,7 @@ import logging
 import uuid
 from typing import Sequence
 
-from fastapi import Depends, Request
+from fastapi import Request
 
 from app.core.domain.bm25_ranking import pack_selected_events, query_tokens, rank_events
 from app.core.domain.chat_memory import ChatMemoryContext, RetrievedMemoryEvent
@@ -15,7 +15,6 @@ from app.core.domain.conversation_history import (
     HistoryMessage,
 )
 from app.core.domain.context_packer import pack_recent_window
-from app.core.domain.provider_prompt import render_rag_sources_block
 from app.core.domain.conversation_turns import build_materialized_window
 from app.core.domain.retrieval_corpus import RetrievalCorpus
 from app.core.domain.provider import ProviderPort
@@ -80,9 +79,7 @@ async def get_chat_rag_context(payload: ChatRequest, request: Request) -> RagGen
 
 
 async def get_chat_memory_context(
-    payload: ChatRequest,
-    request: Request,
-    rag_context: RagGenerationContext = Depends(get_chat_rag_context),
+    payload: ChatRequest, request: Request
 ) -> ChatMemoryContext:
     """Assemble conversation memory OUTSIDE the write transaction.
 
@@ -113,19 +110,7 @@ async def get_chat_memory_context(
     from reaching the model -- only this function returning empty can. AC12
     captures `ProviderInput` for exactly that reason.
 
-    **H2/AC14 fix.** `rag_context` is a nested dependency (`Depends`) so this
-    function resolves it AFTER `get_chat_rag_context`, not in parallel with
-    it -- the only way to know documental RAG's real character usage before
-    packing the combined added-context budget (§Diseño 7 "Combined budget",
-    all three contributors: recent window, retrieved conversational evidence,
-    documental RAG). A direct unit-test call that does not pass `rag_context`
-    receives the `Depends(...)` marker object, not a real
-    `RagGenerationContext` -- the same fail-closed reset `chat.py` already
-    applies to `memory_context` for exactly this reason.
     """
-    if not isinstance(rag_context, RagGenerationContext):
-        rag_context = RagGenerationContext()
-
     if not settings.conversation_history_enabled:
         return ChatMemoryContext()
 
@@ -180,61 +165,20 @@ async def get_chat_memory_context(
         partition, truncated=truncated, history_row_cap_reached=cap_reached
     )
 
-    # H2/AC14 fix: "an oversized current user message... yields zero added
-    # context and an untouched request" (spec's own terminal-case list).
-    # `pack_recent_window` never sees the current message at all -- it is
-    # outside the budget by design (ADR-011 §6, §Diseño 7) -- so this case
-    # cannot be expressed as a `reserved_chars` deduction the way documental
-    # RAG's usage is below: subtracting the current message's length from
-    # every ordinary request's budget would violate "outside the budget" for
-    # the common case. It is instead an explicit threshold guard, checked
-    # once, short-circuiting before either contributor below is packed.
-    #
-    # `> 0` guards a degenerate boundary, not a production case: the cap
-    # rejects non-positive values through normal settings validation, so
-    # `chat_prompt_max_added_context_chars <= 0` is unreachable in production
-    # and only occurs in tests that monkeypatch it directly to exercise the
-    # window's own zero-budget packing (a pre-existing, different terminal
-    # case). Without this guard, `len(payload.message) >= 0` would be true
-    # for every non-empty message, misclassifying that scenario as "the
-    # current message is oversized" when the real cause is a zeroed cap.
-    if (
-        settings.chat_prompt_max_added_context_chars > 0
-        and len(payload.message) >= settings.chat_prompt_max_added_context_chars
-    ):
-        context = dataclasses.replace(context, messages=(), truncated=True)
-        await _record_memory_outcome("current_message_oversized")
-        return context
-
-    # H2/AC14 fix: documental RAG's real rendered size, measured with the
-    # SAME function `messages_for_provider` uses to render it
-    # (`render_rag_sources_block`) -- not an approximation such as summing
-    # raw `RagSource.content`, which ignores `_RAG_INSTRUCTIONS`'s fixed
-    # length and each source's JSON structural overhead (citation,
-    # document_id, chunk_id, rank, truncated -- measurably dominant for short
-    # sources). `rag_context` is a nested dependency specifically so this
-    # number is known before the window is packed below.
-    documental_chars = (
-        len(render_rag_sources_block([s.provider_dict() for s in rag_context.sources]))
-        if rag_context.sources
-        else 0
-    )
-
-    # T13: the hard added-context cap, applied to the recent-window term
-    # FIRST, against the FULL combined cap (§Diseño 7 "Combined budget").
-    # `reserved_chars=documental_chars` (H2 fix) makes documental RAG the
-    # most-protected of the three contributors -- it is resolved and rendered
-    # independently, already bounded by its own `chat_rag_max_context_chars`,
-    # and is never trimmed here. The window is protected NEXT, not squeezed
-    # by Mode B: whatever remains after documental is reserved goes to the
-    # window first, so Mode B's evidence -- packed below, against whatever
-    # remains after THAT -- is what yields when space is tight, never the
-    # window. This call is identical whether `ebm25_enabled` is on or off,
-    # which is what keeps AC16's byte-identity claim true by construction.
+    # T13: a FIRST pass at the hard cap, over the two contributors this
+    # dependency can see. It is deliberately NOT the authority: the documental
+    # RAG channel is a separate dependency invisible from here, so the
+    # combined cap of §Diseño 7 is enforced once, over all three contributors,
+    # in `added_context_budget.enforce_added_context_cap`, called from the
+    # route immediately before the prompt is assembled. Two earlier attempts
+    # to enforce it from inside this function were both incomplete for that
+    # structural reason. What remains here is a bound on this channel alone,
+    # which keeps Mode B's selection below from ranking against an unbounded
+    # window; the route may trim further, and its result is what ships.
+    # This call is identical whether `ebm25_enabled` is on or off, which is
+    # what keeps AC16's byte-identity claim true by construction.
     packed = pack_recent_window(
-        context.messages,
-        max_chars=settings.chat_prompt_max_added_context_chars,
-        reserved_chars=documental_chars,
+        context.messages, max_chars=settings.chat_prompt_max_added_context_chars
     )
     context = dataclasses.replace(
         context,

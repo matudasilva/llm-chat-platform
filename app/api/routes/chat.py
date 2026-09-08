@@ -10,6 +10,7 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_chat_memory_context, get_chat_rag_context, get_chat_service
+from app.core.domain.added_context_budget import enforce_added_context_cap
 from app.core.domain.chat_memory import ChatMemoryContext
 from app.core.domain.chat_service import ChatService
 from app.core.domain.chat_types import ChatServiceResult
@@ -56,6 +57,22 @@ def _error_provider_name(chat_service: ChatService) -> str:
         if isinstance(value, str) and value:
             return value
     return settings.provider
+
+
+async def _record_budget_outcome(outcome: str) -> None:
+    """Record the combined-cap enforcement's own `memory_outcome` override.
+
+    `async def` follows the same rule as `deps._record_memory_outcome`: AC26
+    forbids sync collector writers outside `pipeline_metrics.py`, bluntly,
+    because a copied context silently swallowing every field is invisible at
+    runtime. Last-write-wins is intended here -- this runs after the memory
+    dependency's own record and deliberately supersedes it, because trimming
+    at the route can invalidate what the dependency concluded.
+    """
+    try:
+        pipeline_metrics.record(memory_outcome=outcome)
+    except Exception:  # pragma: no cover - defensive; telemetry never raises
+        pass
 
 
 async def _write_rag_request_metrics(
@@ -189,6 +206,25 @@ async def chat(
         # memory flag: an override must not be able to inject memory into the
         # prompt while the rollout flag is off.
         memory_context = ChatMemoryContext()
+    # H2/AC14: the ONE point where the combined added-context cap is enforced.
+    # It runs here, after both fail-closed resets and before anything reads
+    # either context, because this is the only place all three contributors
+    # are visible at once -- the memory dependency cannot see the documental
+    # channel, and enforcing it from there left the cap breachable twice.
+    # Both /chat paths consume the single `provider_metadata` assembled below,
+    # so one call covers streaming and non-streaming by construction.
+    memory_context, rag_context, budget_outcome = enforce_added_context_cap(
+        memory_context=memory_context,
+        rag_context=rag_context,
+        current_message=payload.message,
+        max_chars=settings.chat_prompt_max_added_context_chars,
+    )
+    if budget_outcome is not None:
+        # Recorded here rather than in the domain function: the outcome the
+        # memory dependency recorded earlier is stale once this trims what it
+        # selected, and leaving a stale telemetry field standing is precisely
+        # the defect H1 was.
+        await _record_budget_outcome(budget_outcome)
     # Prior turns precede the current message. They enter the messages list
     # rather than `metadata`, so `_cache_key` fingerprints them by
     # construction (§Diseño 7) -- two conversations sharing a last user
