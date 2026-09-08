@@ -76,7 +76,17 @@ _EBM25_RE = re.compile(r"E-BM25")
 # period followed by whitespace is an approximate sentence boundary -- good
 # enough for a mechanical exclusion pass; it never needs to be exact, only to
 # not straddle two genuinely unrelated sentences.
-_SENTENCE_SPLIT_RE = re.compile(r"(?<=[.!?])\s+")
+#
+# An ellipsis ("...") is excluded from that boundary: `(?<!\.\.)` requires
+# the TWO characters immediately before the matched [.!?] to not both be
+# periods, so "word... more" is not split mid-sentence. Discovered live
+# (2026-09-08): this very docstring's own illustrative examples --
+# "\"No artifact ... may describe ... as validation ... of E-BM25\"" --
+# fragment on each "..." without this guard, scattering `E-BM25`, its
+# negator and the forbidden phrase into separate "sentences" that no
+# longer individually satisfy `_is_negation_sentence`, so the real sweep
+# flagged its own exception-explaining prose as a violation.
+_SENTENCE_SPLIT_RE = re.compile(r"(?<!\.\.)(?<=[.!?])\s+")
 
 
 def _is_negation_sentence(sentence: str) -> bool:
