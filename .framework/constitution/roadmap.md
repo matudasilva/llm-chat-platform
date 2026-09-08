@@ -863,6 +863,28 @@ CO2e) this phase depends on.
   `(conversation_id, sequence)` index, disclosed as debt to be measured against
   real assembly latency; and the forward-only ordering constraint recorded in
   Phase 1, which no component detects or signals.
+- **RAG in production, Mode B ported behind a flag, live gate measurement
+  deferred** (ORQ-37, 2026-09-08): wired `ConversationHistoryAssembler` into
+  `/chat` (Gate B1, `conversation_history_enabled`, default `false`), ported
+  `E-BM25`'s ranking and selection into the request path behind a second flag
+  (`ebm25_enabled`, default `false`, Gate B2), and added OpenTelemetry
+  tracing, server-generated request identity, and per-request RAG metrics
+  (`rag_request_metrics`) — all additive, all disabled by default, none
+  changing `/chat`'s write-path atomicity, the SSE contract, or
+  `ProviderPort`. The premise stands unchanged: `E-BM25` is integrated for
+  controlled production evaluation under uncertainty, not because it has been
+  scientifically confirmed (ADR-013). **T23's gate-threshold measurement
+  campaign did not run** — no seeded pgvector corpus matching ORQ-26's pinned
+  manifest existed in any environment this ORQ had access to — so Gate A,
+  B1 and B2's numeric thresholds (quality regression, p95, cost, provider-call
+  count) are closed as **failed, not waived**, per the spec's own rule that an
+  unmeasurable threshold is a failed gate. Re-attempting that measurement is a
+  new, separately authorized task (seeded corpus, approved spend ceiling,
+  environment, and a decision on `top_n`'s structural unmeasurability by
+  ORQ-26's harness). T22 (refresh the four diagrams ORQ-38 deferred) is
+  deferred again to a future RAG ORQ (`diagrams/INDEX.md`), not done here.
+  Full rationale: `docs/adr/012-rag-production-observability-and-history-hardening.md`,
+  `docs/adr/013-ebm25-controlled-evaluation-port.md`.
 
 ## Related
 

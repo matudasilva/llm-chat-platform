@@ -13,6 +13,26 @@ existing diagram.
 | behavior | producto | `behavior.svg` | manual | 2026-08-07 | sí (deferred) | `sha256:6096ce9ea9c68868dd5216f05b946195f01a2d2db874d05e7612d69274ddf957` |
 | erd | producto | `erd.svg` | manual | 2026-08-07 | sí (deferred) | `sha256:6096ce9ea9c68868dd5216f05b946195f01a2d2db874d05e7612d69274ddf957` |
 
+## ORQ-37 replan result (2026-09-08) — deferred again by operator
+
+ORQ-37's own task table names this refresh (T22) as the point these four rows'
+deferral was waiting for: it wired `ConversationHistoryAssembler` and
+`SqlConversationHistoryAdapter` into `/chat` (Gate B1), added a new persisted
+table (`rag_request_metrics`), a new domain component (BM25 ranking and
+retrieval-corpus partitioning, behind `ebm25_enabled`), and a new runtime
+dependency (OpenTelemetry tracing) — real architecture, structural and
+behavioural change, not a no-op.
+
+**Deferred again anyway (operator decision, 2026-09-08):** more RAG work is
+expected in the near term, and refreshing now risks drawing a second
+transitional diagram shortly after — the same reasoning ORQ-26's own
+deferral below used, and the reasoning ORQ-38 itself gave for deferring these
+same four rows to begin with. All four rows keep their 2026-08-07 baseline
+unchanged so `refresh_pending: sí` stays observable; `fw_check_diagram_refresh.py`
+still reports `estado=sí (deferred)` for `architecture`, `structural`,
+`behavior` and `erd`. Batch with whatever RAG follow-on ORQ comes next rather
+than refreshing twice for adjacent changes.
+
 ## ORQ-38 replan result (2026-09-03)
 
 `context.svg` and `deployment.svg` were reviewed and **acknowledged** (`ack`): ORQ-38 adds no
