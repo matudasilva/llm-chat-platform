@@ -67,22 +67,35 @@ def messages_for_provider(input: ProviderInput) -> Sequence[ChatMessage]:
 
     sources = _validated_sources(input.metadata)
     if sources is not None:
-        serialized = json.dumps(
-            sources,
-            sort_keys=True,
-            separators=(",", ":"),
-            ensure_ascii=False,
-        )
         prefix.append(
-            ChatMessage(
-                role="system",
-                content=f"{_RAG_INSTRUCTIONS}\n\nRetrieved sources (JSON):\n{serialized}",
-            )
+            ChatMessage(role="system", content=render_rag_sources_block(sources))
         )
 
     if not prefix:
         return input.messages
     return (*prefix, *input.messages)
+
+
+def render_rag_sources_block(sources: list[dict[str, Any]]) -> str:
+    """The exact text `messages_for_provider` renders for the `rag` channel.
+
+    Public (no leading underscore) because it has a second caller: T22's H2
+    fix (`app/api/deps.py`) reserves budget for documental RAG against the
+    combined added-context cap, and must measure what will actually be sent
+    -- not an approximation of it (e.g. summing raw `RagSource.content`
+    ignores `_RAG_INSTRUCTIONS`'s fixed 382 characters and each source's JSON
+    structural overhead, which measurably dominates for short sources). One
+    function, two callers, is what keeps the measurement and the render from
+    silently drifting apart if `_RAG_INSTRUCTIONS` or the source dict shape
+    ever changes.
+    """
+    serialized = json.dumps(
+        sources,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+    )
+    return f"{_RAG_INSTRUCTIONS}\n\nRetrieved sources (JSON):\n{serialized}"
 
 
 def _validated_memory_events(metadata: dict[str, Any] | None) -> list[dict[str, Any]] | None:

@@ -67,8 +67,11 @@ def pack_recent_window(
     re-validate it -- T10's `build_materialized_window` is what guarantees it.
 
     ``reserved_chars`` is budget already spent by another contributor to the
-    same hard cap (documental RAG context, once wired). Zero means the whole
-    cap is available to this window alone, which is this task's scope.
+    same hard cap. Its only caller, `app.api.deps.get_chat_memory_context`,
+    passes the documental RAG channel's real rendered size (H2/AC14 fix) --
+    zero when documental augmentation contributed nothing. Documental is
+    resolved and bounded independently and is never trimmed by this
+    function; it is simply already-spent budget by the time this runs.
     """
     budget = max_chars - reserved_chars
     if budget <= 0:
