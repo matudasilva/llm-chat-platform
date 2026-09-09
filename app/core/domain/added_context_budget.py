@@ -102,6 +102,11 @@ def enforce_added_context_cap(
     telemetry writer in the domain layer, and letting the dependency's earlier
     outcome stand after this function drops everything it selected is exactly
     the kind of stale-telemetry defect H1 was.
+
+    The override is `budget_starved` whenever the cap actually reduced the
+    added context -- any channel, including truncation of the last retained
+    turn -- and `current_message_oversized` only for that one terminal case.
+    No new outcome value is introduced.
     """
     # AC14's oversized-current-message terminal case: "yields zero added
     # context and an untouched request". Zero means all three channels, which
@@ -112,13 +117,49 @@ def enforce_added_context_cap(
     # rather than silently chosen: the spec does not pin the comparison, and
     # the request itself is untouched either way.
     if max_chars > 0 and len(current_message) >= max_chars:
-        return ChatMemoryContext(), RagGenerationContext(), OUTCOME_CURRENT_MESSAGE_OVERSIZED
+        # N1 (independent re-validation): clear the *contents* with
+        # `dataclasses.replace`, never by returning a fresh
+        # `ChatMemoryContext()`. A fresh instance silently resets
+        # `history_row_cap_reached` -- a real persisted column describing what
+        # the SQL read did, which this function has no business overwriting --
+        # and drops a `truncated=True` the assembler had already recorded.
+        # AC14 also requires `history_truncated=true` "whenever a turn is
+        # dropped or truncated", and dropping the whole window to zero is the
+        # most complete drop there is.
+        return (
+            dataclasses.replace(
+                memory_context,
+                messages=(),
+                retrieved_events=(),
+                truncated=memory_context.truncated or bool(memory_context.messages),
+            ),
+            dataclasses.replace(rag_context, sources=()),
+            OUTCOME_CURRENT_MESSAGE_OVERSIZED,
+        )
 
-    had_evidence = bool(memory_context.retrieved_events)
+    def _total() -> int:
+        return (
+            _documental_chars(rag_context)
+            + _window_chars(memory_context)
+            + _evidence_chars(memory_context)
+        )
+
+    # N2 (independent re-validation): the outcome override is driven by
+    # whether this function actually REDUCED the added context, measured, not
+    # by which channel happened to hold it. The first version keyed it on
+    # "was there evidence?", so a request whose entire window was dropped to
+    # make room for documental kept the dependency's earlier `ok` -- zero
+    # context shipped while telemetry still claimed a healthy window. That is
+    # the same stale-telemetry defect H1 was, in a different field.
+    # A single before/after comparison also covers truncation of the last
+    # retained turn, which no per-channel emptiness check would notice.
+    before_total = _total()
 
     # A non-positive cap is unreachable in production (settings reject it) but
     # is monkeypatched directly in tests. Treated as "no budget at all":
-    # everything added is dropped, the request still untouched.
+    # everything added is dropped, the request still untouched. Falls through
+    # to the same reduction check below rather than returning early, so its
+    # outcome is decided by the one rule.
     if max_chars <= 0:
         memory_context = dataclasses.replace(
             memory_context,
@@ -127,13 +168,10 @@ def enforce_added_context_cap(
             truncated=memory_context.truncated or bool(memory_context.messages),
         )
         rag_context = dataclasses.replace(rag_context, sources=())
-        return memory_context, rag_context, OUTCOME_BUDGET_STARVED if had_evidence else None
-
-    def _total() -> int:
         return (
-            _documental_chars(rag_context)
-            + _window_chars(memory_context)
-            + _evidence_chars(memory_context)
+            memory_context,
+            rag_context,
+            OUTCOME_BUDGET_STARVED if before_total > 0 else None,
         )
 
     # Step 1 -- drop retrieved evidence, newest-selected first. `retrieved_events`
@@ -166,9 +204,5 @@ def enforce_added_context_cap(
     while _total() > max_chars and rag_context.sources:
         rag_context = dataclasses.replace(rag_context, sources=rag_context.sources[:-1])
 
-    outcome = (
-        OUTCOME_BUDGET_STARVED
-        if had_evidence and not memory_context.retrieved_events
-        else None
-    )
+    outcome = OUTCOME_BUDGET_STARVED if _total() < before_total else None
     return memory_context, rag_context, outcome

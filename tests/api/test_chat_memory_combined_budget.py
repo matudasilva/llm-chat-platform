@@ -23,6 +23,7 @@ assuming a size arithmetic could get wrong.
 """
 from __future__ import annotations
 
+import dataclasses
 import uuid
 from collections.abc import AsyncIterator
 from types import SimpleNamespace
@@ -268,8 +269,21 @@ async def test_documental_alone_over_the_cap_is_trimmed_tail_first() -> None:
     # Tail-first: citations must still read S1..Sn contiguously, or
     # `_validated_sources` rejects the whole block and it ships nothing.
     assert [s.citation for s in out_rag.sources] == ["S1"]
-    # And the block still renders (it would be dropped entirely if invalid).
-    assert _merged_metadata(out_memory, out_rag) is not None
+    # The block must actually RENDER and CONTAIN the surviving source. A
+    # renderer that silently discarded the whole block (which is what
+    # `_validated_sources` does when citations are not contiguous) would still
+    # satisfy a metadata-not-None plus total<=cap assertion, so assert on the
+    # rendered text itself.
+    rendered = messages_for_provider(
+        ProviderInput(
+            request_id=uuid4(),
+            messages=(),
+            metadata=_merged_metadata(out_memory, out_rag),
+        )
+    )
+    assert len(rendered) == 1
+    assert '"citation":"S1"' in rendered[0].content
+    assert out_rag.sources[0].content in rendered[0].content
 
 
 async def test_documental_trimming_preserves_citation_contiguity_at_two() -> None:
@@ -285,6 +299,15 @@ async def test_documental_trimming_preserves_citation_contiguity_at_two() -> Non
     )
 
     assert [s.citation for s in out_rag.sources] == ["S1", "S2"]
+    rendered = messages_for_provider(
+        ProviderInput(
+            request_id=uuid4(), messages=(),
+            metadata=_merged_metadata(ChatMemoryContext(), out_rag),
+        )
+    )
+    assert '"citation":"S1"' in rendered[0].content
+    assert '"citation":"S2"' in rendered[0].content
+    assert '"citation":"S3"' not in rendered[0].content
 
 
 # --- determinism, over the FULL rendered prompt ----------------------------
@@ -350,9 +373,12 @@ class _CapturingChatService:
     def __init__(self) -> None:
         self.run_metadata = "unset"
         self.stream_metadata = "unset"
+        self.run_messages: list[ChatMessage] | None = None
+        self.stream_messages: list[ChatMessage] | None = None
 
     async def run(self, *, request_id, messages, provider_metadata=None):
         self.run_metadata = provider_metadata
+        self.run_messages = list(messages)
         return ChatServiceResult(
             request_id=request_id,
             assistant_message=ChatMessage(role="assistant", content="answer"),
@@ -363,6 +389,7 @@ class _CapturingChatService:
 
     async def stream_chat(self, *, request_id, messages, provider_metadata=None):
         self.stream_metadata = provider_metadata
+        self.stream_messages = list(messages)
 
         async def chunks() -> AsyncIterator[str]:
             yield "answer"
@@ -413,6 +440,10 @@ async def test_route_zeroes_documental_on_oversized_message_non_streaming(route_
     )
     # Nothing added at all -- not the memory envelope, not the rag envelope.
     assert service.run_metadata is None
+    # And prove it on the messages the provider actually received: only the
+    # current user message, carried through untouched.
+    assert [m.role for m in service.run_messages] == ["user"]
+    assert service.run_messages[0].content == "x" * 1000
 
 
 async def test_route_zeroes_documental_on_oversized_message_streaming(route_on) -> None:
@@ -426,6 +457,8 @@ async def test_route_zeroes_documental_on_oversized_message_streaming(route_on) 
     )
     await _drain(response)
     assert service.stream_metadata is None
+    assert [m.role for m in service.stream_messages] == ["user"]
+    assert service.stream_messages[0].content == "x" * 1000
 
 
 async def test_route_keeps_context_when_it_fits_non_streaming(route_on) -> None:
@@ -439,3 +472,243 @@ async def test_route_keeps_context_when_it_fits_non_streaming(route_on) -> None:
     )
     assert service.run_metadata is not None
     assert "rag" in service.run_metadata
+    # The window survived and precedes the current message.
+    assert [m.content for m in service.run_messages] == ["u1", "a1", "short question"]
+
+
+# --- N1: clearing memory must preserve the context's own metadata ----------
+
+
+async def test_oversized_guard_preserves_row_cap_and_sets_truncated() -> None:
+    """N1 (independent re-validation, 2026-09-08).
+
+    The guard returned a fresh `ChatMemoryContext()`, which silently reset
+    `history_row_cap_reached` -- a real persisted column describing what the
+    SQL read did -- and left `truncated` false even though it had just dropped
+    the entire window. AC14 requires `history_truncated=true` "whenever a turn
+    is dropped or truncated".
+    """
+    memory_context = ChatMemoryContext(
+        messages=(
+            ChatMessage(role="user", content="u1"),
+            ChatMessage(role="assistant", content="a1"),
+        ),
+        history_row_cap_reached=True,
+    )
+
+    out_memory, out_rag, outcome = enforce_added_context_cap(
+        memory_context=memory_context,
+        rag_context=_rag("d" * 100),
+        current_message="x" * 1000,
+        max_chars=1000,
+    )
+
+    assert out_memory.messages == ()
+    assert out_memory.truncated is True          # a turn was dropped
+    assert out_memory.history_row_cap_reached is True  # never this function's to reset
+    assert out_rag.sources == ()
+    assert outcome == "current_message_oversized"
+
+
+async def test_oversized_guard_keeps_truncated_false_when_there_was_no_window() -> None:
+    """The mirror case: nothing was dropped, so nothing is claimed."""
+    out_memory, _, _ = enforce_added_context_cap(
+        memory_context=ChatMemoryContext(),
+        rag_context=_rag("d" * 100),
+        current_message="x" * 1000,
+        max_chars=1000,
+    )
+    assert out_memory.truncated is False
+
+
+async def test_oversized_guard_does_not_clear_a_previously_true_truncated() -> None:
+    memory_context = ChatMemoryContext(truncated=True)
+    out_memory, _, _ = enforce_added_context_cap(
+        memory_context=memory_context,
+        rag_context=_rag("d"),
+        current_message="x" * 1000,
+        max_chars=1000,
+    )
+    assert out_memory.truncated is True
+
+
+# --- N2: the outcome follows the reduction, not the channel ----------------
+
+
+async def test_window_wiped_by_documental_without_evidence_is_budget_starved() -> None:
+    """N2 (independent re-validation, 2026-09-08).
+
+    The override keyed on "was there evidence?", so a request whose entire
+    window was dropped to fit documental kept the dependency's earlier `ok`:
+    zero context shipped while telemetry still claimed a healthy window.
+    """
+    memory_context = _memory(turns=("u" * 100, "a" * 100))  # no evidence at all
+    rag_context = _rag("d" * 2000)
+
+    out_memory, _, outcome = enforce_added_context_cap(
+        memory_context=memory_context,
+        rag_context=rag_context,
+        current_message="q",
+        max_chars=1000,
+    )
+
+    assert out_memory.messages == ()
+    assert outcome == "budget_starved"
+
+
+async def test_truncating_the_last_turn_is_also_budget_starved() -> None:
+    """A per-channel emptiness check would miss this: nothing is emptied, the
+    last retained turn is merely shortened -- still a reduction by the cap."""
+    memory_context = _memory(turns=("u" * 400, "a" * 400))
+    cap = 300
+
+    out_memory, _, outcome = enforce_added_context_cap(
+        memory_context=memory_context,
+        rag_context=RagGenerationContext(),
+        current_message="q",
+        max_chars=cap,
+    )
+
+    assert out_memory.messages != ()          # not emptied
+    assert _rendered_added_chars(out_memory, RagGenerationContext()) <= cap
+    assert outcome == "budget_starved"
+
+
+async def test_no_reduction_leaves_the_dependency_outcome_standing() -> None:
+    memory_context = _memory(turns=("u1", "a1"))
+    rag_context = _rag("d")
+    cap = _rendered_added_chars(memory_context, rag_context) + 500
+
+    _, _, outcome = enforce_added_context_cap(
+        memory_context=memory_context, rag_context=rag_context,
+        current_message="q", max_chars=cap,
+    )
+    assert outcome is None
+
+
+# --- the degenerate cap ----------------------------------------------------
+
+
+@pytest.mark.parametrize("cap", [0, -1])
+async def test_non_positive_cap_zeroes_everything_and_reports_it(cap: int) -> None:
+    memory_context = _memory(turns=("u1", "a1"), events=("e1",))
+    memory_context = dataclasses.replace(memory_context, history_row_cap_reached=True)
+
+    out_memory, out_rag, outcome = enforce_added_context_cap(
+        memory_context=memory_context,
+        rag_context=_rag("d" * 50),
+        current_message="q",
+        max_chars=cap,
+    )
+
+    assert _rendered_added_chars(out_memory, out_rag) == 0
+    assert out_memory.truncated is True
+    assert out_memory.history_row_cap_reached is True  # N1 applies here too
+    assert outcome == "budget_starved"
+
+
+@pytest.mark.parametrize("cap", [0, -1])
+async def test_non_positive_cap_with_nothing_to_drop_reports_nothing(cap: int) -> None:
+    _, _, outcome = enforce_added_context_cap(
+        memory_context=ChatMemoryContext(),
+        rag_context=RagGenerationContext(),
+        current_message="q",
+        max_chars=cap,
+    )
+    assert outcome is None
+
+
+# --- AC14's literal evidence rule: every terminal case, run twice ----------
+
+
+def _terminal_cases():
+    """One fixture per AC14 terminal case, named."""
+    return [
+        (
+            "within budget",
+            _memory(turns=("u1", "a1"), events=("e1",)),
+            _rag("d" * 20),
+            "q",
+            5000,
+        ),
+        (
+            "evidence dropped",
+            _memory(turns=("u" * 40, "a" * 40), events=("e" * 500,)),
+            _rag("d" * 40),
+            "q",
+            _documental_chars(_rag("d" * 40)) + 120,
+        ),
+        (
+            "oldest turns dropped",
+            _memory(turns=("u" * 100, "a" * 100, "u" * 30, "a" * 30)),
+            RagGenerationContext(),
+            "q",
+            120,
+        ),
+        (
+            "last retained turn truncated",
+            _memory(turns=("u" * 400, "a" * 400)),
+            RagGenerationContext(),
+            "q",
+            300,
+        ),
+        (
+            "documental trimmed tail-first",
+            ChatMemoryContext(),
+            _rag("d" * 200, "d" * 200, "d" * 200),
+            "q",
+            _documental_chars(_rag("d" * 200)) + 10,
+        ),
+        (
+            "oversized current message",
+            _memory(turns=("u1", "a1"), events=("e1",)),
+            _rag("d" * 100),
+            "x" * 1000,
+            1000,
+        ),
+        (
+            "non-positive cap",
+            _memory(turns=("u1", "a1")),
+            _rag("d" * 10),
+            "q",
+            0,
+        ),
+    ]
+
+
+@pytest.mark.parametrize(
+    "label,memory_context,rag_context,current_message,cap",
+    _terminal_cases(),
+    ids=[case[0] for case in _terminal_cases()],
+)
+async def test_each_terminal_case_is_byte_identical_across_two_runs(
+    label, memory_context, rag_context, current_message, cap
+) -> None:
+    """AC14's evidence rule: "One fixture per terminal case, each run twice
+    and compared". Compared on the FULL rendered prompt, not on two fields."""
+
+    def _run():
+        m, r, outcome = enforce_added_context_cap(
+            memory_context=memory_context,
+            rag_context=rag_context,
+            current_message=current_message,
+            max_chars=cap,
+        )
+        rendered = messages_for_provider(
+            ProviderInput(
+                request_id=uuid.UUID(int=7),
+                messages=tuple(m.messages),
+                metadata=_merged_metadata(m, r),
+            )
+        )
+        return [x.content for x in rendered], outcome, m.truncated, m.history_row_cap_reached
+
+    first = _run()
+    second = _run()
+    assert first == second
+    # And the cap holds in every terminal case.
+    rendered_chars = sum(len(c) for c in first[0])
+    if cap > 0:
+        assert rendered_chars <= cap
+    else:
+        assert rendered_chars == 0
