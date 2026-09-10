@@ -197,34 +197,63 @@ async def get_chat_memory_context(
     # whichever of these two fired (`record()` is last-write-wins).
     mode_b_outcome: str | None = None
     if settings.ebm25_enabled:
-        corpus = RetrievalCorpus.from_partition(partition)
-        if corpus.is_empty:
-            # §Diseño 8's first inert state: the snapped window already
-            # covers the whole conversation, so there is nothing left to
-            # retrieve.
-            mode_b_outcome = "no_out_of_window_corpus"
-            await _record_ebm25_selected_count(0)
-        else:
-            remaining_budget = settings.chat_prompt_max_added_context_chars - sum(
-                len(m.content) for m in context.messages
-            )
-            ranked = rank_events(corpus.events, query_tokens(payload.message))
-            selected, _ = pack_selected_events(ranked, max_chars=max(remaining_budget, 0))
-            if not selected:
-                # §Diseño 8's second inert state: evidence existed and was
-                # ranked, but the budget -- after the window took its
-                # (protected) share -- left no room for any of it.
-                mode_b_outcome = "budget_starved"
+        # H9: Mode B runs inside its own degradation boundary.
+        #
+        # This function's contract is that it NEVER raises (§Diseño 7): every
+        # failure yields whatever memory it has and the request proceeds. The
+        # `try` above covers the history read only, and Mode B runs after it,
+        # so `rank_events` raising propagated straight out of the dependency.
+        # And it does raise, by design: `bm25_ranking.py:94` rejects
+        # `average_length == 0`, whose own docstring calls an all-empty corpus
+        # "a real input". Nothing requires stored history to contain
+        # alphanumeric tokens, so one punctuation-only turn ("!!!") in a
+        # conversation's out-of-window corpus turned a Mode B request into an
+        # unhandled exception instead of a degradation to Mode A.
+        #
+        # The window is already assembled and correct here, so the degradation
+        # keeps it and drops only the evidence -- degrading toward Mode A,
+        # the same direction `budget_starved` degrades.
+        try:
+            corpus = RetrievalCorpus.from_partition(partition)
+            if corpus.is_empty:
+                # §Diseño 8's first inert state: the snapped window already
+                # covers the whole conversation, so there is nothing left to
+                # retrieve.
+                mode_b_outcome = "no_out_of_window_corpus"
                 await _record_ebm25_selected_count(0)
             else:
-                context = dataclasses.replace(
-                    context,
-                    retrieved_events=tuple(
-                        RetrievedMemoryEvent(event_id=event.event_id, content=event.document_text)
-                        for event in selected
-                    ),
+                remaining_budget = settings.chat_prompt_max_added_context_chars - sum(
+                    len(m.content) for m in context.messages
                 )
-                await _record_ebm25_selected_count(len(selected))
+                ranked = rank_events(corpus.events, query_tokens(payload.message))
+                selected, _ = pack_selected_events(ranked, max_chars=max(remaining_budget, 0))
+                if not selected:
+                    # §Diseño 8's second inert state: evidence existed and was
+                    # ranked, but the budget -- after the window took its
+                    # (protected) share -- left no room for any of it.
+                    mode_b_outcome = "budget_starved"
+                    await _record_ebm25_selected_count(0)
+                else:
+                    context = dataclasses.replace(
+                        context,
+                        retrieved_events=tuple(
+                            RetrievedMemoryEvent(
+                                event_id=event.event_id, content=event.document_text
+                            )
+                            for event in selected
+                        ),
+                    )
+                    await _record_ebm25_selected_count(len(selected))
+        except Exception as exc:
+            # Degrade to Mode A, keeping the window. Recorded as `error` --
+            # this dependency's existing degradation value -- because leaving
+            # the window's own `ok` standing would hide a Mode B failure
+            # completely from the metrics table, which is the H1/N2 lesson.
+            # The specific cause stays distinguishable in the degradation
+            # log's `reason`.
+            mode_b_outcome = "error"
+            await _record_ebm25_selected_count(0)
+            _log_memory_degraded(request_id=request_id, reason=f"ebm25_{type(exc).__name__}")
 
     # R1 (independent re-validation, 2026-09-09): a reduction this function
     # performs itself must be reported, exactly like one the route's

@@ -59,6 +59,31 @@ def _error_provider_name(chat_service: ChatService) -> str:
     return settings.provider
 
 
+def _cache_bypass_reason() -> str | None:
+    """Why the response cache must not be consulted, or `None` if it may be.
+
+    ADR-008 §5 bypasses the cache whenever chat RAG augmentation is on,
+    because `_cache_key` does not include corpus or retrieved-source
+    identity. **ADR-013 §9 extended that to `ebm25_enabled`** for exactly the
+    same reason -- Mode B's out-of-window evidence travels in `metadata`,
+    which the key does not fingerprint -- but the extension was documented
+    and never implemented (H6/AC17). In the configuration
+    `conversation_history_enabled=true, ebm25_enabled=true,
+    chat_rag_augmentation_enabled=false` the cache stayed live, so an answer
+    built on one evidence set could be served to a later request whose
+    evidence differs.
+
+    Single-sourced here because the previous code asked the question in three
+    places -- two gates plus the streaming log -- and extending one without
+    the others is how the read and write halves drift apart.
+    """
+    if settings.chat_rag_augmentation_enabled:
+        return "rag_augmentation"
+    if settings.ebm25_enabled:
+        return "ebm25_memory"
+    return None
+
+
 async def _record_budget_outcome(outcome: str) -> None:
     """Record the combined-cap enforcement's own `memory_outcome` override.
 
@@ -251,9 +276,7 @@ async def chat(
     ]
 
     if getattr(payload, "stream", False):
-        cache.log_bypass(
-            reason="rag_augmentation" if settings.chat_rag_augmentation_enabled else "streaming"
-        )
+        cache.log_bypass(reason=_cache_bypass_reason() or "streaming")
 
         async def event_generator() -> AsyncIterator[str]:
             generation_outcome: str | None = None
@@ -476,8 +499,9 @@ async def chat(
 
             # 3) Execute model (via ChatService)
             service_result = None
-            if settings.chat_rag_augmentation_enabled:
-                cache.log_bypass(reason="rag_augmentation")
+            bypass_reason = _cache_bypass_reason()
+            if bypass_reason is not None:
+                cache.log_bypass(reason=bypass_reason)
             else:
                 service_result = await cache.get(
                     request_id=request_id, messages=_messages, tenant_id=tenant_id
@@ -490,7 +514,7 @@ async def chat(
                 if provider_metadata is not None:
                     run_kwargs["provider_metadata"] = provider_metadata
                 service_result = await chat_service.run(**run_kwargs)
-                if not settings.chat_rag_augmentation_enabled:
+                if _cache_bypass_reason() is None:
                     cache_write_result = service_result
 
             assistant_content = truncate(

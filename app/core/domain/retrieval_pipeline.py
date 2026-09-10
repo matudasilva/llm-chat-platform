@@ -33,6 +33,11 @@ _EVALUATOR_PROMPT = (
     "query. Reply with exactly one word: SUFFICIENT or INSUFFICIENT."
 )
 
+# The only two values `_EVALUATOR_PROMPT` asks for, and therefore the only two
+# an attribute may carry verbatim (H4/AC4). Anything else is a model doing
+# something other than what it was asked, and its text must not reach a span.
+_EVALUATOR_VERDICTS = frozenset({"SUFFICIENT", "INSUFFICIENT"})
+
 
 @dataclass(frozen=True, slots=True)
 class RankedChunk:
@@ -285,8 +290,26 @@ class RetrievalPipeline:
                 "rag.evaluate_outcome",
                 "verdict" if verdict else "empty",
             )
-            # A one-word classification (SUFFICIENT / INSUFFICIENT), not content.
-            set_attribute(evaluate_span, "rag.evaluator_verdict", verdict or None)
+            # H4/AC4: the ATTRIBUTE carries the verdict only when it is one of
+            # the two words the evaluator was asked for. The previous comment
+            # here asserted "A one-word classification (SUFFICIENT /
+            # INSUFFICIENT), not content" -- an assumption about a model's
+            # output, not a guarantee. Nothing constrained it, so an evaluator
+            # that echoed its input (a legitimate provider double did exactly
+            # this in independent validation) put the query and passage text
+            # into a span attribute. AC4 requires that no attribute VALUE
+            # carry query, chunk or message content; allow-listing the key
+            # alone cannot enforce that.
+            #
+            # Only the attribute is constrained. The RETURN value is passed
+            # through unchanged: what the pipeline does with an unexpected
+            # verdict is abstention behaviour, which §No-alcance excludes from
+            # this ORQ.
+            set_attribute(
+                evaluate_span,
+                "rag.evaluator_verdict",
+                verdict if verdict in _EVALUATOR_VERDICTS else ("unrecognized" if verdict else None),
+            )
             return verdict or None
 
     def _log_completed(
