@@ -156,16 +156,107 @@ def test_documental_augmentation_still_takes_the_original_reason(monkeypatch) ->
     assert chat_routes._cache_bypass_reason() == "rag_augmentation"
 
 
-def test_every_cache_gate_consults_the_single_helper() -> None:
-    """The read gate, the write gate and the streaming log must all ask the
-    same question. Extending one without the others is how the halves drift
-    -- which is exactly how H6 survived ADR-013 documenting the fix."""
-    import inspect
+class _CountingCache:
+    """Counts what the route actually does to the cache, not what it asks."""
 
-    source = inspect.getsource(chat_routes.chat)
-    assert source.count("_cache_bypass_reason()") == 3
-    # And none of them re-derives the condition locally any more.
-    assert "if settings.chat_rag_augmentation_enabled:\n                cache.log_bypass" not in source
+    def __init__(self) -> None:
+        self.gets = 0
+        self.sets = 0
+        self.bypasses: list[str] = []
+
+    async def get(self, **kwargs):
+        self.gets += 1
+        return None
+
+    async def set(self, **kwargs):
+        self.sets += 1
+
+    def log_bypass(self, *, reason):
+        self.bypasses.append(reason)
+
+
+class _Transaction:
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, *exc):
+        return False
+
+
+class _Session:
+    def __init__(self) -> None:
+        self.objects: list[object] = []
+
+    def begin(self):
+        return _Transaction()
+
+    def add(self, obj) -> None:
+        self.objects.append(obj)
+
+    async def flush(self) -> None:
+        return None
+
+    async def get(self, model, key):
+        return None
+
+
+class _StubChatService:
+    async def run(self, *, request_id, messages, provider_metadata=None):
+        from app.core.domain.chat_types import ChatServiceResult
+        from app.core.domain.provider import ProviderResult
+        from app.core.domain.types import ChatMessage as _CM
+
+        return ChatServiceResult(
+            request_id=request_id,
+            assistant_message=_CM(role="assistant", content="answer"),
+            provider_result=ProviderResult(
+                content="answer", provider="stub", model_version="v1", prompt_version="v1"
+            ),
+        )
+
+
+async def _drive_route(monkeypatch, *, augmentation: bool, ebm25: bool) -> _CountingCache:
+    from app.schemas.chat import ChatRequest
+
+    cache = _CountingCache()
+    monkeypatch.setattr(chat_routes.settings, "chat_rag_augmentation_enabled", augmentation)
+    monkeypatch.setattr(chat_routes.settings, "ebm25_enabled", ebm25)
+    monkeypatch.setattr(chat_routes.settings, "conversation_history_enabled", False)
+    monkeypatch.setattr(chat_routes, "get_chat_response_cache", lambda: cache)
+    await chat_routes.chat(
+        ChatRequest(message="a question"),
+        db=_Session(),
+        chat_service=_StubChatService(),
+    )
+    return cache
+
+
+@pytest.mark.asyncio
+async def test_the_cache_is_neither_read_nor_written_under_mode_b(monkeypatch) -> None:
+    """H6, asserted on BEHAVIOUR rather than on the shape of the source.
+
+    The first version of this test counted three `_cache_bypass_reason()`
+    call sites. Independent re-validation mutated the gates to call the
+    helper and ignore its answer, and all nine tests still passed -- the
+    structural count could not see it. This drives the real route and counts
+    what it actually does to the cache, which that mutation cannot survive.
+    """
+    cache = await _drive_route(monkeypatch, augmentation=False, ebm25=True)
+
+    assert cache.gets == 0, "Mode B must not READ a key that cannot see its evidence"
+    assert cache.sets == 0, "Mode B must not WRITE one either"
+    assert cache.bypasses == ["ebm25_memory"]
+
+
+@pytest.mark.asyncio
+async def test_the_cache_is_live_when_no_channel_needs_a_bypass(monkeypatch) -> None:
+    """The mirror, and the reason the test above is not vacuous: with both
+    flags off the very same route DOES read and write."""
+    cache = await _drive_route(monkeypatch, augmentation=False, ebm25=False)
+
+    assert cache.gets == 1
+    assert cache.sets == 1
+    assert cache.bypasses == []
 
 
 # --- H4: an allow-listed attribute may not carry content ------------------
