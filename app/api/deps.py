@@ -235,8 +235,19 @@ async def get_chat_memory_context(
     # version recorded `ok`/`no_out_of_window_corpus` after having already
     # dropped 600 characters of window to the same cap, which is the stale
     # telemetry N2 fixed one layer up and this leaves standing one layer
-    # down. Mode B's own inertness stays visible in `ebm25_selected_count`,
-    # which is recorded independently and is not affected by this precedence.
+    # down.
+    #
+    # **The precedence costs a diagnostic distinction, stated plainly rather
+    # than explained away.** An earlier version of this comment claimed
+    # `ebm25_selected_count` keeps Mode B's inertness recoverable; independent
+    # re-validation refuted that. That counter separates "selected something"
+    # from "selected nothing" -- it does NOT separate "window trimmed, corpus
+    # empty" from "window trimmed, corpus existed but lost the budget". Both
+    # now record `budget_starved` with a count of 0 and are indistinguishable
+    # in telemetry. The trade is accepted knowingly: hiding a cap-driven
+    # reduction behind `no_out_of_window_corpus` was the defect; losing the
+    # ability to tell two inert Mode B shapes apart is the price, and
+    # recovering it would need a field this ORQ is not chartered to add.
     if packed.truncated:
         await _record_memory_outcome("budget_starved")
     elif mode_b_outcome is not None:

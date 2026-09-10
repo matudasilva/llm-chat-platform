@@ -881,3 +881,98 @@ async def test_removing_only_some_evidence_still_reports_budget_starved() -> Non
 
     assert 0 < len(out_memory.retrieved_events) < 3   # partial, not emptied
     assert outcome == "budget_starved"
+
+
+async def test_turn_snap_under_cap_pressure_is_identical_across_two_runs(
+    monkeypatch,
+) -> None:
+    """AC14's terminal-case evidence rule, applied to the turn-snap case.
+
+    The re-validation of `d9cbeb7` found this specific gap: the turn-snap
+    test above runs the dependency ONCE and restores a small turn that fits
+    comfortably, so it never exercises snap -> cap pressure -> packing ->
+    final prompt, and never compares two runs. AC14's evidence column asks
+    for "One fixture per terminal case, each run twice and compared".
+
+    Here the assembler's message bound drops the `user` message, §Diseño 8's
+    turn-snap restores it, and the resulting window then EXCEEDS the hard cap,
+    so the packer must act on a window the snap had just extended. Everything
+    below the port is shipped code.
+    """
+    from app.api import deps
+    from app.core.domain.conversation_history import HistoryMessage
+    from app.http import pipeline_metrics
+
+    history = [
+        HistoryMessage(sequence=1, role="user", content="u" * 600),
+        HistoryMessage(sequence=2, role="assistant", content="a" * 600),
+    ]
+
+    class _Adapter:
+        def __init__(self, queries, *, max_rows=None) -> None:
+            pass
+
+        async def fetch_ordered(self, conversation_id, tenant_id):
+            return history
+
+    class _CM:
+        async def __aenter__(self):
+            return object()
+
+        async def __aexit__(self, *exc):
+            return False
+
+    monkeypatch.setattr(deps.settings, "conversation_history_enabled", True, raising=False)
+    monkeypatch.setattr(deps.settings, "conversation_history_max_messages", 1, raising=False)
+    monkeypatch.setattr(deps.settings, "conversation_history_max_chars", 20000, raising=False)
+    # After the snap the window holds 1 200 characters; the cap is 800, so the
+    # packer must reduce a window the snap had just restored.
+    monkeypatch.setattr(
+        deps.settings, "chat_prompt_max_added_context_chars", 800, raising=False
+    )
+    monkeypatch.setattr(deps, "get_tenant_id", lambda: "acme")
+    monkeypatch.setattr(deps, "get_history_sessionmaker", lambda request: object())
+    monkeypatch.setattr(deps, "short_lived_history_session", lambda sm: _CM())
+    monkeypatch.setattr(deps, "SqlConversationHistoryAdapter", _Adapter)
+    monkeypatch.setattr(deps, "ConversationQueryService", lambda db: object())
+
+    async def _run():
+        instance, token = pipeline_metrics.init_collector(
+            request_instance_id=str(uuid4()), correlation_id=None
+        )
+        try:
+            context = await deps.get_chat_memory_context(
+                SimpleNamespace(conversation_id=uuid4(), message="q"),
+                SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace())),
+            )
+            rendered = messages_for_provider(
+                ProviderInput(
+                    request_id=uuid.UUID(int=11),
+                    messages=tuple(context.messages),
+                    metadata=_merged_metadata(context, RagGenerationContext()),
+                )
+            )
+            return (
+                [(m.role, m.content) for m in rendered],
+                context.truncated,
+                context.history_row_cap_reached,
+                instance.snapshot()["memory_outcome"],
+            )
+        finally:
+            pipeline_metrics.reset_collector(token)
+
+    first = await _run()
+    second = await _run()
+
+    # Two runs, compared on the FINAL result: prompt contents and roles, both
+    # history flags, and the recorded outcome.
+    assert first == second
+
+    rendered, truncated, row_cap, outcome = first
+    added_chars = sum(len(content) for _, content in rendered)
+    assert added_chars <= 800                    # the cap held after the snap
+    assert truncated is True                     # the packer really did reduce
+    assert row_cap is False
+    assert outcome == "budget_starved"
+    # The snap's restored turn is still a well-formed pair, roles intact.
+    assert [role for role, _ in rendered] == ["user", "assistant"]
