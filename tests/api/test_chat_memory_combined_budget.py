@@ -16,10 +16,12 @@ Two of the previous fixtures were also wrong: they computed content length as
 producing a NEGATIVE multiplier -- `"x" * -262` is `""` in Python, so the test
 silently exercised an empty source and passed for the wrong reason.
 
-**Every assertion here measures the real rendered prompt** via
-`messages_for_provider`, the same function the provider path uses, and every
-fixture MEASURES first and derives the cap from that measurement, rather than
-assuming a size arithmetic could get wrong.
+**Assertions measure the rendered added context** via
+`messages_for_provider`, the same function the provider path uses -- that is
+the added-context prefix plus the window, which is exactly what AC14 caps; it
+does NOT include the current user message, which is outside the budget by
+design. Every fixture MEASURES first and derives the cap from that
+measurement, rather than assuming a size arithmetic could get wrong.
 """
 from __future__ import annotations
 
@@ -440,8 +442,10 @@ async def test_route_zeroes_documental_on_oversized_message_non_streaming(route_
     )
     # Nothing added at all -- not the memory envelope, not the rag envelope.
     assert service.run_metadata is None
-    # And prove it on the messages the provider actually received: only the
-    # current user message, carried through untouched.
+    # And prove it on the messages handed to ChatService (the layer below the
+    # route; not a real provider payload, which `test_chat_memory_provider_input.py`
+    # and the per-provider matrix of AC37 cover): only the current user
+    # message, carried through untouched.
     assert [m.role for m in service.run_messages] == ["user"]
     assert service.run_messages[0].content == "x" * 1000
 
@@ -622,7 +626,14 @@ async def test_non_positive_cap_with_nothing_to_drop_reports_nothing(cap: int) -
 
 
 def _terminal_cases():
-    """One fixture per AC14 terminal case, named."""
+    """One fixture per AC14 terminal case, named, WITH its expected result.
+
+    Expected values matter: an earlier version compared only two runs of the
+    same input to each other, so every case still passed with the N1 and N2
+    bugs reintroduced. Run-to-run equality detects non-determinism and
+    nothing else; a deterministically wrong implementation satisfies it.
+    Each row now carries the outcome and `truncated` it must produce.
+    """
     return [
         (
             "within budget",
@@ -630,6 +641,8 @@ def _terminal_cases():
             _rag("d" * 20),
             "q",
             5000,
+            None,       # expected outcome
+            False,      # expected truncated
         ),
         (
             "evidence dropped",
@@ -637,6 +650,8 @@ def _terminal_cases():
             _rag("d" * 40),
             "q",
             _documental_chars(_rag("d" * 40)) + 120,
+            "budget_starved",
+            False,      # evidence is not history; no turn was dropped
         ),
         (
             "oldest turns dropped",
@@ -644,6 +659,8 @@ def _terminal_cases():
             RagGenerationContext(),
             "q",
             120,
+            "budget_starved",
+            True,
         ),
         (
             "last retained turn truncated",
@@ -651,6 +668,8 @@ def _terminal_cases():
             RagGenerationContext(),
             "q",
             300,
+            "budget_starved",
+            True,
         ),
         (
             "documental trimmed tail-first",
@@ -658,6 +677,8 @@ def _terminal_cases():
             _rag("d" * 200, "d" * 200, "d" * 200),
             "q",
             _documental_chars(_rag("d" * 200)) + 10,
+            "budget_starved",
+            False,      # no history existed to truncate
         ),
         (
             "oversized current message",
@@ -665,6 +686,8 @@ def _terminal_cases():
             _rag("d" * 100),
             "x" * 1000,
             1000,
+            "current_message_oversized",
+            True,       # N1: the whole window was dropped
         ),
         (
             "non-positive cap",
@@ -672,17 +695,20 @@ def _terminal_cases():
             _rag("d" * 10),
             "q",
             0,
+            "budget_starved",
+            True,
         ),
     ]
 
 
 @pytest.mark.parametrize(
-    "label,memory_context,rag_context,current_message,cap",
+    "label,memory_context,rag_context,current_message,cap,expected_outcome,expected_truncated",
     _terminal_cases(),
     ids=[case[0] for case in _terminal_cases()],
 )
 async def test_each_terminal_case_is_byte_identical_across_two_runs(
-    label, memory_context, rag_context, current_message, cap
+    label, memory_context, rag_context, current_message, cap,
+    expected_outcome, expected_truncated,
 ) -> None:
     """AC14's evidence rule: "One fixture per terminal case, each run twice
     and compared". Compared on the FULL rendered prompt, not on two fields."""
@@ -701,14 +727,157 @@ async def test_each_terminal_case_is_byte_identical_across_two_runs(
                 metadata=_merged_metadata(m, r),
             )
         )
-        return [x.content for x in rendered], outcome, m.truncated, m.history_row_cap_reached
+        window_roles = [msg.role for msg in m.messages]
+        return (
+            [x.content for x in rendered],
+            outcome,
+            m.truncated,
+            m.history_row_cap_reached,
+            window_roles,
+        )
 
     first = _run()
     second = _run()
     assert first == second
+    # Expected VALUES, not just run-to-run equality.
+    assert first[1] == expected_outcome, label
+    assert first[2] is expected_truncated, label
+    # Roles survive every terminal case, including truncation of the last
+    # retained turn. Asserted as strict user/assistant ALTERNATION starting on
+    # `user` (§Diseño 8's well-formed window, §Diseño 11's alternation
+    # contract) -- a weaker "every role is one of two values" check passes
+    # even when every retained message has been rewritten to the same role,
+    # which an audit mutation of the packer demonstrated.
+    window_roles = first[4]
+    assert window_roles == ["user", "assistant"] * (len(window_roles) // 2), label
     # And the cap holds in every terminal case.
     rendered_chars = sum(len(c) for c in first[0])
     if cap > 0:
         assert rendered_chars <= cap
     else:
         assert rendered_chars == 0
+
+
+# --- R2: turn-snap must not leave a false history_truncated ---------------
+
+
+async def test_turn_snap_restoring_the_window_clears_the_truncated_flag(
+    monkeypatch,
+) -> None:
+    """R2 (independent re-validation, 2026-09-09).
+
+    With `conversation_history_max_messages=1` over `[user, assistant]`, the
+    assembler drops the `user` message and §Diseño 8's turn-snap puts it
+    back. Both messages ship intact, so claiming a truncation is a false
+    positive: AC14 says `history_truncated=true` "whenever a turn is dropped
+    or truncated", which is a *whenever*, not an *at least whenever*.
+
+    Driven through the real assembler, the real partition builder and the
+    real dependency -- only the port is doubled, so the snap is shipped code.
+    """
+    from app.api import deps
+    from app.core.domain.conversation_history import HistoryMessage
+
+    monkeypatch.setattr(deps.settings, "conversation_history_enabled", True, raising=False)
+    monkeypatch.setattr(deps.settings, "conversation_history_max_messages", 1, raising=False)
+    monkeypatch.setattr(deps, "get_tenant_id", lambda: "acme")
+
+    history = [
+        HistoryMessage(sequence=1, role="user", content="u1"),
+        HistoryMessage(sequence=2, role="assistant", content="a1"),
+    ]
+
+    class _Adapter:
+        def __init__(self, queries, *, max_rows=None) -> None:
+            pass
+
+        async def fetch_ordered(self, conversation_id, tenant_id):
+            return history
+
+    class _CM:
+        async def __aenter__(self):
+            return object()
+
+        async def __aexit__(self, *exc):
+            return False
+
+    monkeypatch.setattr(deps, "get_history_sessionmaker", lambda request: object())
+    monkeypatch.setattr(deps, "short_lived_history_session", lambda sm: _CM())
+    monkeypatch.setattr(deps, "SqlConversationHistoryAdapter", _Adapter)
+    monkeypatch.setattr(deps, "ConversationQueryService", lambda db: object())
+
+    result = await deps.get_chat_memory_context(
+        SimpleNamespace(conversation_id=uuid4(), message="q"),
+        SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace())),
+    )
+
+    # Nothing was lost: the snap restored the whole turn.
+    assert [m.content for m in result.messages] == ["u1", "a1"]
+    assert result.truncated is False
+
+
+async def test_a_genuinely_bounded_window_still_reports_truncated(monkeypatch) -> None:
+    """The mirror: when the bound really does drop a turn, the flag stands."""
+    from app.api import deps
+    from app.core.domain.conversation_history import HistoryMessage
+
+    monkeypatch.setattr(deps.settings, "conversation_history_enabled", True, raising=False)
+    monkeypatch.setattr(deps.settings, "conversation_history_max_messages", 2, raising=False)
+    monkeypatch.setattr(deps, "get_tenant_id", lambda: "acme")
+
+    history = [
+        HistoryMessage(sequence=1, role="user", content="old-u"),
+        HistoryMessage(sequence=2, role="assistant", content="old-a"),
+        HistoryMessage(sequence=3, role="user", content="new-u"),
+        HistoryMessage(sequence=4, role="assistant", content="new-a"),
+    ]
+
+    class _Adapter:
+        def __init__(self, queries, *, max_rows=None) -> None:
+            pass
+
+        async def fetch_ordered(self, conversation_id, tenant_id):
+            return history
+
+    class _CM:
+        async def __aenter__(self):
+            return object()
+
+        async def __aexit__(self, *exc):
+            return False
+
+    monkeypatch.setattr(deps, "get_history_sessionmaker", lambda request: object())
+    monkeypatch.setattr(deps, "short_lived_history_session", lambda sm: _CM())
+    monkeypatch.setattr(deps, "SqlConversationHistoryAdapter", _Adapter)
+    monkeypatch.setattr(deps, "ConversationQueryService", lambda db: object())
+
+    result = await deps.get_chat_memory_context(
+        SimpleNamespace(conversation_id=uuid4(), message="q"),
+        SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace())),
+    )
+
+    assert len(result.messages) < len(history)
+    assert result.truncated is True
+
+
+# --- partial evidence removal ---------------------------------------------
+
+
+async def test_removing_only_some_evidence_still_reports_budget_starved() -> None:
+    """Reduction is reduction: the outcome must not wait for the last event
+    to go. Previously only full emptiness of a channel was considered."""
+    memory_context = _memory(turns=("u1", "a1"), events=("e" * 200, "e" * 200, "e" * 200))
+    rag_context = RagGenerationContext()
+    # Measured: room for the window plus roughly one event, not three.
+    one_event = _evidence_chars(_memory(events=("e" * 200,)))
+    cap = one_event + 20
+
+    out_memory, _, outcome = enforce_added_context_cap(
+        memory_context=memory_context,
+        rag_context=rag_context,
+        current_message="q",
+        max_chars=cap,
+    )
+
+    assert 0 < len(out_memory.retrieved_events) < 3   # partial, not emptied
+    assert outcome == "budget_starved"

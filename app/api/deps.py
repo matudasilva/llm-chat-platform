@@ -226,7 +226,20 @@ async def get_chat_memory_context(
                 )
                 await _record_ebm25_selected_count(len(selected))
 
-    if mode_b_outcome is not None:
+    # R1 (independent re-validation, 2026-09-09): a reduction this function
+    # performs itself must be reported, exactly like one the route's
+    # enforcement performs. `packed.truncated` is set only under cap
+    # pressure, so it is precisely "the hard cap cost this request context".
+    #
+    # It takes precedence over the Mode B outcomes deliberately: the earlier
+    # version recorded `ok`/`no_out_of_window_corpus` after having already
+    # dropped 600 characters of window to the same cap, which is the stale
+    # telemetry N2 fixed one layer up and this leaves standing one layer
+    # down. Mode B's own inertness stays visible in `ebm25_selected_count`,
+    # which is recorded independently and is not affected by this precedence.
+    if packed.truncated:
+        await _record_memory_outcome("budget_starved")
+    elif mode_b_outcome is not None:
         await _record_memory_outcome(mode_b_outcome)
     else:
         await _record_memory_outcome("empty" if context.is_empty else "ok")
@@ -273,7 +286,22 @@ async def _materialize_window(adapter, assembler, conversation_id, tenant_id):
     # not "close to it", since a shorter conversation legitimately returns
     # fewer rows than the cap without ever having been bounded.
     cap_reached = len(all_messages) == settings.conversation_history_max_rows
-    return partition, assembled.truncated, cap_reached
+    # R2 (independent re-validation, 2026-09-09): `truncated` is derived from
+    # the FINAL materialized window, not from `assembled.truncated`.
+    #
+    # The assembler's flag describes an INTERMEDIATE state. §Diseño 8's
+    # turn-snap runs after it and can put back exactly what it dropped: with
+    # `conversation_history_max_messages=1` over `[user, assistant]`, the
+    # assembler drops the `user` message and the snap restores it, so both
+    # messages ship intact while the flag still claimed a truncation. That is
+    # a false positive against AC14's "whenever a turn is dropped or
+    # truncated" -- which is a *whenever*, not an *at least whenever*.
+    #
+    # Recomputing it here keeps ADR-011 §6's own definition
+    # (`total_available > len(messages)`) and simply applies it to the window
+    # that actually results, which is the thing `history_truncated` describes.
+    truncated = len(partition.window) < len(all_messages)
+    return partition, truncated, cap_reached
 
 
 async def _record_ebm25_selected_count(count: int) -> None:

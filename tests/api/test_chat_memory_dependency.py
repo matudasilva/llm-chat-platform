@@ -336,9 +336,19 @@ async def test_window_within_the_added_context_cap_is_unaffected(
     assert result.truncated is False
 
 
-async def test_packing_to_zero_is_reported_as_empty_outcome(
+async def test_packing_to_zero_is_reported_as_budget_starved_not_empty(
     memory_on, collector, monkeypatch
 ) -> None:
+    """R1 (independent re-validation, 2026-09-09): this used to record
+    `empty`, which is a different claim than what happened.
+
+    `empty` means "this conversation had no history" -- pinned separately by
+    `test_empty_conversation_records_empty_not_ok` above, which must keep
+    recording it. Here the conversation HAD history and the hard cap took it
+    all, so the honest outcome is `budget_starved`. Recording `empty` made a
+    cap-driven reduction indistinguishable from a first turn, which is the
+    stale-telemetry class of defect H1 and N2 both were.
+    """
     monkeypatch.setattr(
         deps.settings, "chat_prompt_max_added_context_chars", 0, raising=False
     )
@@ -347,7 +357,7 @@ async def test_packing_to_zero_is_reported_as_empty_outcome(
     )
     result = await get_chat_memory_context(_payload(), _request())
     assert result.is_empty
-    assert collector.snapshot()["memory_outcome"] == "empty"
+    assert collector.snapshot()["memory_outcome"] == "budget_starved"
 
 
 async def test_packer_truncation_ors_into_the_existing_truncated_flag(
@@ -394,3 +404,48 @@ async def test_history_row_cap_reached_survives_packing(
     # A field computed upstream of the packer must not be lost by it, even
     # when the packer empties the window entirely.
     assert result.history_row_cap_reached is True
+
+
+async def test_a_window_the_cap_trimmed_is_reported_as_budget_starved(
+    memory_on, collector, monkeypatch
+) -> None:
+    """R1 (independent re-validation, 2026-09-09).
+
+    This dependency performs its own first pass at the hard cap. It used to
+    record `ok` afterwards, so a request that lost 600 characters of window
+    to the cap reported a healthy window -- the same stale telemetry N2 fixed
+    at the route, left standing one layer down. Reproduces the audit's own
+    scenario: 1 600 characters of history against a 1 000-character cap.
+    """
+    monkeypatch.setattr(
+        deps.settings, "chat_prompt_max_added_context_chars", 1000, raising=False
+    )
+    monkeypatch.setattr(
+        deps.settings, "conversation_history_max_chars", 20000, raising=False
+    )
+    monkeypatch.setattr(
+        deps.settings, "conversation_history_max_messages", 100, raising=False
+    )
+    _install_source(
+        monkeypatch, _messages(("user", "u" * 800), ("assistant", "a" * 800))
+    )
+
+    result = await get_chat_memory_context(_payload(), _request())
+
+    assert sum(len(m.content) for m in result.messages) <= 1000
+    assert collector.snapshot()["memory_outcome"] == "budget_starved"
+
+
+async def test_a_window_that_fits_is_still_reported_as_ok(
+    memory_on, collector, monkeypatch
+) -> None:
+    """The mirror: no cap pressure, no `budget_starved`."""
+    monkeypatch.setattr(
+        deps.settings, "chat_prompt_max_added_context_chars", 10000, raising=False
+    )
+    _install_source(monkeypatch, _messages(("user", "u1"), ("assistant", "a1")))
+
+    result = await get_chat_memory_context(_payload(), _request())
+
+    assert len(result.messages) == 2
+    assert collector.snapshot()["memory_outcome"] == "ok"
