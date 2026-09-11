@@ -44,6 +44,10 @@ class _Span:
         self.children: list[_Span] = []
         self.attributes: dict[str, object] = {}
         self.exception: BaseException | None = None
+        # Independent re-validation found the gap this closes: omitting the
+        # close of `memory.rank` left all nine tests green, because nothing
+        # recorded whether a span ever ended.
+        self.ended = False
 
     def set_attribute(self, key, value):
         self.attributes[key] = value
@@ -53,6 +57,12 @@ class _StackTracer:
     def __init__(self) -> None:
         self.stack: list[_Span] = []
         self.spans: list[_Span] = []
+        # Closure ORDER, not just a closed flag. A span left open by the code
+        # still gets closed when its `@contextmanager` generator is garbage
+        # collected, so `ended` alone can pass by accident -- it did, when the
+        # leak mutation was first tried. The order is what a leak actually
+        # breaks: an inner span must close before the outer one.
+        self.closed_order: list[str] = []
 
     def start_as_current_span(self, name):
         parent = self.stack[-1] if self.stack else None
@@ -68,6 +78,8 @@ class _StackTracer:
                 return current
 
             def __exit__(self, exc_type, exc, tb):
+                current.ended = True
+                tracer.closed_order.append(current.name)
                 current.exception = exc
                 tracer.stack.pop()
                 return False
@@ -327,3 +339,111 @@ async def test_a_raising_tracer_leaves_the_result_intact(collector, monkeypatch)
 
     assert [m.content for m in result.messages] == [m.content for m in baseline.messages]
     assert result.truncated == baseline.truncated
+
+
+# --- closure: a span that is opened must be closed ------------------------
+
+
+async def test_both_spans_are_closed_and_the_stack_unwinds(
+    tracer, collector, monkeypatch
+) -> None:
+    """Independent re-validation of `11372f9` found this gap: omitting the
+    close of `memory.rank` left all nine tests green, because nothing asserted
+    that a span ever ended. A span left open leaks the current context into
+    everything that follows it in the request."""
+    _install(
+        monkeypatch,
+        _turns(
+            ("user", "the launch plan"),
+            ("assistant", "launch is scheduled"),
+            ("user", "anything else"),
+            ("assistant", "no"),
+        ),
+    )
+    monkeypatch.setattr(deps.settings, "conversation_history_max_messages", 2, raising=False)
+    monkeypatch.setattr(deps.settings, "ebm25_enabled", True, raising=False)
+
+    with tracing.span(schema.REQUEST_SPAN):
+        await _call("launch plan")
+
+    assert tracer.by_name("memory.assemble").ended is True
+    assert tracer.by_name("memory.rank").ended is True
+    # Nothing left current: every span opened in this request has unwound.
+    assert tracer.stack == []
+    # Structure, stated exactly. The two memory spans are SIBLINGS, not
+    # nested: `memory.assemble` closes after the first pass at the hard cap,
+    # and the Mode B block that opens `memory.rank` runs after that. Both
+    # close before the REQUEST span containing them.
+    #
+    # **This does NOT detect a leaked span, and saying so matters.** An
+    # earlier version of this comment claimed it did. Measured instead of
+    # assumed: with `memory.rank` opened via `__enter__()` and never exited,
+    # this assertion still passes, because CPython finalizes the
+    # `@contextmanager` generator by refcount as soon as the local leaves
+    # scope -- which happens before the request span closes. The test that
+    # actually catches that mutation is
+    # `test_a_ranking_failure_closes_rank_with_its_exception`: a span the
+    # code never exits cannot record the exception that passed through it.
+    assert tracer.closed_order == ["memory.assemble", "memory.rank", "request"], (
+        tracer.closed_order
+    )
+
+
+async def test_assemble_closes_even_when_the_read_degrades(
+    tracer, collector, monkeypatch
+) -> None:
+    """The failure paths must not leak an open span either."""
+    _install(monkeypatch, _turns(("user", "u1"), ("assistant", "a1")))
+    monkeypatch.setattr(deps.settings, "ebm25_enabled", False, raising=False)
+
+    def _unconfigured(request):
+        from app.infra.db.session import OperationalDatabaseNotConfigured
+
+        raise OperationalDatabaseNotConfigured("not configured")
+
+    monkeypatch.setattr(deps, "get_history_sessionmaker", _unconfigured)
+
+    with tracing.span(schema.REQUEST_SPAN):
+        result = await _call()
+
+    assert result.is_empty
+    assert tracer.by_name("memory.assemble").ended is True
+    assert tracer.stack == []
+
+
+async def test_a_ranking_failure_closes_rank_with_its_exception(
+    tracer, collector, monkeypatch
+) -> None:
+    """The commit claims a ranking failure closes `memory.rank` with its
+    exception BEFORE H9's boundary degrades. Re-validation verified that in
+    HEAD; nothing pinned it."""
+    _install(
+        monkeypatch,
+        _turns(
+            ("user", "the launch plan"),
+            ("assistant", "launch is scheduled"),
+            ("user", "anything else"),
+            ("assistant", "no"),
+        ),
+    )
+    monkeypatch.setattr(deps.settings, "conversation_history_max_messages", 2, raising=False)
+    monkeypatch.setattr(deps.settings, "ebm25_enabled", True, raising=False)
+
+    boom = RuntimeError("ranking exploded")
+
+    def _explode(events, query):
+        raise boom
+
+    monkeypatch.setattr(deps, "rank_events", _explode)
+
+    with tracing.span(schema.REQUEST_SPAN):
+        result = await _call("launch plan")
+
+    rank = tracer.by_name("memory.rank")
+    assert rank.ended is True
+    assert rank.exception is boom, "the span must see the failure, not a degraded no-op"
+    assert tracer.stack == []
+    # And H9's boundary still degraded: window kept, evidence dropped.
+    assert result.messages != ()
+    assert result.retrieved_events == ()
+    assert collector.snapshot()["memory_outcome"] == "error"
