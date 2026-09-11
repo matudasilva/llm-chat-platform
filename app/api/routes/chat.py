@@ -59,6 +59,37 @@ def _error_provider_name(chat_service: ChatService) -> str:
     return settings.provider
 
 
+def _business_transaction_released(db: Any) -> bool:
+    """AC11: the metrics write must not overlap an incomplete `__aexit__`.
+
+    Lexical placement inside a `finally` is not sufficient evidence of the
+    ordering AC11 requires. On the streaming path the generator can be
+    finalized while suspended at the in-transaction `yield` of `chat.py:331`
+    (inside `async with db.begin():`), where `__aexit__` is entered but its
+    rollback need not complete -- independent validation reproduced exactly
+    that with an instrumented transaction double. `in_transaction()` is the
+    observable: it stays true while the release is incomplete.
+
+    When it is still true the write is SKIPPED rather than awaited. Outcome 8
+    (client disconnect) carries an explicitly weaker contract -- "zero or one
+    row, both pass" -- so skipping satisfies it, while awaiting a rollback
+    inside an already-cancelled context is fragile and could hang the shield.
+    Outcomes 1-7 leave the `async with` normally, including the not-found
+    `return`, so they report released and are unaffected.
+
+    Tolerant by design: a session double with no transaction state has nothing
+    to overlap. Ten test files define `begin()`-only doubles, and a strict
+    check would fail them all while proving nothing about the ordering.
+    """
+    in_transaction = getattr(db, "in_transaction", None)
+    if not callable(in_transaction):
+        return True
+    try:
+        return not in_transaction()
+    except Exception:  # pragma: no cover - defensive; never block the write
+        return True
+
+
 def _cache_bypass_reason() -> str | None:
     """Why the response cache must not be consulted, or `None` if it may be.
 
@@ -448,6 +479,20 @@ async def chat(
                 # per the weaker contract outcome 8 carries. Every other
                 # outcome (1-7) reaches this normally and the write is
                 # effectively synchronous.
+                if not _business_transaction_released(db):
+                    # AC11: the release did not complete (the generator was
+                    # finalized at the in-transaction yield). Outcome 8 permits
+                    # zero rows; overlapping an incomplete `__aexit__` is what
+                    # it does not permit.
+                    logger.warning(
+                        "chat.metrics_write_skipped",
+                        extra={
+                            "event": "chat.metrics_write_skipped",
+                            "request_id": str(request_id),
+                            "reason": "business_transaction_not_released",
+                        },
+                    )
+                    return
                 try:
                     await asyncio.shield(
                         asyncio.wait_for(
@@ -678,17 +723,31 @@ async def chat(
         )
 
     finally:
-        try:
-            await asyncio.wait_for(
-                _write_rag_request_metrics(
-                    request,
-                    tenant_id=tenant_id,
-                    generation_outcome=generation_outcome or "error",
-                    provider_result=metrics_provider_result,
-                    memory_context=memory_context,
-                    total_latency_ms=max(0, int((time.perf_counter() - start) * 1000)),
-                ),
-                timeout=settings.rag_request_metrics_timeout_s,
+        # Same AC11 guard as the streaming path. No in-transaction yield exists
+        # here, so this is expected to be a no-op; it is applied because AC11
+        # states the obligation for BOTH sites, not only the one with a known
+        # counterexample.
+        if not _business_transaction_released(db):
+            logger.warning(
+                "chat.metrics_write_skipped",
+                extra={
+                    "event": "chat.metrics_write_skipped",
+                    "request_id": str(request_id),
+                    "reason": "business_transaction_not_released",
+                },
             )
-        except Exception:
-            pass
+        else:
+            try:
+                await asyncio.wait_for(
+                    _write_rag_request_metrics(
+                        request,
+                        tenant_id=tenant_id,
+                        generation_outcome=generation_outcome or "error",
+                        provider_result=metrics_provider_result,
+                        memory_context=memory_context,
+                        total_latency_ms=max(0, int((time.perf_counter() - start) * 1000)),
+                    ),
+                    timeout=settings.rag_request_metrics_timeout_s,
+                )
+            except Exception:
+                pass
