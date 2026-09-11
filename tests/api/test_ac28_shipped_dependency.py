@@ -144,12 +144,18 @@ def _request(sessionmaker) -> SimpleNamespace:
 # --- AC28: the criterion, through the shipped dependency ------------------
 
 
-async def test_seeded_conversation_reaches_the_model_through_the_dependency(
+async def test_seeded_conversation_yields_non_empty_history_through_the_dependency(
     seeded_ops_db, memory_on, collector
 ) -> None:
     """The conjunction AC28 asks for and that no test made: a seeded database,
     substituted at the real seam, read by the SHIPPED dependency, yielding
-    non-empty history."""
+    non-empty history.
+
+    Named for what it checks. An earlier name said "reaches the model", which
+    overstated it: this asserts the context the dependency RETURNS, not an
+    invocation of any provider. What the route then does with that context is
+    `test_chat_memory_provider_input.py`'s subject.
+    """
     maker, conversation_id = seeded_ops_db
 
     result = await deps.get_chat_memory_context(
