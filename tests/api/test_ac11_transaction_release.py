@@ -197,3 +197,41 @@ def test_the_guard_reports_an_open_transaction() -> None:
             return True
 
     assert chat_routes._business_transaction_released(_Open()) is False
+
+
+@pytest.mark.asyncio
+async def test_the_observable_behaves_on_a_real_async_session() -> None:
+    """The guard is only as good as `in_transaction()` on the REAL class.
+
+    Every other test here uses a transaction double, which is what makes the
+    counterexample expressible at all -- but a double could just as easily
+    encode an assumption about SQLAlchemy that is false, and this ORQ has
+    already shipped tests that passed for the wrong reason. This pins the
+    observable against a real `AsyncSession`:
+
+    * open transaction  -> not released (the guard fires)
+    * after commit      -> released (normal outcomes still write)
+    * after rollback    -> released (error outcomes still write)
+
+    The last two are the regression that would matter most: a guard that
+    reported "not released" after a normal commit would silently stop writing
+    the rows AC18 requires for all seven non-cancelled outcomes.
+    """
+    from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+
+    engine = create_async_engine("sqlite+aiosqlite:///:memory:")
+    try:
+        maker = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+        async with maker() as db:
+            assert chat_routes._business_transaction_released(db) is True
+
+            async with db.begin():
+                assert chat_routes._business_transaction_released(db) is False
+            assert chat_routes._business_transaction_released(db) is True
+
+            with pytest.raises(RuntimeError):
+                async with db.begin():
+                    raise RuntimeError("boom")
+            assert chat_routes._business_transaction_released(db) is True
+    finally:
+        await engine.dispose()

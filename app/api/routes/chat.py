@@ -483,7 +483,10 @@ async def chat(
                     # AC11: the release did not complete (the generator was
                     # finalized at the in-transaction yield). Outcome 8 permits
                     # zero rows; overlapping an incomplete `__aexit__` is what
-                    # it does not permit.
+                    # it does not permit. Expressed as if/else rather than an
+                    # early `return`: a `return` inside a `finally` swallows
+                    # whatever exception is in flight -- here the very
+                    # `CancelledError` raised by the interrupted `__aexit__`.
                     logger.warning(
                         "chat.metrics_write_skipped",
                         extra={
@@ -492,25 +495,25 @@ async def chat(
                             "reason": "business_transaction_not_released",
                         },
                     )
-                    return
-                try:
-                    await asyncio.shield(
-                        asyncio.wait_for(
-                            _write_rag_request_metrics(
-                                request,
-                                tenant_id=tenant_id,
-                                generation_outcome=generation_outcome or "cancelled",
-                                provider_result=metrics_provider_result,
-                                memory_context=memory_context,
-                                total_latency_ms=max(
-                                    0, int((time.perf_counter() - start_stream) * 1000)
+                else:
+                    try:
+                        await asyncio.shield(
+                            asyncio.wait_for(
+                                _write_rag_request_metrics(
+                                    request,
+                                    tenant_id=tenant_id,
+                                    generation_outcome=generation_outcome or "cancelled",
+                                    provider_result=metrics_provider_result,
+                                    memory_context=memory_context,
+                                    total_latency_ms=max(
+                                        0, int((time.perf_counter() - start_stream) * 1000)
+                                    ),
                                 ),
-                            ),
-                            timeout=settings.rag_request_metrics_timeout_s,
+                                timeout=settings.rag_request_metrics_timeout_s,
+                            )
                         )
-                    )
-                except Exception:
-                    pass
+                    except Exception:
+                        pass
 
         return StreamingResponse(event_generator(), media_type="text/event-stream")
 
