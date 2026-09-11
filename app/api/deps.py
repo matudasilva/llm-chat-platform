@@ -25,7 +25,7 @@ from app.core.domain.rag_generation import RagGenerationAugmentor, RagGeneration
 from app.core.domain.retrieval_factory import build_retrieval_pipeline
 from app.core.settings import settings
 from app.http.middleware.tenant import get_tenant_id
-from app.http.request_context import get_request_id
+from app.http.request_context import request_uuid
 from app.http import pipeline_metrics
 from app.infra.db.session import (
     get_history_sessionmaker,
@@ -57,8 +57,7 @@ async def get_chat_rag_context(payload: ChatRequest, request: Request) -> RagGen
     if not settings.chat_rag_augmentation_enabled:
         return RagGenerationContext()
 
-    rid = get_request_id()
-    request_id = uuid.UUID(rid) if rid else uuid.uuid4()
+    request_id = request_uuid()
     try:
         async with short_lived_rag_session(request) as db:
             augmentor = RagGenerationAugmentor(
@@ -129,8 +128,7 @@ async def get_chat_memory_context(
         return ChatMemoryContext()
 
     tenant_id = get_tenant_id()
-    rid = get_request_id()
-    request_id = uuid.UUID(rid) if rid else uuid.uuid4()
+    request_id = request_uuid()
 
     # H3/AC3: `memory.assemble` covers assembling the context the dependency
     # DELIVERS -- the bounded read, the turn-snap partition and the first pass

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from contextvars import ContextVar
+import uuid
 from typing import Optional
 from uuid import UUID
 
@@ -103,6 +104,37 @@ def reset_request_context(t1: object, t2: object) -> None:
 
 def get_request_id() -> Optional[str]:
     return _request_id_var.get()
+
+
+def request_uuid() -> uuid.UUID:
+    """A UUID derived from the inbound request id, or a fresh one.
+
+    `get_request_id()` returns the inbound `X-Request-ID` **verbatim**:
+    `RequestContextMiddleware` decodes it with ``errors="replace"``, strips it
+    and says so in its own comment -- "may be arbitrary client text". AC25
+    documents that as deliberate; the header is correlation metadata, taken as
+    sent.
+
+    Three call sites nonetheless did ``uuid.UUID(rid)`` outside any
+    degradation boundary -- `chat.py`'s route body, and both
+    `get_chat_memory_context` and `get_chat_rag_context` before their `try`.
+    A header of ``not-a-uuid`` therefore answered **500 on every /chat
+    request**, on both paths, with both feature flags off (N-1).
+
+    A malformed value is **dropped** and a fresh UUID minted, the same rule
+    `validate_correlation_id` already applies to the telemetry correlation id
+    (AC32). What this does NOT do is sanitise the client's string: the header
+    keeps travelling verbatim in the context var and in the response headers,
+    because that is AC25's decision and this helper is not the place to
+    revisit it.
+    """
+    rid = _request_id_var.get()
+    if rid:
+        try:
+            return uuid.UUID(rid)
+        except (ValueError, AttributeError, TypeError):
+            pass
+    return uuid.uuid4()
 
 
 def get_correlation_id() -> Optional[str]:

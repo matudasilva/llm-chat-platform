@@ -22,7 +22,7 @@ from app.core.domain.types import ChatMessage
 from app.core.settings import settings
 from app.core.utils.limits import sanitize_error_message, truncate
 from app.http.middleware.tenant import get_tenant_id
-from app.http.request_context import get_request_id
+from app.http.request_context import request_uuid
 from app.http import pipeline_metrics
 from app.infra.db.session import get_db, get_history_sessionmaker, short_lived_history_session
 from app.models.conversation import Conversation
@@ -232,8 +232,7 @@ async def chat(
     memory_context: ChatMemoryContext = Depends(get_chat_memory_context),
 ) -> ChatResponse:
     start = time.perf_counter()
-    rid = get_request_id()
-    request_id = uuid.UUID(rid) if rid else uuid.uuid4()
+    request_id = request_uuid()
     tenant_id = get_tenant_id()
 
     status = ChatStatus.error
