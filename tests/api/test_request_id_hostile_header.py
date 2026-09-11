@@ -203,7 +203,24 @@ async def test_a_valid_header_still_becomes_that_exact_uuid() -> None:
 
 @pytest.mark.parametrize(
     "hostile",
-    ["not-a-uuid", "", "   ", "x" * 8192, "\x00\x01control", "12345", "null"],
+    [
+        "not-a-uuid",
+        "",
+        "   ",
+        "x" * 8192,
+        "\x00\x01control",
+        "12345",
+        "null",
+        # Added after independent re-validation asked for these shapes.
+        "ünïcodé-ïd",
+        "🙂🙂🙂",
+        # Non-canonical UUID spellings: `uuid.UUID` ACCEPTS several of these,
+        # so they are here to pin which side of the line each falls on rather
+        # than to assume. Braced and urn forms parse; a 31-digit truncation
+        # does not.
+        "550e8400e29b41d4a716446655440000-extra",
+        "550e8400-e29b-41d4-a716-44665544000",
+    ],
 )
 async def test_hostile_values_yield_a_fresh_uuid_instead_of_raising(hostile) -> None:
     tokens = request_context.set_request_context(hostile, hostile)
@@ -224,3 +241,53 @@ async def test_the_client_string_still_travels_verbatim(hostile_header) -> None:
     """AC25's decision is untouched: this task stops deriving a UUID from
     client text, it does not sanitise the correlation the client sent."""
     assert request_context.get_request_id() == HOSTILE
+
+
+async def test_an_absent_header_mints_a_uuid() -> None:
+    """The case the parametrised list cannot express: no request id in
+    context at all. In production the middleware always sets one, but this
+    helper must not assume that -- it is also reachable from code paths that
+    run outside a request."""
+    assert not request_context.get_request_id(), "this test needs a clean context"
+
+    first = request_context.request_uuid()
+    second = request_context.request_uuid()
+
+    assert isinstance(first, uuid.UUID)
+    assert first != second
+
+
+@pytest.mark.parametrize(
+    "canonical_equivalent",
+    [
+        "{550e8400-e29b-41d4-a716-446655440000}",
+        "urn:uuid:550e8400-e29b-41d4-a716-446655440000",
+        "550e8400e29b41d4a716446655440000",
+        "550E8400-E29B-41D4-A716-446655440000",
+    ],
+)
+async def test_non_canonical_but_valid_spellings_keep_their_identity(
+    canonical_equivalent,
+) -> None:
+    """`uuid.UUID` accepts braced, urn, unhyphenated and upper-case forms.
+    Those are the SAME id, so dropping them would silently break correlation
+    for clients that send them. Pinned so a future tightening of the parser
+    has to be a deliberate decision."""
+    expected = uuid.UUID("550e8400-e29b-41d4-a716-446655440000")
+    tokens = request_context.set_request_context(canonical_equivalent, canonical_equivalent)
+    try:
+        assert request_context.request_uuid() == expected
+    finally:
+        request_context.reset_request_context(*tokens)
+
+
+async def test_the_three_call_sites_do_not_share_a_fallback_uuid(
+    hostile_header, monkeypatch
+) -> None:
+    """A property of the fix, recorded rather than assumed: each call mints
+    its own UUID, so under a malformed header the route and the two
+    dependencies hold DIFFERENT local ids. The shared identity is
+    `request_instance_id`, minted once in the middleware. Independent
+    re-validation surfaced this; pinning it means a future change to a shared
+    per-request fallback is a visible decision, not a silent one."""
+    assert request_context.request_uuid() != request_context.request_uuid()

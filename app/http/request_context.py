@@ -123,7 +123,17 @@ def request_uuid() -> uuid.UUID:
 
     A malformed value is **dropped** and a fresh UUID minted, the same rule
     `validate_correlation_id` already applies to the telemetry correlation id
-    (AC32). What this does NOT do is sanitise the client's string: the header
+    (AC32).
+
+    **Each call mints its own UUID.** When the header is malformed, the route
+    and the two dependencies therefore hold *different* local ids -- there is
+    no shared per-request fallback. That is not a regression (such a request
+    previously failed outright), but it has a consequence worth stating: the
+    common identity for correlating a request across spans, logs and metric
+    rows is `request_instance_id`, minted once in the middleware, never this
+    value. A consumer reconstructing a trace from a request whose header was
+    invalid must use the id returned in the response body / `done` frame, not
+    the one it sent. What this does NOT do is sanitise the client's string: the header
     keeps travelling verbatim in the context var and in the response headers,
     because that is AC25's decision and this helper is not the place to
     revisit it.
