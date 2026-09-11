@@ -207,18 +207,36 @@ class OperationalDatabaseNotConfigured(RuntimeError):
 
 
 def get_history_sessionmaker(request: Request) -> async_sessionmaker[AsyncSession]:
-    """The overridable seam of §Diseño 7 — a FastAPI dependency on purpose.
+    """The overridable seam of §Diseño 7.
 
     `tests/conftest.py` pins `DATABASE_URL="sqlite+aiosqlite:///:memory:"` and
     lets the real lifespan run. A second engine on that URL is a **separate,
     schema-less** in-memory database, so every hermetic history read would fail
     and the never-raising dependency above it would swallow the failure into
     empty history: the whole of Gate B1 could go green with the feature dead.
+    AC28 exists to make that impossible — "a seeded conversation yields
+    NON-empty history through the shipped dependency".
 
-    Resolving the sessionmaker through a dependency — the mechanism `get_db`
-    already uses — lets the harness substitute a seeded database instead, which
-    is what makes AC28 ("a seeded conversation yields NON-empty history") an
-    assertion the harness cannot silently satisfy.
+    **Substitution happens through `app.state`, not `dependency_overrides`.**
+    This function reads `request.app.state.ops_db_sessionmaker`, which the
+    lifespan populates; a harness substitutes a seeded database by setting
+    that attribute. `tests/api/test_ac28_shipped_dependency.py` drives the
+    shipped dependency that way, end to end, over a seeded database built from
+    the real models.
+
+    **It is deliberately NOT declared as a FastAPI dependency** (H8,
+    2026-09-11). An earlier version of this docstring said it was "a FastAPI
+    dependency on purpose"; that was never true of production, where both
+    callers invoke it directly (`app/api/deps.py`, `app/api/routes/chat.py`),
+    and `Depends(get_history_sessionmaker)` appeared only inside test-only
+    routes. Making it one would move the `OperationalDatabaseNotConfigured`
+    raise below into dependency resolution, before any handler body — and
+    `DATABASE_URL_OPS` is empty in the shipped default, so the default
+    configuration would answer 500. That breaks invariant 7 (the streaming
+    path must answer an SSE `error` frame, never a 500) and AC13's
+    never-raises contract, both of which the current direct call preserves by
+    letting the raise land inside `get_chat_memory_context`'s own degradation
+    boundary.
     """
     sm = getattr(request.app.state, _OPS_SESSIONMAKER_KEY, None)
     if sm is None:
