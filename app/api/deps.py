@@ -391,14 +391,27 @@ async def _record_ebm25_selected_count(count: int) -> None:
     # Containing it at the writer separates the two concerns the handler was
     # conflating: a Mode B COMPUTATION failure degrades the context, while a
     # failure to RECORD Mode B's result changes nothing but telemetry. The
-    # handler's second call still happens on a genuine degradation -- it is
-    # neutralised, not removed -- and is now simply lost like the first.
+    # handler's call at `:289` still happens on a genuine degradation and still
+    # records its zero -- it is neutralised, not removed. What stops is the
+    # double call this finding named, where a failing write at `:280` dropped
+    # into the handler and had it record a contradicting zero.
     #
-    # A failed write is LOST, not deferred: this recovers nothing, it only
-    # keeps a metrics fault off the write path (invariant 4). The shipped
-    # collector already contains its own errors (`pipeline_metrics.record`), so
-    # this is defence in depth against a substituted sink, in the same spirit
-    # as `reset_collector`'s own guard.
+    # This recovers nothing: it suppresses the exception, it does not retry and
+    # does not revert. A sink that raises before storing loses that write; one
+    # that stores and then raises keeps what it stored. All the guard buys is
+    # keeping a metrics fault off the write path (invariant 4).
+    #
+    # `except Exception`, deliberately not `BaseException`: an ordinary sink
+    # fault is contained, but a cancellation of the request must still reach
+    # the caller. `CancelledError` derives from `BaseException`, so it passes
+    # through -- the same boundary H5 (`dbc374d`) restored one layer up, and
+    # `test_memory_recorder_containment` pins it here.
+    #
+    # Defence in depth: the guard against ordinary sink errors is on the
+    # collector METHOD (`PipelineMetricsCollector.record`), which the
+    # module-level `pipeline_metrics.record` delegates to without adding one of
+    # its own. That holds for the shipped wiring; this protects against a
+    # substituted sink, in the same spirit as `reset_collector`'s own guard.
     try:
         pipeline_metrics.record(ebm25_selected_count=count)
     except Exception:

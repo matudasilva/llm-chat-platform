@@ -11,14 +11,20 @@ boundary at all.
 
 Two things these tests are NOT:
 
-* They are not a reproduction of a production failure. The shipped collector
-  contains its own errors (`pipeline_metrics.py:47-52`), so N-2 is a latent
-  defect of the boundary, reachable only by substituting the sink. That
-  substitution is the seam used below, and nothing more is claimed for it.
-* They do not pin "no telemetry is ever lost". A write that fails IS lost --
+* They are not a reproduction of a production failure. The guard that contains
+  ordinary sink errors is on the collector METHOD
+  (`PipelineMetricsCollector.record`, `pipeline_metrics.py:47-52`); the
+  module-level `pipeline_metrics.record` has none of its own and simply
+  delegates to it. Containment therefore holds for the shipped wiring, which
+  installs that class -- so N-2 is a latent defect of the boundary, reachable
+  only by substituting the sink. That substitution is the seam used below, and
+  nothing more is claimed for it.
+* They do not pin "no telemetry is ever lost", nor the converse. A write that
+  raises BEFORE storing its value is lost, and
   `test_a_telemetry_failure_does_not_downgrade_a_successful_selection` asserts
-  exactly that, because the honest consequence of swallowing the error is a
-  missing field, not a recovered one.
+  that loss rather than papering over it. A sink that stores and then raises
+  keeps what it stored: these guards suppress the exception, they do not
+  revert a write.
 
 What they do pin is the separation: a telemetry failure changes telemetry, and
 it changes nothing else. Valid evidence is never discarded to report a metrics
@@ -26,6 +32,7 @@ fault, and no outcome is rewritten to `error` because its own recording threw.
 """
 from __future__ import annotations
 
+import asyncio
 import uuid
 from types import SimpleNamespace
 
@@ -45,13 +52,20 @@ class _HostileCollector:
     reads through, so this exercises the same lookup a request does.
     """
 
-    __slots__ = ("_fields", "_fail_keys", "_once", "calls", "request_instance_id",
-                 "correlation_id")
+    __slots__ = ("_fields", "_fail_keys", "_once", "_raises", "calls",
+                 "request_instance_id", "correlation_id")
 
-    def __init__(self, *, fail_keys: set[str], once: bool = False) -> None:
+    def __init__(
+        self,
+        *,
+        fail_keys: set[str],
+        once: bool = False,
+        raises: type[BaseException] = RuntimeError,
+    ) -> None:
         self._fields: dict[str, object] = {}
         self._fail_keys = fail_keys
         self._once = once
+        self._raises = raises
         self.calls: list[dict[str, object]] = []
         self.request_instance_id = str(uuid.uuid4())
         self.correlation_id = None
@@ -61,7 +75,7 @@ class _HostileCollector:
         if self._fail_keys & set(fields):
             if self._once:
                 self._fail_keys = set()
-            raise RuntimeError("metrics sink down")
+            raise self._raises("metrics sink down")
         self._fields.update(fields)
 
     def snapshot(self) -> dict[str, object]:
@@ -154,8 +168,13 @@ async def test_a_failing_recorder_does_not_escape_the_dependency(
     # a reason to hand the model less context.
     assert [m.content for m in result.messages] == ["anything else", "no"]
     assert len(result.retrieved_events) == 1
-    # Every write was attempted; none of them landed.
+    # Nothing landed. This says only that -- an empty snapshot is not evidence
+    # about how many writes were attempted, which `calls` below is.
     assert collector.snapshot() == {}
+    assert [set(c) for c in collector.calls] == [
+        {"ebm25_selected_count"},
+        {"memory_outcome"},
+    ]
 
 
 @pytest.mark.asyncio
@@ -317,6 +336,65 @@ async def test_a_telemetry_failure_does_not_mask_budget_starvation(
     assert sum(len(m.content) for m in result.messages) <= 20
     assert result.retrieved_events == ()
     assert collector.snapshot()["memory_outcome"] == "budget_starved"
+
+
+# --- The line the guard must NOT cross ------------------------------------
+#
+# `except Exception` is the whole point: it contains an ordinary telemetry
+# fault and stops there. `CancelledError` derives from `BaseException` (since
+# Python 3.8), so the guard as written already lets it through -- but nothing
+# in the fix *states* that, and independent re-validation found that widening
+# both guards to `except BaseException` left all seven earlier tests green.
+#
+# That is precisely the H5 trap: `dbc374d` fixed cancellation propagation
+# through the transaction-release guard, and an `except BaseException: pass`
+# sitting in a test hid the fix for a full round. These two tests pin the
+# boundary so the same widening cannot pass unnoticed here.
+#
+# `KeyboardInterrupt` and `SystemExit` follow from the same hierarchy and are
+# not tested separately: one `BaseException` that must survive is enough to
+# kill the widening mutation, and cancellation is the one the request path
+# actually depends on.
+
+
+@pytest.mark.asyncio
+async def test_a_cancelled_request_is_not_swallowed_by_the_count_guard(
+    mode_b_on, monkeypatch
+) -> None:
+    """A cancellation arriving through the sink must reach the caller."""
+    collector = _HostileCollector(
+        fail_keys={"ebm25_selected_count"}, raises=asyncio.CancelledError
+    )
+    token = _install_collector(collector)
+    try:
+        _install_history(monkeypatch, _SELECTABLE_HISTORY)
+
+        with pytest.raises(asyncio.CancelledError):
+            await deps.get_chat_memory_context(_payload("launch plan"), _request())
+    finally:
+        pipeline_metrics.reset_collector(token)
+
+
+@pytest.mark.asyncio
+async def test_a_cancelled_request_is_not_swallowed_by_the_outcome_guard(
+    mode_b_on, monkeypatch
+) -> None:
+    """The same, for the writer whose calls sit outside every boundary.
+
+    Mode A, so the only recorder call is the unconditional one at the end.
+    """
+    monkeypatch.setattr(deps.settings, "ebm25_enabled", False, raising=False)
+    collector = _HostileCollector(
+        fail_keys={"memory_outcome"}, raises=asyncio.CancelledError
+    )
+    token = _install_collector(collector)
+    try:
+        _install_history(monkeypatch, _SELECTABLE_HISTORY)
+
+        with pytest.raises(asyncio.CancelledError):
+            await deps.get_chat_memory_context(_payload("launch plan"), _request())
+    finally:
+        pipeline_metrics.reset_collector(token)
 
 
 # --- The boundary it must not weaken --------------------------------------
