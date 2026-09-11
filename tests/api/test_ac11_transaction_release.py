@@ -147,13 +147,19 @@ async def test_no_metrics_write_while_the_release_is_incomplete(writes) -> None:
     iterator = await _drive_to_the_in_transaction_yield(session)
 
     # Finalize at the in-transaction yield: `__aexit__` is entered and
-    # cancelled before it clears the flag. Whether `aclose()` itself surfaces
-    # that cancellation is an implementation detail of generator finalization
-    # and not what AC11 is about, so it is tolerated either way.
-    try:
+    # cancelled before it clears the flag.
+    #
+    # The cancellation MUST propagate. An earlier version of this test wrapped
+    # this in a bare `except BaseException: pass`, reasoning that generator
+    # finalization details were not what AC11 is about. Independent
+    # re-validation showed what that cost: restoring the pre-fix code -- whose
+    # guard used an early `return` inside the `finally` -- left all five tests
+    # green, because the broad except hid the difference. A `return` in a
+    # `finally` swallows whatever exception is in flight, here the very
+    # `CancelledError` raised by the interrupted `__aexit__`, so swallowing it
+    # is a real behavioural regression that no assertion could see.
+    with pytest.raises(asyncio.CancelledError):
         await iterator.aclose()
-    except BaseException:
-        pass
 
     assert session.in_transaction() is True, "the fixture must leave the release incomplete"
     assert writes == [], "the write overlapped an incomplete __aexit__"
