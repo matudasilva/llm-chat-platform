@@ -15,6 +15,7 @@ from app.core.domain.conversation_history import (
     HistoryMessage,
 )
 from app.core.domain.context_packer import pack_recent_window
+from app.core.observability.tracing import set_attribute, span
 from app.core.domain.conversation_turns import build_materialized_window
 from app.core.domain.retrieval_corpus import RetrievalCorpus
 from app.core.domain.provider import ProviderPort
@@ -131,60 +132,83 @@ async def get_chat_memory_context(
     rid = get_request_id()
     request_id = uuid.UUID(rid) if rid else uuid.uuid4()
 
-    try:
-        sessionmaker = get_history_sessionmaker(request)
-        async with short_lived_history_session(sessionmaker) as db:
-            assembler = ConversationHistoryAssembler(
-                max_messages=settings.conversation_history_max_messages,
-                max_chars=settings.conversation_history_max_chars,
-            )
-            adapter = SqlConversationHistoryAdapter(
-                ConversationQueryService(db),
-                max_rows=settings.conversation_history_max_rows,
-            )
-            partition, truncated, cap_reached = await asyncio.wait_for(
-                _materialize_window(adapter, assembler, conversation_id, tenant_id),
-                timeout=settings.conversation_history_timeout_s,
-            )
-    except ConversationNotFoundError:
-        # Caught DISTINCTLY from the generic handler below (AC13). The two are
-        # not the same event: this one is an ownership answer the route will
-        # also produce, while the generic branch is a degradation.
-        await _record_memory_outcome("conversation_not_found")
-        return ChatMemoryContext()
-    except asyncio.TimeoutError:
-        await _record_memory_outcome("timeout")
-        _log_memory_degraded(request_id=request_id, reason="timeout")
-        return ChatMemoryContext()
-    except Exception as exc:
-        await _record_memory_outcome("error")
-        _log_memory_degraded(request_id=request_id, reason=type(exc).__name__)
-        return ChatMemoryContext()
+    # H3/AC3: `memory.assemble` covers assembling the context the dependency
+    # DELIVERS -- the bounded read, the turn-snap partition and the first pass
+    # at the hard cap -- so `memory.window_turn_count` describes the effective
+    # window rather than an intermediate one. It opens before the `try` so a
+    # seam or timeout failure is inside the span; the degradation itself is
+    # still handled by the existing handlers, which the span does not touch.
+    # The session's lifetime is unchanged: only the span's extent is wider.
+    with span(
+        "memory.assemble",
+        **{"memory.mode": "B" if settings.ebm25_enabled else "A"},
+    ) as assemble_span:
+        try:
+            sessionmaker = get_history_sessionmaker(request)
+            async with short_lived_history_session(sessionmaker) as db:
+                assembler = ConversationHistoryAssembler(
+                    max_messages=settings.conversation_history_max_messages,
+                    max_chars=settings.conversation_history_max_chars,
+                )
+                adapter = SqlConversationHistoryAdapter(
+                    ConversationQueryService(db),
+                    max_rows=settings.conversation_history_max_rows,
+                )
+                partition, truncated, cap_reached = await asyncio.wait_for(
+                    _materialize_window(adapter, assembler, conversation_id, tenant_id),
+                    timeout=settings.conversation_history_timeout_s,
+                )
+        except ConversationNotFoundError:
+            # Caught DISTINCTLY from the generic handler below (AC13). The two are
+            # not the same event: this one is an ownership answer the route will
+            # also produce, while the generic branch is a degradation.
+            await _record_memory_outcome("conversation_not_found")
+            return ChatMemoryContext()
+        except asyncio.TimeoutError:
+            await _record_memory_outcome("timeout")
+            _log_memory_degraded(request_id=request_id, reason="timeout")
+            return ChatMemoryContext()
+        except Exception as exc:
+            await _record_memory_outcome("error")
+            _log_memory_degraded(request_id=request_id, reason=type(exc).__name__)
+            return ChatMemoryContext()
 
-    context = ChatMemoryContext.from_partition(
-        partition, truncated=truncated, history_row_cap_reached=cap_reached
-    )
+        context = ChatMemoryContext.from_partition(
+            partition, truncated=truncated, history_row_cap_reached=cap_reached
+        )
 
-    # T13: a FIRST pass at the hard cap, over the two contributors this
-    # dependency can see. It is deliberately NOT the authority: the documental
-    # RAG channel is a separate dependency invisible from here, so the
-    # combined cap of §Diseño 7 is enforced once, over all three contributors,
-    # in `added_context_budget.enforce_added_context_cap`, called from the
-    # route immediately before the prompt is assembled. Two earlier attempts
-    # to enforce it from inside this function were both incomplete for that
-    # structural reason. What remains here is a bound on this channel alone,
-    # which keeps Mode B's selection below from ranking against an unbounded
-    # window; the route may trim further, and its result is what ships.
-    # This call is identical whether `ebm25_enabled` is on or off, which is
-    # what keeps AC16's byte-identity claim true by construction.
-    packed = pack_recent_window(
-        context.messages, max_chars=settings.chat_prompt_max_added_context_chars
-    )
-    context = dataclasses.replace(
-        context,
-        messages=packed.messages,
-        truncated=context.truncated or packed.truncated,
-    )
+        # T13: a FIRST pass at the hard cap, over the two contributors this
+        # dependency can see. It is deliberately NOT the authority: the
+        # documental RAG channel is a separate dependency invisible from here,
+        # so the combined cap of §Diseño 7 is enforced once, over all three
+        # contributors, in `added_context_budget.enforce_added_context_cap`,
+        # called from the route immediately before the prompt is assembled.
+        # Two earlier attempts to enforce it from inside this function were
+        # both incomplete for that structural reason. What remains here is a
+        # bound on this channel alone, which keeps Mode B's selection below
+        # from ranking against an unbounded window; the route may trim
+        # further, and its result is what ships. This call is identical
+        # whether `ebm25_enabled` is on or off, which is what keeps AC16's
+        # byte-identity claim true by construction.
+        packed = pack_recent_window(
+            context.messages, max_chars=settings.chat_prompt_max_added_context_chars
+        )
+        context = dataclasses.replace(
+            context,
+            messages=packed.messages,
+            truncated=context.truncated or packed.truncated,
+        )
+
+        # H3/AC3: set on the way out, so they describe what this span actually
+        # produced. `memory.outcome` is deliberately NOT written: the route can
+        # still override the outcome after this span has closed, and a second
+        # source of truth that can diverge from `rag_request_metrics` is the
+        # stale-telemetry class H1, N2 and R1 all were.
+        set_attribute(assemble_span, "memory.window_turn_count", len(context.messages) // 2)
+        set_attribute(assemble_span, "memory.history_truncated", context.truncated)
+        set_attribute(
+            assemble_span, "memory.history_row_cap_reached", context.history_row_cap_reached
+        )
 
     # T18: Mode B, gated on `ebm25_enabled`. Built from the SAME `partition`
     # T10 already produced -- never a second grouping pass. Off by default,
@@ -222,28 +246,40 @@ async def get_chat_memory_context(
                 mode_b_outcome = "no_out_of_window_corpus"
                 await _record_ebm25_selected_count(0)
             else:
-                remaining_budget = settings.chat_prompt_max_added_context_chars - sum(
-                    len(m.content) for m in context.messages
-                )
-                ranked = rank_events(corpus.events, query_tokens(payload.message))
-                selected, _ = pack_selected_events(ranked, max_chars=max(remaining_budget, 0))
-                if not selected:
-                    # §Diseño 8's second inert state: evidence existed and was
-                    # ranked, but the budget -- after the window took its
-                    # (protected) share -- left no room for any of it.
-                    mode_b_outcome = "budget_starved"
-                    await _record_ebm25_selected_count(0)
-                else:
-                    context = dataclasses.replace(
-                        context,
-                        retrieved_events=tuple(
-                            RetrievedMemoryEvent(
-                                event_id=event.event_id, content=event.document_text
-                            )
-                            for event in selected
-                        ),
-                    )
-                    await _record_ebm25_selected_count(len(selected))
+                # H3/AC3: `memory.rank` opens ONLY here, where ranking actually
+                # happens. AC3 counts "the stage spans actually entered" and
+                # names the conditional `rag.evaluate` as its precedent; an
+                # empty out-of-window corpus means no ranking occurred, so the
+                # branch above emits no span. Placed INSIDE H9's degradation
+                # boundary, not around it, so a ranking failure closes the span
+                # with its exception before the boundary degrades.
+                with span(
+                    "memory.rank",
+                    **{"memory.corpus_turn_count": len(corpus.events)},
+                ) as rank_span:
+                  remaining_budget = settings.chat_prompt_max_added_context_chars - sum(
+                      len(m.content) for m in context.messages
+                  )
+                  ranked = rank_events(corpus.events, query_tokens(payload.message))
+                  selected, _ = pack_selected_events(ranked, max_chars=max(remaining_budget, 0))
+                  set_attribute(rank_span, "memory.selected_count", len(selected))
+                  if not selected:
+                      # §Diseño 8's second inert state: evidence existed and was
+                      # ranked, but the budget -- after the window took its
+                      # (protected) share -- left no room for any of it.
+                      mode_b_outcome = "budget_starved"
+                      await _record_ebm25_selected_count(0)
+                  else:
+                      context = dataclasses.replace(
+                          context,
+                          retrieved_events=tuple(
+                              RetrievedMemoryEvent(
+                                  event_id=event.event_id, content=event.document_text
+                              )
+                              for event in selected
+                          ),
+                      )
+                      await _record_ebm25_selected_count(len(selected))
         except Exception as exc:
             # Degrade to Mode A, keeping the window. Recorded as `error` --
             # this dependency's existing degradation value -- because leaving
