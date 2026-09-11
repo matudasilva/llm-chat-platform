@@ -380,7 +380,29 @@ async def _materialize_window(adapter, assembler, conversation_id, tenant_id):
 
 async def _record_ebm25_selected_count(count: int) -> None:
     # T18: 0 for both inert states; N for a successful Mode B selection.
-    pipeline_metrics.record(ebm25_selected_count=count)
+    #
+    # N-2: swallowed here, at the writer, rather than at each call site. Three
+    # of the four callers are INSIDE H9's degradation boundary and the fourth
+    # is the boundary's own handler, which calls this very function again -- so
+    # a persistently failing sink escaped the dependency entirely, and a
+    # single-shot failure sent a successful selection through the handler and
+    # reported `error`/0 over evidence the request was about to use.
+    #
+    # Containing it at the writer separates the two concerns the handler was
+    # conflating: a Mode B COMPUTATION failure degrades the context, while a
+    # failure to RECORD Mode B's result changes nothing but telemetry. The
+    # handler's second call still happens on a genuine degradation -- it is
+    # neutralised, not removed -- and is now simply lost like the first.
+    #
+    # A failed write is LOST, not deferred: this recovers nothing, it only
+    # keeps a metrics fault off the write path (invariant 4). The shipped
+    # collector already contains its own errors (`pipeline_metrics.record`), so
+    # this is defence in depth against a substituted sink, in the same spirit
+    # as `reset_collector`'s own guard.
+    try:
+        pipeline_metrics.record(ebm25_selected_count=count)
+    except Exception:
+        pass
 
 
 async def _record_memory_outcome(outcome: str) -> None:
@@ -392,7 +414,15 @@ async def _record_memory_outcome(outcome: str) -> None:
     # `pipeline_metrics.py`, deliberately bluntly, because the failure it
     # guards against -- a copied context silently swallowing every field -- is
     # invisible at runtime. Keeping that rule unarguable is worth an `await`.
-    pipeline_metrics.record(memory_outcome=outcome)
+    #
+    # N-2: guarded for the same reason as `_record_ebm25_selected_count`, and
+    # with more exposure -- this one's calls sit outside EVERY boundary, on
+    # both modes, so a raising sink here reached the route unhandled even with
+    # `ebm25_enabled` off.
+    try:
+        pipeline_metrics.record(memory_outcome=outcome)
+    except Exception:
+        pass
 
 
 def _log_memory_degraded(*, request_id: uuid.UUID, reason: str) -> None:
