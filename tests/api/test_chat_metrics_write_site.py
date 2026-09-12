@@ -811,3 +811,82 @@ async def test_a_hostile_request_id_still_yields_exactly_one_well_formed_row(
             assert hostile not in str(value), (
                 f"the hostile request id reached column {name!r}: {value!r}"
             )
+
+
+# --- ORQ-37: estimated_cost_usd, from the frozen snapshot ------------------
+
+
+def _priced_result(provider: str, model: str, *, inp: int, out: int) -> ProviderResult:
+    return ProviderResult(
+        content="x", provider=provider, model_version=model,
+        prompt_version="v1", input_tokens=inp, output_tokens=out,
+    )
+
+
+async def test_estimated_cost_comes_from_the_frozen_snapshot(
+    metrics_on, collector
+) -> None:
+    """gpt-4.1-mini at 0.40/1.60 per 1M: 1000 in + 500 out = 0.0012."""
+    await chat_routes._write_rag_request_metrics(
+        object(), tenant_id=TENANT, generation_outcome="ok",
+        provider_result=_priced_result("openai", "gpt-4.1-mini", inp=1000, out=500),
+        memory_context=ChatMemoryContext(), total_latency_ms=1,
+    )
+    rows = await _rows(metrics_on)
+    assert rows[0].estimated_cost_usd == pytest.approx(0.0012)
+
+
+async def test_estimated_cost_prices_bedrock_from_its_own_row(
+    metrics_on, collector
+) -> None:
+    await chat_routes._write_rag_request_metrics(
+        object(), tenant_id=TENANT, generation_outcome="ok",
+        provider_result=_priced_result(
+            "bedrock", "nvidia.nemotron-nano-12b-v2", inp=1000, out=500
+        ),
+        memory_context=ChatMemoryContext(), total_latency_ms=1,
+    )
+    rows = await _rows(metrics_on)
+    assert rows[0].estimated_cost_usd == pytest.approx(0.000175)
+
+
+async def test_an_unpriced_model_persists_null_not_zero(metrics_on, collector) -> None:
+    """NULL says "no price for this pair". A zero here would read as a measured
+    cost of nothing, which is the contamination the column stayed empty to
+    avoid until the snapshot existed."""
+    await chat_routes._write_rag_request_metrics(
+        object(), tenant_id=TENANT, generation_outcome="ok",
+        provider_result=_priced_result("openai", "gpt-4o-mini", inp=1000, out=500),
+        memory_context=ChatMemoryContext(), total_latency_ms=1,
+    )
+    rows = await _rows(metrics_on)
+    assert rows[0].estimated_cost_usd is None
+
+
+async def test_a_genuine_zero_cost_persists_as_zero_not_null(
+    metrics_on, collector
+) -> None:
+    """The stub provider is priced, at nothing. Distinguishable from unpriced.
+
+    A falsy test in the writer would collapse this into the NULL above -- the
+    same defect shape as `ebm25_selected_count`, which is why both directions
+    are pinned rather than just the positive case.
+    """
+    await chat_routes._write_rag_request_metrics(
+        object(), tenant_id=TENANT, generation_outcome="ok",
+        provider_result=_priced_result("stub", None, inp=1000, out=500),
+        memory_context=ChatMemoryContext(), total_latency_ms=1,
+    )
+    rows = await _rows(metrics_on)
+    assert rows[0].estimated_cost_usd == 0.0
+    assert rows[0].estimated_cost_usd is not None
+
+
+async def test_no_provider_result_leaves_cost_null(metrics_on, collector) -> None:
+    """A request that never reached the provider has no cost to report."""
+    await chat_routes._write_rag_request_metrics(
+        object(), tenant_id=TENANT, generation_outcome="error",
+        provider_result=None, memory_context=ChatMemoryContext(), total_latency_ms=1,
+    )
+    rows = await _rows(metrics_on)
+    assert rows[0].estimated_cost_usd is None

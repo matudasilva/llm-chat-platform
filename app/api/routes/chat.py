@@ -14,6 +14,7 @@ from app.core.domain.added_context_budget import enforce_added_context_cap
 from app.core.domain.chat_memory import ChatMemoryContext
 from app.core.domain.chat_service import ChatService
 from app.core.domain.chat_types import ChatServiceResult
+from app.core.utils.costs import estimate_generation_cost_usd
 from app.core.domain.errors import ProviderExecutionError, ProviderTimeoutError
 from app.core.domain.provider import ProviderResult
 from app.core.domain.provider_errors import ProviderError
@@ -187,13 +188,20 @@ async def _write_rag_request_metrics(
     `generate_calls`/`fallback_used` stay NULL, in three distinct states
     recorded under H7 -- not one backlog:
 
-    * `estimated_cost_usd` is **blocked on pricing**, not on code.
-      `estimate_cost` exists and the writer holds both token counts, but
-      `settings.cost_rates_by_provider` carries only `stub` at 0.0/0.0 and
-      returns 0.0 for any unknown provider. Writing it today would persist a
-      zero that looks measured on every OpenAI and Bedrock row, contaminating
-      the very evidence T23's cost comparison needs. NULL is the honest value
-      until a frozen price snapshot exists.
+    * `estimated_cost_usd` is now written, from the frozen price snapshot
+      dated 2026-09-12 in `app/core/utils/costs.py` (operator decision). It was
+      previously left NULL and recorded as *blocked on pricing, not on code*:
+      `settings.cost_rates_by_provider` carried only `stub` and returned 0.0
+      for any unknown provider, so writing it then would have persisted a zero
+      that looks measured on every real-provider row -- contaminating the very
+      evidence T23's cost comparison needs.
+
+      Priced by `(provider, model)`, never by provider alone: a per-provider
+      rate applies itself to whichever model is configured. An unpriced pair
+      yields `None` and the column stays NULL, which is a different statement
+      from a measured `0.0` -- the stub provider's real cost. Generation only:
+      embedding calls never reach this writer and do not differentiate Mode A
+      from Mode B.
     * The pipeline metrics are **not implemented in this ORQ**. Their
       producers live outside `chat.py`/`deps.py`, which is exactly where T14
       does not write: `retrieval_pipeline.py` and `RagGenerationAugmentor` for
@@ -238,6 +246,16 @@ async def _write_rag_request_metrics(
                         mode="B" if settings.ebm25_enabled else "A",
                         memory_outcome=snapshot.get("memory_outcome"),
                         ebm25_selected_count=snapshot.get("ebm25_selected_count"),
+                        estimated_cost_usd=estimate_generation_cost_usd(
+                            provider=provider_result.provider if provider_result else None,
+                            model=provider_result.model_version if provider_result else None,
+                            input_tokens=(
+                                provider_result.input_tokens if provider_result else None
+                            ),
+                            output_tokens=(
+                                provider_result.output_tokens if provider_result else None
+                            ),
+                        ),
                         generation_outcome=generation_outcome,
                         input_tokens=(
                             provider_result.input_tokens if provider_result else None
