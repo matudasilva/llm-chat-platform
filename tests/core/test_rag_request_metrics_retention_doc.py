@@ -62,11 +62,21 @@ def test_states_the_37_day_breach_threshold() -> None:
     assert "37" in _text()
 
 
-def test_owner_is_an_explicit_placeholder_not_a_fabricated_name() -> None:
-    # This ORQ does not invent an organizational decision. The field must be
-    # an explicit placeholder the operator fills in, not a made-up name.
+def test_owner_is_a_real_assignment_not_a_placeholder() -> None:
+    # INVERTED on 2026-09-12, not deleted. This guard previously required the
+    # field to hold a placeholder, because this ORQ must not invent an
+    # organizational decision -- and it never did: "Platform Operations" was
+    # assigned by operator decision, which ADR-012 requires before production
+    # enablement and places outside this ORQ's authority.
+    #
+    # The guard now protects the other direction, which is the one that
+    # matters from here: the field must hold a real name, so an edit that
+    # silently reverts it to a placeholder -- or blanks it -- fails here
+    # rather than quietly reopening AC33's privacy-readiness gate.
     text = _text()
-    assert "<OPERATOR" in text or "TBD" in text or "to be assigned" in text.lower()
+    assert "Platform Operations" in text
+    for placeholder in ("<OPERATOR", "TBD", "to be assigned"):
+        assert placeholder not in text, f"owner reverted to a placeholder: {placeholder!r}"
 
 
 def test_gates_production_enablement() -> None:

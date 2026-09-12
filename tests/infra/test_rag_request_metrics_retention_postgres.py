@@ -80,13 +80,20 @@ async def engine():
         await engine.dispose()
 
 
-async def _seed(session, *, now, age_days: float, marker: uuid.UUID) -> None:
+async def _seed(session, *, now, age_days: int, marker: uuid.UUID) -> None:
     """One row whose `created_at` is `age_days` older than the captured `now`."""
     await session.execute(
         text(
             "INSERT INTO rag_request_metrics "
             "(id, request_instance_id, tenant_id, created_at) "
-            "VALUES (:id, :rid, :tenant, :now - make_interval(days => :age))"
+            "VALUES (:id, :rid, :tenant, "
+            # Both CASTs are load-bearing, and both were found only by running
+            # against real PostgreSQL -- this file is skipped everywhere else.
+            # Without the first, asyncpg types the parameter from its context
+            # and the subtraction comes back as `interval`, not `timestamptz`.
+            # The second must be `integer`: `make_interval`'s `days` argument
+            # is int, so casting to double precision matches no overload.
+            "CAST(:now AS timestamptz) - make_interval(days => CAST(:age AS integer)))"
         ),
         {"id": uuid.uuid4(), "rid": marker, "tenant": TENANT, "now": now, "age": age_days},
     )
@@ -103,7 +110,7 @@ async def _surviving(session, markers) -> set[uuid.UUID]:
     return {row[0] for row in result}
 
 
-async def _run_window(engine, *, retention_days: int, ages: dict[str, float]):
+async def _run_window(engine, *, retention_days: int, ages: dict[str, int]):
     """Seed one row per age and apply the published DELETE, in ONE transaction.
 
     Returns the markers that survived, keyed by the same labels.
