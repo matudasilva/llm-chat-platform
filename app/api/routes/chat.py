@@ -164,12 +164,40 @@ async def _write_rag_request_metrics(
     too would make them redundant. Originally hardcoded `"A"` because
     `ebm25_enabled` did not exist until T18 shipped it -- a documented
     placeholder that outlived the flag it was waiting for.
-    `rewrite_calls`/`retrieve_calls`/`rerank_calls`/
-    `evaluate_calls`/`generate_calls`/`fallback_used`/`ebm25_selected_count`
-    have no producer yet -- those columns exist per §Diseño 6's full schema
-    but stay NULL until a later task wires them, which is not scope creep:
-    writing to modules outside `chat.py`/`deps.py` is exactly what T14 does
-    not do.
+    `ebm25_selected_count` is read back from the snapshot: it HAS a producer
+    (`deps.py`'s `_record_ebm25_selected_count`, shipped by T18 and hardened by
+    H9 and N-2), and the writer simply dropped it. Read with `.get`, never a
+    falsy test -- 0 is a measurement here, recorded deliberately by both of
+    Mode B's inert states (§Diseño 8), and collapsing it into NULL would erase
+    the distinction between "ranked and selected nothing" and "Mode B never
+    ran". *(H7/Class 1, 2026-09-12: this docstring previously listed the field
+    among those with "no producer yet". That was true when T14 shipped and
+    stopped being true when T18 landed -- the same kind of comment that
+    outlived its cause as H1's hardcoded `mode="A"`.)*
+
+    `retrieval_outcome`/`estimated_cost_usd`/`ebm25_latency_ms`/
+    `rewrite_calls`/`retrieve_calls`/`rerank_calls`/`evaluate_calls`/
+    `generate_calls`/`fallback_used` stay NULL, in three distinct states
+    recorded under H7 -- not one backlog:
+
+    * `estimated_cost_usd` is **blocked on pricing**, not on code.
+      `estimate_cost` exists and the writer holds both token counts, but
+      `settings.cost_rates_by_provider` carries only `stub` at 0.0/0.0 and
+      returns 0.0 for any unknown provider. Writing it today would persist a
+      zero that looks measured on every OpenAI and Bedrock row, contaminating
+      the very evidence T23's cost comparison needs. NULL is the honest value
+      until a frozen price snapshot exists.
+    * The pipeline metrics are **not implemented in this ORQ**. They need
+      producers in `retrieval_pipeline.py` and `RagGenerationAugmentor`, and
+      writing to modules outside `chat.py`/`deps.py` is exactly what T14 does
+      not do. AC24 depends on `retrieval_outcome` and is reported FAILED, not
+      patched in passing.
+    * `fallback_used` is **semantically ambiguous**. §Diseño 6 lists the name
+      without a definition, and this system has two distinct fallbacks: the
+      provider one (`ResilientProvider`, which logs it but does not return it
+      on `ProviderResult`) and the reranker one
+      (`RetrievalPipelineResult.fallback_triggered`). Left unimplemented
+      rather than resolved by guessing.
     """
     if not settings.rag_request_metrics_enabled:
         return
@@ -197,6 +225,7 @@ async def _write_rag_request_metrics(
                         tenant_id=tenant_id,
                         mode="B" if settings.ebm25_enabled else "A",
                         memory_outcome=snapshot.get("memory_outcome"),
+                        ebm25_selected_count=snapshot.get("ebm25_selected_count"),
                         generation_outcome=generation_outcome,
                         input_tokens=(
                             provider_result.input_tokens if provider_result else None

@@ -274,6 +274,70 @@ async def test_history_flags_come_from_the_memory_context(metrics_on, collector)
     assert rows[0].history_row_cap_reached is True
 
 
+async def test_ebm25_selected_count_comes_from_the_collector(
+    metrics_on, collector
+) -> None:
+    """H7/Class 1: the count had a producer and the writer dropped it.
+
+    `_record_ebm25_selected_count` (`deps.py`) has written this field since
+    T18, and H9 and N-2 both hardened it -- but the writer never read it back
+    out of the snapshot, so every row persisted NULL. This is the one column
+    of H7's ten that needs no new producer at all.
+    """
+    pipeline_metrics.record(ebm25_selected_count=3)
+    await chat_routes._write_rag_request_metrics(
+        object(),
+        tenant_id=TENANT,
+        generation_outcome="ok",
+        provider_result=None,
+        memory_context=ChatMemoryContext(),
+        total_latency_ms=1,
+    )
+    rows = await _rows(metrics_on)
+    assert rows[0].ebm25_selected_count == 3
+
+
+async def test_a_selected_count_of_zero_is_persisted_as_zero_not_null(
+    metrics_on, collector
+) -> None:
+    """Zero is a MEASUREMENT, and must not be confused with "never ran".
+
+    Both of Mode B's inert states record 0 deliberately (§Diseño 8). If the
+    writer used a falsy test rather than a None test, "ranked and selected
+    nothing" would persist identically to "Mode B never ran", which is the
+    distinction the column exists to make.
+    """
+    pipeline_metrics.record(ebm25_selected_count=0)
+    await chat_routes._write_rag_request_metrics(
+        object(),
+        tenant_id=TENANT,
+        generation_outcome="ok",
+        provider_result=None,
+        memory_context=ChatMemoryContext(),
+        total_latency_ms=1,
+    )
+    rows = await _rows(metrics_on)
+    assert rows[0].ebm25_selected_count == 0
+
+
+async def test_an_unrecorded_selected_count_stays_null(metrics_on, collector) -> None:
+    """Mode A never records the field, and NULL is the correct row value.
+
+    The collector drops `None` values, so an absent key and a recorded `None`
+    are the same thing here.
+    """
+    await chat_routes._write_rag_request_metrics(
+        object(),
+        tenant_id=TENANT,
+        generation_outcome="ok",
+        provider_result=None,
+        memory_context=ChatMemoryContext(),
+        total_latency_ms=1,
+    )
+    rows = await _rows(metrics_on)
+    assert rows[0].ebm25_selected_count is None
+
+
 async def test_tokens_come_from_the_provider_result(metrics_on, collector) -> None:
     provider_result = ProviderResult(
         content="x", provider="stub", model_version="v1", prompt_version="v1",
