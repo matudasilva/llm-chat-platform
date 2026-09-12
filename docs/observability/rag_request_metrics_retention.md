@@ -31,7 +31,7 @@ implicit ordering dependency.
 | Term | Value |
 |---|---|
 | **Window** | `rag_request_metrics_retention_days`, default **30 days** |
-| **Owner** | **`<OPERATOR: assign a named role/person before enabling `rag_request_metrics_enabled` in production>`** — not "the team". This ORQ does not assign a named human or role; that is an organizational decision outside its authority. Gate B2 production readiness requires this field to hold a real name before enablement (§Diseño 6). |
+| **Owner** | **Platform Operations** — a named organizational role, not "the team". Assigned by operator decision on 2026-09-12, which is what ADR-012 requires before production enablement; the assignment is the operator's to make, not this ORQ's. Gate B2 production readiness requires this field to hold a real name before enablement (§Diseño 6). |
 | **Procedure** | The statement above, run explicitly, exactly like a migration |
 | **Maximum cadence** | At least once every **7 days** |
 | **Maximum tolerated delay** | **37 days** (the window plus one cadence period) — an **operator-auditable breach threshold**, not application-enforced. Nothing in the running system observes a breach; ORQ-37 introduces no detection mechanism, by operator directive |
