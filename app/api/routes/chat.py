@@ -167,13 +167,20 @@ async def _write_rag_request_metrics(
     `ebm25_selected_count` is read back from the snapshot: it HAS a producer
     (`deps.py`'s `_record_ebm25_selected_count`, shipped by T18 and hardened by
     H9 and N-2), and the writer simply dropped it. Read with `.get`, never a
-    falsy test -- 0 is a measurement here, recorded deliberately by both of
-    Mode B's inert states (§Diseño 8), and collapsing it into NULL would erase
-    the distinction between "ranked and selected nothing" and "Mode B never
-    ran". *(H7/Class 1, 2026-09-12: this docstring previously listed the field
-    among those with "no producer yet". That was true when T14 shipped and
-    stopped being true when T18 landed -- the same kind of comment that
-    outlived its cause as H1's hardcoded `mode="A"`.)*
+    falsy test -- **0 is a measurement**, written deliberately on three
+    distinct Mode B paths: an empty out-of-window corpus (where no ranking
+    happened at all), a ranked corpus starved of budget, and the degradation
+    handler. NULL means only that no measurement is available, which is NOT
+    the same as "Mode B never ran": telemetry is best-effort and a recorded
+    value can be lost (N-2). So `.get` preserves a real distinction between
+    "some Mode B path reported zero" and "nothing reported", while a falsy
+    test would collapse the first into the second.
+    *(H7/Class 1, 2026-09-12: this docstring previously listed the field among
+    those with "no producer yet" -- true when T14 shipped, invalidated by T18,
+    the same way H1's hardcoded `mode="A"` outlived its cause. Independent
+    re-validation then corrected this paragraph too: it had claimed 0 meant
+    "ranked and selected nothing" and that NULL proved Mode B never ran.
+    Neither was exhaustive.)*
 
     `retrieval_outcome`/`estimated_cost_usd`/`ebm25_latency_ms`/
     `rewrite_calls`/`retrieve_calls`/`rerank_calls`/`evaluate_calls`/
@@ -187,17 +194,22 @@ async def _write_rag_request_metrics(
       zero that looks measured on every OpenAI and Bedrock row, contaminating
       the very evidence T23's cost comparison needs. NULL is the honest value
       until a frozen price snapshot exists.
-    * The pipeline metrics are **not implemented in this ORQ**. They need
-      producers in `retrieval_pipeline.py` and `RagGenerationAugmentor`, and
-      writing to modules outside `chat.py`/`deps.py` is exactly what T14 does
-      not do. AC24 depends on `retrieval_outcome` and is reported FAILED, not
-      patched in passing.
+    * The pipeline metrics are **not implemented in this ORQ**. Their
+      producers live outside `chat.py`/`deps.py`, which is exactly where T14
+      does not write: `retrieval_pipeline.py` and `RagGenerationAugmentor` for
+      the retrieval stages, `ChatService` for `generate_calls`, and `deps.py`
+      itself for `ebm25_latency_ms` -- so this is not one homogeneous module,
+      and not every stage runs on every request either. AC24 depends on
+      `retrieval_outcome` and is reported FAILED, not patched in passing.
     * `fallback_used` is **semantically ambiguous**. §Diseño 6 lists the name
-      without a definition, and this system has two distinct fallbacks: the
-      provider one (`ResilientProvider`, which logs it but does not return it
-      on `ProviderResult`) and the reranker one
-      (`RetrievalPipelineResult.fallback_triggered`). Left unimplemented
-      rather than resolved by guessing.
+      without a definition, and this system has at least THREE distinct
+      fallbacks: the provider one (`ResilientProvider`, which logs it but does
+      not return it on `ProviderResult`), the reranker's return to RRF order
+      (`RetrievalPipelineResult.fallback_triggered`), and
+      `CascadingRerankerAdapter`'s own internal fallback (ADR-007), which is a
+      different event from the second. Left unimplemented rather than resolved
+      by guessing. *(Independent re-validation raised the third; an earlier
+      version of this comment confidently said "two".)*
     """
     if not settings.rag_request_metrics_enabled:
         return

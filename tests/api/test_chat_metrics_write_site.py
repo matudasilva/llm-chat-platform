@@ -11,6 +11,7 @@ local.
 from __future__ import annotations
 
 import uuid
+from types import SimpleNamespace
 from collections.abc import AsyncIterator
 
 import pytest
@@ -24,6 +25,9 @@ from app.core.domain.errors import ProviderExecutionError, ProviderTimeoutError
 from app.core.domain.provider import ProviderResult
 from app.core.domain.provider_errors import ProviderError, ProviderErrorKind
 from app.core.domain.types import ChatMessage
+from app.api import deps
+from app.core.domain.bm25_ranking import BM25_TOP_K
+from app.core.domain.conversation_history import HistoryMessage
 from app.http import pipeline_metrics
 from app.infra.db.base import Base
 from app.models.rag_request_metrics import RagRequestMetrics
@@ -274,8 +278,9 @@ async def test_history_flags_come_from_the_memory_context(metrics_on, collector)
     assert rows[0].history_row_cap_reached is True
 
 
+@pytest.mark.parametrize("count", [1, 3, BM25_TOP_K], ids=["one", "three", "top_k"])
 async def test_ebm25_selected_count_comes_from_the_collector(
-    metrics_on, collector
+    metrics_on, collector, count
 ) -> None:
     """H7/Class 1: the count had a producer and the writer dropped it.
 
@@ -283,8 +288,11 @@ async def test_ebm25_selected_count_comes_from_the_collector(
     T18, and H9 and N-2 both hardened it -- but the writer never read it back
     out of the snapshot, so every row persisted NULL. This is the one column
     of H7's ten that needs no new producer at all.
+
+    Parametrized up to `BM25_TOP_K`, which is 5: a writer capping the value at
+    3 would otherwise pass, and 4 and 5 are reachable selections in production.
     """
-    pipeline_metrics.record(ebm25_selected_count=3)
+    pipeline_metrics.record(ebm25_selected_count=count)
     await chat_routes._write_rag_request_metrics(
         object(),
         tenant_id=TENANT,
@@ -294,7 +302,7 @@ async def test_ebm25_selected_count_comes_from_the_collector(
         total_latency_ms=1,
     )
     rows = await _rows(metrics_on)
-    assert rows[0].ebm25_selected_count == 3
+    assert rows[0].ebm25_selected_count == count
 
 
 async def test_a_selected_count_of_zero_is_persisted_as_zero_not_null(
@@ -463,6 +471,79 @@ class _NullCache:
 
     def log_bypass(self, **kwargs):
         return None
+
+
+async def test_mode_b_persists_the_count_the_real_dependency_produced(
+    monkeypatch, metrics_on, collector, request_context_for
+) -> None:
+    """H7/Class 1, producer -> writer, with Mode B actually ON.
+
+    Independent re-validation of `af39174` found a mutation that survived every
+    test in this file AND all 273 in `tests/api/`: persisting the count only
+    when `ebm25_enabled` is FALSE, writing NULL in Mode B. That deletes exactly
+    the production path the fix exists for.
+
+    The hole was that the other three tests inject into the collector by hand
+    with the flag off by default, and the Mode B tests elsewhere never look at
+    the persisted row. Nothing joined the real producer to the real writer.
+
+    So this one runs `get_chat_memory_context` for real with `ebm25_enabled`
+    true, lets IT record the count, and then asserts the row the route wrote.
+    The expected value is deliberately NOT 3 -- the positive case above uses 3,
+    and a writer that hardcoded it would have passed both.
+    """
+    monkeypatch.setattr(deps.settings, "ebm25_enabled", True, raising=False)
+    monkeypatch.setattr(deps.settings, "conversation_history_enabled", True, raising=False)
+    monkeypatch.setattr(deps.settings, "conversation_history_max_messages", 2, raising=False)
+    monkeypatch.setattr(deps.settings, "conversation_history_max_chars", 20000, raising=False)
+    monkeypatch.setattr(deps, "get_tenant_id", lambda: TENANT)
+
+    history = [
+        HistoryMessage(sequence=1, role="user", content="the plan for launch"),
+        HistoryMessage(sequence=2, role="assistant", content="launch is scheduled"),
+        HistoryMessage(sequence=3, role="user", content="anything else"),
+        HistoryMessage(sequence=4, role="assistant", content="no"),
+    ]
+
+    class _Adapter:
+        def __init__(self, queries, *, max_rows=None) -> None:
+            pass
+
+        async def fetch_ordered(self, conversation_id, tenant_id):
+            return history
+
+    class _CM:
+        async def __aenter__(self):
+            return object()
+
+        async def __aexit__(self, *exc):
+            return False
+
+    monkeypatch.setattr(deps, "get_history_sessionmaker", lambda request: object())
+    monkeypatch.setattr(deps, "short_lived_history_session", lambda sm: _CM())
+    monkeypatch.setattr(deps, "SqlConversationHistoryAdapter", _Adapter)
+    monkeypatch.setattr(deps, "ConversationQueryService", lambda db: object())
+
+    conversation_id = uuid.uuid4()
+    memory_context = await deps.get_chat_memory_context(
+        SimpleNamespace(conversation_id=conversation_id, message="launch plan"),
+        SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace())),
+    )
+    # The producer really did select one out-of-window turn: the value under
+    # test comes from Mode B, not from the test.
+    assert len(memory_context.retrieved_events) == 1
+
+    await chat_routes.chat(
+        ChatRequest(message="launch plan"),
+        request=object(),
+        db=_Session(),
+        chat_service=_ChatService(),
+        memory_context=memory_context,
+    )
+
+    rows = await _rows(metrics_on)
+    assert [r.mode for r in rows] == ["B"]
+    assert [r.ebm25_selected_count for r in rows] == [1]
 
 
 async def test_non_streaming_success_yields_ok(metrics_on, collector, request_context_for) -> None:
