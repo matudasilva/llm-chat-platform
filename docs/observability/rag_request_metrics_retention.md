@@ -41,7 +41,20 @@ implicit ordering dependency.
 
 | Run timestamp (UTC) | Operator | Rows deleted | Oldest surviving `created_at` |
 |---|---|---|---|
-| _(no execution yet)_ | | | |
+| 2026-09-12 13:34 | Platform Operations | 2 | 2026-09-10T13:34:48.874620+00:00 |
+
+> **What that first entry exercised, stated plainly.** It is a real run: the
+> published statement above, executed as `chat_ops_retention` against the dev
+> database and **committed**, not rolled back. `rag_request_metrics_enabled`
+> has never been on in that environment, so the table was empty; three rows
+> aged 45, 31 and 2 days were written first **by `chat_ops`**, the runtime
+> role, exercising the same INSERT-only path production uses. The two rows
+> past the 30-day window were deleted and the one inside it survived, which
+> is the number recorded above.
+>
+> Those rows were seeded to exercise the procedure. They are not production
+> telemetry, and this entry should not be read as evidence that retention has
+> run against real traffic.
 
 ## What this contract does NOT do
 
