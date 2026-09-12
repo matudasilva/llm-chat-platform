@@ -1,4 +1,4 @@
-"""ORQ-37 T2 — the SSE body is byte-identical with tracing on and off (AC2).
+"""ORQ-37 T2 — responses are identical with tracing on, off, broken and hung (AC2).
 
 Route-level counterpart to the chunk-level assertions in
 `tests/core/test_tracing_pipeline_stages.py`. `/chat` is not modified by this
@@ -10,6 +10,7 @@ request-scoped UUID fields, which differ per request by design.
 from __future__ import annotations
 
 import re
+import time
 from collections.abc import AsyncIterator
 from typing import Any
 
@@ -121,6 +122,68 @@ class _WorkingTracer:
         return _CM()
 
 
+class _RaisingOnExitTracer:
+    """Raises where a real exporter fails: on span END, not on span start.
+
+    `_RaisingTracer` fails at `start_as_current_span`, which the seam handles
+    by yielding `None` and skipping the span entirely -- a different code path
+    from a span that opens normally and then blows up on close. Mutating the
+    seam's `span_end` handler to let that exception propagate passed every test
+    in this file until this double existed, so AC2's "raising on every span"
+    was only covered at one end.
+    """
+
+    def __init__(self) -> None:
+        self.exits = 0
+
+    def start_as_current_span(self, name):
+        tracer = self
+
+        class _CM:
+            def __enter__(self):
+                return _NoopSpan()
+
+            def __exit__(self, *exc):
+                tracer.exits += 1
+                raise RuntimeError("exporter failed on span end")
+
+        return _CM()
+
+
+class _SlowTracer:
+    """AC2's second condition: an exporter that blocks past its export timeout.
+
+    The seam has no timeout of its own -- it calls the tracer and the tracer
+    decides how long a span takes -- so the faithful double is one that blocks
+    on span END, where a hung exporter's flush would sit. The property under
+    test is that an arbitrarily slow span lifecycle changes the response not at
+    all; the delay is kept small only so the suite stays fast.
+
+    `blocked` counts the blocks, and every test asserts it moved. A double that
+    silently stopped blocking would otherwise make these comparisons pass
+    while testing nothing -- the failure mode that made the `ebm25` cap
+    mutation survive in H7.
+    """
+
+    def __init__(self, delay_s: float = 0.02) -> None:
+        self.delay_s = delay_s
+        self.blocked = 0
+
+    def start_as_current_span(self, name):
+        tracer = self
+
+        class _CM:
+            def __enter__(self):
+                return _NoopSpan()
+
+            def __exit__(self, *exc):
+                tracer.blocked += 1
+                time.sleep(tracer.delay_s)
+                return False
+
+        return _CM()
+
+
 async def _raw_sse_body() -> str:
     response = await chat(
         ChatRequest(message="hello", stream=True),
@@ -144,11 +207,24 @@ async def test_sse_body_is_byte_identical_with_tracing_disabled_and_enabled():
 
         tracing.configure_for_testing(_RaisingTracer())
         broken = await _raw_sse_body()
+
+        exit_tracer = _RaisingOnExitTracer()
+        tracing.configure_for_testing(exit_tracer)
+        broken_on_exit = await _raw_sse_body()
+
+        # AC2's second condition: a hung exporter, not just a raising tracer.
+        slow_tracer = _SlowTracer()
+        tracing.configure_for_testing(slow_tracer)
+        slow = await _raw_sse_body()
     finally:
         tracing.configure_for_testing(None)
 
     assert enabled == disabled
     assert broken == disabled
+    assert broken_on_exit == disabled
+    assert slow == disabled
+    assert exit_tracer.exits > 0, "the raising-on-exit double never closed a span"
+    assert slow_tracer.blocked > 0, "the slow double never actually blocked"
     # The body is real, so equality is not equality of two empty strings.
     assert "event: token" in disabled and "event: done" in disabled
     assert disabled.count("event: token") == len(_TOKENS)
@@ -177,11 +253,24 @@ async def test_non_streaming_chat_is_identical_with_tracing_disabled_and_enabled
 
         tracing.configure_for_testing(_RaisingTracer())
         broken = await _non_streaming_body()
+
+        exit_tracer = _RaisingOnExitTracer()
+        tracing.configure_for_testing(exit_tracer)
+        broken_on_exit = await _non_streaming_body()
+
+        # AC2's second condition: a hung exporter, not just a raising tracer.
+        slow_tracer = _SlowTracer()
+        tracing.configure_for_testing(slow_tracer)
+        slow = await _non_streaming_body()
     finally:
         tracing.configure_for_testing(None)
 
     assert enabled == disabled
     assert broken == disabled
+    assert broken_on_exit == disabled
+    assert slow == disabled
+    assert exit_tracer.exits > 0, "the raising-on-exit double never closed a span"
+    assert slow_tracer.blocked > 0, "the slow double never actually blocked"
     assert "hello mundo" in disabled  # a real body, not two empty strings
 
 
@@ -233,9 +322,22 @@ async def test_retrieval_is_identical_with_tracing_disabled_and_enabled(monkeypa
 
         tracing.configure_for_testing(_RaisingTracer())
         broken = await _body()
+
+        exit_tracer = _RaisingOnExitTracer()
+        tracing.configure_for_testing(exit_tracer)
+        broken_on_exit = await _body()
+
+        # AC2's second condition: a hung exporter, not just a raising tracer.
+        slow_tracer = _SlowTracer()
+        tracing.configure_for_testing(slow_tracer)
+        slow = await _body()
     finally:
         tracing.configure_for_testing(None)
 
     assert enabled == disabled
     assert broken == disabled
+    assert broken_on_exit == disabled
+    assert slow == disabled
+    assert exit_tracer.exits > 0, "the raising-on-exit double never closed a span"
+    assert slow_tracer.blocked > 0, "the slow double never actually blocked"
     assert "rewritten query" in disabled

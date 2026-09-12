@@ -28,7 +28,7 @@ from app.core.domain.types import ChatMessage
 from app.api import deps
 from app.core.domain.bm25_ranking import BM25_TOP_K
 from app.core.domain.conversation_history import HistoryMessage
-from app.http import pipeline_metrics
+from app.http import pipeline_metrics, request_context
 from app.infra.db.base import Base
 from app.models.rag_request_metrics import RagRequestMetrics
 from app.schemas.chat import ChatRequest
@@ -748,3 +748,54 @@ async def test_a_forced_slow_write_is_bounded_by_the_timeout(
     elapsed = asyncio.get_event_loop().time() - started
     assert response.status == chat_routes.ChatStatus.success
     assert elapsed < 1.0, "the slow write must not have been awaited to completion"
+
+
+# --- AC32: a hostile header through the REAL route, at the metrics row ------
+#
+# H10 recorded that the adversarial-header tests "use a dummy downstream
+# responder, not the complete route/metrics path". `test_telemetry_identity.py`
+# drives a dummy responder and `test_request_id_hostile_header.py` covers the
+# minting; neither reaches a persisted row. These do.
+#
+# The other half of that bullet -- "legacy UUID parsing outside try blocks
+# remains" -- was discharged by N-1 and is not re-tested here.
+
+
+@pytest.mark.parametrize(
+    "hostile",
+    ["not-a-uuid", "", "ü" * 8, "'; DROP TABLE rag_request_metrics; --", "x" * 4096],
+    ids=["garbage", "empty", "unicode", "sqlish", "oversized"],
+)
+async def test_a_hostile_request_id_still_yields_exactly_one_well_formed_row(
+    metrics_on, request_context_for, hostile
+) -> None:
+    """The row is written, and its identity columns are UUIDs or NULL.
+
+    `request_instance_id` is server-minted and NOT NULL; `request_id` carries
+    the client's value and is nullable, so a header that is not a UUID must
+    land as NULL rather than as the raw string or a 500.
+    """
+    instance_id = str(uuid.uuid4())
+    instance, token = pipeline_metrics.init_collector(
+        request_instance_id=instance_id, correlation_id=None
+    )
+    try:
+        tokens = request_context.set_request_context(hostile, hostile)
+        try:
+            await chat_routes.chat(
+                ChatRequest(message="hello"),
+                request=object(),
+                db=_Session(),
+                chat_service=_ChatService(),
+            )
+        finally:
+            request_context.reset_request_context(*tokens)
+    finally:
+        pipeline_metrics.reset_collector(token)
+
+    rows = await _rows(metrics_on)
+    assert len(rows) == 1
+    assert str(rows[0].request_instance_id) == instance_id
+    # Never the hostile string itself, in any column.
+    assert rows[0].request_id is None
+    assert rows[0].generation_outcome == "ok"

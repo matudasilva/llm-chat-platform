@@ -7,6 +7,8 @@ context object a test constructed by hand.
 """
 from __future__ import annotations
 
+import json
+import pathlib
 import uuid
 from collections.abc import AsyncIterator
 
@@ -17,7 +19,8 @@ from app.api import deps
 from app.core.domain.chat_service import ChatServiceStreamSession, StreamChatResult
 from app.core.domain.chat_types import ChatServiceResult
 from app.core.domain.conversation_history import HistoryMessage
-from app.core.domain.provider import ProviderResult
+from app.core.domain.chat_service import ChatService
+from app.core.domain.provider import ProviderInput, ProviderResult
 from app.core.domain.types import ChatMessage
 from app.schemas.chat import ChatRequest
 
@@ -209,3 +212,113 @@ async def test_flag_on_assembled_set_differs_from_mode_a(monkeypatch) -> None:
     off = await _run(monkeypatch, ebm25=False, messages=FIXTURE)
     on = await _run(monkeypatch, ebm25=True, messages=FIXTURE)
     assert off.run_metadata != on.run_metadata
+
+
+# --- AC16's remaining halves: the RESOLVED provider invocation, frozen ------
+#
+# H10 recorded that this file "substitutes ChatService and compares an inline
+# list, omitting the resolved invocation/configuration and frozen rendered B1
+# artifact". Both gaps are closed below: the capture moves DOWN one layer, to
+# the `ProviderInput` a REAL `ChatService` builds, and the flag-off result is
+# compared against a committed artifact rather than a literal in this file.
+
+
+class _CapturingProvider:
+    """A real `ChatService` runs; this records exactly what reaches the port."""
+
+    def __init__(self) -> None:
+        self.seen: ProviderInput | None = None
+
+    async def generate(self, input: ProviderInput) -> ProviderResult:
+        self.seen = input
+        return ProviderResult(
+            content="answer",
+            provider="stub",
+            model_version="stub-model",
+            prompt_version="v1",
+            input_tokens=1,
+            output_tokens=1,
+        )
+
+
+_BASELINE = pathlib.Path(__file__).with_name("fixtures") / "ac16_b1_provider_input.json"
+
+
+def _render(provider_input: ProviderInput) -> str:
+    """The resolved invocation, minus the per-request identity."""
+    return json.dumps(
+        {
+            "messages": [
+                {"role": m.role, "content": m.content} for m in provider_input.messages
+            ],
+            "temperature": provider_input.temperature,
+            "max_tokens": provider_input.max_tokens,
+            "metadata": provider_input.metadata,
+        },
+        indent=2,
+        sort_keys=True,
+    )
+
+
+async def _run_to_provider(monkeypatch, *, ebm25: bool, messages, question="fox"):
+    from types import SimpleNamespace
+
+    from app.api.deps import get_chat_memory_context
+
+    monkeypatch.setattr(deps.settings, "ebm25_enabled", ebm25, raising=False)
+    _install_history(monkeypatch, messages)
+
+    payload = ChatRequest(message=question, conversation_id=CONVERSATION_ID)
+    memory_context = await get_chat_memory_context(
+        payload, SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace()))
+    )
+    provider = _CapturingProvider()
+    await chat_routes.chat(
+        payload,
+        request=object(),
+        db=_Session(),
+        chat_service=ChatService(provider=provider, timeout_s=5.0),
+        memory_context=memory_context,
+    )
+    assert provider.seen is not None, "the provider port was never reached"
+    return provider.seen
+
+
+async def test_the_toggle_changes_only_the_memory_key_at_the_provider_port(
+    monkeypatch,
+) -> None:
+    """Same claim as the ChatService-level test, one layer lower.
+
+    A substituted `ChatService` cannot show what the real one resolves --
+    temperature, max_tokens and the assembled message list are its output, not
+    the route's. This asserts over the object the provider actually receives.
+    """
+    off = await _run_to_provider(monkeypatch, ebm25=False, messages=FIXTURE)
+    on = await _run_to_provider(monkeypatch, ebm25=True, messages=FIXTURE)
+
+    assert [(m.role, m.content) for m in off.messages] == [
+        (m.role, m.content) for m in on.messages
+    ]
+    assert off.temperature == on.temperature
+    assert off.max_tokens == on.max_tokens
+    assert (off.metadata or {}).get("memory") is None
+    assert (on.metadata or {}).get("memory") is not None
+
+
+async def test_the_flag_off_provider_input_matches_the_frozen_b1_artifact(
+    monkeypatch,
+) -> None:
+    """The B1 baseline as a COMMITTED artifact, not a literal in this file.
+
+    A literal in the test can be edited in the same commit that changes the
+    behaviour it is supposed to pin, and the diff reads as one intentional
+    change. A separate artifact makes a baseline change show up as a baseline
+    change.
+
+    The file is never written by this test. A golden that regenerates itself
+    passes on its first run by construction, which is the one run where it has
+    proven nothing.
+    """
+    assert _BASELINE.exists(), f"the frozen B1 artifact is missing: {_BASELINE}"
+    off = await _run_to_provider(monkeypatch, ebm25=False, messages=FIXTURE)
+    assert _render(off) == _BASELINE.read_text()
