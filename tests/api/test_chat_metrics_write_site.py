@@ -796,6 +796,18 @@ async def test_a_hostile_request_id_still_yields_exactly_one_well_formed_row(
     rows = await _rows(metrics_on)
     assert len(rows) == 1
     assert str(rows[0].request_instance_id) == instance_id
-    # Never the hostile string itself, in any column.
     assert rows[0].request_id is None
     assert rows[0].generation_outcome == "ok"
+
+    # "no such content in ANY column", swept rather than spot-checked.
+    # Checking chosen columns let a mutation copying the header into
+    # `memory_outcome` pass all five of these cases.
+    if hostile:
+        persisted = {
+            column.name: getattr(rows[0], column.name)
+            for column in RagRequestMetrics.__table__.columns
+        }
+        for name, value in persisted.items():
+            assert hostile not in str(value), (
+                f"the hostile request id reached column {name!r}: {value!r}"
+            )

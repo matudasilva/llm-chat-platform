@@ -9,6 +9,7 @@ request-scoped UUID fields, which differ per request by design.
 
 from __future__ import annotations
 
+import logging
 import re
 import time
 from collections.abc import AsyncIterator
@@ -131,6 +132,11 @@ class _RaisingOnExitTracer:
     seam's `span_end` handler to let that exception propagate passed every test
     in this file until this double existed, so AC2's "raising on every span"
     was only covered at one end.
+
+    `exits` counts entries, not the raise itself -- deleting the `raise` and
+    keeping the counter left the tests green. Each test therefore asserts that
+    the seam actually LOGGED `tracing.span_end_failed`, which only happens when
+    an exception reached its handler.
     """
 
     def __init__(self) -> None:
@@ -159,10 +165,18 @@ class _SlowTracer:
     test is that an arbitrarily slow span lifecycle changes the response not at
     all; the delay is kept small only so the suite stays fast.
 
-    `blocked` counts the blocks, and every test asserts it moved. A double that
-    silently stopped blocking would otherwise make these comparisons pass
-    while testing nothing -- the failure mode that made the `ebm25` cap
-    mutation survive in H7.
+    **What the instrumentation proves, stated narrowly.** `blocked` counts
+    ENTRIES into this double, not its effects: independent re-validation showed
+    that deleting the `sleep` while keeping the counter left all three tests
+    green. The counter alone was exactly the vacuous guard it claimed to
+    prevent. Each test therefore also asserts ELAPSED TIME, which `sleep`
+    guarantees as a lower bound and which no counter can fake.
+
+    **Declared limit.** This does not reproduce OTel's export timeout. It
+    blocks in the request thread; production exports through a batch processor
+    whose configured timeout is 10_000 ms, which this never approaches. What is
+    demonstrated is that a span lifecycle taking arbitrarily long does not
+    change the response -- not that a real hung exporter was exercised.
     """
 
     def __init__(self, delay_s: float = 0.02) -> None:
@@ -184,7 +198,37 @@ class _SlowTracer:
         return _CM()
 
 
-async def _raw_sse_body() -> str:
+_SEAM_LOGGER = "app.observability.tracing"
+
+
+async def _timed(awaitable):
+    """Elapsed wall time around a driver, in seconds."""
+    start = time.perf_counter()
+    result = await awaitable
+    return time.perf_counter() - start, result
+
+
+def _assert_really_blocked(tracer, elapsed: float) -> None:
+    """`sleep` guarantees a LOWER bound; a counter guarantees nothing.
+
+    Re-validation deleted the sleep, kept the counter, and every test stayed
+    green. Elapsed time is what cannot be faked by incrementing an integer.
+    """
+    assert tracer.blocked > 0, "the slow double never entered its span exit"
+    assert elapsed >= tracer.delay_s, (
+        f"the slow double did not block: {elapsed:.4f}s elapsed for "
+        f"{tracer.blocked} span(s) of {tracer.delay_s}s each"
+    )
+
+
+def _assert_span_end_was_handled(caplog) -> None:
+    """The seam only logs this when an exception reached its `span_end` handler."""
+    assert any(
+        record.getMessage() == "tracing.span_end_failed" for record in caplog.records
+    ), "the seam never handled a failing span end; the double may not have raised"
+
+
+async def _raw_sse_body() -> tuple[str, int]:
     response = await chat(
         ChatRequest(message="hello", stream=True),
         db=_FakeAsyncSession(),
@@ -193,11 +237,15 @@ async def _raw_sse_body() -> str:
     parts: list[str] = []
     async for chunk in response.body_iterator:
         parts.append(chunk.decode() if isinstance(chunk, bytes) else chunk)
-    return _UUID.sub("<uuid>", "".join(parts))
+    # AC2 requires "identical status", not only an identical body. Returned
+    # alongside it because a mutation flipping the streaming status to 503
+    # under tracing passed every body-only comparison here.
+    return _UUID.sub("<uuid>", "".join(parts)), response.status_code
 
 
 @pytest.mark.asyncio
-async def test_sse_body_is_byte_identical_with_tracing_disabled_and_enabled():
+async def test_sse_body_and_status_are_identical_under_every_tracer(caplog):
+    """AC2 over the streaming path: body AND status, four tracer conditions."""
     tracing.configure_for_testing(None)
     try:
         disabled = await _raw_sse_body()
@@ -210,12 +258,14 @@ async def test_sse_body_is_byte_identical_with_tracing_disabled_and_enabled():
 
         exit_tracer = _RaisingOnExitTracer()
         tracing.configure_for_testing(exit_tracer)
-        broken_on_exit = await _raw_sse_body()
+        with caplog.at_level(logging.DEBUG, logger=_SEAM_LOGGER):
+            broken_on_exit = await _raw_sse_body()
+        _assert_span_end_was_handled(caplog)
 
         # AC2's second condition: a hung exporter, not just a raising tracer.
         slow_tracer = _SlowTracer()
         tracing.configure_for_testing(slow_tracer)
-        slow = await _raw_sse_body()
+        elapsed, slow = await _timed(_raw_sse_body())
     finally:
         tracing.configure_for_testing(None)
 
@@ -223,11 +273,13 @@ async def test_sse_body_is_byte_identical_with_tracing_disabled_and_enabled():
     assert broken == disabled
     assert broken_on_exit == disabled
     assert slow == disabled
+    _assert_really_blocked(slow_tracer, elapsed)
     assert exit_tracer.exits > 0, "the raising-on-exit double never closed a span"
-    assert slow_tracer.blocked > 0, "the slow double never actually blocked"
+    body, status = disabled
     # The body is real, so equality is not equality of two empty strings.
-    assert "event: token" in disabled and "event: done" in disabled
-    assert disabled.count("event: token") == len(_TOKENS)
+    assert "event: token" in body and "event: done" in body
+    assert body.count("event: token") == len(_TOKENS)
+    assert status == 200
 
 
 # --- AC2's remaining halves: non-streaming /chat and /retrieval -------------
@@ -243,7 +295,7 @@ async def _non_streaming_body() -> str:
 
 
 @pytest.mark.asyncio
-async def test_non_streaming_chat_is_identical_with_tracing_disabled_and_enabled():
+async def test_non_streaming_chat_is_identical_with_tracing_disabled_and_enabled(caplog):
     tracing.configure_for_testing(None)
     try:
         disabled = await _non_streaming_body()
@@ -256,12 +308,14 @@ async def test_non_streaming_chat_is_identical_with_tracing_disabled_and_enabled
 
         exit_tracer = _RaisingOnExitTracer()
         tracing.configure_for_testing(exit_tracer)
-        broken_on_exit = await _non_streaming_body()
+        with caplog.at_level(logging.DEBUG, logger=_SEAM_LOGGER):
+            broken_on_exit = await _non_streaming_body()
+        _assert_span_end_was_handled(caplog)
 
         # AC2's second condition: a hung exporter, not just a raising tracer.
         slow_tracer = _SlowTracer()
         tracing.configure_for_testing(slow_tracer)
-        slow = await _non_streaming_body()
+        elapsed, slow = await _timed(_non_streaming_body())
     finally:
         tracing.configure_for_testing(None)
 
@@ -269,13 +323,13 @@ async def test_non_streaming_chat_is_identical_with_tracing_disabled_and_enabled
     assert broken == disabled
     assert broken_on_exit == disabled
     assert slow == disabled
+    _assert_really_blocked(slow_tracer, elapsed)
     assert exit_tracer.exits > 0, "the raising-on-exit double never closed a span"
-    assert slow_tracer.blocked > 0, "the slow double never actually blocked"
     assert "hello mundo" in disabled  # a real body, not two empty strings
 
 
 @pytest.mark.asyncio
-async def test_retrieval_is_identical_with_tracing_disabled_and_enabled(monkeypatch):
+async def test_retrieval_is_identical_with_tracing_disabled_and_enabled(monkeypatch, caplog):
     """`/rag/retrieve` runs the same four stages `/chat` augments with, so it is
     the second surface AC2 names. Driven at the handler with a real pipeline
     over fake ports; the route's own dependencies are what a live corpus would
@@ -325,12 +379,14 @@ async def test_retrieval_is_identical_with_tracing_disabled_and_enabled(monkeypa
 
         exit_tracer = _RaisingOnExitTracer()
         tracing.configure_for_testing(exit_tracer)
-        broken_on_exit = await _body()
+        with caplog.at_level(logging.DEBUG, logger=_SEAM_LOGGER):
+            broken_on_exit = await _body()
+        _assert_span_end_was_handled(caplog)
 
         # AC2's second condition: a hung exporter, not just a raising tracer.
         slow_tracer = _SlowTracer()
         tracing.configure_for_testing(slow_tracer)
-        slow = await _body()
+        elapsed, slow = await _timed(_body())
     finally:
         tracing.configure_for_testing(None)
 
@@ -338,6 +394,41 @@ async def test_retrieval_is_identical_with_tracing_disabled_and_enabled(monkeypa
     assert broken == disabled
     assert broken_on_exit == disabled
     assert slow == disabled
+    _assert_really_blocked(slow_tracer, elapsed)
     assert exit_tracer.exits > 0, "the raising-on-exit double never closed a span"
-    assert slow_tracer.blocked > 0, "the slow double never actually blocked"
     assert "rewritten query" in disabled
+
+
+# --- AC2's "identical status" on the two handler-level paths ---------------
+
+
+@pytest.mark.asyncio
+async def test_handler_paths_return_normally_under_every_tracer(caplog):
+    """AC2 requires identical STATUS, not only identical bodies.
+
+    The streaming test asserts `response.status_code` directly, because a
+    `StreamingResponse` carries one. The other two drivers call their handlers
+    directly and return a pydantic model, so FastAPI -- which is what turns a
+    return value into a status -- is not in the loop. What IS observable there
+    is that the handler returns a model rather than raising, which is the only
+    way status could diverge on those paths at this level.
+
+    **Declared limit:** a full status comparison for those two would need an
+    ASGI client. These drivers deliberately do not use one, and this test does
+    not claim otherwise.
+    """
+    from app.schemas.chat import ChatResponse
+
+    tracing.configure_for_testing(None)
+    try:
+        for tracer in (None, _WorkingTracer(), _RaisingTracer(),
+                       _RaisingOnExitTracer(), _SlowTracer()):
+            tracing.configure_for_testing(tracer)
+            response = await chat(
+                ChatRequest(message="hello", stream=False),
+                db=_FakeAsyncSession(),
+                chat_service=ChatService(provider=_StreamingProvider(), timeout_s=1.0),
+            )
+            assert isinstance(response, ChatResponse)
+    finally:
+        tracing.configure_for_testing(None)

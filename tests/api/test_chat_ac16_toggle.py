@@ -21,6 +21,7 @@ from app.core.domain.chat_types import ChatServiceResult
 from app.core.domain.conversation_history import HistoryMessage
 from app.core.domain.chat_service import ChatService
 from app.core.domain.provider import ProviderInput, ProviderResult
+from app.core.domain.provider_prompt import messages_for_provider
 from app.core.domain.types import ChatMessage
 from app.schemas.chat import ChatRequest
 
@@ -241,15 +242,24 @@ class _CapturingProvider:
         )
 
 
-_BASELINE = pathlib.Path(__file__).with_name("fixtures") / "ac16_b1_provider_input.json"
+_BASELINE = pathlib.Path(__file__).with_name("fixtures") / "ac16_b1_rendered_prompt.json"
 
 
 def _render(provider_input: ProviderInput) -> str:
-    """The resolved invocation, minus the per-request identity."""
+    """The RENDERED prompt, plus the resolved invocation around it.
+
+    `messages_for_provider` is what the OpenAI and Bedrock adapters actually
+    send; `ProviderInput.messages` is its input. Independent re-validation
+    showed the difference matters: freezing the input alone let a mutation
+    that truncated the renderer's output pass, because the renderer never ran.
+    The bullet asks for a "frozen rendered B1 artifact", so the artifact
+    renders.
+    """
     return json.dumps(
         {
-            "messages": [
-                {"role": m.role, "content": m.content} for m in provider_input.messages
+            "rendered": [
+                {"role": m.role, "content": m.content}
+                for m in messages_for_provider(provider_input)
             ],
             "temperature": provider_input.temperature,
             "max_tokens": provider_input.max_tokens,
@@ -303,6 +313,12 @@ async def test_the_toggle_changes_only_the_memory_key_at_the_provider_port(
     assert off.max_tokens == on.max_tokens
     assert (off.metadata or {}).get("memory") is None
     assert (on.metadata or {}).get("memory") is not None
+    # "...and nothing else". Checking selected keys let a mutation that
+    # changed `metadata["rag"]` only in Mode B pass, and AC16 names `rag`
+    # explicitly. Everything except the one key that MAY differ is compared.
+    assert {k: v for k, v in (off.metadata or {}).items() if k != "memory"} == {
+        k: v for k, v in (on.metadata or {}).items() if k != "memory"
+    }
 
 
 async def test_the_flag_off_provider_input_matches_the_frozen_b1_artifact(
