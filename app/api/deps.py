@@ -21,7 +21,12 @@ from app.core.domain.retrieval_corpus import RetrievalCorpus
 from app.core.domain.provider import ProviderPort
 from app.core.domain.provider_factory import build_provider, build_provider_resolver
 from app.core.domain.chat_service import ChatService
-from app.core.domain.rag_generation import RagGenerationAugmentor, RagGenerationContext
+from app.core.domain.rag_generation import (
+    RETRIEVAL_ERROR,
+    RETRIEVAL_SKIPPED,
+    RagGenerationAugmentor,
+    RagGenerationContext,
+)
 from app.core.domain.retrieval_factory import build_retrieval_pipeline
 from app.core.settings import settings
 from app.http.middleware.tenant import get_tenant_id
@@ -55,7 +60,10 @@ def get_chat_service() -> ChatService:
 
 async def get_chat_rag_context(payload: ChatRequest, request: Request) -> RagGenerationContext:
     if not settings.chat_rag_augmentation_enabled:
-        return RagGenerationContext()
+        # AC24: the flag is only visible here, so `skipped` is the dependency's
+        # to record. The domain never learns the feature exists.
+        await _record_retrieval_outcome(RETRIEVAL_SKIPPED)
+        return RagGenerationContext(outcome=RETRIEVAL_SKIPPED)
 
     request_id = request_uuid()
     try:
@@ -67,15 +75,23 @@ async def get_chat_rag_context(payload: ChatRequest, request: Request) -> RagGen
                 max_source_chars=settings.chat_rag_max_source_chars,
                 max_context_chars=settings.chat_rag_max_context_chars,
             )
-            return await augmentor.augment(request_id=request_id, query=payload.message)
+            context = await augmentor.augment(request_id=request_id, query=payload.message)
+        # Recorded from the context the DOMAIN classified, so the vocabulary
+        # has one author. The augmentor decides what happened; this layer only
+        # reports it.
+        await _record_retrieval_outcome(context.outcome)
+        return context
     except Exception as exc:
         # Construction/session failures happen outside RagGenerationAugmentor,
-        # but remain the same best-effort pre-generation boundary.
+        # but remain the same best-effort pre-generation boundary. They are
+        # `error`, not `timeout`: `wait_for` is inside the augmentor, so a
+        # timeout never reaches here.
         RagGenerationAugmentor._log_degraded(
             request_id=request_id,
             reason=type(exc).__name__,
         )
-        return RagGenerationContext()
+        await _record_retrieval_outcome(RETRIEVAL_ERROR)
+        return RagGenerationContext(outcome=RETRIEVAL_ERROR)
 
 
 async def get_chat_memory_context(
@@ -376,6 +392,21 @@ async def _materialize_window(adapter, assembler, conversation_id, tenant_id):
     # that actually results, which is the thing `history_truncated` describes.
     truncated = len(partition.window) < len(all_messages)
     return partition, truncated, cap_reached
+
+
+async def _record_retrieval_outcome(outcome: str | None) -> None:
+    """AC24's field, recorded with the same containment N-2 gave the others.
+
+    `None` is never recorded: the collector drops `None` values anyway, and a
+    context that carries no outcome is one this ORQ did not classify, not one
+    whose retrieval produced nothing.
+    """
+    if outcome is None:
+        return
+    try:
+        pipeline_metrics.record(retrieval_outcome=outcome)
+    except Exception:
+        pass
 
 
 async def _record_ebm25_selected_count(count: int) -> None:

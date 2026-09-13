@@ -890,3 +890,55 @@ async def test_no_provider_result_leaves_cost_null(metrics_on, collector) -> Non
     )
     rows = await _rows(metrics_on)
     assert rows[0].estimated_cost_usd is None
+
+
+# --- AC24 literally: three independent outcome fields in one row -----------
+
+
+async def test_retrieval_outcome_is_persisted_from_the_collector(
+    metrics_on, collector
+) -> None:
+    pipeline_metrics.record(retrieval_outcome="ok")
+    await chat_routes._write_rag_request_metrics(
+        object(), tenant_id=TENANT, generation_outcome="ok", provider_result=None,
+        memory_context=ChatMemoryContext(), total_latency_ms=1,
+    )
+    rows = await _rows(metrics_on)
+    assert rows[0].retrieval_outcome == "ok"
+
+
+async def test_an_unrecorded_retrieval_outcome_stays_null(metrics_on, collector) -> None:
+    await chat_routes._write_rag_request_metrics(
+        object(), tenant_id=TENANT, generation_outcome="ok", provider_result=None,
+        memory_context=ChatMemoryContext(), total_latency_ms=1,
+    )
+    rows = await _rows(metrics_on)
+    assert rows[0].retrieval_outcome is None
+
+
+async def test_retrieval_succeeds_while_generation_fails_yields_distinct_fields(
+    metrics_on, collector
+) -> None:
+    """AC24's own fixture, asserted on the raw row.
+
+    The criterion's whole point is independence: retrieval can succeed in the
+    same request whose generation fails, and memory can report a third thing
+    again. One shared value would make the three columns one column.
+    """
+    pipeline_metrics.record(retrieval_outcome="ok", memory_outcome="empty")
+    await chat_routes._write_rag_request_metrics(
+        object(),
+        tenant_id=TENANT,
+        generation_outcome="error",
+        provider_result=None,
+        memory_context=ChatMemoryContext(),
+        total_latency_ms=1,
+    )
+    rows = await _rows(metrics_on)
+    assert len(rows) == 1
+    row = rows[0]
+    assert row.retrieval_outcome == "ok"
+    assert row.generation_outcome == "error"
+    assert row.memory_outcome == "empty"
+    # Independent, not merely present: no two of them agree here.
+    assert len({row.retrieval_outcome, row.generation_outcome, row.memory_outcome}) == 3

@@ -204,13 +204,18 @@ async def _write_rag_request_metrics(
       from a measured `0.0` -- the stub provider's real cost. Generation only:
       embedding calls never reach this writer and do not differentiate Mode A
       from Mode B.
-    * The pipeline metrics are **not implemented in this ORQ**. Their
-      producers live outside `chat.py`/`deps.py`, which is exactly where T14
-      does not write: `retrieval_pipeline.py` and `RagGenerationAugmentor` for
-      the retrieval stages, `ChatService` for `generate_calls`, and `deps.py`
-      itself for `ebm25_latency_ms` -- so this is not one homogeneous module,
-      and not every stage runs on every request either. AC24 depends on
-      `retrieval_outcome` and is reported FAILED, not patched in passing.
+    * `retrieval_outcome` is now written (AC24, 2026-09-13). Its producer is
+      `RagGenerationAugmentor`, which classifies what the retrieval channel
+      did -- `ok`/`empty`/`timeout`/`error` -- and `get_chat_rag_context`,
+      which owns `skipped` because the feature flag is visible only there. The
+      domain sets the value and never reports it; recording stays at the
+      dependency boundary, as it does for memory.
+    * The remaining pipeline metrics are **not implemented in this ORQ**.
+      Their producers live outside `chat.py`/`deps.py`, which is exactly where
+      T14 does not write: `retrieval_pipeline.py` for the stage counts,
+      `ChatService` for `generate_calls`, and `deps.py` itself for
+      `ebm25_latency_ms` -- so this is not one homogeneous module, and not
+      every stage runs on every request either.
     * `fallback_used` is **semantically ambiguous**. §Diseño 6 lists the name
       without a definition, and this system has at least THREE distinct
       fallbacks: the provider one (`ResilientProvider`, which logs it but does
@@ -273,6 +278,7 @@ async def _write_rag_request_metrics(
                         request_id=correlation_request_id,
                         tenant_id=tenant_id,
                         mode="B" if settings.ebm25_enabled else "A",
+                        retrieval_outcome=snapshot.get("retrieval_outcome"),
                         memory_outcome=snapshot.get("memory_outcome"),
                         ebm25_selected_count=snapshot.get("ebm25_selected_count"),
                         estimated_cost_usd=estimate_generation_cost_usd(
