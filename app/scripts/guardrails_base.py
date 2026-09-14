@@ -18,6 +18,10 @@ Both are resolved the same way: a base is only usable if it is a commit that
 this checkout can actually see. Anything else falls back to the branch point
 with the default branch, and the empty tree survives only for the case it was
 always right for -- a repository with no base at all.
+
+Note that a `push` event runs the workflow as it exists in the pushed commit,
+so a branch carrying a change to this resolver exercises the new code from its
+very first push rather than the version on the default branch.
 """
 from __future__ import annotations
 
