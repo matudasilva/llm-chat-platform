@@ -32,8 +32,16 @@ jobs:
 
           HEAD_REF="${{ github.sha }}"
 
-          if [ "$BASE_REF" = "0000000000000000000000000000000000000000" ]; then
-            BASE_REF="$(git hash-object -t tree /dev/null)"
-          fi
+          # Base resolution lives in app/scripts/guardrails_base.py, not here.
+          # Inline, it could not be tested, and two defects survived because of
+          # it: a new branch (`before` all-zeros) fell back to the empty tree
+          # and scanned the whole repository, and a force-push (`before`
+          # orphaned, never fetched) killed `git diff` with exit 128 so the
+          # scan verified nothing while reporting red. The script prints what
+          # it resolved to stderr, which the old inline version never did.
+          BASE_REF="$(python -m app.scripts.guardrails_base \
+            --before "$BASE_REF" \
+            --head "$HEAD_REF" \
+            --default-branch "${{ github.event.repository.default_branch }}")"
 
           python -m app.scripts.guardrails_scan --changed-from "$BASE_REF" --changed-to "$HEAD_REF"
