@@ -13,6 +13,33 @@ existing diagram.
 | behavior | producto | `behavior.svg` | manual | 2026-08-07 | sí (deferred) | `sha256:6096ce9ea9c68868dd5216f05b946195f01a2d2db874d05e7612d69274ddf957` |
 | erd | producto | `erd.svg` | manual | 2026-08-07 | sí (deferred) | `sha256:6096ce9ea9c68868dd5216f05b946195f01a2d2db874d05e7612d69274ddf957` |
 
+## ORQ-37 replan result (2026-09-13) — deferred again, ORQ-37 still Blocked
+
+`fw-replan` ran today and `fw_check_diagram_refresh.py` reports
+`estado=sí` for `architecture`, `structural`, `behavior` and `erd`, source
+`architecture-signature`, exactly as the 2026-09-08 entry below left them.
+
+**Deferred again (operator decision, 2026-09-13).** Nothing has changed that
+would make a redraw correct now:
+
+* **ORQ-37 is still `Blocked` / `Validate`.** Independent validation on
+  2026-09-13 kept it blocked — AC7 unsatisfied and AC31 failed on three
+  measured thresholds. The architectural change these four rows describe has
+  not been accepted into a closed ORQ.
+* **No architecture change is being adopted in this replan.** Today's work was
+  audit only: no roadmap edit, no Constitution edit, no new module.
+* **The T22 reasoning stands unchanged.** More RAG work is expected, and
+  refreshing now would draw a second transitional diagram shortly after — the
+  same argument ORQ-26's and ORQ-38's deferrals used.
+
+Nothing about the four rows is modified: they keep their **2026-08-07
+baseline** (`sha256:6096ce9e…`) and their `sí (deferred)` annotation, so the
+pending signal stays observable rather than being silently cleared. No SVG
+content was regenerated, read or altered. `context` and `deployment` are
+untouched and remain `no`.
+
+This entry records a decision; it changes no diagram and no baseline.
+
 ## ORQ-37 closure audit (2026-09-08) — context/deployment acknowledged, rebaselined
 
 `fw_check_diagram_refresh.py` flagged all six rows `sí` after the closure
