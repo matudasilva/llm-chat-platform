@@ -675,6 +675,31 @@ CO2e) this phase depends on.
 
 ## Decisions closed by ORQ
 
+- **RAG in production closes as a valid experiment that did not meet its gates**
+  (ORQ-37, 2026-09-13): the integration shipped and every structural criterion
+  closed under independent re-validation, but the §Diseño 1 threshold campaign
+  ran and **three thresholds failed on measured evidence**: Gate A's p95 with
+  tracing enabled (+15.2% against +5%), Gate A's zero-tolerance golden-set
+  quality (recall@5 0.4778 → 0.4472), and Gate B2's cost p95 (+16.1% against
+  +10%). Gate A's tracing-disabled +2% threshold is NOT MEASURED — it needs a
+  pre-instrumentation build. AC7 is unsatisfied for a different reason: it asks
+  for cost and latency before and after tuning, and no tuning was executed, so
+  before equals after.
+  **Accepted, explicitly not waived** (operator decision): §Diseño 1's prescribed
+  disposition stands — tracing stays disabled and the dashboard is not published.
+  ORQ-37 remains `Blocked` under the current specification. This is a terminal
+  experimental outcome for this ORQ, not an indication that implementation or
+  measurement is still pending. (`Blocked` is a `halted` lifecycle state, not a
+  `closed` one — the experimental outcome and the lifecycle position are separate
+  facts, and describing the state as "finished" would conflate them.)
+  Re-running the campaign in a quieter environment to obtain a passing number
+  was considered and rejected; the measurement is network-dominated (Gate A's
+  p50 moved +4.2% against its p95's +15.2%), which
+  argues for a different campaign rather than a reinterpretation of this one.
+  T23 is executed, reproducible from `experiments/evaluation/t23_*`, and cost
+  USD 1.17 against a USD 10 ceiling. Full evidence:
+  `.framework/orqs/ORQ-37-rag-in-production/{implementation,validation}.md`.
+
 - **Embedding provider and dimension** (ORQ-21, 2026-07-29): OpenAI
   `text-embedding-3-small` at 1536 dimensions, a corpus-level constant
   independent of each tenant's chat provider. Full rationale:
