@@ -92,7 +92,23 @@ class ChatResponseCache:
             )
 
     def log_bypass(self, *, reason: str) -> None:
-        logger.info("chat_cache_bypass", extra={"event": "chat.cache.bypass", "reason": reason})
+        # Best-effort, like every other cache path in this class. Both call
+        # sites in `/chat` are intolerant of a raise: one runs immediately
+        # before the streaming response is constructed, and one runs *inside*
+        # the single write transaction, after the user message has been
+        # flushed and before the assistant message is. An escaping exception
+        # at the second site aborts that transaction and loses the user turn
+        # -- a telemetry line must never be able to do that.
+        #
+        # `Exception`, deliberately not `BaseException`: `CancelledError` is a
+        # `BaseException`, and swallowing it would make a cancelled request
+        # look like it completed.
+        try:
+            logger.info(
+                "chat_cache_bypass", extra={"event": "chat.cache.bypass", "reason": reason}
+            )
+        except Exception:
+            pass
 
     def _cache_key(self, *, messages: Sequence[ChatMessage], tenant_id: str) -> str:
         fingerprint = {
