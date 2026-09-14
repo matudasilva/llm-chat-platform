@@ -16,6 +16,32 @@ logger = logging.getLogger(__name__)
 
 
 class ChatResponseCache:
+    def _log(self, level: int, message: str, *, exc_info: bool = False, **extra: object) -> None:
+        """Best-effort logging, the same boundary `log_bypass` applies.
+
+        Four of this class's log calls run inside the `/chat` write
+        transaction, between the user message's flush and the assistant
+        message's: an escaping exception there aborts the transaction and
+        loses the user turn. Two of those four sit inside `except` blocks,
+        where a raise also replaces the handling of the original Redis or
+        decode failure, so the documented degrade-to-miss never happens. The
+        fifth runs after the commit, where an escape makes the route answer
+        `status=error` with null message ids for a request whose rows are
+        already durable.
+
+        Contained here rather than around `get()` as a whole, which would
+        have to return `None` when the *hit* log fails and would silently
+        downgrade a cache hit to a miss.
+
+        `Exception`, deliberately not `BaseException`: `CancelledError` must
+        keep propagating. `stacklevel=2` so records report the real call site
+        instead of this helper.
+        """
+        try:
+            logger.log(level, message, extra=extra, exc_info=exc_info, stacklevel=2)
+        except Exception:
+            pass
+
     async def get(
         self, *, request_id: UUID, messages: Sequence[ChatMessage], tenant_id: str
     ) -> ChatServiceResult | None:
@@ -23,15 +49,23 @@ class ChatResponseCache:
         try:
             raw = await redis_client.get(key)
         except Exception:
-            logger.warning(
+            self._log(
+                logging.WARNING,
                 "chat_cache_error",
-                extra={"event": "chat.cache.error", "operation": "read", "tenant_id": tenant_id},
                 exc_info=True,
+                event="chat.cache.error",
+                operation="read",
+                tenant_id=tenant_id,
             )
             return None
 
         if not raw:
-            logger.info("chat_cache_miss", extra={"event": "chat.cache.miss", "tenant_id": tenant_id})
+            self._log(
+                logging.INFO,
+                "chat_cache_miss",
+                event="chat.cache.miss",
+                tenant_id=tenant_id,
+            )
             return None
 
         try:
@@ -49,14 +83,22 @@ class ChatResponseCache:
                 latency_ms=None,
             )
         except Exception:
-            logger.warning(
+            self._log(
+                logging.WARNING,
                 "chat_cache_error",
-                extra={"event": "chat.cache.error", "operation": "decode", "tenant_id": tenant_id},
                 exc_info=True,
+                event="chat.cache.error",
+                operation="decode",
+                tenant_id=tenant_id,
             )
             return None
 
-        logger.info("chat_cache_hit", extra={"event": "chat.cache.hit", "tenant_id": tenant_id})
+        self._log(
+            logging.INFO,
+            "chat_cache_hit",
+            event="chat.cache.hit",
+            tenant_id=tenant_id,
+        )
         return ChatServiceResult(
             request_id=request_id,
             assistant_message=ChatMessage(role="assistant", content=assistant_content),
@@ -85,10 +127,13 @@ class ChatResponseCache:
                 ex=settings.chat_response_cache_ttl_s,
             )
         except Exception:
-            logger.warning(
+            self._log(
+                logging.WARNING,
                 "chat_cache_error",
-                extra={"event": "chat.cache.error", "operation": "write", "tenant_id": tenant_id},
                 exc_info=True,
+                event="chat.cache.error",
+                operation="write",
+                tenant_id=tenant_id,
             )
 
     def log_bypass(self, *, reason: str) -> None:
