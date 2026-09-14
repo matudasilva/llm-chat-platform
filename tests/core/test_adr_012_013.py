@@ -10,6 +10,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 ADR_012 = REPO_ROOT / "docs/adr/012-rag-production-observability-and-history-hardening.md"
 ADR_013 = REPO_ROOT / "docs/adr/013-ebm25-controlled-evaluation-port.md"
@@ -17,6 +19,22 @@ ADR_008 = REPO_ROOT / "docs/adr/008-rag-generation-and-feedback-boundaries.md"
 ADR_011 = REPO_ROOT / "docs/adr/011-conversation-history-substrate.md"
 TECH_STACK = REPO_ROOT / ".framework/constitution/tech-stack.md"
 SPEC = REPO_ROOT / ".framework/orqs/ORQ-37-rag-in-production/spec.md"
+
+# `.framework/orqs/` is deliberately gitignored under `artifact_policy: hybrid`,
+# so ORQ specs exist in a working copy but never in a fresh checkout. A test
+# that reads one can only assert where its evidence is present; anywhere else
+# it must skip and say why, rather than fail for a reason unrelated to its
+# claim. The condition is the artifact's own absence, not `CI` -- a clone
+# without artifacts behaves the same wherever it runs.
+requires_orq_spec = pytest.mark.skipif(
+    not SPEC.is_file(),
+    reason=(
+        f"{SPEC.relative_to(REPO_ROOT)} is absent: `.framework/orqs/` is "
+        "intentionally gitignored under `artifact_policy: hybrid`, so it is "
+        "not part of any checkout. This assertion runs where the ORQ artifacts "
+        "exist."
+    ),
+)
 
 PREMISE = (
     "E-BM25 is being integrated for controlled production evaluation under "
@@ -37,6 +55,7 @@ def test_premise_appears_verbatim_on_one_line_in_adr_013() -> None:
     assert PREMISE in text
 
 
+@requires_orq_spec
 def test_spec_carries_the_same_premise_even_though_it_is_line_wrapped() -> None:
     # spec.md's own blockquote soft-wraps the sentence across two lines
     # (`> "E-BM25 is being integrated ... under\n> uncertainty, ...`). A plain

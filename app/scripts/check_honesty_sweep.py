@@ -190,13 +190,22 @@ def _orq_directory_text() -> str:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--base", default=None, help="git ref to diff against (default: merge-base main HEAD)")
+    parser.add_argument(
+        "--base",
+        default=None,
+        help="git ref to diff against (default: merge-base origin/main HEAD)",
+    )
     args = parser.parse_args()
 
     base = args.base
     if base is None:
+        # `origin/main`, not `main`: a CI checkout sits on the ORQ branch and
+        # has no local `main` branch, so `merge-base main HEAD` exits 128 and
+        # the sweep dies before scanning anything. The remote-tracking ref
+        # exists both on the runner and locally, and names the same branch
+        # point.
         base = subprocess.run(
-            ["git", "merge-base", "main", "HEAD"],
+            ["git", "merge-base", "origin/main", "HEAD"],
             cwd=REPO_ROOT, capture_output=True, text=True, check=True,
         ).stdout.strip()
 

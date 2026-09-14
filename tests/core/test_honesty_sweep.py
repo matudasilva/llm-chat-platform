@@ -14,8 +14,11 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = REPO_ROOT / "app/scripts/check_honesty_sweep.py"
+ORQ_DIR = REPO_ROOT / ".framework/orqs/ORQ-37-rag-in-production"
 
 spec = importlib.util.spec_from_file_location("check_honesty_sweep", SCRIPT)
 _module = importlib.util.module_from_spec(spec)
@@ -75,6 +78,17 @@ def test_forbidden_words_are_matched_as_whole_words_not_substrings() -> None:
     assert findings == [], findings
 
 
+@pytest.mark.skipif(
+    not ORQ_DIR.is_dir(),
+    reason=(
+        "`.framework/orqs/ORQ-37-rag-in-production/` is absent: "
+        "`.framework/orqs/` is intentionally gitignored under "
+        "`artifact_policy: hybrid`, so it is not part of any checkout. This "
+        "test asserts the scan reads those artifacts, which it can only do "
+        "where they exist. Note that `test_the_real_sweep_is_clean` above "
+        "still runs: the sweep's diff and commit-log sources are unaffected."
+    ),
+)
 def test_orq_directory_scan_covers_gitignored_artifacts() -> None:
     # spec.md/implementation.md are gitignored and would never appear in a
     # `git diff`-only sweep. This pins that the directory scan actually reads

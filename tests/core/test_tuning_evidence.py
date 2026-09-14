@@ -92,8 +92,13 @@ def test_no_pre_existing_default_changed():
     # landed, HEAD already contained the new fields and the assertion silently
     # changed meaning. AC30's claim is "no default changed *by this ORQ*", so
     # the reference has to be where the ORQ started.
+    #
+    # `origin/main`, not `main`: a CI checkout sits on the ORQ branch and has
+    # no local `main` branch at all, so `merge-base main HEAD` exits 128 there.
+    # The remote-tracking ref is the baseline that exists in both places, and
+    # it names the same branch point.
     base = subprocess.run(
-        ["git", "merge-base", "main", "HEAD"],
+        ["git", "merge-base", "origin/main", "HEAD"],
         cwd=REPO_ROOT, capture_output=True, text=True, check=True,
     ).stdout.strip()
     previous_source = subprocess.run(

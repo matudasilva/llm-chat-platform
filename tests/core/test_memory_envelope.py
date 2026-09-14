@@ -27,6 +27,19 @@ SPEC = (
     / ".framework/orqs/ORQ-37-rag-in-production/spec.md"
 )
 
+# `.framework/orqs/` is deliberately gitignored under `artifact_policy: hybrid`,
+# so `spec.md` exists in a working copy but never in a fresh checkout. The
+# verbatim comparison below can only run where its evidence is present; the
+# condition is the artifact's own absence, not `CI`.
+requires_orq_spec = pytest.mark.skipif(
+    not SPEC.is_file(),
+    reason=(
+        "ORQ-37 spec.md is absent: `.framework/orqs/` is intentionally "
+        "gitignored under `artifact_policy: hybrid`, so it is not part of any "
+        "checkout. This assertion runs where the ORQ artifacts exist."
+    ),
+)
+
 CURRENT_MESSAGE = ChatMessage(role="user", content="current question")
 
 
@@ -61,6 +74,7 @@ def _rag_metadata(*contents: str) -> dict:
 # --- D-6b: the text itself ---------------------------------------------------
 
 
+@requires_orq_spec
 def test_envelope_text_matches_d6b_verbatim() -> None:
     spec = SPEC.read_text(encoding="utf-8")
     start = spec.find("```\n  The following content is retrieved")
