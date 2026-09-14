@@ -1,27 +1,36 @@
+import asyncio
 import json
 import logging
 import time
 import uuid
 from typing import Any, AsyncIterator
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import get_chat_rag_context, get_chat_service
+from app.api.deps import get_chat_memory_context, get_chat_rag_context, get_chat_service
+from app.core.domain.added_context_budget import enforce_added_context_cap
+from app.core.domain.chat_memory import ChatMemoryContext
 from app.core.domain.chat_service import ChatService
 from app.core.domain.chat_types import ChatServiceResult
+from app.core.utils.costs import estimate_generation_cost_usd
 from app.core.domain.errors import ProviderExecutionError, ProviderTimeoutError
+from app.core.domain.provider import ProviderResult
 from app.core.domain.provider_errors import ProviderError
 from app.core.domain.rag_generation import RagGenerationContext
 from app.core.domain.types import ChatMessage
 from app.core.settings import settings
 from app.core.utils.limits import sanitize_error_message, truncate
 from app.http.middleware.tenant import get_tenant_id
-from app.http.request_context import get_request_id
-from app.infra.db.session import get_db
+from app.http.request_context import request_uuid
+from app.http import pipeline_metrics
+from app.infra.db.session import get_db, get_history_sessionmaker, short_lived_history_session
 from app.models.conversation import Conversation
 from app.models.message import Message, MessageRole
+from sqlalchemy import insert
+
+from app.models.rag_request_metrics import RagRequestMetrics
 from app.models.usage_event import UsageEvent
 from app.schemas.chat import ChatRequest, ChatResponse, ChatStatus, RagSourceOut
 from app.services.chat_response_cache import get_chat_response_cache
@@ -53,20 +62,278 @@ def _error_provider_name(chat_service: ChatService) -> str:
     return settings.provider
 
 
+def _business_transaction_released(db: Any) -> bool:
+    """AC11: the metrics write must not overlap an incomplete `__aexit__`.
+
+    Lexical placement inside a `finally` is not sufficient evidence of the
+    ordering AC11 requires. On the streaming path the generator can be
+    finalized while suspended at the in-transaction `yield` of `chat.py:331`
+    (inside `async with db.begin():`), where `__aexit__` is entered but its
+    rollback need not complete -- independent validation reproduced exactly
+    that with an instrumented transaction double. `in_transaction()` is the
+    observable: it stays true while the release is incomplete.
+
+    When it is still true the write is SKIPPED rather than awaited. Outcome 8
+    (client disconnect) carries an explicitly weaker contract -- "zero or one
+    row, both pass" -- so skipping satisfies it, while awaiting a rollback
+    inside an already-cancelled context is fragile and could hang the shield.
+    Outcomes 1-7 leave the `async with` normally, including the not-found
+    `return`, so they report released and are unaffected.
+
+    Tolerant by design: a session double with no transaction state has nothing
+    to overlap. Ten test files define `begin()`-only doubles, and a strict
+    check would fail them all while proving nothing about the ordering.
+    """
+    in_transaction = getattr(db, "in_transaction", None)
+    if not callable(in_transaction):
+        return True
+    try:
+        return not in_transaction()
+    except Exception:  # pragma: no cover - defensive; never block the write
+        return True
+
+
+def _cache_bypass_reason() -> str | None:
+    """Why the response cache must not be consulted, or `None` if it may be.
+
+    ADR-008 §5 bypasses the cache whenever chat RAG augmentation is on,
+    because `_cache_key` does not include corpus or retrieved-source
+    identity. **ADR-013 §9 extended that to `ebm25_enabled`** for exactly the
+    same reason -- Mode B's out-of-window evidence travels in `metadata`,
+    which the key does not fingerprint -- but the extension was documented
+    and never implemented (H6/AC17). In the configuration
+    `conversation_history_enabled=true, ebm25_enabled=true,
+    chat_rag_augmentation_enabled=false` the cache stayed live, so an answer
+    built on one evidence set could be served to a later request whose
+    evidence differs.
+
+    Single-sourced here because the previous code asked the question in three
+    places -- two gates plus the streaming log -- and extending one without
+    the others is how the read and write halves drift apart.
+    """
+    if settings.chat_rag_augmentation_enabled:
+        return "rag_augmentation"
+    if settings.ebm25_enabled:
+        return "ebm25_memory"
+    return None
+
+
+async def _record_budget_outcome(outcome: str) -> None:
+    """Record the combined-cap enforcement's own `memory_outcome` override.
+
+    `async def` follows the same rule as `deps._record_memory_outcome`: AC26
+    forbids sync collector writers outside `pipeline_metrics.py`, bluntly,
+    because a copied context silently swallowing every field is invisible at
+    runtime. Last-write-wins is intended here -- this runs after the memory
+    dependency's own record and deliberately supersedes it, because trimming
+    at the route can invalidate what the dependency concluded.
+    """
+    try:
+        pipeline_metrics.record(memory_outcome=outcome)
+    except Exception:  # pragma: no cover - defensive; telemetry never raises
+        pass
+
+
+async def _write_rag_request_metrics(
+    request: Request,
+    *,
+    tenant_id: str,
+    generation_outcome: str,
+    provider_result: ProviderResult | None,
+    memory_context: ChatMemoryContext,
+    total_latency_ms: int,
+) -> None:
+    """The single post-transaction write site's logic, shared by both paths (T14).
+
+    Runs on the OPERATIONAL session (`chat_ops`, INSERT-only on this table per
+    the split grants of `e4b7f21c9a06`) -- never the primary session, which the
+    atomic write already used and released by the time this runs. Never
+    raises: telemetry is best-effort (invariant 4) and must not put the
+    request at risk of a metrics bug.
+
+    Identity is server-side: `request_instance_id`/`request_id` come from the
+    collector's snapshot -- the `RequestContextMiddleware`-minted identity
+    (§Diseño 3) -- never from this function's own `request_id` local, which is
+    the OLDER, client-influenced fallback the near-collision note in
+    `request_context.py` warns about.
+
+    `mode` reflects `settings.ebm25_enabled` at write time (H1/AC18 fix,
+    2026-09-08) -- the same, only gate Mode B has anywhere in this codebase
+    (`deps.py:255`), read fresh here rather than threaded through
+    `memory_context`. It marks the **active configuration** for this
+    request, not whether Mode B's ranking actually selected evidence: that
+    finer distinction already has its own columns
+    (`memory_outcome`/`ebm25_selected_count`), and folding it into `mode`
+    too would make them redundant. Originally hardcoded `"A"` because
+    `ebm25_enabled` did not exist until T18 shipped it -- a documented
+    placeholder that outlived the flag it was waiting for.
+    `ebm25_selected_count` is read back from the snapshot: it HAS a producer
+    (`deps.py`'s `_record_ebm25_selected_count`, shipped by T18 and hardened by
+    H9 and N-2), and the writer simply dropped it. Read with `.get`, never a
+    falsy test -- **0 is a measurement**, written deliberately on three
+    distinct Mode B paths: an empty out-of-window corpus (where no ranking
+    happened at all), a ranked corpus starved of budget, and the degradation
+    handler. NULL means only that no measurement is available, which is NOT
+    the same as "Mode B never ran": telemetry is best-effort and a recorded
+    value can be lost (N-2). So `.get` preserves a real distinction between
+    "some Mode B path reported zero" and "nothing reported", while a falsy
+    test would collapse the first into the second.
+    *(H7/Class 1, 2026-09-12: this docstring previously listed the field among
+    those with "no producer yet" -- true when T14 shipped, invalidated by T18,
+    the same way H1's hardcoded `mode="A"` outlived its cause. Independent
+    re-validation then corrected this paragraph too: it had claimed 0 meant
+    "ranked and selected nothing" and that NULL proved Mode B never ran.
+    Neither was exhaustive.)*
+
+    `retrieval_outcome`/`estimated_cost_usd`/`ebm25_latency_ms`/
+    `rewrite_calls`/`retrieve_calls`/`rerank_calls`/`evaluate_calls`/
+    `generate_calls`/`fallback_used` stay NULL, in three distinct states
+    recorded under H7 -- not one backlog:
+
+    * `estimated_cost_usd` is now written, from the frozen price snapshot
+      dated 2026-09-12 in `app/core/utils/costs.py` (operator decision). It was
+      previously left NULL and recorded as *blocked on pricing, not on code*:
+      `settings.cost_rates_by_provider` carried only `stub` and returned 0.0
+      for any unknown provider, so writing it then would have persisted a zero
+      that looks measured on every real-provider row -- contaminating the very
+      evidence T23's cost comparison needs.
+
+      Priced by `(provider, model)`, never by provider alone: a per-provider
+      rate applies itself to whichever model is configured. An unpriced pair
+      yields `None` and the column stays NULL, which is a different statement
+      from a measured `0.0` -- the stub provider's real cost. Generation only:
+      embedding calls never reach this writer and do not differentiate Mode A
+      from Mode B.
+    * `retrieval_outcome` is now written (AC24, 2026-09-13). Its producer is
+      `RagGenerationAugmentor`, which classifies what the retrieval channel
+      did -- `ok`/`empty`/`timeout`/`error` -- and `get_chat_rag_context`,
+      which owns `skipped` because the feature flag is visible only there. The
+      domain sets the value and never reports it; recording stays at the
+      dependency boundary, as it does for memory.
+    * The remaining pipeline metrics are **not implemented in this ORQ**.
+      Their producers live outside `chat.py`/`deps.py`, which is exactly where
+      T14 does not write: `retrieval_pipeline.py` for the stage counts,
+      `ChatService` for `generate_calls`, and `deps.py` itself for
+      `ebm25_latency_ms` -- so this is not one homogeneous module, and not
+      every stage runs on every request either.
+    * `fallback_used` is **semantically ambiguous**. §Diseño 6 lists the name
+      without a definition, and this system has at least THREE distinct
+      fallbacks: the provider one (`ResilientProvider`, which logs it but does
+      not return it on `ProviderResult`), the reranker's return to RRF order
+      (`RetrievalPipelineResult.fallback_triggered`), and
+      `CascadingRerankerAdapter`'s own internal fallback (ADR-007), which is a
+      different event from the second. Left unimplemented rather than resolved
+      by guessing. *(Independent re-validation raised the third; an earlier
+      version of this comment confidently said "two".)*
+    """
+    if not settings.rag_request_metrics_enabled:
+        return
+    if request is None:
+        return
+    collector = pipeline_metrics.get_collector()
+    if collector is None:
+        return
+    snapshot = collector.snapshot()
+    raw_instance_id = snapshot.get("request_instance_id")
+    if not raw_instance_id:
+        return
+    try:
+        request_instance_id = uuid.UUID(str(raw_instance_id))
+        raw_request_id = snapshot.get("request_id")
+        correlation_request_id = uuid.UUID(str(raw_request_id)) if raw_request_id else None
+        sessionmaker = get_history_sessionmaker(request)
+        async with short_lived_history_session(sessionmaker) as db:
+            async with db.begin():
+                # A Core INSERT, deliberately NOT `db.add(...)`.
+                #
+                # The ORM emits `INSERT ... RETURNING created_at` for this
+                # model, because `created_at` carries `server_default=func.now()`
+                # and SQLAlchemy 2.0's `eager_defaults="auto"` fetches
+                # server-generated values back on dialects that support
+                # RETURNING. **RETURNING requires SELECT**, and `chat_ops` is
+                # INSERT-only by design (`e4b7f21c9a06`, AC34): it cannot read
+                # this table back. So every ORM write raised
+                # `InsufficientPrivilegeError`, and because telemetry is
+                # best-effort the exception was swallowed and NOT ONE ROW was
+                # ever persisted -- silently, for as long as the flag was on.
+                #
+                # Found while preparing T23, whose cost evidence reads these
+                # rows. The grants were right; the write path was incompatible
+                # with them. AC34's tests missed it because they exercise the
+                # grant with raw `text("INSERT INTO ...")`, which carries no
+                # RETURNING -- the privilege, not the application's path.
+                #
+                # `eager_defaults=False` on the mapper was rejected: it
+                # suppresses the fetch but leaves `created_at` expired on the
+                # instance, so any later attribute access would emit the
+                # forbidden SELECT instead. A Core insert constructs no
+                # instance at all, so that trap cannot exist.
+                #
+                # `created_at` is unchanged -- still generated by PostgreSQL.
+                # It simply stops being read back, which nothing needed.
+                await db.execute(
+                    insert(RagRequestMetrics).values(
+                        id=uuid.uuid4(),
+                        request_instance_id=request_instance_id,
+                        request_id=correlation_request_id,
+                        tenant_id=tenant_id,
+                        mode="B" if settings.ebm25_enabled else "A",
+                        retrieval_outcome=snapshot.get("retrieval_outcome"),
+                        memory_outcome=snapshot.get("memory_outcome"),
+                        ebm25_selected_count=snapshot.get("ebm25_selected_count"),
+                        estimated_cost_usd=estimate_generation_cost_usd(
+                            provider=provider_result.provider if provider_result else None,
+                            model=provider_result.model_version if provider_result else None,
+                            input_tokens=(
+                                provider_result.input_tokens if provider_result else None
+                            ),
+                            output_tokens=(
+                                provider_result.output_tokens if provider_result else None
+                            ),
+                        ),
+                        generation_outcome=generation_outcome,
+                        input_tokens=(
+                            provider_result.input_tokens if provider_result else None
+                        ),
+                        output_tokens=(
+                            provider_result.output_tokens if provider_result else None
+                        ),
+                        total_latency_ms=total_latency_ms,
+                        history_truncated=memory_context.truncated,
+                        history_row_cap_reached=memory_context.history_row_cap_reached,
+                    )
+                )
+    except Exception:
+        # Telemetry must never break /chat. A raised exception here is
+        # swallowed exactly like the existing UsageEvent writes.
+        pass
+
+
 @router.post("", response_model=ChatResponse)
 async def chat(
     payload: ChatRequest,
+    # `Request | None = None`, not a bare required `Request`: FastAPI still
+    # injects the real ASGI request via this type annotation regardless of
+    # the default, and the default is what lets every existing direct
+    # unit-call test -- the same convention `rag_context`/`memory_context`
+    # already use for calls that bypass DI -- keep calling `chat(...)`
+    # without constructing one. `_write_rag_request_metrics` treats `None`
+    # as "skip the write" (T14).
+    request: Request = None,  # type: ignore[assignment]
     db: AsyncSession = Depends(get_db),
     chat_service: ChatService = Depends(get_chat_service),
     rag_context: RagGenerationContext = Depends(get_chat_rag_context),
+    memory_context: ChatMemoryContext = Depends(get_chat_memory_context),
 ) -> ChatResponse:
     start = time.perf_counter()
-    rid = get_request_id()
-    request_id = uuid.UUID(rid) if rid else uuid.uuid4()
+    request_id = request_uuid()
     tenant_id = get_tenant_id()
 
     status = ChatStatus.error
     error_message: str | None = None
+    # T14: set at each terminal point; the write-site finally reads it.
+    generation_outcome: str | None = None
+    metrics_provider_result: ProviderResult | None = None
     is_new_conversation = payload.conversation_id is None
     conversation_id = payload.conversation_id or uuid.uuid4()
     user_message_id: uuid.UUID | None = None
@@ -80,7 +347,48 @@ async def chat(
         # The route remains fail-closed if a dependency override supplies
         # context while the independent rollout flag is disabled.
         rag_context = RagGenerationContext()
-    provider_metadata = rag_context.provider_metadata
+    if not isinstance(memory_context, ChatMemoryContext):
+        # Direct unit calls bypass FastAPI dependency resolution.
+        memory_context = ChatMemoryContext()
+    if not settings.conversation_history_enabled:
+        # The same fail-closed reset the RAG channel has, for the independent
+        # memory flag: an override must not be able to inject memory into the
+        # prompt while the rollout flag is off.
+        memory_context = ChatMemoryContext()
+    # H2/AC14: the ONE point where the combined added-context cap is enforced.
+    # It runs here, after both fail-closed resets and before anything reads
+    # either context, because this is the only place all three contributors
+    # are visible at once -- the memory dependency cannot see the documental
+    # channel, and enforcing it from there left the cap breachable twice.
+    # Both /chat paths consume the single `provider_metadata` assembled below,
+    # so one call covers streaming and non-streaming by construction.
+    memory_context, rag_context, budget_outcome = enforce_added_context_cap(
+        memory_context=memory_context,
+        rag_context=rag_context,
+        current_message=payload.message,
+        max_chars=settings.chat_prompt_max_added_context_chars,
+    )
+    if budget_outcome is not None:
+        # Recorded here rather than in the domain function: the outcome the
+        # memory dependency recorded earlier is stale once this trims what it
+        # selected, and leaving a stale telemetry field standing is precisely
+        # the defect H1 was.
+        await _record_budget_outcome(budget_outcome)
+    # Prior turns precede the current message. They enter the messages list
+    # rather than `metadata`, so `_cache_key` fingerprints them by
+    # construction (§Diseño 7) -- two conversations sharing a last user
+    # message no longer collide on either cache gate.
+    memory_messages = list(memory_context.messages)
+    # T18: the two metadata sources are independent optional dicts, merged
+    # into one -- `metadata["rag"]` (documental) and `metadata["memory"]`
+    # (Mode B out-of-window evidence) coexist as sibling keys, and
+    # `messages_for_provider` (T17) renders whichever are present, in its own
+    # fixed order. `None` when neither channel has anything to contribute,
+    # unchanged from before T18.
+    provider_metadata = {
+        **(memory_context.provider_metadata or {}),
+        **(rag_context.provider_metadata or {}),
+    } or None
     public_sources = [
         RagSourceOut(
             citation=source.citation,
@@ -92,11 +400,11 @@ async def chat(
     ]
 
     if getattr(payload, "stream", False):
-        cache.log_bypass(
-            reason="rag_augmentation" if settings.chat_rag_augmentation_enabled else "streaming"
-        )
+        cache.log_bypass(reason=_cache_bypass_reason() or "streaming")
 
         async def event_generator() -> AsyncIterator[str]:
+            generation_outcome: str | None = None
+            metrics_provider_result: ProviderResult | None = None
             logger.info(
                 "chat_streaming_start request_id=%s conversation_id=%s is_new=%s",
                 str(request_id),
@@ -110,7 +418,10 @@ async def chat(
                 # 1) Stream from provider (no DB, no transaction)
                 stream_kwargs: dict[str, Any] = {
                     "request_id": request_id,
-                    "messages": [ChatMessage(role="user", content=payload.message)],
+                    "messages": [
+                        *memory_messages,
+                        ChatMessage(role="user", content=payload.message),
+                    ],
                 }
                 if provider_metadata is not None:
                     stream_kwargs["provider_metadata"] = provider_metadata
@@ -140,6 +451,7 @@ async def chat(
                     else:
                         conv = await db.get(Conversation, conversation_id)
                         if conv is None or conv.tenant_id != tenant_id:
+                            generation_outcome = "not_found"
                             yield _sse_json("error", {"error_kind": "not_found"})
                             return
 
@@ -175,6 +487,8 @@ async def chat(
                         if stream_result.provider_result is not None
                         else None
                     )
+                    metrics_provider_result = provider_result
+                    generation_outcome = "ok"
 
                     try:
                         db.add(
@@ -232,6 +546,7 @@ async def chat(
                 )
 
             except ProviderError as e:
+                generation_outcome = "error"
                 yield _sse_json(
                     "error",
                     {
@@ -241,6 +556,7 @@ async def chat(
                 )
                 return
             except Exception:
+                generation_outcome = "error"
                 logger.exception(
                     "chat_streaming_unhandled_error request_id=%s conversation_id=%s",
                     str(request_id),
@@ -248,13 +564,56 @@ async def chat(
                 )
                 yield _sse_json("error", {"error_kind": "internal"})
                 return
+            finally:
+                # AC18 outcome 8: on client disconnect the generator is
+                # finalized under cancellation, and any unshielded `await`
+                # here can be aborted before it completes. `asyncio.shield`
+                # lets the write survive that -- best-effort, zero-or-one row,
+                # per the weaker contract outcome 8 carries. Every other
+                # outcome (1-7) reaches this normally and the write is
+                # effectively synchronous.
+                if not _business_transaction_released(db):
+                    # AC11: the release did not complete (the generator was
+                    # finalized at the in-transaction yield). Outcome 8 permits
+                    # zero rows; overlapping an incomplete `__aexit__` is what
+                    # it does not permit. Expressed as if/else rather than an
+                    # early `return`: a `return` inside a `finally` swallows
+                    # whatever exception is in flight -- here the very
+                    # `CancelledError` raised by the interrupted `__aexit__`.
+                    logger.warning(
+                        "chat.metrics_write_skipped",
+                        extra={
+                            "event": "chat.metrics_write_skipped",
+                            "request_id": str(request_id),
+                            "reason": "business_transaction_not_released",
+                        },
+                    )
+                else:
+                    try:
+                        await asyncio.shield(
+                            asyncio.wait_for(
+                                _write_rag_request_metrics(
+                                    request,
+                                    tenant_id=tenant_id,
+                                    generation_outcome=generation_outcome or "cancelled",
+                                    provider_result=metrics_provider_result,
+                                    memory_context=memory_context,
+                                    total_latency_ms=max(
+                                        0, int((time.perf_counter() - start_stream) * 1000)
+                                    ),
+                                ),
+                                timeout=settings.rag_request_metrics_timeout_s,
+                            )
+                        )
+                    except Exception:
+                        pass
 
         return StreamingResponse(event_generator(), media_type="text/event-stream")
 
     try:
         cache_write_result: ChatServiceResult | None = None
         # Single transaction: either everything is persisted, or nothing is.
-        _messages = [ChatMessage(role="user", content=payload.message)]
+        _messages = [*memory_messages, ChatMessage(role="user", content=payload.message)]
         async with db.begin():
             # 1) Conversation: create or validate (tenant-scoped)
             if is_new_conversation:
@@ -264,6 +623,7 @@ async def chat(
             else:
                 conv = await db.get(Conversation, conversation_id)
                 if conv is None or conv.tenant_id != tenant_id:
+                    generation_outcome = "not_found"
                     raise HTTPException(status_code=404, detail="conversation_id not found")
 
             # 2) Persist user message
@@ -280,8 +640,9 @@ async def chat(
 
             # 3) Execute model (via ChatService)
             service_result = None
-            if settings.chat_rag_augmentation_enabled:
-                cache.log_bypass(reason="rag_augmentation")
+            bypass_reason = _cache_bypass_reason()
+            if bypass_reason is not None:
+                cache.log_bypass(reason=bypass_reason)
             else:
                 service_result = await cache.get(
                     request_id=request_id, messages=_messages, tenant_id=tenant_id
@@ -294,7 +655,7 @@ async def chat(
                 if provider_metadata is not None:
                     run_kwargs["provider_metadata"] = provider_metadata
                 service_result = await chat_service.run(**run_kwargs)
-                if not settings.chat_rag_augmentation_enabled:
+                if _cache_bypass_reason() is None:
                     cache_write_result = service_result
 
             assistant_content = truncate(
@@ -316,6 +677,8 @@ async def chat(
             assistant_message_id = assistant_msg.id
 
             status = ChatStatus.success
+            generation_outcome = "ok"
+            metrics_provider_result = provider_result
 
             # 5) UsageEvent WITH valid FKs (best-effort)
             latency_ms = max(0, int((time.perf_counter() - start) * 1000))
@@ -370,6 +733,7 @@ async def chat(
         raise
 
     except (ProviderTimeoutError, ProviderExecutionError) as e:
+        generation_outcome = "timeout" if isinstance(e, ProviderTimeoutError) else "error"
         error_message = sanitize_error_message(str(e), settings.max_error_message_chars)
 
         try:
@@ -409,6 +773,7 @@ async def chat(
         )
 
     except Exception as e:
+        generation_outcome = "error"
 
         logger.exception(
             "chat_unhandled_error request_id=%s conversation_id=%s",
@@ -452,3 +817,33 @@ async def chat(
             status=ChatStatus.error,
             error_message=error_message,
         )
+
+    finally:
+        # Same AC11 guard as the streaming path. No in-transaction yield exists
+        # here, so this is expected to be a no-op; it is applied because AC11
+        # states the obligation for BOTH sites, not only the one with a known
+        # counterexample.
+        if not _business_transaction_released(db):
+            logger.warning(
+                "chat.metrics_write_skipped",
+                extra={
+                    "event": "chat.metrics_write_skipped",
+                    "request_id": str(request_id),
+                    "reason": "business_transaction_not_released",
+                },
+            )
+        else:
+            try:
+                await asyncio.wait_for(
+                    _write_rag_request_metrics(
+                        request,
+                        tenant_id=tenant_id,
+                        generation_outcome=generation_outcome or "error",
+                        provider_result=metrics_provider_result,
+                        memory_context=memory_context,
+                        total_latency_ms=max(0, int((time.perf_counter() - start) * 1000)),
+                    ),
+                    timeout=settings.rag_request_metrics_timeout_s,
+                )
+            except Exception:
+                pass

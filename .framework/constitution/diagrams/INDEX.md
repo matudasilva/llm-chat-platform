@@ -6,12 +6,77 @@ existing diagram.
 
 | tipo | alcance | archivo | generado/manual | última actualización | refresh_pending | refresh_baseline |
 |---|---|---|---|---|---|---|
-| context | producto | `context.svg` | generado | 2026-09-03 | no | `sha256:511c6dc9275e1c3f0d456817006d512b5eec21834892a07848ffbdaacfd94787` |
+| context | producto | `context.svg` | generado | 2026-09-08 | no | `sha256:b7860c8b78c250020b27719dce1057d8c39c2408274451284112b6b6571b966c` |
 | architecture | framework | `architecture.svg` | generado | 2026-08-07 | sí (deferred) | `sha256:6096ce9ea9c68868dd5216f05b946195f01a2d2db874d05e7612d69274ddf957` |
 | structural | producto | `structural.svg` | manual | 2026-08-07 | sí (deferred) | `sha256:6096ce9ea9c68868dd5216f05b946195f01a2d2db874d05e7612d69274ddf957` |
-| deployment | producto | `deployment.svg` | manual | 2026-09-03 | no | `sha256:511c6dc9275e1c3f0d456817006d512b5eec21834892a07848ffbdaacfd94787` |
+| deployment | producto | `deployment.svg` | manual | 2026-09-08 | no | `sha256:b7860c8b78c250020b27719dce1057d8c39c2408274451284112b6b6571b966c` |
 | behavior | producto | `behavior.svg` | manual | 2026-08-07 | sí (deferred) | `sha256:6096ce9ea9c68868dd5216f05b946195f01a2d2db874d05e7612d69274ddf957` |
 | erd | producto | `erd.svg` | manual | 2026-08-07 | sí (deferred) | `sha256:6096ce9ea9c68868dd5216f05b946195f01a2d2db874d05e7612d69274ddf957` |
+
+## ORQ-37 replan result (2026-09-13) — deferred again, ORQ-37 still Blocked
+
+`fw-replan` ran today and `fw_check_diagram_refresh.py` reports
+`estado=sí` for `architecture`, `structural`, `behavior` and `erd`, source
+`architecture-signature`, exactly as the 2026-09-08 entry below left them.
+
+**Deferred again (operator decision, 2026-09-13).** Nothing has changed that
+would make a redraw correct now:
+
+* **ORQ-37 is still `Blocked` / `Validate`.** Independent validation on
+  2026-09-13 kept it blocked — AC7 unsatisfied and AC31 failed on three
+  measured thresholds. The architectural change these four rows describe has
+  not been accepted into a closed ORQ.
+* **No architecture change is being adopted in this replan.** Today's work was
+  audit only: no roadmap edit, no Constitution edit, no new module.
+* **The T22 reasoning stands unchanged.** More RAG work is expected, and
+  refreshing now would draw a second transitional diagram shortly after — the
+  same argument ORQ-26's and ORQ-38's deferrals used.
+
+Nothing about the four rows is modified: they keep their **2026-08-07
+baseline** (`sha256:6096ce9e…`) and their `sí (deferred)` annotation, so the
+pending signal stays observable rather than being silently cleared. No SVG
+content was regenerated, read or altered. `context` and `deployment` are
+untouched and remain `no`.
+
+This entry records a decision; it changes no diagram and no baseline.
+
+## ORQ-37 closure audit (2026-09-08) — context/deployment acknowledged, rebaselined
+
+`fw_check_diagram_refresh.py` flagged all six rows `sí` after the closure
+audit below added two prose-only entries to `roadmap.md` (§Open decisions and
+§Decisions closed by ORQ). `context.svg` and `deployment.svg` were reviewed
+and **acknowledged** (`ack`): the diff between the prior baseline
+(`sha256:511c6dc9…`, 2026-09-03) and the current signature is exactly those
+two roadmap bullets (`git diff 622f5f7 HEAD -- .framework/constitution/roadmap.md`)
+— no actor, external system, or deployable-component change, so neither
+diagram's content needs to change. Both rows are rebaselined to the current
+signature (`sha256:b7860c8b…`) and read `refresh_pending: no` again.
+
+`architecture.svg`, `structural.svg`, `behavior.svg` and `erd.svg` are
+**not** rebaselined here — their staleness predates today's roadmap edits and
+reflects ORQ-37's real architectural/structural/behavioural changes (see the
+entry below), which do need a real redraw. They keep their 2026-08-07
+baseline and stay deferred, per the entry immediately below.
+
+## ORQ-37 replan result (2026-09-08) — deferred again by operator
+
+ORQ-37's own task table names this refresh (T22) as the point these four rows'
+deferral was waiting for: it wired `ConversationHistoryAssembler` and
+`SqlConversationHistoryAdapter` into `/chat` (Gate B1), added a new persisted
+table (`rag_request_metrics`), a new domain component (BM25 ranking and
+retrieval-corpus partitioning, behind `ebm25_enabled`), and a new runtime
+dependency (OpenTelemetry tracing) — real architecture, structural and
+behavioural change, not a no-op.
+
+**Deferred again anyway (operator decision, 2026-09-08):** more RAG work is
+expected in the near term, and refreshing now risks drawing a second
+transitional diagram shortly after — the same reasoning ORQ-26's own
+deferral below used, and the reasoning ORQ-38 itself gave for deferring these
+same four rows to begin with. All four rows keep their 2026-08-07 baseline
+unchanged so `refresh_pending: sí` stays observable; `fw_check_diagram_refresh.py`
+still reports `estado=sí (deferred)` for `architecture`, `structural`,
+`behavior` and `erd`. Batch with whatever RAG follow-on ORQ comes next rather
+than refreshing twice for adjacent changes.
 
 ## ORQ-38 replan result (2026-09-03)
 

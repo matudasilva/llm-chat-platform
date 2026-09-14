@@ -660,8 +660,45 @@ CO2e) this phase depends on.
   injected `EmbeddingPort` instead, so this decision stays unmade rather than
   half-made. Amends ADR-006 when taken. Related: the same rationale drives the
   reranker's planned AWS→GCP swap.
+- **Model faithfulness to present context** (raised 2026-09-08, ORQ-37 manual
+  A/B testing). Across five manual conversations exercising Gate B1's window
+  and Mode B (`E-BM25`), the operator observed the provider (Bedrock)
+  repeatedly ignoring or denying conversational context that was verifiably
+  present in its own input — read-only-reconstructed and confirmed against the
+  exact messages sent, not inferred. Distinct from every failure ORQ-37 itself
+  targets: the retrieval/assembly pipeline correctly delivered the evidence in
+  each case: this is the model declining or failing to use it. `§No-alcance`
+  forbids ORQ-37 from touching prompt tuning, `_RAG_INSTRUCTIONS`, or retry
+  policy, so this cannot be diagnosed or addressed inside it. Not scheduled in
+  any ORQ; needs its own scoped investigation (prompt/instruction design,
+  provider/model choice, or a faithfulness eval) before any fix is attempted.
 
 ## Decisions closed by ORQ
+
+- **RAG in production closes as a valid experiment that did not meet its gates**
+  (ORQ-37, 2026-09-13): the integration shipped and every structural criterion
+  closed under independent re-validation, but the §Diseño 1 threshold campaign
+  ran and **three thresholds failed on measured evidence**: Gate A's p95 with
+  tracing enabled (+15.2% against +5%), Gate A's zero-tolerance golden-set
+  quality (recall@5 0.4778 → 0.4472), and Gate B2's cost p95 (+16.1% against
+  +10%). Gate A's tracing-disabled +2% threshold is NOT MEASURED — it needs a
+  pre-instrumentation build. AC7 is unsatisfied for a different reason: it asks
+  for cost and latency before and after tuning, and no tuning was executed, so
+  before equals after.
+  **Accepted, explicitly not waived** (operator decision): §Diseño 1's prescribed
+  disposition stands — tracing stays disabled and the dashboard is not published.
+  ORQ-37 remains `Blocked` under the current specification. This is a terminal
+  experimental outcome for this ORQ, not an indication that implementation or
+  measurement is still pending. (`Blocked` is a `halted` lifecycle state, not a
+  `closed` one — the experimental outcome and the lifecycle position are separate
+  facts, and describing the state as "finished" would conflate them.)
+  Re-running the campaign in a quieter environment to obtain a passing number
+  was considered and rejected; the measurement is network-dominated (Gate A's
+  p50 moved +4.2% against its p95's +15.2%), which
+  argues for a different campaign rather than a reinterpretation of this one.
+  T23 is executed, reproducible from `experiments/evaluation/t23_*`, and cost
+  USD 1.17 against a USD 10 ceiling. Full evidence:
+  `.framework/orqs/ORQ-37-rag-in-production/{implementation,validation}.md`.
 
 - **Embedding provider and dimension** (ORQ-21, 2026-07-29): OpenAI
   `text-embedding-3-small` at 1536 dimensions, a corpus-level constant
@@ -851,6 +888,28 @@ CO2e) this phase depends on.
   `(conversation_id, sequence)` index, disclosed as debt to be measured against
   real assembly latency; and the forward-only ordering constraint recorded in
   Phase 1, which no component detects or signals.
+- **RAG in production, Mode B ported behind a flag, live gate measurement
+  deferred** (ORQ-37, 2026-09-08): wired `ConversationHistoryAssembler` into
+  `/chat` (Gate B1, `conversation_history_enabled`, default `false`), ported
+  `E-BM25`'s ranking and selection into the request path behind a second flag
+  (`ebm25_enabled`, default `false`, Gate B2), and added OpenTelemetry
+  tracing, server-generated request identity, and per-request RAG metrics
+  (`rag_request_metrics`) — all additive, all disabled by default, none
+  changing `/chat`'s write-path atomicity, the SSE contract, or
+  `ProviderPort`. The premise stands unchanged: `E-BM25` is integrated for
+  controlled production evaluation under uncertainty, not because it has been
+  scientifically confirmed (ADR-013). **T23's gate-threshold measurement
+  campaign did not run** — no seeded pgvector corpus matching ORQ-26's pinned
+  manifest existed in any environment this ORQ had access to — so Gate A,
+  B1 and B2's numeric thresholds (quality regression, p95, cost, provider-call
+  count) are closed as **failed, not waived**, per the spec's own rule that an
+  unmeasurable threshold is a failed gate. Re-attempting that measurement is a
+  new, separately authorized task (seeded corpus, approved spend ceiling,
+  environment, and a decision on `top_n`'s structural unmeasurability by
+  ORQ-26's harness). T22 (refresh the four diagrams ORQ-38 deferred) is
+  deferred again to a future RAG ORQ (`diagrams/INDEX.md`), not done here.
+  Full rationale: `docs/adr/012-rag-production-observability-and-history-hardening.md`,
+  `docs/adr/013-ebm25-controlled-evaluation-port.md`.
 
 ## Related
 

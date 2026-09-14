@@ -3,7 +3,7 @@
 **Date:** 2026-08-06
 **Status:** Accepted
 **ORQ reference:** ORQ-25
-**Superseded by / Supersedes:** —
+**Superseded by / Supersedes:** Amended by ADR-012 §3 (a second system-message envelope, for retrieved conversation evidence, precedes this one in a fixed order) and ADR-013 §5 (cache bypass extended to `ebm25_enabled`)
 
 ---
 

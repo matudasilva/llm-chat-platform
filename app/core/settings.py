@@ -93,6 +93,23 @@ class Settings(BaseSettings):
     database_url_app: str | None = Field(default=None, alias="DATABASE_URL_APP")
     rag_embedding_dimensions: int = 1536
 
+    # ORQ-37 §Diseño 7: the OPERATIONAL credential — the least-privilege role
+    # the request path uses to READ conversations/messages (and, from Gate B2,
+    # to insert metrics). Deliberately its own setting with no fallback in
+    # either direction:
+    #
+    #   * not `database_url` — the broad primary credential would make tenant
+    #     isolation rest entirely on one application-level guard, with nothing
+    #     stopping a future query path from bypassing the adapter.
+    #   * not `database_url_app` — `rag_app`'s grants are exactly
+    #     `documents`/`chunks` (`b7f3c9d1a204:116-117`), so reading
+    #     `conversations`/`messages` there raises `permission denied`, which
+    #     the best-effort layer would swallow into empty history: the feature
+    #     permanently dead in production while every hermetic test passes.
+    #
+    # Inert by default: unset means no operational engine is created at all.
+    database_url_ops: str | None = Field(default=None, alias="DATABASE_URL_OPS")
+
     # Isolated reranking benchmark (ORQ-22). Backend toggles are all inert by
     # default; these fields do not wire reranking into the application.
     reranker_aws_region: str = Field(
@@ -159,6 +176,17 @@ class Settings(BaseSettings):
     # evaluator.
     retrieval_pipeline_min_reranked_results: int = 5
 
+    # ORQ-37 T6 (D-3): `top_k_candidates` and `top_n` were constructor defaults
+    # that `build_retrieval_pipeline` never passed, so they were not tunable at
+    # all. Exposing them adds settings fields; both ship with the values already
+    # in force (`retrieval_pipeline.py`), so exposing them changes no behaviour.
+    # **D-3 resolved: this ORQ may not change any shipped default.** Tuning
+    # produces measured recommendations, and every value change comes back to
+    # the operator with that evidence rather than shipping here. AC30 asserts
+    # both values and that no pre-existing default moved.
+    retrieval_pipeline_top_k_candidates: int = 20
+    retrieval_pipeline_top_n: int = 5
+
     # ORQ-25: chat augmentation is independent from the read-only retrieval
     # endpoint and the corpus rollout flag. Disabled by default.
     chat_rag_augmentation_enabled: bool = False
@@ -172,6 +200,76 @@ class Settings(BaseSettings):
     # the production model's token accounting.
     conversation_history_max_messages: int = 20
     conversation_history_max_chars: int = 12_000
+
+    # ORQ-37 T9 (Gate B1): the rollout flag for conversation memory, and its
+    # degradation bound. `conversation_history_enabled` is **independent** of
+    # `chat_rag_augmentation_enabled` -- the same independence ORQ-25
+    # established between chat augmentation and the corpus/retrieval flags. A
+    # deployment may want documental RAG without conversational memory, or the
+    # reverse, and coupling them would make one impossible to roll back
+    # without the other.
+    #
+    # `conversation_history_timeout_s` is dedicated rather than shared with
+    # `chat_rag_retrieval_timeout_s`: a history read is one indexed SELECT, so
+    # borrowing the 30 s retrieval budget would let a slow database hold the
+    # request far past the point where empty history is the better answer.
+    conversation_history_enabled: bool = False
+    conversation_history_timeout_s: float = 5.0
+
+    # ORQ-37 T12 (Gate B1): bounds the history read **in SQL**, upstream of the
+    # assembler's own message/char caps. Today `list_messages_for_conversation`
+    # carries no `LIMIT` at all, so an arbitrarily long conversation is fetched
+    # whole (§Diseño 7, R22) -- the character cap bounds the prompt, not rows
+    # scanned, memory, or cancellation cleanup. 2 000 is comfortably above the
+    # 20-message assembler window, so this cap is inert until a conversation is
+    # genuinely enormous.
+    conversation_history_max_rows: int = 2_000
+
+    # ORQ-37 T13 / AC14 (§Diseño 7 "Combined budget"). A HARD cap on the
+    # ADDED CONTEXT only -- recent-window turns, retrieved out-of-window
+    # evidence (B2), and documental RAG context -- never on the whole prompt.
+    # The current user message is deliberately outside this budget and is
+    # never truncated or dropped: `max_request_bytes` is 64 KiB of bytes
+    # (`settings.py:68`), so a message can exceed 12 000 characters on its
+    # own, and this ORQ does not make a large request fit by discarding what
+    # the user asked.
+    chat_prompt_max_added_context_chars: int = 12_000
+
+    # ORQ-37 T14 (Gate B2). D-7 resolved: matches the repo's uniform
+    # convention, so no existing deployment starts writing an extra row per
+    # request merely by updating. §Diseño 6's retention window; enforcement is
+    # an OPERATIONAL statement (docs/), never a scheduler or background job --
+    # no automatic retention is claimed.
+    rag_request_metrics_enabled: bool = False
+    rag_request_metrics_retention_days: int = 30
+    # Bounds the write, not the request: the streaming site runs INSIDE the
+    # ASGI response, so an unbounded metrics session would extend /chat's
+    # wall-clock latency, which fault injection (a fast failure) does not
+    # cover (invariant 9).
+    rag_request_metrics_timeout_s: float = 5.0
+
+    # ORQ-37 T18 (Gate B2). D-nothing new: matches the repo's uniform
+    # convention -- disabled by default, so no deployment enters Mode B
+    # merely by updating. Gate B2 requires it on; AC16 is evaluated with it on.
+    ebm25_enabled: bool = False
+
+    # ORQ-37 (Gate A): the tracing seam. Disabled by default, matching every
+    # RAG flag -- no existing deployment starts exporting merely by updating.
+    # The export target is pure configuration: no endpoint or hostname is
+    # committed (tech-stack.md §Constraints, public repository).
+    otel_enabled: bool = False
+    otel_service_name: str = "llm-chat-platform"
+    otel_exporter_otlp_endpoint: str | None = None
+    # Bounded queue: a full queue drops spans rather than blocking the request.
+    otel_max_queue_size: int = 2_048
+    otel_max_export_batch_size: int = 512
+    otel_schedule_delay_ms: int = 5_000
+    # Bounded export, init, flush and shutdown. Invariant 9 covers latency, so
+    # a stalling exporter must cost a bounded wait, not an open-ended one.
+    otel_export_timeout_ms: int = 10_000
+    otel_init_timeout_s: float = 5.0
+    otel_flush_timeout_s: float = 5.0
+    otel_shutdown_timeout_s: float = 5.0
 
     # Controlled Web Read (MVP): read-only, bounded external fetch surface.
     web_read_enabled: bool = True
@@ -277,6 +375,44 @@ class Settings(BaseSettings):
     def validate_conversation_history_limits(cls, value: int) -> int:
         if value <= 0:
             raise ValueError("conversation history limits must be > 0")
+        return value
+
+    @field_validator("rag_request_metrics_retention_days")
+    @classmethod
+    def validate_rag_request_metrics_retention_days(cls, value: int) -> int:
+        if value <= 0:
+            raise ValueError("rag_request_metrics_retention_days must be > 0")
+        return value
+
+    @field_validator("rag_request_metrics_timeout_s")
+    @classmethod
+    def validate_rag_request_metrics_timeout_s(cls, value: float) -> float:
+        if value <= 0:
+            raise ValueError("rag_request_metrics_timeout_s must be > 0")
+        return value
+
+    @field_validator("chat_prompt_max_added_context_chars")
+    @classmethod
+    def validate_chat_prompt_max_added_context_chars(cls, value: int) -> int:
+        if value <= 0:
+            raise ValueError("chat_prompt_max_added_context_chars must be > 0")
+        return value
+
+    @field_validator("conversation_history_max_rows")
+    @classmethod
+    def validate_conversation_history_max_rows(cls, value: int) -> int:
+        if value <= 0:
+            raise ValueError("conversation_history_max_rows must be > 0")
+        return value
+
+    @field_validator("conversation_history_timeout_s")
+    @classmethod
+    def validate_conversation_history_timeout_s(cls, value: float) -> float:
+        # Non-positive would make `asyncio.wait_for` expire immediately, which
+        # degrades to empty history on every request -- the feature dead in
+        # production with nothing failing loudly.
+        if value <= 0:
+            raise ValueError("conversation_history_timeout_s must be > 0")
         return value
 
     @field_validator("web_read_timeout_s")
@@ -500,6 +636,28 @@ class Settings(BaseSettings):
         if (self.rag_enabled or self.chat_rag_augmentation_enabled) and not self.database_url_app:
             raise ValueError(
                 "DATABASE_URL_APP is required when RAG_ENABLED or CHAT_RAG_AUGMENTATION_ENABLED is true"
+            )
+        return self
+
+    @model_validator(mode="after")
+    def validate_ops_database_url(self) -> "Settings":
+        # ORQ-37 §Diseño 7 / AC9. Equality with either existing credential is
+        # rejected loudly rather than tolerated: both failure modes are silent
+        # in production. Pointing this at the primary credential dissolves the
+        # least-privilege boundary while every test still passes; pointing it
+        # at `rag_app` produces `permission denied` on every history read,
+        # which the best-effort layer turns into empty history.
+        if not self.database_url_ops:
+            return self
+        if self.database_url_ops == self.database_url:
+            raise ValueError(
+                "DATABASE_URL_OPS must not equal the primary application database URL; "
+                "the operational path requires its own least-privilege role (ORQ-37 §Diseño 7)"
+            )
+        if self.database_url_app and self.database_url_ops == self.database_url_app:
+            raise ValueError(
+                "DATABASE_URL_OPS must not equal DATABASE_URL_APP; the rag_app role has no "
+                "grants on conversations/messages, so history reads would fail permission-denied"
             )
         return self
 

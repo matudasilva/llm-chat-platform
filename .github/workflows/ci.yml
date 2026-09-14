@@ -11,6 +11,14 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          # Full history AND all remote-tracking refs. The default shallow
+          # clone has no `origin/main`, which breaks every check that measures
+          # this branch against its branch point with main (the ORQ-37 settings
+          # -default guard and the honesty sweep's default `--base`). Those
+          # checks then fail on the runner for a reason that has nothing to do
+          # with what they assert.
+          fetch-depth: 0
 
       - name: Set up Python 3.13
         uses: actions/setup-python@v5

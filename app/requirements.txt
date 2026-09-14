@@ -16,3 +16,17 @@ httpx>=0.27,<1
 boto3>=1.35,<2
 
 mcp>=1.27.0
+
+# ORQ-37 Gate A: tracing seam. The import is lazy and the feature is disabled
+# by default, so a missing package degrades to a no-op rather than breaking
+# start-up -- but the packages ship in the image so the flag is all an operator
+# has to flip.
+#
+# All three are pinned to the SAME version on purpose: the API, SDK and
+# exporter are released in lockstep and are not guaranteed to interoperate
+# across versions. 1.44.0 is also the `opentelemetry-api` that was already
+# resolved into requirements.lock as a transitive dependency, so this adds no
+# version conflict to the existing tree.
+opentelemetry-api==1.44.0
+opentelemetry-sdk==1.44.0
+opentelemetry-exporter-otlp-proto-http==1.44.0

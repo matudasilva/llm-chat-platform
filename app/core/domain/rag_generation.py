@@ -33,9 +33,31 @@ class RagSource:
         }
 
 
+# AC24's vocabulary, mirroring `memory_outcome`'s shape. `skipped` is set by
+# the dependency, the only layer that knows the feature flag.
+RETRIEVAL_SKIPPED = "skipped"
+RETRIEVAL_OK = "ok"
+RETRIEVAL_EMPTY = "empty"
+RETRIEVAL_TIMEOUT = "timeout"
+RETRIEVAL_ERROR = "error"
+
+
 @dataclass(frozen=True, slots=True)
 class RagGenerationContext:
     sources: tuple[RagSource, ...] = ()
+    # AC24: what the retrieval channel DID, distinct from what it produced.
+    #
+    # `sources` alone cannot say it: an empty tuple is returned by a timeout, by
+    # a pipeline error, and by a run that simply matched nothing. Those are
+    # three different facts, and the criterion requires this field to be
+    # distinguishable from `generation_outcome` and `memory_outcome`.
+    #
+    # Pure data, no behaviour: `provider_metadata` still depends only on
+    # `sources`, so the prompt is byte-identical whatever this holds. The domain
+    # SETS it and never reports it -- recording belongs to the dependency
+    # boundary, exactly as the memory channel keeps
+    # `ConversationHistoryAssembler` free of the collector.
+    outcome: str | None = None
 
     @property
     def provider_metadata(self) -> dict[str, Any] | None:
@@ -73,9 +95,15 @@ class RagGenerationAugmentor:
                 self._pipeline.retrieve(request_id=request_id, query=query),
                 timeout=self._timeout_s,
             )
+        except asyncio.TimeoutError as exc:
+            # Classified HERE, where `wait_for` actually observes it. Inferred
+            # downstream from an empty result, a timeout would be
+            # indistinguishable from a corpus that matched nothing.
+            self._log_degraded(request_id=request_id, reason=type(exc).__name__)
+            return RagGenerationContext(outcome=RETRIEVAL_TIMEOUT)
         except Exception as exc:
             self._log_degraded(request_id=request_id, reason=type(exc).__name__)
-            return RagGenerationContext()
+            return RagGenerationContext(outcome=RETRIEVAL_ERROR)
 
         remaining = self._max_context_chars
         retained: list[RagSource] = []
@@ -101,7 +129,15 @@ class RagGenerationAugmentor:
             )
             remaining -= len(content)
 
-        return RagGenerationContext(sources=tuple(retained))
+        # `empty` deliberately does NOT separate "matched nothing" from
+        # "trimmed to nothing by the budget" (operator decision, 2026-09-13):
+        # AC24 does not ask for it, and the distinction would need the pre-trim
+        # chunk count surfaced too. A real loss of diagnosis, recorded rather
+        # than explained away.
+        return RagGenerationContext(
+            sources=tuple(retained),
+            outcome=RETRIEVAL_OK if retained else RETRIEVAL_EMPTY,
+        )
 
     @staticmethod
     def _log_degraded(*, request_id: UUID, reason: str) -> None:

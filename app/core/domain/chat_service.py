@@ -6,6 +6,8 @@ from dataclasses import dataclass
 from typing import Any, AsyncIterator, Awaitable, Callable, Sequence
 from uuid import UUID
 
+from app.core.observability.tracing import set_attribute, span
+
 from .provider_factory import ProviderResolver
 from .routing.routing_types import RoutingContext
 from .types import ChatMessage
@@ -30,6 +32,36 @@ class StreamChatResult:
 class ChatServiceStreamSession:
     chunks: AsyncIterator[str]
     get_final_result: Callable[[], Awaitable[StreamChatResult]]
+
+async def _traced_generation_stream(
+    chunks: AsyncIterator[str], provider_name: str
+) -> AsyncIterator[str]:
+    """Wrap a provider stream so `rag.generate` covers the real generation.
+
+    The span opens on the first pull (where consumption actually begins, not
+    where the session was obtained), stays open for the whole stream, and closes
+    on completion, error or cancellation. It yields exactly what it receives:
+    no frame is added, dropped, reordered or reshaped, and no exception is
+    caught -- `raise` is unconditional in every branch, so the SSE contract and
+    the route's own error translation are untouched.
+
+    `GeneratorExit` and `CancelledError` are `BaseException`, not `Exception`,
+    so a client disconnect would otherwise leave the span open forever; they are
+    classified and re-raised.
+    """
+    with span("rag.generate", **{"provider.name": provider_name}) as generate_span:
+        try:
+            async for chunk in chunks:
+                yield chunk
+        except (GeneratorExit, asyncio.CancelledError):
+            set_attribute(generate_span, "rag.generation_outcome", "cancelled")
+            raise
+        except BaseException:
+            set_attribute(generate_span, "rag.generation_outcome", "error")
+            raise
+        else:
+            set_attribute(generate_span, "rag.generation_outcome", "ok")
+
 
 class ChatService:
     """
@@ -72,44 +104,62 @@ class ChatService:
             metadata=provider_metadata,
         )
 
-        try:
-            provider_out = await asyncio.wait_for(
-                provider.generate(provider_in),
-                timeout=self._timeout_s,
-            )
-        except asyncio.TimeoutError as e:
-            # Internal diagnostics: full stacktrace in logs, sanitized error outward.
-            logger.exception(
-                "provider_timeout request_id=%s provider=%s messages_count=%d timeout_s=%.3f",
-                str(request_id),
-                type(provider).__name__,
-                len(messages),
-                float(self._timeout_s),
-            )
-            raise ProviderTimeoutError("provider timeout") from e
-
-        except ProviderError as e:
-            # Provider already normalized the failure; keep outward message safe and short.
-            logger.exception(
-                "provider_error request_id=%s provider=%s kind=%s messages_count=%d",
-                str(request_id),
-                type(provider).__name__,
-                getattr(e.kind, "value", str(e.kind)),
-                len(messages),
-            )
-            if e.kind == ProviderErrorKind.timeout:
+        # `rag.generate` is emitted here because this is the provider-agnostic
+        # generation boundary: instrumenting inside the OpenAI/Bedrock adapters
+        # would duplicate the span per provider and couple observability to a
+        # provider, which invariant 2 and the "no provider-specific logic in
+        # domain services" rule both forbid. Every classification below is a
+        # normalized outcome, never a provider message.
+        with span(
+            "rag.generate", **{"provider.name": type(provider).__name__}
+        ) as generate_span:
+            try:
+                provider_out = await asyncio.wait_for(
+                    provider.generate(provider_in),
+                    timeout=self._timeout_s,
+                )
+            except asyncio.TimeoutError as e:
+                # Internal diagnostics: full stacktrace in logs, sanitized error outward.
+                set_attribute(generate_span, "rag.generation_outcome", "timeout")
+                logger.exception(
+                    "provider_timeout request_id=%s provider=%s messages_count=%d timeout_s=%.3f",
+                    str(request_id),
+                    type(provider).__name__,
+                    len(messages),
+                    float(self._timeout_s),
+                )
                 raise ProviderTimeoutError("provider timeout") from e
-            raise ProviderExecutionError(str(e)) from e
 
-        except Exception as e:
-            # Keep provider internals out of the boundary. Details belong in logs.
-            logger.exception(
-                "provider_execution_error request_id=%s provider=%s messages_count=%d",
-                str(request_id),
-                type(provider).__name__,
-                len(messages),
-            )
-            raise ProviderExecutionError("provider execution failed") from e
+            except ProviderError as e:
+                # Provider already normalized the failure; keep outward message safe and short.
+                set_attribute(
+                    generate_span,
+                    "rag.generation_outcome",
+                    "timeout" if e.kind == ProviderErrorKind.timeout else "provider_error",
+                )
+                logger.exception(
+                    "provider_error request_id=%s provider=%s kind=%s messages_count=%d",
+                    str(request_id),
+                    type(provider).__name__,
+                    getattr(e.kind, "value", str(e.kind)),
+                    len(messages),
+                )
+                if e.kind == ProviderErrorKind.timeout:
+                    raise ProviderTimeoutError("provider timeout") from e
+                raise ProviderExecutionError(str(e)) from e
+
+            except Exception as e:
+                # Keep provider internals out of the boundary. Details belong in logs.
+                set_attribute(generate_span, "rag.generation_outcome", "error")
+                logger.exception(
+                    "provider_execution_error request_id=%s provider=%s messages_count=%d",
+                    str(request_id),
+                    type(provider).__name__,
+                    len(messages),
+                )
+                raise ProviderExecutionError("provider execution failed") from e
+
+            set_attribute(generate_span, "rag.generation_outcome", "ok")
 
         assistant = ChatMessage(role="assistant", content=provider_out.content)
 
@@ -192,8 +242,13 @@ class ChatService:
                 provider_result=provider_stream_result,
             )
 
+        # Only the real streaming path is wrapped here. Both fallback paths above
+        # delegate to run(), which already emits its own `rag.generate`; wrapping
+        # them again would double-count a single generation.
         return ChatServiceStreamSession(
-            chunks=provider_session.chunks,
+            chunks=_traced_generation_stream(
+                provider_session.chunks, type(provider).__name__
+            ),
             get_final_result=final_result,
         )
 
