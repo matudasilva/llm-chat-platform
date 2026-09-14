@@ -45,6 +45,30 @@ def _is_safe_placeholder(value: str) -> bool:
     return normalized in SAFE_PLACEHOLDERS
 
 
+def _is_code_reference(line: str, match: re.Match[str]) -> bool:
+    """True when the matched value is code, not an embedded literal.
+
+    `SECRET_ASSIGNMENT_RE` captures whatever follows `token =`, so an
+    expression is captured as if it were the secret itself: `_set_tenant` in
+    `token = _set_tenant("acme")`. Two unquoted shapes can never be a
+    hardcoded secret and are exempt -- attribute access (`cfg.openai_api_key`)
+    and a call.
+
+    Quoted values are never exempt: those are literals, which is exactly what
+    this rule exists to catch. Nor is a bare unquoted identifier, so a
+    hardcoded value assigned to `password` keeps firing.
+
+    This exemption is scoped to `secret-assignment`. A genuine key passed as a
+    call argument is still caught by `OPENAI_KEY_RE`/`AWS_KEY_RE`, which match
+    anywhere on the line.
+    """
+    if match.group("quote") != "":
+        return False
+    if "." in match.group("value"):
+        return True
+    return line[match.end("value") :].lstrip(" \t").startswith("(")
+
+
 def scan_line(path: Path, line_no: int, line: str) -> list[Finding]:
     findings: list[Finding] = []
     saw_explicit_secret = False
@@ -91,7 +115,7 @@ def scan_line(path: Path, line_no: int, line: str) -> list[Finding]:
         value = match.group("value")
         if _is_safe_placeholder(value):
             continue
-        if match.group("quote") == "" and "." in value:
+        if _is_code_reference(line, match):
             continue
         findings.append(
             Finding(
