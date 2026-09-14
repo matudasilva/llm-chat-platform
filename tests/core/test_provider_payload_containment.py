@@ -60,7 +60,7 @@ def _input(*contents: str) -> ProviderInput:
 
 def _openai() -> OpenAIProvider:
     return OpenAIProvider(
-        OpenAIProviderConfig(api_key="test-key", model="test-model", timeout_s=1.0)
+        OpenAIProviderConfig(api_key="placeholder", model="test-model", timeout_s=1.0)
     )
 
 
