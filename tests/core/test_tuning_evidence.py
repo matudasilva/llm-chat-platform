@@ -1,7 +1,9 @@
 """ORQ-37 Gate A, T6 — AC30 in full, and AC7's evidence machinery.
 
-AC30 is closed here: the two fields are exposed at the values already in force,
-the factory passes them, and no pre-existing default moved.
+AC30 is closed here: the two fields are exposed at the values already in force
+and the factory passes them. Its third claim -- that no pre-existing default
+moved -- was branch-relative evidence and retired with the promotion to main;
+see the note below.
 
 AC7 is **not** closed here, and these tests do not pretend otherwise. Its
 evidence is a measured before/after against the ORQ-26 golden set, and that
@@ -13,7 +15,6 @@ comparison, and the rendering.
 
 from __future__ import annotations
 
-import ast
 import inspect
 import pathlib
 import subprocess
@@ -34,7 +35,6 @@ from experiments.evaluation.tuning import (
 )
 
 REPO_ROOT = pathlib.Path(__file__).resolve().parents[2]
-SETTINGS_PATH = REPO_ROOT / "app" / "core" / "settings.py"
 
 
 # --- AC30: exposed at current values, nothing else moved -------------------
@@ -83,98 +83,16 @@ def test_the_pipeline_receives_the_configured_values(monkeypatch):
     assert captured["top_n"] == 7
 
 
-def test_no_pre_existing_default_changed():
-    """AC30's real claim. Parses the previous and current settings.py and
-    compares every field default, so a silent edit anywhere in the file fails
-    here and not in production."""
-    # Baseline is the branch point, NOT HEAD. An earlier version compared
-    # against HEAD, which is self-invalidating: once this task's own commit
-    # landed, HEAD already contained the new fields and the assertion silently
-    # changed meaning. AC30's claim is "no default changed *by this ORQ*", so
-    # the reference has to be where the ORQ started.
-    #
-    # `origin/main`, not `main`: a CI checkout sits on the ORQ branch and has
-    # no local `main` branch at all, so `merge-base main HEAD` exits 128 there.
-    # The remote-tracking ref is the baseline that exists in both places, and
-    # it names the same branch point.
-    base = subprocess.run(
-        ["git", "merge-base", "origin/main", "HEAD"],
-        cwd=REPO_ROOT, capture_output=True, text=True, check=True,
-    ).stdout.strip()
-    previous_source = subprocess.run(
-        ["git", "show", f"{base}:app/core/settings.py"],
-        cwd=REPO_ROOT,
-        capture_output=True,
-        text=True,
-        check=True,
-    ).stdout
-
-    def _defaults(source: str) -> dict[str, str]:
-        tree = ast.parse(source)
-        found: dict[str, str] = {}
-        for node in ast.walk(tree):
-            if isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
-                if node.value is not None:
-                    found[node.target.id] = ast.dump(node.value)
-        return found
-
-    before = _defaults(previous_source)
-    after = _defaults(SETTINGS_PATH.read_text(encoding="utf-8"))
-
-    changed = {k: (before[k], after[k]) for k in before if k in after and before[k] != after[k]}
-    assert changed == {}, f"pre-existing defaults changed: {sorted(changed)}"
-
-    removed = sorted(set(before) - set(after))
-    assert removed == [], f"settings fields disappeared: {removed}"
-
-    # Every field this ORQ is authorized to add: T1's tracing seam, T6's two
-    # exposed retrieval parameters and T7's operational credential. Anything
-    # else appearing here is scope creep in settings.py, which is what AC30 is
-    # really guarding. The list is extended per task, deliberately: an addition
-    # has to be argued for once, here, rather than slipping in unremarked.
-    authorized_additions = {
-        "otel_enabled",
-        "otel_service_name",
-        "otel_exporter_otlp_endpoint",
-        "otel_max_queue_size",
-        "otel_max_export_batch_size",
-        "otel_schedule_delay_ms",
-        "otel_export_timeout_ms",
-        "otel_init_timeout_s",
-        "otel_flush_timeout_s",
-        "otel_shutdown_timeout_s",
-        "retrieval_pipeline_top_k_candidates",
-        "retrieval_pipeline_top_n",
-        # T7 / §Diseño 7: the least-privilege operational credential. Inert by
-        # default (None), so it changes no shipped behaviour.
-        "database_url_ops",
-        # T9 / §Diseño 7: the memory rollout flag and its degradation bound.
-        # Both inert by default (off, and a bound that only applies when on).
-        "conversation_history_enabled",
-        "conversation_history_timeout_s",
-        # T12 / AC36: bounds the SQL history read. Inert until a conversation
-        # exceeds it (default 2 000, far above the assembler's own window).
-        "conversation_history_max_rows",
-        # T13 / AC14: the hard added-context cap. 12 000 matches the ceiling
-        # RAG alone already had, so this is a new NAME on an existing value,
-        # not a new limit in practice.
-        "chat_prompt_max_added_context_chars",
-        # T14 / §Diseño 6: per-request metrics. Inert by default (flag off);
-        # the retention window and write timeout are configuration only until
-        # the flag is on, which Gate B2's production-readiness condition
-        # separately gates.
-        "rag_request_metrics_enabled",
-        "rag_request_metrics_retention_days",
-        "rag_request_metrics_timeout_s",
-        # T18 / §Diseño 10: the Mode B flag itself. Inert by default -- Mode A
-        # is exactly Gate B1's shipped behaviour until an operator turns it on.
-        "ebm25_enabled",
-    }
-    added = set(after) - set(before)
-    assert added <= authorized_additions, (
-        f"unauthorized new settings fields: {sorted(added - authorized_additions)}"
-    )
-    assert {"retrieval_pipeline_top_k_candidates", "retrieval_pipeline_top_n"} <= added
+# `test_no_pre_existing_default_changed` lived here until ORQ-37 was promoted
+# to main. It compared settings.py against `merge-base origin/main HEAD` to
+# prove the ORQ moved no pre-existing default and added only authorized fields.
+# Once the ORQ landed, that base *is* HEAD: three of its assertions became
+# vacuous and the fourth -- that the ORQ's own fields appear in the delta --
+# failed against an empty set. It validated branch-transition evidence, not an
+# enduring runtime contract, so it is retired rather than rebased onto an
+# invented baseline. What endures is covered above: the two values are pinned
+# by `test_the_two_exposed_fields_match_the_constructor_defaults`, and the
+# wiring by the two factory tests.
 
 
 # --- AC23 boundary: the harness must not live under app/ -------------------
