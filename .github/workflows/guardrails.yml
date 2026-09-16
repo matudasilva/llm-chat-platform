@@ -45,3 +45,23 @@ jobs:
             --default-branch "${{ github.event.repository.default_branch }}")"
 
           python -m app.scripts.guardrails_scan --changed-from "$BASE_REF" --changed-to "$HEAD_REF"
+
+      # The delta above is fast and attributable, but it only ever sees what
+      # changed after it existed: a file that predates this workflow, or that
+      # arrived in a squash-merge, is scanned once and then never again. The
+      # broad coverage that used to exist was the empty-tree fallback -- a
+      # defect -- so correcting it removed the only full scan there was. This
+      # step restores it deliberately, on the default branch, where it costs
+      # one run per merge instead of one per push.
+      - name: Scan every tracked file
+        if: >-
+          github.event_name == 'push'
+          && github.ref_name == github.event.repository.default_branch
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # The tracked-file listing lives in the script, not here: inline it
+          # could not be tested, and `git ls-files | xargs` is exactly the kind
+          # of untestable YAML that let two base-resolution defects ship.
+          python -m app.scripts.guardrails_scan --all-tracked
