@@ -156,6 +156,33 @@ def default_scan_paths() -> list[Path]:
     return candidates
 
 
+def _git_tracked_files() -> list[Path]:
+    """Every file in the index, which is what a push can actually carry.
+
+    The automated scan was delta-only, and a delta sees only what changed after
+    the delta existed: a file that predates the workflow, or that arrived in a
+    squash-merge, is scanned once and then never again, and a new rule is never
+    applied to what is already committed.
+
+    Git's index is the source of truth rather than `default_scan_paths()`: that
+    allowlist misses `experiments/`, `.framework/` and most root files, while
+    also walking untracked working-tree files that no push can carry.
+
+    NUL-separated on purpose -- a newline in a filename would otherwise split
+    one path into two unreadable ones, inflating the count while never scanning
+    the file. `check=True` so a failing `git` fails the run instead of yielding
+    an empty list that reads like a clean repository.
+    """
+    result = subprocess.run(
+        ["git", "ls-files", "-z"],
+        check=True,
+        capture_output=True,
+        text=True,
+        cwd=REPO_ROOT,
+    )
+    return [REPO_ROOT / name for name in result.stdout.split("\0") if name]
+
+
 def _git_changed_files(base_ref: str, head_ref: str) -> list[Path]:
     cmd = [
         "git",
@@ -199,6 +226,12 @@ def build_parser() -> argparse.ArgumentParser:
         dest="changed_to",
         help="Scan files changed between two git refs.",
     )
+    parser.add_argument(
+        "--all-tracked",
+        dest="all_tracked",
+        action="store_true",
+        help="Scan every file tracked by git. Used for the full-repository run.",
+    )
     return parser
 
 
@@ -209,22 +242,47 @@ def main(argv: Sequence[str] | None = None) -> int:
     if bool(args.changed_from) ^ bool(args.changed_to):
         parser.error("--changed-from and --changed-to must be used together")
 
-    if args.changed_from and args.changed_to:
+    if args.all_tracked and (args.changed_from or args.changed_to or args.paths):
+        # Two scopes in one invocation means one is silently discarded, and the
+        # mode reported below would name only the winner.
+        parser.error("--all-tracked cannot be combined with paths or --changed-from/--changed-to")
+
+    if args.all_tracked:
+        mode = "all-tracked"
+        paths = _git_tracked_files()
+        if not paths:
+            # An empty list scans nothing and would print `0 files checked` in
+            # green -- indistinguishable from full coverage, while providing
+            # none. A bad cwd or a broken checkout gets reported, never passed.
+            print(
+                "guardrails scan failed (mode=all-tracked): no tracked files found",
+                file=sys.stderr,
+            )
+            return 1
+    elif args.changed_from and args.changed_to:
+        mode = "changed"
         paths = _git_changed_files(args.changed_from, args.changed_to)
+    elif args.paths:
+        mode = "explicit"
+        paths = list(_iter_files_from_args(args.paths))
     else:
-        paths = list(_iter_files_from_args(args.paths)) if args.paths else default_scan_paths()
+        mode = "default-paths"
+        paths = default_scan_paths()
 
     findings: list[Finding] = []
     for path in paths:
         findings.extend(scan_file(path))
 
     if findings:
-        print("guardrails scan failed:", file=sys.stderr)
+        # The mode belongs on both branches: a scan that does not say what it
+        # covered is not auditable, which is how two base-resolution defects
+        # survived in CI while reporting confidently.
+        print(f"guardrails scan failed (mode={mode}):", file=sys.stderr)
         for finding in findings:
             print(_format_finding(finding), file=sys.stderr)
         return 1
 
-    print(f"guardrails scan passed ({len(paths)} files checked)")
+    print(f"guardrails scan passed (mode={mode}, {len(paths)} files checked)")
     return 0
 
 
