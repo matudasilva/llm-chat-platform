@@ -728,8 +728,10 @@ CO2e) this phase depends on.
   fix validated; the memory-experimentation line continues only as far as a single further
   offline, no-call diagnostic of conversation 04 against its nearest flipped controls, with an
   explicit end-of-line default if no discriminator is found — not an open-ended chain of ORQs.
-  Full evidence: `.framework/orqs/ORQ-33-memory-residual-diagnosis/validation.md`.
-- **Memory-experimentation diagnostic line closed; `E-BM25` confirmed as the sole candidate**
+  Full evidence: `validation.md` under
+  `.framework/orqs/ORQ-33-memory-residual-diagnosis/`.
+- **Memory-experimentation diagnostic line closed; `E-BM25` was the sole candidate carried
+  forward for further evaluation**
   (ORQ-34, 2026-08-27): the offline, zero-provider-call characterization of conversation 04's
   residual against its 2 nearest flipped controls found no discriminator across all 12
   precommitted dimensions — `CLOSED — NO ACTIONABLE OFFLINE MECHANISM FOUND`. Per the

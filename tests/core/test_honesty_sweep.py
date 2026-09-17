@@ -237,6 +237,159 @@ def test_an_empty_scan_is_an_error_not_a_clean_result(
     assert "scanned nothing" in capsys.readouterr().out
 
 
+# --- MAX_NEGATION_SPAN: a measured mitigation, not a general fix -----------
+#
+# `_is_negation_sentence` asks only that `E-BM25`, a negator and a forbidden
+# phrase all appear *somewhere* in the same pseudo-sentence -- no proximity
+# between them is required -- and `_mask_exceptions` then blanks that whole
+# region. `_SENTENCE_SPLIT_RE` breaks on `[.!?]` + whitespace, which is fine
+# for prose and produces enormous regions in text that has no such boundary
+# for hundreds of characters. One negator anywhere inside then pardons every
+# genuine claim sharing the region.
+#
+# Measured over the 452 tracked files, across the 19 negation regions that
+# actually exclude something:
+#
+#     largest legitimate region observed   747  (ADR-013's rule bullet)
+#     smallest over-masked region observed 2083 (this file, before the fix)
+#                                          5680 (experiments/.../guards.py)
+#
+# Nothing falls between 747 and 2083, so every threshold in (747, 2083)
+# behaves identically. 1000 is chosen for margin rather than for being the
+# smallest that passes: 750 also passes today but sits 3 characters above the
+# largest legitimate region, so one edit to ADR-013 would start flagging the
+# document that defines the rule. 1000 leaves +253 (+34%) over the largest
+# legitimate region and -1083 (-52%) under the smallest over-masked one.
+#
+# **This does not solve the short-region case.** A negator and a genuine claim
+# inside the same *small* region are still both masked:
+#
+#     x = "<marker> is not validated"
+#     y = "Testing has proven <marker> works"
+#
+# is 67 characters, under any threshold, and stays undetected. Binding the
+# negator to the specific forbidden phrase rather than to the region is a
+# different change and is deliberately out of scope here.
+
+
+def test_the_threshold_sits_between_the_measured_extremes() -> None:
+    assert _module.MAX_NEGATION_SPAN == 1000
+    assert 747 < _module.MAX_NEGATION_SPAN < 2083
+
+
+def _negation_region(length: int) -> str:
+    """A single negation region of exactly `length` characters.
+
+    The padding carries no `.`, `!` or `?`: a period followed by whitespace is
+    a sentence boundary, so padding *after* a terminated sentence would split
+    the text into a short region plus filler and measure nothing.
+    """
+    core = f"{_E} is not validated by this rollout"
+    region = core + " " + "x" * (length - len(core) - 1)
+    assert len(region) == length
+    assert not any(ch in region for ch in ".!?")
+    return region
+
+
+def test_a_negation_region_at_the_threshold_is_still_excluded() -> None:
+    """The boundary is inclusive: a region of exactly MAX_NEGATION_SPAN still
+    claims the exception, so the largest measured legitimate region cannot be
+    excluded by an off-by-one."""
+    assert _module._findings(_negation_region(_module.MAX_NEGATION_SPAN), "synthetic") == []
+
+
+def test_a_negation_region_past_the_threshold_stops_being_excluded() -> None:
+    """One character past the bound, the exception is refused."""
+    assert _module._findings(_negation_region(_module.MAX_NEGATION_SPAN + 1), "synthetic") != []
+
+
+def test_the_real_adr_013_negation_is_still_excluded() -> None:
+    """The largest legitimate region measured, asserted against the shipped
+    document rather than a reconstruction of it. ADR-013's rule bullet names
+    every forbidden phrase next to the marker; if the threshold ever stops
+    covering it, the sweep starts flagging the ADR that defines it."""
+    adr = (REPO_ROOT / "docs/adr/013-ebm25-controlled-evaluation-port.md").read_text(
+        encoding="utf-8"
+    )
+    assert _module._findings(adr, "adr-013") == []
+
+
+def test_the_roadmap_negations_are_still_excluded() -> None:
+    roadmap = (REPO_ROOT / ".framework/constitution/roadmap.md").read_text(encoding="utf-8")
+    assert _module._findings(roadmap, "roadmap") == []
+
+
+def test_the_orq_34_line_does_not_read_as_a_status_claim() -> None:
+    """The one wording the sweep cannot police for us.
+
+    "<marker> confirmed as the sole candidate" described a *selection* -- the
+    diagnostic line closed and that arm was what remained -- but it reads as a
+    status claim, which is the exact confusion this invariant exists to
+    prevent. It sits in a 352-character region that every threshold masks, so
+    no threshold surfaces it and no other test here would notice it coming
+    back. Pinned as wording, because the mechanism genuinely cannot.
+    """
+    roadmap = (REPO_ROOT / ".framework/constitution/roadmap.md").read_text(encoding="utf-8")
+    assert f"`{_E}` con" + "firmed as the sole candidate" not in roadmap
+    assert f"`{_E}` was the sole candidate carried" in roadmap
+
+
+def test_a_long_boundary_free_region_no_longer_hides_a_genuine_claim() -> None:
+    """The demonstrated over-masking, reconstructed at its measured scale.
+
+    A negation, then padding with no sentence boundary, then a real status
+    claim. Before the threshold the whole region was one pseudo-sentence and
+    the claim was invisible.
+    """
+    negation = f'# {_E} is not validated by this rollout,\n'
+    padding = "\n".join(f'CONST_{i} = "padding value number {i}"' for i in range(60))
+    claim = f'\nlogger.info("{_E} pro' + f'ven effective in production")\n'
+    region = negation + padding + claim
+
+    assert len(region) > _module.MAX_NEGATION_SPAN
+    assert "\n".join(region.split("\n")[1:-2]).count(". ") == 0, "no sentence boundary in the padding"
+    assert _module._findings(region, "synthetic") != []
+
+
+@pytest.mark.parametrize(
+    "label,text",
+    [
+        (
+            "yaml",
+            f"a: {_E} is not validated\n"
+            + "\n".join(f"pad_{i}: filler value number {i}" for i in range(60))
+            + f"\nb: pro" + f"ven {_E} works",
+        ),
+        (
+            "markdown-table",
+            f"| {_E} | not validated |\n"
+            + "\n".join(f"| pad {i} | filler value number {i} |" for i in range(60))
+            + f"\n| note | pro" + f"ven {_E} works |",
+        ),
+    ],
+    ids=["yaml", "markdown-table"],
+)
+def test_the_over_masking_is_not_specific_to_python(label: str, text: str) -> None:
+    """Any text without `. ` boundaries produces the same oversized regions --
+    YAML and Markdown tables as much as source code. A file-type-aware fix
+    would have had to enumerate them; a size bound does not."""
+    assert len(text) > _module.MAX_NEGATION_SPAN
+    assert _module._findings(text, label) != [], label
+
+
+def test_the_short_region_false_negative_is_documented_as_still_open() -> None:
+    """Pins the *limit* of this mitigation, so nobody reads the threshold as a
+    general fix. When the negator and the claim share a small region, both are
+    still masked. Recorded as a known open class, not as a passing behaviour.
+    """
+    short = f'x = "{_E} is not validated"\ny = "Testing has pro' + f'ven {_E} works"'
+    assert len(short) < _module.MAX_NEGATION_SPAN
+    assert _module._findings(short, "synthetic") == [], (
+        "the short-region class was fixed; update this test and the "
+        "MAX_NEGATION_SPAN note, which both state it is still open"
+    )
+
+
 def test_the_roadmap_adjacency_was_fixed_in_content_not_by_relaxing_the_detector() -> None:
     """`roadmap.md` tripped the sweep because the filename `validation.md`
     ended 20 characters before an unrelated bullet's `E-BM25` -- an adjacency
@@ -256,11 +409,11 @@ def test_the_roadmap_adjacency_was_fixed_in_content_not_by_relaxing_the_detector
 
 def test_the_sweep_can_still_catch_a_real_violation() -> None:
     genuine_violations = [
-        "The dashboard confirms E-BM25 works well for our users.",
-        "Internal testing has validated E-BM25 across all providers.",
-        "Results demonstrated that E-BM25 improves answer quality significantly.",
-        "This proves E-BM25 is effective in production.",
-        "The rollout established that E-BM25 is the better retrieval strategy.",
+        f"The dashboard confirms {_E} works well for our users.",
+        f"Internal testing has validated {_E} across all providers.",
+        f"Results demonstrated that {_E} improves answer quality significantly.",
+        f"This proves {_E} is effective in production.",
+        f"The rollout established that {_E} is the better retrieval strategy.",
     ]
     for text in genuine_violations:
         findings = _module._findings(text, "synthetic")
@@ -270,8 +423,8 @@ def test_the_sweep_can_still_catch_a_real_violation() -> None:
 def test_the_two_spec_declared_exceptions_are_still_excluded() -> None:
     safe = [
         _module.PREMISE,
-        "E-BM25 is not validated or confirmed by this rollout.",
-        "No artifact produced by this plan may describe E-BM25 as confirmed.",
+        f"{_E} is not validated or confirmed by this rollout.",
+        f"No artifact produced by this plan may describe {_E} as confirmed.",
     ]
     for text in safe:
         findings = _module._findings(text, "synthetic")
@@ -279,10 +432,10 @@ def test_the_two_spec_declared_exceptions_are_still_excluded() -> None:
 
 
 def test_backtick_enumeration_is_excluded_but_prose_use_is_not() -> None:
-    enumerated = "Forbidden near `E-BM25`: `validated`, `confirmed`."
+    enumerated = f"Forbidden near `{_E}`: `validated`, `confirmed`."
     assert _module._findings(enumerated, "synthetic") == []
 
-    prose = "Forbidden near E-BM25: it has been validated by the team."
+    prose = f"Forbidden near {_E}: it has been validated by the team."
     assert _module._findings(prose, "synthetic") != []
 
 
@@ -290,7 +443,7 @@ def test_forbidden_words_are_matched_as_whole_words_not_substrings() -> None:
     # "confirmatory" must not accidentally match inside an unrelated longer
     # word, and a word that merely CONTAINS a forbidden substring must not
     # trip the check.
-    text = "The reconfirmation panel is near E-BM25 in the diagram."
+    text = f"The reconfirmation panel is near {_E} in the diagram."
     findings = _module._findings(text, "synthetic")
     assert findings == [], findings
 

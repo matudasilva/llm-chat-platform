@@ -386,7 +386,7 @@ def validate_pre_dispatch(
         if ledger.confirmatory_conversations not in {48, 64}:
             raise GuardBlocked("confirmatory sample size is not frozen")
         if request.confirmatory_conversations != ledger.confirmatory_conversations:
-            raise GuardBlocked("request conflicts with the frozen confirmatory sample")
+            raise GuardBlocked("request conflicts with the frozen sample size")
     allowed_arms = {"A", "B", "E-BM25"}
     if request.phase == Phase.DEVELOPMENT:
         allowed_arms.add("ORACLE-GOLD")

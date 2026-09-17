@@ -96,6 +96,44 @@ _EBM25_RE = re.compile(r"E-BM25")
 # flagged its own exception-explaining prose as a violation.
 _SENTENCE_SPLIT_RE = re.compile(r"(?<!\.\.)(?<=[.!?])\s+")
 
+# The largest region that may claim the negation exception.
+#
+# `_is_negation_sentence` requires only that `E-BM25`, a negator and a
+# forbidden phrase all appear *somewhere* in the same pseudo-sentence, with no
+# proximity between them, and `_mask_exceptions` then blanks that whole region.
+# The splitter above breaks on `[.!?]` + whitespace, which suits prose and
+# produces enormous regions in text that carries no such boundary for hundreds
+# of characters -- source code, YAML, Markdown tables. One negator anywhere
+# inside then pardons every genuine claim sharing the region.
+#
+# Measured over the 452 tracked files, across the 19 negation regions that
+# actually exclude something:
+#
+#     largest legitimate region observed    747  (ADR-013's rule bullet)
+#     smallest over-masked region observed 2083  (tests/core/test_honesty_sweep.py)
+#                                          5680  (experiments/.../guards.py)
+#
+# Nothing falls between 747 and 2083, so every threshold in that interval
+# behaves identically on this corpus. 1000 is chosen for margin, not for being
+# the smallest that passes: 750 also passes today but sits 3 characters above
+# the largest legitimate region, so one edit to ADR-013 would begin flagging
+# the document that defines the rule. 1000 leaves +253 (+34%) over the largest
+# legitimate region and -1083 (-52%) under the smallest over-masked one.
+#
+# **This is a mitigation, not a fix.** It bounds the blast radius of an
+# unbounded exception; it does not make the exception precise. A negator and a
+# genuine claim inside the same *small* region are still both masked:
+#
+#     x = "<marker> is not validated"
+#     y = "Testing has proven <marker> works"
+#
+# is 67 characters and stays undetected under any threshold. Closing that
+# class means binding the negator to the specific forbidden phrase rather than
+# to the region, which is a different change with a different blast radius.
+# `test_the_short_region_false_negative_is_documented_as_still_open` keeps the
+# limit visible.
+MAX_NEGATION_SPAN = 1000
+
 
 def _is_negation_sentence(sentence: str) -> bool:
     """A sentence asserting the ABSENCE of validation-framing, any word order.
@@ -140,7 +178,9 @@ def _mask_exceptions(text: str) -> str:
     text = text.replace(PREMISE, " " * len(PREMISE))
     sentences = _SENTENCE_SPLIT_RE.split(text)
     text = " ".join(
-        (" " * len(sentence)) if _is_negation_sentence(sentence) else sentence
+        (" " * len(sentence))
+        if _is_negation_sentence(sentence) and len(sentence) <= MAX_NEGATION_SPAN
+        else sentence
         for sentence in sentences
     )
     text = BACKTICK_TOKEN.sub(lambda m: " " * len(m.group(0)), text)
