@@ -23,6 +23,12 @@ from experiments.long_context_conversational_memory.tokenization import (
     validate_asset,
 )
 
+from tests.experiments._orq30_prerequisites import (
+    TOKENIZER_CACHE_DIR,
+    TOKENIZER_PYTHON_VERSION,
+    requires_orq30_tokenizer,
+)
+
 
 ROOT = Path(__file__).resolve().parents[2]
 ORQ_DIR = ROOT / ".framework/orqs/ORQ-30-long-context-conversational-memory"
@@ -30,7 +36,23 @@ ORQ_DIR = ROOT / ".framework/orqs/ORQ-30-long-context-conversational-memory"
 
 class Orq30TokenizationTests(unittest.TestCase):
     def setUp(self) -> None:
-        self.cache_dir = Path(os.environ["TIKTOKEN_CACHE_DIR"]).resolve()
+        # Derived from the known cache path, not read from the environment.
+        # Reading it made all six tests depend on `test_orq30_development`
+        # having set the variable as a side effect before failing, so five of
+        # them passed only because of the alphabetical file order.
+        self.cache_dir = TOKENIZER_CACHE_DIR.resolve()
+
+    def test_the_prerequisite_python_pin_matches_the_runtime(self) -> None:
+        """`tokenization.py` compares against the version literal inline rather
+        than exposing a constant, so `_orq30_prerequisites` has to restate it.
+        A stale copy would skip a runtime that is present, or let one that is
+        absent run and die -- either way the skip would be lying about why.
+        """
+        source = (
+            ROOT
+            / "experiments/long_context_conversational_memory/tokenization.py"
+        ).read_text(encoding="utf-8")
+        self.assertIn(f'!= "{TOKENIZER_PYTHON_VERSION}"', source)
 
     def test_implementation_matches_approved_manifest(self) -> None:
         manifest = json.loads((ORQ_DIR / "experiment-manifest.json").read_text())
@@ -42,7 +64,11 @@ class Orq30TokenizationTests(unittest.TestCase):
         self.assertEqual(contract["asset_sha256"], ASSET_SHA256)
         self.assertFalse(contract["special_tokens_allowed"])
 
+    @requires_orq30_tokenizer
     def test_authenticated_asset_and_approved_sequences_load_offline(self) -> None:
+        # The only test here that loads the tokenizer, so it sets the variable
+        # `load_offline_encoding` validates rather than inheriting it.
+        os.environ["TIKTOKEN_CACHE_DIR"] = str(self.cache_dir)
         calls: list[object] = []
 
         def blocked(*args: object, **kwargs: object) -> None:
