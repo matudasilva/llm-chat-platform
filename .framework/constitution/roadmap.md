@@ -728,8 +728,10 @@ CO2e) this phase depends on.
   fix validated; the memory-experimentation line continues only as far as a single further
   offline, no-call diagnostic of conversation 04 against its nearest flipped controls, with an
   explicit end-of-line default if no discriminator is found — not an open-ended chain of ORQs.
-  Full evidence: `.framework/orqs/ORQ-33-memory-residual-diagnosis/validation.md`.
-- **Memory-experimentation diagnostic line closed; `E-BM25` confirmed as the sole candidate**
+  Full evidence: `validation.md` under
+  `.framework/orqs/ORQ-33-memory-residual-diagnosis/`.
+- **Memory-experimentation diagnostic line closed; `E-BM25` was the sole candidate carried
+  forward for further evaluation**
   (ORQ-34, 2026-08-27): the offline, zero-provider-call characterization of conversation 04's
   residual against its 2 nearest flipped controls found no discriminator across all 12
   precommitted dimensions — `CLOSED — NO ACTIONABLE OFFLINE MECHANISM FOUND`. Per the
@@ -816,9 +818,8 @@ CO2e) this phase depends on.
   Also recorded: this ORQ needed three full Stage 1 dispatch attempts (a
   Vertex API-not-enabled block, a rate-limit storm, then one isolated `403`)
   before a valid arm — no generation was ever re-rolled, only whole failed
-  dispatch attempts. Full evidence:
-  `.framework/orqs/ORQ-36-cross-model-en-es-replication/comparison.md` and
-  `validation.md`.
+  dispatch attempts. Full evidence: `validation.md` and `comparison.md` under
+  `.framework/orqs/ORQ-36-cross-model-en-es-replication/`.
 - **ORQ-37's `E-BM25` work is an integration, not a conditional evaluation**
   (operator decision, 2026-09-01): `E-BM25` is to be wired into the production
   runtime behind its own feature flag so it can be evaluated under real

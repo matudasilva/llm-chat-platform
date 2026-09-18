@@ -1,31 +1,39 @@
-"""AC22 — no artifact this ORQ produces describes E-BM25 as validated.
+"""No artifact in this repository describes E-BM25 as validated.
 
-§Diseño 12's mechanical honesty sweep. Matches, case-insensitively and as
+Originally ORQ-37's AC22 (§Diseño 12). Matches, case-insensitively and as
 whole words, the enumerated forbidden-phrase list within 80 characters of
-every `E-BM25` occurrence, against text this ORQ adds or modifies -- excluding
-two scoped, literally-matched exceptions: the premise sentence (verbatim from
-`roadmap.md`, quoted in `spec.md` and ADR-013), and any sentence stating that
-E-BM25 is *not* validated or confirmed.
+every `E-BM25` occurrence -- excluding two scoped, literally-matched
+exceptions: the premise sentence (verbatim from `roadmap.md`, quoted in
+`spec.md` and ADR-013), and any sentence stating that E-BM25 is *not*
+validated or confirmed.
 
-**Two sources of text, not one.** `git diff` covers every tracked file this
-ORQ changed (`app/`, `tests/`, `docs/`, migrations, commit messages). It does
-NOT cover `spec.md`/`implementation.md`: `.framework/orqs/` is deliberately
-gitignored (a standing policy, not an oversight), so those files never appear
-in a `git diff` no matter how large this ORQ's tracked footprint is. Both are
-unambiguously "an artifact this ORQ produces" and are named explicitly in
-AC22's own evidence description ("the premise sentence appears verbatim in
-`spec.md` and ADR-013") -- a sweep that only ran `git diff` would silently
-never check the very document AC22 names. This script therefore also reads
-the full current content of every file under the ORQ's own directory: since
-that directory did not exist before this ORQ, every line in it is text this
-ORQ added, with no "before" state to diff against.
+**Why the default scans the versioned repository rather than a delta.** This
+began as branch tooling: it diffed against `merge-base origin/main HEAD` and
+additionally read ORQ-37's own gitignored directory. Both sources were
+delta-shaped, and once ORQ-37 was promoted that base *is* HEAD on `main`, so
+`git diff` and `git log` both went empty -- while the ORQ directory, being
+gitignored under `artifact_policy: hybrid`, is absent from every clone and
+every CI checkout. The sweep therefore scanned zero characters on `main` and
+printed `clean`, which is worse than not running: it looked like enforcement.
+
+The constraint did not expire with the ORQ. `ebm25_enabled` ships on `main`,
+ADR-013 is Accepted, and E-BM25 remains unvalidated -- which is exactly the
+condition that makes the constraint necessary. ADR-013 states that no artifact
+can describe E-BM25's status without tripping this sweep; that claim is only
+true if the sweep reads what the repository currently says. So the detection
+engine is untouched and the wiring is what changed: the default reads every
+file git tracks, which is also what a reader of this repository can see.
+
+`--base` keeps delta analysis as an explicit mode -- the right question on a
+feature branch, where what matters is what that branch added.
 
 Usage:
-    python3 app/scripts/check_honesty_sweep.py [--base <git-ref>]
+    python3 app/scripts/check_honesty_sweep.py            # every tracked file
+    python3 app/scripts/check_honesty_sweep.py --base <git-ref>   # a delta
 
-Exit 0 when clean, 1 otherwise. Findings are printed raw: source, line
-number (for diff hunks) or byte offset (for whole-file scans), and the
-80-character window that matched.
+Exit 0 when clean, 1 otherwise -- and 1, never 0, when the scan read nothing
+at all, since zero findings over zero text is indistinguishable in an exit
+code from a repository that is genuinely clean.
 """
 
 from __future__ import annotations
@@ -35,9 +43,9 @@ import pathlib
 import re
 import subprocess
 import sys
+from typing import Sequence
 
 REPO_ROOT = pathlib.Path(__file__).resolve().parents[2]
-ORQ_DIR = REPO_ROOT / ".framework/orqs/ORQ-37-rag-in-production"
 
 FORBIDDEN = [
     "validated", "validates", "validation",
@@ -88,6 +96,44 @@ _EBM25_RE = re.compile(r"E-BM25")
 # flagged its own exception-explaining prose as a violation.
 _SENTENCE_SPLIT_RE = re.compile(r"(?<!\.\.)(?<=[.!?])\s+")
 
+# The largest region that may claim the negation exception.
+#
+# `_is_negation_sentence` requires only that `E-BM25`, a negator and a
+# forbidden phrase all appear *somewhere* in the same pseudo-sentence, with no
+# proximity between them, and `_mask_exceptions` then blanks that whole region.
+# The splitter above breaks on `[.!?]` + whitespace, which suits prose and
+# produces enormous regions in text that carries no such boundary for hundreds
+# of characters -- source code, YAML, Markdown tables. One negator anywhere
+# inside then pardons every genuine claim sharing the region.
+#
+# Measured over the 452 tracked files, across the 19 negation regions that
+# actually exclude something:
+#
+#     largest legitimate region observed    747  (ADR-013's rule bullet)
+#     smallest over-masked region observed 2083  (tests/core/test_honesty_sweep.py)
+#                                          5680  (experiments/.../guards.py)
+#
+# Nothing falls between 747 and 2083, so every threshold in that interval
+# behaves identically on this corpus. 1000 is chosen for margin, not for being
+# the smallest that passes: 750 also passes today but sits 3 characters above
+# the largest legitimate region, so one edit to ADR-013 would begin flagging
+# the document that defines the rule. 1000 leaves +253 (+34%) over the largest
+# legitimate region and -1083 (-52%) under the smallest over-masked one.
+#
+# **This is a mitigation, not a fix.** It bounds the blast radius of an
+# unbounded exception; it does not make the exception precise. A negator and a
+# genuine claim inside the same *small* region are still both masked:
+#
+#     x = "<marker> is not validated"
+#     y = "Testing has proven <marker> works"
+#
+# is 67 characters and stays undetected under any threshold. Closing that
+# class means binding the negator to the specific forbidden phrase rather than
+# to the region, which is a different change with a different blast radius.
+# `test_the_short_region_false_negative_is_documented_as_still_open` keeps the
+# limit visible.
+MAX_NEGATION_SPAN = 1000
+
 
 def _is_negation_sentence(sentence: str) -> bool:
     """A sentence asserting the ABSENCE of validation-framing, any word order.
@@ -132,7 +178,9 @@ def _mask_exceptions(text: str) -> str:
     text = text.replace(PREMISE, " " * len(PREMISE))
     sentences = _SENTENCE_SPLIT_RE.split(text)
     text = " ".join(
-        (" " * len(sentence)) if _is_negation_sentence(sentence) else sentence
+        (" " * len(sentence))
+        if _is_negation_sentence(sentence) and len(sentence) <= MAX_NEGATION_SPAN
+        else sentence
         for sentence in sentences
     )
     text = BACKTICK_TOKEN.sub(lambda m: " " * len(m.group(0)), text)
@@ -176,56 +224,75 @@ def _git_log_text(base: str) -> str:
     return result.stdout
 
 
-def _orq_directory_text() -> str:
-    chunks = []
-    if ORQ_DIR.is_dir():
-        for path in sorted(ORQ_DIR.rglob("*")):
-            if path.is_file():
-                try:
-                    chunks.append(path.read_text(encoding="utf-8"))
-                except UnicodeDecodeError:
-                    continue
-    return "\n".join(chunks)
+def _tracked_files() -> list[pathlib.Path]:
+    """Every file git tracks -- what a reader of this repository can see.
+
+    NUL-separated so a newline in a filename cannot split one path into two
+    unreadable ones. `check=True` so a failing `git` is reported rather than
+    silently yielding a short list that scans a prefix of the repository.
+    """
+    result = subprocess.run(
+        ["git", "ls-files", "-z"],
+        cwd=REPO_ROOT, capture_output=True, text=True, check=True,
+    )
+    return [REPO_ROOT / name for name in result.stdout.split("\0") if name]
 
 
-def main() -> int:
+def _tracked_sources() -> dict[str, str]:
+    sources: dict[str, str] = {}
+    for path in _tracked_files():
+        try:
+            sources[str(path.relative_to(REPO_ROOT))] = path.read_text(encoding="utf-8")
+        except (UnicodeDecodeError, FileNotFoundError, IsADirectoryError):
+            continue
+    return sources
+
+
+def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--base",
         default=None,
-        help="git ref to diff against (default: merge-base origin/main HEAD)",
+        help="git ref to diff against; selects delta mode instead of the "
+             "default scan of every tracked file",
     )
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
-    base = args.base
-    if base is None:
-        # `origin/main`, not `main`: a CI checkout sits on the ORQ branch and
-        # has no local `main` branch, so `merge-base main HEAD` exits 128 and
-        # the sweep dies before scanning anything. The remote-tracking ref
-        # exists both on the runner and locally, and names the same branch
-        # point.
-        base = subprocess.run(
-            ["git", "merge-base", "origin/main", "HEAD"],
-            cwd=REPO_ROOT, capture_output=True, text=True, check=True,
-        ).stdout.strip()
+    if args.base is not None:
+        mode = "delta"
+        sources = {
+            "git diff (tracked files, added lines)": _git_diff_text(args.base),
+            "git log (commit messages)": _git_log_text(args.base),
+        }
+    else:
+        mode = "tracked"
+        sources = _tracked_sources()
 
-    sources = {
-        "git diff (tracked files, added lines)": _git_diff_text(base),
-        "git log (commit messages)": _git_log_text(base),
-        ".framework/orqs/ORQ-37-rag-in-production/* (gitignored, whole-file)": _orq_directory_text(),
-    }
+    scanned_files = len(sources)
+    scanned_chars = sum(len(text) for text in sources.values())
 
     all_findings: list[str] = []
     for source, text in sources.items():
         all_findings.extend(_findings(text, source))
 
+    summary = f"mode={mode}, {scanned_files} files, {scanned_chars} chars"
+
+    # A delta may legitimately be empty -- a branch that changed nothing. The
+    # default mode may not: reading no text at all means the scan is broken,
+    # not that the repository is clean, and reporting `clean` for it is how
+    # this check spent the whole ORQ-37 promotion looking like enforcement
+    # while asserting nothing.
+    if mode == "tracked" and scanned_chars == 0:
+        print(f"HONESTY SWEEP: scanned nothing ({summary}) -- refusing to report clean")
+        return 1
+
     if all_findings:
-        print(f"HONESTY SWEEP: {len(all_findings)} finding(s)")
+        print(f"HONESTY SWEEP: {len(all_findings)} finding(s) ({summary})")
         for finding in all_findings:
             print(f"  {finding}")
         return 1
 
-    print("HONESTY SWEEP: clean")
+    print(f"HONESTY SWEEP: clean ({summary} scanned)")
     return 0
 
 
