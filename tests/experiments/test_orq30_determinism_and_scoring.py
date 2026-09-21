@@ -4,7 +4,6 @@ import hashlib
 import inspect
 import json
 import math
-from pathlib import Path
 import unittest
 
 from experiments.long_context_conversational_memory.determinism import (
@@ -30,12 +29,7 @@ from experiments.long_context_conversational_memory.determinism import (
 )
 from experiments.long_context_conversational_memory.scoring import score_response
 
-
-ROOT = Path(__file__).resolve().parents[2]
-MANIFEST = (
-    ROOT
-    / ".framework/orqs/ORQ-30-long-context-conversational-memory/experiment-manifest.json"
-)
+from tests.experiments._orq30_prerequisites import ORQ30_MANIFEST, requires_orq30_manifest
 
 
 class Orq30DeterminismTests(unittest.TestCase):
@@ -94,8 +88,9 @@ class Orq30DeterminismTests(unittest.TestCase):
         self.assertEqual(payloads[0], base.encode("utf-8"))
         self.assertEqual(payloads[-1], base.encode("utf-8") + b"|1024")
 
+    @requires_orq30_manifest
     def test_power_implementation_matches_manifest_operation_order(self) -> None:
-        manifest = json.loads(MANIFEST.read_text())
+        manifest = json.loads(ORQ30_MANIFEST.read_text())
         operations = manifest["sample_size_selector"]["authoritative_operation_order"]
         self.assertEqual(
             operations,
@@ -144,8 +139,9 @@ class Orq30DeterminismTests(unittest.TestCase):
             with self.assertRaises(RuntimeError):
                 analytic_power(value, 48)
 
+    @requires_orq30_manifest
     def test_registered_domain_prefixes_match_manifest(self) -> None:
-        manifest = json.loads(MANIFEST.read_text())
+        manifest = json.loads(ORQ30_MANIFEST.read_text())
         domains = manifest["sha256_derivation_contract"]["declared_base_domains"]
         self.assertEqual(domains["sanity_uniform"], SANITY_UNIFORM_PREFIX + "|n|t|j")
         self.assertEqual(
