@@ -24,6 +24,8 @@ from experiments.long_context_conversational_memory.tokenization import (
     load_offline_encoding,
 )
 
+from tests.experiments._orq30_prerequisites import TOKENIZER_CACHE_DIR, requires_orq30_tokenizer
+
 
 def event(
     event_id: str,
@@ -77,10 +79,16 @@ MANIFEST = (
 )
 
 
+@requires_orq30_tokenizer
 class Orq30ReplayTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
-        cls.encoding = load_offline_encoding(Path(os.environ["TIKTOKEN_CACHE_DIR"]).resolve())
+        # Set here rather than read from the environment. Reading it raised a
+        # bare `KeyError` that named no prerequisite, and it only ever resolved
+        # because `test_orq30_development` had set it as a side effect before
+        # failing -- an order dependency across files.
+        os.environ["TIKTOKEN_CACHE_DIR"] = str(TOKENIZER_CACHE_DIR.resolve())
+        cls.encoding = load_offline_encoding(TOKENIZER_CACHE_DIR)
 
     def test_b_stops_at_first_nonfitting_event_and_never_splits_or_skips(self) -> None:
         old_small = event("OLD_SMALL", 0, "old compact event")

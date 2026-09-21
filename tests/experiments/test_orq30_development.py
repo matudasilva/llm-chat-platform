@@ -21,14 +21,19 @@ from experiments.long_context_conversational_memory.development import (
 from experiments.long_context_conversational_memory.tokenization import load_offline_encoding
 from experiments.long_context_conversational_memory import run_development
 
+from tests.experiments._orq30_prerequisites import TOKENIZER_CACHE_DIR as CACHE, requires_orq30_tokenizer
+
 
 ROOT = Path(__file__).resolve().parents[2]
-CACHE = ROOT / ".framework/cache/orq-30/tiktoken"
 
 
+@requires_orq30_tokenizer
 class Orq30DevelopmentTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
+        # Kept explicit and local: `load_offline_encoding` requires this to be
+        # the authenticated cache path, and no test may rely on another file
+        # having mutated the environment first.
         os.environ["TIKTOKEN_CACHE_DIR"] = str(CACHE.resolve())
         cls.encoding = load_offline_encoding(CACHE)
         cls.dataset = build_development_dataset(cls.encoding)
