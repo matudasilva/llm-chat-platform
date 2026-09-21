@@ -93,6 +93,11 @@ def tokenizer_runtime_unavailable() -> str | None:
             f"install exactly from {_LOCK}"
         )
 
+    return asset_unavailable()
+
+
+def asset_unavailable() -> str | None:
+    """Why the authenticated tokenizer asset is absent, or None if present."""
     if not (TOKENIZER_CACHE_DIR / ASSET_CACHE_KEY).is_file():
         # Not `relative_to(REPO_ROOT)`: that raises when the cache sits outside
         # the repository, which would turn this explanatory message into a
@@ -103,10 +108,35 @@ def tokenizer_runtime_unavailable() -> str | None:
             f"{_display_path(TOKENIZER_CACHE_DIR)}, which is gitignored under "
             f".framework/cache/ and so is not part of any checkout"
         )
-
     return None
 
 
 _REASON = tokenizer_runtime_unavailable()
 
 requires_orq30_tokenizer = pytest.mark.skipif(_REASON is not None, reason=_REASON or "")
+
+
+# The two ORQ-30 artifacts some tests read without needing the tokenizer
+# runtime. Both guards test presence only: an artifact that exists but does not
+# match still fails its test, so no mismatch is ever reported as a skip.
+ORQ30_MANIFEST = (
+    REPO_ROOT
+    / ".framework/orqs/ORQ-30-long-context-conversational-memory/experiment-manifest.json"
+)
+
+requires_orq30_manifest = pytest.mark.skipif(
+    not ORQ30_MANIFEST.is_file(),
+    reason=(
+        f"{_display_path(ORQ30_MANIFEST)} is absent: `.framework/orqs/` is "
+        "intentionally gitignored under `artifact_policy: hybrid`, so it is not "
+        "part of any checkout. This assertion runs where the ORQ artifacts exist."
+    ),
+)
+
+# `validate_asset` needs only `hashlib`, not the pinned Python or `tiktoken`,
+# so this checks the asset alone rather than the whole runtime.
+_ASSET_REASON = asset_unavailable()
+
+requires_orq30_asset = pytest.mark.skipif(
+    _ASSET_REASON is not None, reason=_ASSET_REASON or ""
+)

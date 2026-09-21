@@ -24,14 +24,16 @@ from experiments.long_context_conversational_memory.tokenization import (
 )
 
 from tests.experiments._orq30_prerequisites import (
+    ORQ30_MANIFEST,
     TOKENIZER_CACHE_DIR,
     TOKENIZER_PYTHON_VERSION,
+    requires_orq30_asset,
+    requires_orq30_manifest,
     requires_orq30_tokenizer,
 )
 
 
 ROOT = Path(__file__).resolve().parents[2]
-ORQ_DIR = ROOT / ".framework/orqs/ORQ-30-long-context-conversational-memory"
 
 
 class Orq30TokenizationTests(unittest.TestCase):
@@ -54,8 +56,9 @@ class Orq30TokenizationTests(unittest.TestCase):
         ).read_text(encoding="utf-8")
         self.assertIn(f'!= "{TOKENIZER_PYTHON_VERSION}"', source)
 
+    @requires_orq30_manifest
     def test_implementation_matches_approved_manifest(self) -> None:
-        manifest = json.loads((ORQ_DIR / "experiment-manifest.json").read_text())
+        manifest = json.loads(ORQ30_MANIFEST.read_text())
         contract = manifest["tokenization_contract"]
         self.assertEqual(contract["runtime"], "python_3.13")
         self.assertEqual(contract["package"], f"tiktoken=={TOKENIZER_PACKAGE_VERSION}")
@@ -113,11 +116,15 @@ class Orq30TokenizationTests(unittest.TestCase):
             with self.assertRaisesRegex(AssertionError, "network disabled"):
                 socket.create_connection(("example.invalid", 443))
 
-    def test_asset_cache_key_size_and_hash_are_frozen(self) -> None:
+    def test_asset_cache_key_is_derived_from_the_frozen_url(self) -> None:
+        # Needs no artifact, so it stays unguarded and runs in any checkout.
         self.assertEqual(
             ASSET_CACHE_KEY,
             hashlib.sha1(ASSET_URL.encode("utf-8"), usedforsecurity=False).hexdigest(),
         )
+
+    @requires_orq30_asset
+    def test_cached_asset_size_and_hash_are_frozen(self) -> None:
         asset = validate_asset(self.cache_dir)
         self.assertEqual(asset.stat().st_size, ASSET_SIZE_BYTES)
         self.assertEqual(hashlib.sha256(asset.read_bytes()).hexdigest(), ASSET_SHA256)
