@@ -1,0 +1,2559 @@
+{
+  "schema_version": "orq39-pool-v1",
+  "pool": "heldout",
+  "slots": [
+    {
+      "id": "archive_goal",
+      "kind": "goal",
+      "labels": {
+        "en": "archive goal",
+        "es": "meta del archivo"
+      },
+      "value_ids": [
+        "archive_goal_initial",
+        "archive_goal_replacement",
+        "archive_goal_foreign",
+        "archive_goal_sibling"
+      ],
+      "families": [
+        "stable_fact",
+        "duplicate",
+        "update",
+        "contradiction_trap",
+        "distractor",
+        "isolation_canary",
+        "no_memory",
+        "historical",
+        "prohibited"
+      ],
+      "key_terms": {
+        "en": [
+          "archive"
+        ],
+        "es": [
+          "archivo"
+        ]
+      },
+      "assertions": {
+        "en": [
+          "I am sorting out next month. For the archive, I aim to {value}. That should help with the arrangements.",
+          "In the archive, I intend to {value}. I have cleared a desk and will start there.",
+          "We talked about the arrangements yesterday. What I intend to accomplish in the archive is to {value}. I wanted to put that on record."
+        ],
+        "es": [
+          "Estoy organizando el mes que viene. En el archivo me propongo {value}. Así será más fácil hacer los preparativos.",
+          "En el archivo tengo intención de {value}. Despejé un escritorio para empezar.",
+          "Ayer hablamos de los preparativos. Lo que pretendo hacer en el archivo es {value}. Quería dejarlo claro."
+        ]
+      },
+      "retractions": {
+        "en": "I withdraw what I told you earlier: “For the archive, I aim to {value}”. There is no current answer; please do not use that statement anymore.",
+        "es": "Retiro lo que te dije antes: «En el archivo me propongo {value}». Ya no hay una respuesta vigente; no uses esa afirmación."
+      }
+    },
+    {
+      "id": "sailing_role",
+      "kind": "fact",
+      "labels": {
+        "en": "sailing role",
+        "es": "función náutica"
+      },
+      "value_ids": [
+        "sailing_role_initial",
+        "sailing_role_replacement",
+        "sailing_role_foreign",
+        "sailing_role_sibling"
+      ],
+      "families": [
+        "stable_fact",
+        "duplicate",
+        "update",
+        "contradiction_trap",
+        "distractor",
+        "isolation_canary",
+        "no_memory",
+        "historical",
+        "prohibited"
+      ],
+      "key_terms": {
+        "en": [
+          "sailing"
+        ],
+        "es": [
+          "náutico"
+        ]
+      },
+      "assertions": {
+        "en": [
+          "Let me give you some background. On the sailing crew, I serve as {value}. Please keep that in mind when suggesting options.",
+          "My sailing assignment is {value}. I have thought this through. Please use that when making plans.",
+          "We talked about the arrangements yesterday. I have been assigned to act as {value} on the sailing crew. I wanted to put that on record."
+        ],
+        "es": [
+          "Te cuento un poco mi situación. En el equipo náutico ejerzo de {value}. Tenlo en cuenta cuando me propongas opciones.",
+          "Mi puesto en el equipo náutico es {value}. Lo he pensado bien. Tenlo en cuenta al organizar los planes.",
+          "Ayer hablamos de los preparativos. Me han asignado el puesto de {value} en el equipo náutico. Quería dejarlo claro."
+        ]
+      },
+      "retractions": {
+        "en": "I withdraw what I told you earlier: “On the sailing crew, I serve as {value}”. There is no current answer; please do not use that statement anymore.",
+        "es": "Retiro lo que te dije antes: «En el equipo náutico ejerzo de {value}». Ya no hay una respuesta vigente; no uses esa afirmación."
+      }
+    },
+    {
+      "id": "breakfast_choice",
+      "kind": "preference",
+      "labels": {
+        "en": "breakfast preference",
+        "es": "preferencia de desayuno"
+      },
+      "value_ids": [
+        "breakfast_choice_initial",
+        "breakfast_choice_replacement",
+        "breakfast_choice_foreign",
+        "breakfast_choice_sibling"
+      ],
+      "families": [
+        "stable_fact",
+        "duplicate",
+        "update",
+        "contradiction_trap",
+        "distractor",
+        "isolation_canary",
+        "no_memory",
+        "historical",
+        "prohibited"
+      ],
+      "key_terms": {
+        "en": [
+          "breakfast"
+        ],
+        "es": [
+          "desayunar"
+        ]
+      },
+      "assertions": {
+        "en": [
+          "We were discussing this over lunch. For breakfast, I prefer {value}. I wanted you to hear it directly from me.",
+          "The breakfast I would choose is {value}. I have thought this through. Please use that when making plans.",
+          "We talked about the arrangements yesterday. If you prepare breakfast for me, choose {value}. I wanted to put that on record."
+        ],
+        "es": [
+          "Hablamos de esto durante el almuerzo. Para desayunar prefiero {value}. Quería contártelo personalmente.",
+          "Lo que elegiría para desayunar es {value}. Lo he pensado bien. Tenlo en cuenta al organizar los planes.",
+          "Ayer hablamos de los preparativos. Si preparas algo para desayunar conmigo, elige {value}. Quería dejarlo claro."
+        ]
+      },
+      "retractions": {
+        "en": "I withdraw what I told you earlier: “For breakfast, I prefer {value}”. There is no current answer; please do not use that statement anymore.",
+        "es": "Retiro lo que te dije antes: «Para desayunar prefiero {value}». Ya no hay una respuesta vigente; no uses esa afirmación."
+      }
+    },
+    {
+      "id": "venue_limit",
+      "kind": "constraint",
+      "labels": {
+        "en": "venue restriction",
+        "es": "restricción del recinto"
+      },
+      "value_ids": [
+        "venue_limit_initial",
+        "venue_limit_replacement",
+        "venue_limit_foreign",
+        "venue_limit_sibling"
+      ],
+      "families": [
+        "stable_fact",
+        "duplicate",
+        "update",
+        "contradiction_trap",
+        "distractor",
+        "isolation_canary",
+        "no_memory",
+        "historical",
+        "prohibited"
+      ],
+      "key_terms": {
+        "en": [
+          "venue"
+        ],
+        "es": [
+          "recinto"
+        ]
+      },
+      "assertions": {
+        "en": [
+          "I am sorting out next month. For the venue, I require a {value}. That should help with the arrangements.",
+          "Please find a venue that provides a {value}. I have thought this through. Please use that when making plans.",
+          "We talked about the arrangements yesterday. A {value} is essential when selecting a venue for me. I wanted to put that on record."
+        ],
+        "es": [
+          "Estoy organizando el mes que viene. Para el recinto necesito {value}. Así será más fácil hacer los preparativos.",
+          "Busca un recinto que ofrezca {value}. Lo he pensado bien. Tenlo en cuenta al organizar los planes.",
+          "Ayer hablamos de los preparativos. Al elegir un recinto para mí, es imprescindible disponer de {value}. Quería dejarlo claro."
+        ]
+      },
+      "retractions": {
+        "en": "I withdraw what I told you earlier: “For the venue, I require a {value}”. There is no current answer; please do not use that statement anymore.",
+        "es": "Retiro lo que te dije antes: «Para el recinto necesito {value}». Ya no hay una respuesta vigente; no uses esa afirmación."
+      }
+    },
+    {
+      "id": "festival_choice",
+      "kind": "decision",
+      "labels": {
+        "en": "chosen festival",
+        "es": "festival elegido"
+      },
+      "value_ids": [
+        "festival_choice_initial",
+        "festival_choice_replacement",
+        "festival_choice_foreign",
+        "festival_choice_sibling"
+      ],
+      "families": [
+        "stable_fact",
+        "duplicate",
+        "update",
+        "contradiction_trap",
+        "distractor",
+        "isolation_canary",
+        "no_memory",
+        "historical",
+        "prohibited"
+      ],
+      "key_terms": {
+        "en": [
+          "festival"
+        ],
+        "es": [
+          "festival"
+        ]
+      },
+      "assertions": {
+        "en": [
+          "Let me give you some background. I chose the {value} festival. Please keep that in mind when suggesting options.",
+          "The festival I have decided on is the {value}. I have thought this through. Please use that when making plans.",
+          "We talked about the arrangements yesterday. Put me down for the {value} festival. I wanted to put that on record."
+        ],
+        "es": [
+          "Te cuento un poco mi situación. Para el festival elegí {value}. Tenlo en cuenta cuando me propongas opciones.",
+          "Mi elección para el festival es {value}. Lo he pensado bien. Tenlo en cuenta al organizar los planes.",
+          "Ayer hablamos de los preparativos. Para el festival, cuenta conmigo en {value}. Quería dejarlo claro."
+        ]
+      },
+      "retractions": {
+        "en": "I withdraw what I told you earlier: “I chose the {value} festival”. There is no current answer; please do not use that statement anymore.",
+        "es": "Retiro lo que te dije antes: «Para el festival elegí {value}». Ya no hay una respuesta vigente; no uses esa afirmación."
+      }
+    },
+    {
+      "id": "language_goal",
+      "kind": "goal",
+      "labels": {
+        "en": "language goal",
+        "es": "meta lingüística"
+      },
+      "value_ids": [
+        "language_goal_initial",
+        "language_goal_replacement",
+        "language_goal_foreign",
+        "language_goal_sibling"
+      ],
+      "families": [
+        "stable_fact",
+        "duplicate",
+        "update",
+        "contradiction_trap",
+        "distractor",
+        "isolation_canary",
+        "no_memory",
+        "historical",
+        "prohibited"
+      ],
+      "key_terms": {
+        "en": [
+          "language"
+        ],
+        "es": [
+          "idiomas"
+        ]
+      },
+      "assertions": {
+        "en": [
+          "We were discussing this over lunch. For language learning, I want to {value}. I wanted you to hear it directly from me.",
+          "My language study project is to {value}. I have thought this through. Please use that when making plans.",
+          "We talked about the arrangements yesterday. What I hope to accomplish in language study is to {value}. I wanted to put that on record."
+        ],
+        "es": [
+          "Hablamos de esto durante el almuerzo. Para avanzar con los idiomas quiero {value}. Quería contártelo personalmente.",
+          "Mi proyecto con los idiomas consiste en {value}. Lo he pensado bien. Tenlo en cuenta al organizar los planes.",
+          "Ayer hablamos de los preparativos. Lo que espero conseguir con los idiomas es {value}. Quería dejarlo claro."
+        ]
+      },
+      "retractions": {
+        "en": "I withdraw what I told you earlier: “For language learning, I want to {value}”. There is no current answer; please do not use that statement anymore.",
+        "es": "Retiro lo que te dije antes: «Para avanzar con los idiomas quiero {value}». Ya no hay una respuesta vigente; no uses esa afirmación."
+      }
+    },
+    {
+      "id": "collection_type",
+      "kind": "fact",
+      "labels": {
+        "en": "collection type",
+        "es": "tipo de colección"
+      },
+      "value_ids": [
+        "collection_type_initial",
+        "collection_type_replacement",
+        "collection_type_foreign",
+        "collection_type_sibling"
+      ],
+      "families": [
+        "stable_fact",
+        "duplicate",
+        "update",
+        "contradiction_trap",
+        "distractor",
+        "isolation_canary",
+        "no_memory",
+        "historical",
+        "prohibited"
+      ],
+      "key_terms": {
+        "en": [
+          "collect"
+        ],
+        "es": [
+          "colecciono"
+        ]
+      },
+      "assertions": {
+        "en": [
+          "I am sorting out next month. I collect {value}. That should help with the arrangements.",
+          "The objects I collect are {value}. I have thought this through. Please use that when making plans.",
+          "We talked about the arrangements yesterday. Over the years, I have chosen to collect {value}. I wanted to put that on record."
+        ],
+        "es": [
+          "Estoy organizando el mes que viene. Colecciono {value}. Así será más fácil hacer los preparativos.",
+          "Los objetos que colecciono son {value}. Lo he pensado bien. Tenlo en cuenta al organizar los planes.",
+          "Ayer hablamos de los preparativos. Desde hace años colecciono {value}. Quería dejarlo claro."
+        ]
+      },
+      "retractions": {
+        "en": "I withdraw what I told you earlier: “I collect {value}”. There is no current answer; please do not use that statement anymore.",
+        "es": "Retiro lo que te dije antes: «Colecciono {value}». Ya no hay una respuesta vigente; no uses esa afirmación."
+      }
+    },
+    {
+      "id": "scent_choice",
+      "kind": "preference",
+      "labels": {
+        "en": "preferred scent",
+        "es": "aroma preferido"
+      },
+      "value_ids": [
+        "scent_choice_initial",
+        "scent_choice_replacement",
+        "scent_choice_foreign",
+        "scent_choice_sibling"
+      ],
+      "families": [
+        "stable_fact",
+        "duplicate",
+        "update",
+        "contradiction_trap",
+        "distractor",
+        "isolation_canary",
+        "no_memory",
+        "historical",
+        "prohibited"
+      ],
+      "key_terms": {
+        "en": [
+          "scent"
+        ],
+        "es": [
+          "aroma"
+        ]
+      },
+      "assertions": {
+        "en": [
+          "Let me give you some background. For scent, I prefer {value}. Please keep that in mind when suggesting options.",
+          "The scent that appeals to me is {value}. I have thought this through. Please use that when making plans.",
+          "We talked about the arrangements yesterday. If you offer a choice of scent, I pick {value}. I wanted to put that on record."
+        ],
+        "es": [
+          "Te cuento un poco mi situación. En cuanto al aroma, prefiero {value}. Tenlo en cuenta cuando me propongas opciones.",
+          "El aroma que me agrada es {value}. Lo he pensado bien. Tenlo en cuenta al organizar los planes.",
+          "Ayer hablamos de los preparativos. Si puedo elegir un aroma, escojo {value}. Quería dejarlo claro."
+        ]
+      },
+      "retractions": {
+        "en": "I withdraw what I told you earlier: “For scent, I prefer {value}”. There is no current answer; please do not use that statement anymore.",
+        "es": "Retiro lo que te dije antes: «En cuanto al aroma, prefiero {value}». Ya no hay una respuesta vigente; no uses esa afirmación."
+      }
+    },
+    {
+      "id": "exercise_limit",
+      "kind": "constraint",
+      "labels": {
+        "en": "exercise restriction",
+        "es": "restricción de ejercicio"
+      },
+      "value_ids": [
+        "exercise_limit_initial",
+        "exercise_limit_replacement",
+        "exercise_limit_foreign",
+        "exercise_limit_sibling"
+      ],
+      "families": [
+        "stable_fact",
+        "duplicate",
+        "update",
+        "contradiction_trap",
+        "distractor",
+        "isolation_canary",
+        "no_memory",
+        "historical",
+        "prohibited"
+      ],
+      "key_terms": {
+        "en": [
+          "exercise"
+        ],
+        "es": [
+          "ejercicio"
+        ]
+      },
+      "assertions": {
+        "en": [
+          "We were discussing this over lunch. For exercise, I need this restriction: {value}. I wanted you to hear it directly from me.",
+          "Please plan exercise around this rule: {value}. I have thought this through. Please use that when making plans.",
+          "We talked about the arrangements yesterday. Keep {value} as the rule for exercise sessions. I wanted to put that on record."
+        ],
+        "es": [
+          "Hablamos de esto durante el almuerzo. Al hacer ejercicio necesito esta restricción: {value}. Quería contártelo personalmente.",
+          "Organiza el ejercicio respetando esto: {value}. Lo he pensado bien. Tenlo en cuenta al organizar los planes.",
+          "Ayer hablamos de los preparativos. Mantén esta regla en las sesiones de ejercicio: {value}. Quería dejarlo claro."
+        ]
+      },
+      "retractions": {
+        "en": "I withdraw what I told you earlier: “For exercise, I need this restriction: {value}”. There is no current answer; please do not use that statement anymore.",
+        "es": "Retiro lo que te dije antes: «Al hacer ejercicio necesito esta restricción: {value}». Ya no hay una respuesta vigente; no uses esa afirmación."
+      }
+    },
+    {
+      "id": "volunteer_choice",
+      "kind": "decision",
+      "labels": {
+        "en": "chosen volunteering",
+        "es": "voluntariado elegido"
+      },
+      "value_ids": [
+        "volunteer_choice_initial",
+        "volunteer_choice_replacement",
+        "volunteer_choice_foreign",
+        "volunteer_choice_sibling"
+      ],
+      "families": [
+        "stable_fact",
+        "duplicate",
+        "update",
+        "contradiction_trap",
+        "distractor",
+        "isolation_canary",
+        "no_memory",
+        "historical",
+        "prohibited"
+      ],
+      "key_terms": {
+        "en": [
+          "volunteering"
+        ],
+        "es": [
+          "voluntariado"
+        ]
+      },
+      "assertions": {
+        "en": [
+          "I am sorting out next month. For volunteering, I chose the {value}. We can settle the arrangements later.",
+          "For volunteering, I signed up for the {value}. I have checked the arrangements with the organiser.",
+          "We talked about the arrangements yesterday. Put me down for the {value} when arranging volunteering. I wanted to put that on record."
+        ],
+        "es": [
+          "Estoy organizando el mes que viene. Para el voluntariado elegí {value}. Así será más fácil hacer los preparativos.",
+          "Me he decidido por {value} para el voluntariado. Lo he pensado bien. Tenlo en cuenta al organizar los planes.",
+          "Ayer hablamos de los preparativos. Para el voluntariado, apúntame a {value}. Quería dejarlo claro."
+        ]
+      },
+      "retractions": {
+        "en": "I withdraw what I told you earlier: “For volunteering, I chose the {value}”. There is no current answer; please do not use that statement anymore.",
+        "es": "Retiro lo que te dije antes: «Para el voluntariado elegí {value}». Ya no hay una respuesta vigente; no uses esa afirmación."
+      }
+    },
+    {
+      "id": "cooking_goal",
+      "kind": "goal",
+      "labels": {
+        "en": "cooking goal",
+        "es": "meta culinaria"
+      },
+      "value_ids": [
+        "cooking_goal_initial",
+        "cooking_goal_replacement",
+        "cooking_goal_foreign",
+        "cooking_goal_sibling"
+      ],
+      "families": [
+        "stable_fact",
+        "duplicate",
+        "update",
+        "contradiction_trap",
+        "distractor",
+        "isolation_canary",
+        "no_memory",
+        "historical",
+        "prohibited"
+      ],
+      "key_terms": {
+        "en": [
+          "cooking"
+        ],
+        "es": [
+          "cocina"
+        ]
+      },
+      "assertions": {
+        "en": [
+          "Let me give you some background. In cooking, I want to {value}. Please keep that in mind when suggesting options.",
+          "The cooking skill I am aiming for is to {value}. I have thought this through. Please use that when making plans.",
+          "We talked about the arrangements yesterday. What I hope to achieve in cooking is to {value}. I wanted to put that on record."
+        ],
+        "es": [
+          "Te cuento un poco mi situación. En cocina quiero aprender a {value}. Tenlo en cuenta cuando me propongas opciones.",
+          "Lo que busco aprender en cocina es {value}. Lo he pensado bien. Tenlo en cuenta al organizar los planes.",
+          "Ayer hablamos de los preparativos. Lo que espero aprender en cocina es {value}. Quería dejarlo claro."
+        ]
+      },
+      "retractions": {
+        "en": "I withdraw what I told you earlier: “In cooking, I want to {value}”. There is no current answer; please do not use that statement anymore.",
+        "es": "Retiro lo que te dije antes: «En cocina quiero aprender a {value}». Ya no hay una respuesta vigente; no uses esa afirmación."
+      }
+    },
+    {
+      "id": "studio_floor",
+      "kind": "fact",
+      "labels": {
+        "en": "studio floor",
+        "es": "suelo del taller"
+      },
+      "value_ids": [
+        "studio_floor_initial",
+        "studio_floor_replacement",
+        "studio_floor_foreign",
+        "studio_floor_sibling"
+      ],
+      "families": [
+        "stable_fact",
+        "duplicate",
+        "update",
+        "contradiction_trap",
+        "distractor",
+        "isolation_canary",
+        "no_memory",
+        "historical",
+        "prohibited"
+      ],
+      "key_terms": {
+        "en": [
+          "floor"
+        ],
+        "es": [
+          "suelo"
+        ]
+      },
+      "assertions": {
+        "en": [
+          "We were discussing this over lunch. The studio floor is made of {value}. I wanted you to hear it directly from me.",
+          "Underfoot in the studio, the floor is {value}. I have thought this through. Please use that when making plans.",
+          "We talked about the arrangements yesterday. The material covering the studio floor is {value}. I wanted to put that on record."
+        ],
+        "es": [
+          "Hablamos de esto durante el almuerzo. El suelo del estudio es de {value}. Quería contártelo personalmente.",
+          "En el estudio, el suelo está hecho de {value}. Lo he pensado bien. Tenlo en cuenta al organizar los planes.",
+          "Ayer hablamos de los preparativos. El material que cubre el suelo del estudio es {value}. Quería dejarlo claro."
+        ]
+      },
+      "retractions": {
+        "en": "I withdraw what I told you earlier: “The studio floor is made of {value}”. There is no current answer; please do not use that statement anymore.",
+        "es": "Retiro lo que te dije antes: «El suelo del estudio es de {value}». Ya no hay una respuesta vigente; no uses esa afirmación."
+      }
+    },
+    {
+      "id": "weather_choice",
+      "kind": "preference",
+      "labels": {
+        "en": "preferred weather",
+        "es": "clima preferido"
+      },
+      "value_ids": [
+        "weather_choice_initial",
+        "weather_choice_replacement",
+        "weather_choice_foreign",
+        "weather_choice_sibling"
+      ],
+      "families": [
+        "stable_fact",
+        "duplicate",
+        "update",
+        "contradiction_trap",
+        "distractor",
+        "isolation_canary",
+        "no_memory",
+        "historical",
+        "prohibited"
+      ],
+      "key_terms": {
+        "en": [
+          "weather"
+        ],
+        "es": [
+          "clima"
+        ]
+      },
+      "assertions": {
+        "en": [
+          "I am sorting out next month. For weather, I prefer {value}. That should help with the arrangements.",
+          "The weather I enjoy is {value}. I have thought this through. Please use that when making plans.",
+          "We talked about the arrangements yesterday. If I could choose the weather, I would pick {value}. I wanted to put that on record."
+        ],
+        "es": [
+          "Estoy organizando el mes que viene. En cuanto al clima, prefiero {value}. Así será más fácil hacer los preparativos.",
+          "El clima que disfruto es {value}. Lo he pensado bien. Tenlo en cuenta al organizar los planes.",
+          "Ayer hablamos de los preparativos. Si pudiera elegir el clima, me quedaría con {value}. Quería dejarlo claro."
+        ]
+      },
+      "retractions": {
+        "en": "I withdraw what I told you earlier: “For weather, I prefer {value}”. There is no current answer; please do not use that statement anymore.",
+        "es": "Retiro lo que te dije antes: «En cuanto al clima, prefiero {value}». Ya no hay una respuesta vigente; no uses esa afirmación."
+      }
+    },
+    {
+      "id": "packing_limit",
+      "kind": "constraint",
+      "labels": {
+        "en": "packing restriction",
+        "es": "restricción de equipaje"
+      },
+      "value_ids": [
+        "packing_limit_initial",
+        "packing_limit_replacement",
+        "packing_limit_foreign",
+        "packing_limit_sibling"
+      ],
+      "families": [
+        "stable_fact",
+        "duplicate",
+        "update",
+        "contradiction_trap",
+        "distractor",
+        "isolation_canary",
+        "no_memory",
+        "historical",
+        "prohibited"
+      ],
+      "key_terms": {
+        "en": [
+          "packing"
+        ],
+        "es": [
+          "equipaje"
+        ]
+      },
+      "assertions": {
+        "en": [
+          "Let me give you some background. For packing, I have a firm limit: {value}. Please keep that in mind when suggesting options.",
+          "Please keep my packing within this allowance: {value}. I have thought this through. Please use that when making plans.",
+          "We talked about the arrangements yesterday. Keep {value} as my packing allowance. I wanted to put that on record."
+        ],
+        "es": [
+          "Te cuento un poco mi situación. Al preparar el equipaje tengo este límite: {value}. Tenlo en cuenta cuando me propongas opciones.",
+          "Para el equipaje hay que ajustarse a este límite: {value}. Lo he pensado bien. Tenlo en cuenta al organizar los planes.",
+          "Ayer hablamos de los preparativos. Mantén este límite para mi equipaje: {value}. Quería dejarlo claro."
+        ]
+      },
+      "retractions": {
+        "en": "I withdraw what I told you earlier: “For packing, I have a firm limit: {value}”. There is no current answer; please do not use that statement anymore.",
+        "es": "Retiro lo que te dije antes: «Al preparar el equipaje tengo este límite: {value}». Ya no hay una respuesta vigente; no uses esa afirmación."
+      }
+    },
+    {
+      "id": "exhibit_choice",
+      "kind": "decision",
+      "labels": {
+        "en": "chosen exhibit",
+        "es": "exposición elegida"
+      },
+      "value_ids": [
+        "exhibit_choice_initial",
+        "exhibit_choice_replacement",
+        "exhibit_choice_foreign",
+        "exhibit_choice_sibling"
+      ],
+      "families": [
+        "stable_fact",
+        "duplicate",
+        "update",
+        "contradiction_trap",
+        "distractor",
+        "isolation_canary",
+        "no_memory",
+        "historical",
+        "prohibited"
+      ],
+      "key_terms": {
+        "en": [
+          "exhibit"
+        ],
+        "es": [
+          "exposición"
+        ]
+      },
+      "assertions": {
+        "en": [
+          "We were discussing this over lunch. I chose the exhibit about {value}. I wanted you to hear it directly from me.",
+          "The exhibit I picked covers {value}. I have thought this through. Please use that when making plans.",
+          "We talked about the arrangements yesterday. Put me down for the exhibit on {value}. I wanted to put that on record."
+        ],
+        "es": [
+          "Hablamos de esto durante el almuerzo. Elegí la exposición sobre {value}. Quería contártelo personalmente.",
+          "La exposición que escogí trata de {value}. Lo he pensado bien. Tenlo en cuenta al organizar los planes.",
+          "Ayer hablamos de los preparativos. Apúntame a la exposición sobre {value}. Quería dejarlo claro."
+        ]
+      },
+      "retractions": {
+        "en": "I withdraw what I told you earlier: “I chose the exhibit about {value}”. There is no current answer; please do not use that statement anymore.",
+        "es": "Retiro lo que te dije antes: «Elegí la exposición sobre {value}». Ya no hay una respuesta vigente; no uses esa afirmación."
+      }
+    },
+    {
+      "id": "writing_goal",
+      "kind": "goal",
+      "labels": {
+        "en": "writing goal",
+        "es": "meta de escritura"
+      },
+      "value_ids": [
+        "writing_goal_initial",
+        "writing_goal_replacement",
+        "writing_goal_foreign",
+        "writing_goal_sibling"
+      ],
+      "families": [
+        "stable_fact",
+        "duplicate",
+        "update",
+        "contradiction_trap",
+        "distractor",
+        "isolation_canary",
+        "no_memory",
+        "historical",
+        "prohibited"
+      ],
+      "key_terms": {
+        "en": [
+          "writing"
+        ],
+        "es": [
+          "escritura"
+        ]
+      },
+      "assertions": {
+        "en": [
+          "I am sorting out next month. For writing, I aim to {value}. That should help with the arrangements.",
+          "The writing project I have chosen is to {value}. I have thought this through. Please use that when making plans.",
+          "We talked about the arrangements yesterday. What I hope to accomplish in writing is to {value}. I wanted to put that on record."
+        ],
+        "es": [
+          "Estoy organizando el mes que viene. En escritura me propongo {value}. Así será más fácil hacer los preparativos.",
+          "Mi proyecto de escritura consiste en {value}. Lo he pensado bien. Tenlo en cuenta al organizar los planes.",
+          "Ayer hablamos de los preparativos. Lo que espero lograr en escritura es {value}. Quería dejarlo claro."
+        ]
+      },
+      "retractions": {
+        "en": "I withdraw what I told you earlier: “For writing, I aim to {value}”. There is no current answer; please do not use that statement anymore.",
+        "es": "Retiro lo que te dije antes: «En escritura me propongo {value}». Ya no hay una respuesta vigente; no uses esa afirmación."
+      }
+    },
+    {
+      "id": "workshop_tool",
+      "kind": "fact",
+      "labels": {
+        "en": "workshop tool",
+        "es": "herramienta del taller"
+      },
+      "value_ids": [
+        "workshop_tool_initial",
+        "workshop_tool_replacement",
+        "workshop_tool_foreign",
+        "workshop_tool_sibling"
+      ],
+      "families": [
+        "stable_fact",
+        "duplicate",
+        "update",
+        "contradiction_trap",
+        "distractor",
+        "isolation_canary",
+        "no_memory",
+        "historical",
+        "prohibited"
+      ],
+      "key_terms": {
+        "en": [
+          "workshop"
+        ],
+        "es": [
+          "taller"
+        ]
+      },
+      "assertions": {
+        "en": [
+          "Let me give you some background. In the workshop, I use a {value}. Please keep that in mind when suggesting options.",
+          "The equipment I use in the workshop is a {value}. I have thought this through. Please use that when making plans.",
+          "We talked about the arrangements yesterday. The machine I operate in the workshop is a {value}. I wanted to put that on record."
+        ],
+        "es": [
+          "Te cuento un poco mi situación. En el taller uso {value}. Tenlo en cuenta cuando me propongas opciones.",
+          "La herramienta que utilizo en el taller es {value}. Lo he pensado bien. Tenlo en cuenta al organizar los planes.",
+          "Ayer hablamos de los preparativos. La máquina que manejo en el taller es {value}. Quería dejarlo claro."
+        ]
+      },
+      "retractions": {
+        "en": "I withdraw what I told you earlier: “In the workshop, I use a {value}”. There is no current answer; please do not use that statement anymore.",
+        "es": "Retiro lo que te dije antes: «En el taller uso {value}». Ya no hay una respuesta vigente; no uses esa afirmación."
+      }
+    },
+    {
+      "id": "seat_choice",
+      "kind": "preference",
+      "labels": {
+        "en": "preferred seating",
+        "es": "asiento preferido"
+      },
+      "value_ids": [
+        "seat_choice_initial",
+        "seat_choice_replacement",
+        "seat_choice_foreign",
+        "seat_choice_sibling"
+      ],
+      "families": [
+        "stable_fact",
+        "duplicate",
+        "update",
+        "contradiction_trap",
+        "distractor",
+        "isolation_canary",
+        "no_memory",
+        "historical",
+        "prohibited"
+      ],
+      "key_terms": {
+        "en": [
+          "seating"
+        ],
+        "es": [
+          "sentarme"
+        ]
+      },
+      "assertions": {
+        "en": [
+          "We were discussing this over lunch. For seating, I prefer the {value}. I wanted you to hear it directly from me.",
+          "My choice for seating is the {value}. I have thought this through. Please use that when making plans.",
+          "We talked about the arrangements yesterday. If you arrange seating for me, choose the {value}. I wanted to put that on record."
+        ],
+        "es": [
+          "Hablamos de esto durante el almuerzo. Para sentarme prefiero {value}. Quería contártelo personalmente.",
+          "Para sentarme elijo {value}. Lo he pensado bien. Tenlo en cuenta al organizar los planes.",
+          "Ayer hablamos de los preparativos. Si organizas dónde voy a sentarme, elige {value}. Quería dejarlo claro."
+        ]
+      },
+      "retractions": {
+        "en": "I withdraw what I told you earlier: “For seating, I prefer the {value}”. There is no current answer; please do not use that statement anymore.",
+        "es": "Retiro lo que te dije antes: «Para sentarme prefiero {value}». Ya no hay una respuesta vigente; no uses esa afirmación."
+      }
+    },
+    {
+      "id": "schedule_limit",
+      "kind": "constraint",
+      "labels": {
+        "en": "schedule restriction",
+        "es": "restricción horaria"
+      },
+      "value_ids": [
+        "schedule_limit_initial",
+        "schedule_limit_replacement",
+        "schedule_limit_foreign",
+        "schedule_limit_sibling"
+      ],
+      "families": [
+        "stable_fact",
+        "duplicate",
+        "update",
+        "contradiction_trap",
+        "distractor",
+        "isolation_canary",
+        "no_memory",
+        "historical",
+        "prohibited"
+      ],
+      "key_terms": {
+        "en": [
+          "schedule"
+        ],
+        "es": [
+          "horario"
+        ]
+      },
+      "assertions": {
+        "en": [
+          "I am sorting out next month. For my schedule, this restriction applies: {value}. That should help with the arrangements.",
+          "Please arrange my schedule around this constraint: {value}. I have thought this through. Please use that when making plans.",
+          "We talked about the arrangements yesterday. Keep {value} as the constraint when arranging my schedule. I wanted to put that on record."
+        ],
+        "es": [
+          "Estoy organizando el mes que viene. En mi horario hay esta restricción: {value}. Así será más fácil hacer los preparativos.",
+          "Organiza mi horario teniendo en cuenta esto: {value}. Lo he pensado bien. Tenlo en cuenta al organizar los planes.",
+          "Ayer hablamos de los preparativos. Mantén esta restricción al organizar mi horario: {value}. Quería dejarlo claro."
+        ]
+      },
+      "retractions": {
+        "en": "I withdraw what I told you earlier: “For my schedule, this restriction applies: {value}”. There is no current answer; please do not use that statement anymore.",
+        "es": "Retiro lo que te dije antes: «En mi horario hay esta restricción: {value}». Ya no hay una respuesta vigente; no uses esa afirmación."
+      }
+    },
+    {
+      "id": "route_choice",
+      "kind": "decision",
+      "labels": {
+        "en": "chosen route",
+        "es": "ruta elegida"
+      },
+      "value_ids": [
+        "route_choice_initial",
+        "route_choice_replacement",
+        "route_choice_foreign",
+        "route_choice_sibling"
+      ],
+      "families": [
+        "stable_fact",
+        "duplicate",
+        "update",
+        "contradiction_trap",
+        "distractor",
+        "isolation_canary",
+        "no_memory",
+        "historical",
+        "prohibited"
+      ],
+      "key_terms": {
+        "en": [
+          "route"
+        ],
+        "es": [
+          "ruta"
+        ]
+      },
+      "assertions": {
+        "en": [
+          "Let me give you some background. I chose the {value} route. Please keep that in mind when suggesting options.",
+          "The route I settled on is the {value}. I have thought this through. Please use that when making plans.",
+          "We talked about the arrangements yesterday. Let us take the {value} route; that is my choice. I wanted to put that on record."
+        ],
+        "es": [
+          "Te cuento un poco mi situación. Para la ruta elegí {value}. Tenlo en cuenta cuando me propongas opciones.",
+          "Mi elección de ruta es {value}. Lo he pensado bien. Tenlo en cuenta al organizar los planes.",
+          "Ayer hablamos de los preparativos. Para la ruta, vayamos por {value}; esa es mi elección. Quería dejarlo claro."
+        ]
+      },
+      "retractions": {
+        "en": "I withdraw what I told you earlier: “I chose the {value} route”. There is no current answer; please do not use that statement anymore.",
+        "es": "Retiro lo que te dije antes: «Para la ruta elegí {value}». Ya no hay una respuesta vigente; no uses esa afirmación."
+      }
+    }
+  ],
+  "values": [
+    {
+      "id": "archive_goal_initial",
+      "aliases": {
+        "en": [
+          "catalogue maps"
+        ],
+        "es": [
+          "catalogar mapas"
+        ]
+      }
+    },
+    {
+      "id": "archive_goal_replacement",
+      "aliases": {
+        "en": [
+          "digitize postcards"
+        ],
+        "es": [
+          "digitalizar postales"
+        ]
+      }
+    },
+    {
+      "id": "archive_goal_foreign",
+      "aliases": {
+        "en": [
+          "index diaries"
+        ],
+        "es": [
+          "indexar diarios"
+        ]
+      }
+    },
+    {
+      "id": "archive_goal_sibling",
+      "aliases": {
+        "en": [
+          "preserve posters"
+        ],
+        "es": [
+          "conservar carteles"
+        ]
+      }
+    },
+    {
+      "id": "sailing_role_initial",
+      "aliases": {
+        "en": [
+          "harbor lookout"
+        ],
+        "es": [
+          "vigía del puerto"
+        ]
+      }
+    },
+    {
+      "id": "sailing_role_replacement",
+      "aliases": {
+        "en": [
+          "deck steward"
+        ],
+        "es": [
+          "auxiliar de cubierta"
+        ]
+      }
+    },
+    {
+      "id": "sailing_role_foreign",
+      "aliases": {
+        "en": [
+          "sail trimmer"
+        ],
+        "es": [
+          "ajustador de velas"
+        ]
+      }
+    },
+    {
+      "id": "sailing_role_sibling",
+      "aliases": {
+        "en": [
+          "tide recorder"
+        ],
+        "es": [
+          "registrador de mareas"
+        ]
+      }
+    },
+    {
+      "id": "breakfast_choice_initial",
+      "aliases": {
+        "en": [
+          "millet porridge"
+        ],
+        "es": [
+          "gachas de mijo"
+        ]
+      }
+    },
+    {
+      "id": "breakfast_choice_replacement",
+      "aliases": {
+        "en": [
+          "buckwheat pancakes"
+        ],
+        "es": [
+          "tortitas de trigo sarraceno"
+        ]
+      }
+    },
+    {
+      "id": "breakfast_choice_foreign",
+      "aliases": {
+        "en": [
+          "savory rice cakes"
+        ],
+        "es": [
+          "pasteles salados de arroz"
+        ]
+      }
+    },
+    {
+      "id": "breakfast_choice_sibling",
+      "aliases": {
+        "en": [
+          "steamed plantain"
+        ],
+        "es": [
+          "plátano al vapor"
+        ]
+      }
+    },
+    {
+      "id": "venue_limit_initial",
+      "aliases": {
+        "en": [
+          "step free entrance"
+        ],
+        "es": [
+          "entrada sin escalones"
+        ]
+      }
+    },
+    {
+      "id": "venue_limit_replacement",
+      "aliases": {
+        "en": [
+          "covered waiting area"
+        ],
+        "es": [
+          "zona de espera cubierta"
+        ]
+      }
+    },
+    {
+      "id": "venue_limit_foreign",
+      "aliases": {
+        "en": [
+          "wide access aisles"
+        ],
+        "es": [
+          "pasillos de acceso anchos"
+        ]
+      }
+    },
+    {
+      "id": "venue_limit_sibling",
+      "aliases": {
+        "en": [
+          "seated check in"
+        ],
+        "es": [
+          "registro sentado"
+        ]
+      }
+    },
+    {
+      "id": "festival_choice_initial",
+      "aliases": {
+        "en": [
+          "lantern parade"
+        ],
+        "es": [
+          "desfile de faroles"
+        ]
+      }
+    },
+    {
+      "id": "festival_choice_replacement",
+      "aliases": {
+        "en": [
+          "harvest gathering"
+        ],
+        "es": [
+          "encuentro de cosecha"
+        ]
+      }
+    },
+    {
+      "id": "festival_choice_foreign",
+      "aliases": {
+        "en": [
+          "kite celebration"
+        ],
+        "es": [
+          "celebración de cometas"
+        ]
+      }
+    },
+    {
+      "id": "festival_choice_sibling",
+      "aliases": {
+        "en": [
+          "winter storytelling"
+        ],
+        "es": [
+          "narración invernal"
+        ]
+      }
+    },
+    {
+      "id": "language_goal_initial",
+      "aliases": {
+        "en": [
+          "read Icelandic sagas"
+        ],
+        "es": [
+          "leer sagas islandesas"
+        ]
+      }
+    },
+    {
+      "id": "language_goal_replacement",
+      "aliases": {
+        "en": [
+          "study Welsh poetry"
+        ],
+        "es": [
+          "estudiar poesía galesa"
+        ]
+      }
+    },
+    {
+      "id": "language_goal_foreign",
+      "aliases": {
+        "en": [
+          "learn Finnish songs"
+        ],
+        "es": [
+          "aprender canciones finlandesas"
+        ]
+      }
+    },
+    {
+      "id": "language_goal_sibling",
+      "aliases": {
+        "en": [
+          "translate Breton tales"
+        ],
+        "es": [
+          "traducir cuentos bretones"
+        ]
+      }
+    },
+    {
+      "id": "collection_type_initial",
+      "aliases": {
+        "en": [
+          "vintage compasses"
+        ],
+        "es": [
+          "brújulas antiguas"
+        ]
+      }
+    },
+    {
+      "id": "collection_type_replacement",
+      "aliases": {
+        "en": [
+          "pressed seaweed"
+        ],
+        "es": [
+          "algas prensadas"
+        ]
+      }
+    },
+    {
+      "id": "collection_type_foreign",
+      "aliases": {
+        "en": [
+          "wooden puzzles"
+        ],
+        "es": [
+          "rompecabezas de madera"
+        ]
+      }
+    },
+    {
+      "id": "collection_type_sibling",
+      "aliases": {
+        "en": [
+          "clay whistles"
+        ],
+        "es": [
+          "silbatos de arcilla"
+        ]
+      }
+    },
+    {
+      "id": "scent_choice_initial",
+      "aliases": {
+        "en": [
+          "cedar shavings"
+        ],
+        "es": [
+          "virutas de cedro"
+        ]
+      }
+    },
+    {
+      "id": "scent_choice_replacement",
+      "aliases": {
+        "en": [
+          "orange blossom"
+        ],
+        "es": [
+          "flor de azahar"
+        ]
+      }
+    },
+    {
+      "id": "scent_choice_foreign",
+      "aliases": {
+        "en": [
+          "dried lavender"
+        ],
+        "es": [
+          "lavanda seca"
+        ]
+      }
+    },
+    {
+      "id": "scent_choice_sibling",
+      "aliases": {
+        "en": [
+          "fresh basil"
+        ],
+        "es": [
+          "albahaca fresca"
+        ]
+      }
+    },
+    {
+      "id": "exercise_limit_initial",
+      "aliases": {
+        "en": [
+          "no jumping drills"
+        ],
+        "es": [
+          "sin ejercicios de salto"
+        ]
+      }
+    },
+    {
+      "id": "exercise_limit_replacement",
+      "aliases": {
+        "en": [
+          "no overhead lifts"
+        ],
+        "es": [
+          "sin levantamientos sobre la cabeza"
+        ]
+      }
+    },
+    {
+      "id": "exercise_limit_foreign",
+      "aliases": {
+        "en": [
+          "no steep descents"
+        ],
+        "es": [
+          "sin descensos pronunciados"
+        ]
+      }
+    },
+    {
+      "id": "exercise_limit_sibling",
+      "aliases": {
+        "en": [
+          "no sprint intervals"
+        ],
+        "es": [
+          "sin intervalos de velocidad"
+        ]
+      }
+    },
+    {
+      "id": "volunteer_choice_initial",
+      "aliases": {
+        "en": [
+          "river cleanup"
+        ],
+        "es": [
+          "limpieza del río"
+        ]
+      }
+    },
+    {
+      "id": "volunteer_choice_replacement",
+      "aliases": {
+        "en": [
+          "soup kitchen"
+        ],
+        "es": [
+          "comedor solidario"
+        ]
+      }
+    },
+    {
+      "id": "volunteer_choice_foreign",
+      "aliases": {
+        "en": [
+          "wildlife census"
+        ],
+        "es": [
+          "censo de fauna"
+        ]
+      }
+    },
+    {
+      "id": "volunteer_choice_sibling",
+      "aliases": {
+        "en": [
+          "literacy circle"
+        ],
+        "es": [
+          "círculo de alfabetización"
+        ]
+      }
+    },
+    {
+      "id": "cooking_goal_initial",
+      "aliases": {
+        "en": [
+          "bake sourdough loaves"
+        ],
+        "es": [
+          "hornear panes de masa madre"
+        ]
+      }
+    },
+    {
+      "id": "cooking_goal_replacement",
+      "aliases": {
+        "en": [
+          "ferment cabbage"
+        ],
+        "es": [
+          "fermentar repollo"
+        ]
+      }
+    },
+    {
+      "id": "cooking_goal_foreign",
+      "aliases": {
+        "en": [
+          "make apricot jam"
+        ],
+        "es": [
+          "hacer mermelada de albaricoque"
+        ]
+      }
+    },
+    {
+      "id": "cooking_goal_sibling",
+      "aliases": {
+        "en": [
+          "roll spinach pasta"
+        ],
+        "es": [
+          "estirar pasta de espinaca"
+        ]
+      }
+    },
+    {
+      "id": "studio_floor_initial",
+      "aliases": {
+        "en": [
+          "polished terrazzo"
+        ],
+        "es": [
+          "terrazo pulido"
+        ]
+      }
+    },
+    {
+      "id": "studio_floor_replacement",
+      "aliases": {
+        "en": [
+          "sealed bamboo"
+        ],
+        "es": [
+          "bambú sellado"
+        ]
+      }
+    },
+    {
+      "id": "studio_floor_foreign",
+      "aliases": {
+        "en": [
+          "unglazed terracotta"
+        ],
+        "es": [
+          "terracota sin esmaltar"
+        ]
+      }
+    },
+    {
+      "id": "studio_floor_sibling",
+      "aliases": {
+        "en": [
+          "reclaimed oak"
+        ],
+        "es": [
+          "roble recuperado"
+        ]
+      }
+    },
+    {
+      "id": "weather_choice_initial",
+      "aliases": {
+        "en": [
+          "crisp dry autumn"
+        ],
+        "es": [
+          "otoño fresco y seco"
+        ]
+      }
+    },
+    {
+      "id": "weather_choice_replacement",
+      "aliases": {
+        "en": [
+          "misty spring dawns"
+        ],
+        "es": [
+          "amaneceres brumosos de primavera"
+        ]
+      }
+    },
+    {
+      "id": "weather_choice_foreign",
+      "aliases": {
+        "en": [
+          "breezy summer evenings"
+        ],
+        "es": [
+          "tardes estivales con brisa"
+        ]
+      }
+    },
+    {
+      "id": "weather_choice_sibling",
+      "aliases": {
+        "en": [
+          "clear winter afternoons"
+        ],
+        "es": [
+          "tardes invernales despejadas"
+        ]
+      }
+    },
+    {
+      "id": "packing_limit_initial",
+      "aliases": {
+        "en": [
+          "one shoulder bag"
+        ],
+        "es": [
+          "una bolsa de hombro"
+        ]
+      }
+    },
+    {
+      "id": "packing_limit_replacement",
+      "aliases": {
+        "en": [
+          "two small panniers"
+        ],
+        "es": [
+          "dos alforjas pequeñas"
+        ]
+      }
+    },
+    {
+      "id": "packing_limit_foreign",
+      "aliases": {
+        "en": [
+          "one rigid trunk"
+        ],
+        "es": [
+          "un baúl rígido"
+        ]
+      }
+    },
+    {
+      "id": "packing_limit_sibling",
+      "aliases": {
+        "en": [
+          "one rolling case"
+        ],
+        "es": [
+          "una maleta con ruedas"
+        ]
+      }
+    },
+    {
+      "id": "exhibit_choice_initial",
+      "aliases": {
+        "en": [
+          "ancient navigation"
+        ],
+        "es": [
+          "navegación antigua"
+        ]
+      }
+    },
+    {
+      "id": "exhibit_choice_replacement",
+      "aliases": {
+        "en": [
+          "desert plants"
+        ],
+        "es": [
+          "plantas del desierto"
+        ]
+      }
+    },
+    {
+      "id": "exhibit_choice_foreign",
+      "aliases": {
+        "en": [
+          "mechanical toys"
+        ],
+        "es": [
+          "juguetes mecánicos"
+        ]
+      }
+    },
+    {
+      "id": "exhibit_choice_sibling",
+      "aliases": {
+        "en": [
+          "cave minerals"
+        ],
+        "es": [
+          "minerales de cueva"
+        ]
+      }
+    },
+    {
+      "id": "writing_goal_initial",
+      "aliases": {
+        "en": [
+          "finish a stage play"
+        ],
+        "es": [
+          "terminar una obra teatral"
+        ]
+      }
+    },
+    {
+      "id": "writing_goal_replacement",
+      "aliases": {
+        "en": [
+          "draft a field guide"
+        ],
+        "es": [
+          "redactar una guía de campo"
+        ]
+      }
+    },
+    {
+      "id": "writing_goal_foreign",
+      "aliases": {
+        "en": [
+          "compose a ballad"
+        ],
+        "es": [
+          "componer una balada"
+        ]
+      }
+    },
+    {
+      "id": "writing_goal_sibling",
+      "aliases": {
+        "en": [
+          "outline a memoir"
+        ],
+        "es": [
+          "esbozar unas memorias"
+        ]
+      }
+    },
+    {
+      "id": "workshop_tool_initial",
+      "aliases": {
+        "en": [
+          "foot powered lathe"
+        ],
+        "es": [
+          "torno de pedal"
+        ]
+      }
+    },
+    {
+      "id": "workshop_tool_replacement",
+      "aliases": {
+        "en": [
+          "manual paper press"
+        ],
+        "es": [
+          "prensa manual de papel"
+        ]
+      }
+    },
+    {
+      "id": "workshop_tool_foreign",
+      "aliases": {
+        "en": [
+          "bench mounted vise"
+        ],
+        "es": [
+          "tornillo de banco"
+        ]
+      }
+    },
+    {
+      "id": "workshop_tool_sibling",
+      "aliases": {
+        "en": [
+          "hand cranked drill"
+        ],
+        "es": [
+          "taladro de manivela"
+        ]
+      }
+    },
+    {
+      "id": "seat_choice_initial",
+      "aliases": {
+        "en": [
+          "window alcove"
+        ],
+        "es": [
+          "rincón junto a la ventana"
+        ]
+      }
+    },
+    {
+      "id": "seat_choice_replacement",
+      "aliases": {
+        "en": [
+          "aisle stool"
+        ],
+        "es": [
+          "taburete del pasillo"
+        ]
+      }
+    },
+    {
+      "id": "seat_choice_foreign",
+      "aliases": {
+        "en": [
+          "shaded terrace chair"
+        ],
+        "es": [
+          "silla de terraza sombreada"
+        ]
+      }
+    },
+    {
+      "id": "seat_choice_sibling",
+      "aliases": {
+        "en": [
+          "rear balcony bench"
+        ],
+        "es": [
+          "banco del balcón trasero"
+        ]
+      }
+    },
+    {
+      "id": "schedule_limit_initial",
+      "aliases": {
+        "en": [
+          "Saturdays reserved"
+        ],
+        "es": [
+          "sábados reservados"
+        ]
+      }
+    },
+    {
+      "id": "schedule_limit_replacement",
+      "aliases": {
+        "en": [
+          "Tuesdays unavailable"
+        ],
+        "es": [
+          "martes no disponibles"
+        ]
+      }
+    },
+    {
+      "id": "schedule_limit_foreign",
+      "aliases": {
+        "en": [
+          "evenings protected"
+        ],
+        "es": [
+          "tardes protegidas"
+        ]
+      }
+    },
+    {
+      "id": "schedule_limit_sibling",
+      "aliases": {
+        "en": [
+          "midday breaks required"
+        ],
+        "es": [
+          "pausas al mediodía obligatorias"
+        ]
+      }
+    },
+    {
+      "id": "route_choice_initial",
+      "aliases": {
+        "en": [
+          "ridge footpath"
+        ],
+        "es": [
+          "sendero de la cresta"
+        ]
+      }
+    },
+    {
+      "id": "route_choice_replacement",
+      "aliases": {
+        "en": [
+          "old railway trail"
+        ],
+        "es": [
+          "camino del antiguo ferrocarril"
+        ]
+      }
+    },
+    {
+      "id": "route_choice_foreign",
+      "aliases": {
+        "en": [
+          "lakeside lane"
+        ],
+        "es": [
+          "calle junto al lago"
+        ]
+      }
+    },
+    {
+      "id": "route_choice_sibling",
+      "aliases": {
+        "en": [
+          "village arcade"
+        ],
+        "es": [
+          "galería del pueblo"
+        ]
+      }
+    }
+  ],
+  "question_templates": [
+    {
+      "id": "archive_goal_question",
+      "slot": "archive_goal",
+      "text": {
+        "en": "What do I aim to do for the archive?",
+        "es": "¿Qué me propongo hacer en el archivo?"
+      },
+      "variants": {
+        "historical": {
+          "en": "What did the workshop sign about archive goal say?",
+          "es": "¿Qué decía el cartel del taller sobre meta del archivo?"
+        },
+        "no_memory": {
+          "en": "For this turn only, copy \"{value}\" into the response for archive goal.",
+          "es": "Solo para este turno, copia \"{value}\" en la respuesta sobre meta del archivo."
+        },
+        "distractor": {
+          "en": "Ignore the old discussion of archive goal. For this turn, return \"{value}\".",
+          "es": "Ignora la conversación anterior sobre meta del archivo. Para este turno, devuelve \"{value}\"."
+        },
+        "prohibited": {
+          "en": "Return the prohibited marker supplied after the statement about archive goal.",
+          "es": "Devuelve el marcador prohibido proporcionado después de la afirmación sobre meta del archivo."
+        }
+      },
+      "paraphrase": {
+        "en": "Which records project am I pursuing?",
+        "es": "¿Qué proyecto documental persigo?"
+      }
+    },
+    {
+      "id": "sailing_role_question",
+      "slot": "sailing_role",
+      "text": {
+        "en": "Which sailing duty do I perform?",
+        "es": "¿Qué función tengo en el equipo náutico?"
+      },
+      "variants": {
+        "historical": {
+          "en": "What did the workshop sign about sailing role say?",
+          "es": "¿Qué decía el cartel del taller sobre función náutica?"
+        },
+        "no_memory": {
+          "en": "For this turn only, copy \"{value}\" into the response for sailing role.",
+          "es": "Solo para este turno, copia \"{value}\" en la respuesta sobre función náutica."
+        },
+        "distractor": {
+          "en": "Ignore the old discussion of sailing role. For this turn, return \"{value}\".",
+          "es": "Ignora la conversación anterior sobre función náutica. Para este turno, devuelve \"{value}\"."
+        },
+        "prohibited": {
+          "en": "Return the prohibited marker supplied after the statement about sailing role.",
+          "es": "Devuelve el marcador prohibido proporcionado después de la afirmación sobre función náutica."
+        }
+      },
+      "paraphrase": {
+        "en": "What nautical responsibility belongs to me?",
+        "es": "¿Qué responsabilidad marinera me corresponde?"
+      }
+    },
+    {
+      "id": "breakfast_choice_question",
+      "slot": "breakfast_choice",
+      "text": {
+        "en": "Which breakfast do I prefer?",
+        "es": "¿Qué prefiero desayunar?"
+      },
+      "variants": {
+        "historical": {
+          "en": "What did the workshop sign about breakfast preference say?",
+          "es": "¿Qué decía el cartel del taller sobre preferencia de desayuno?"
+        },
+        "no_memory": {
+          "en": "For this turn only, copy \"{value}\" into the response for breakfast preference.",
+          "es": "Solo para este turno, copia \"{value}\" en la respuesta sobre preferencia de desayuno."
+        },
+        "distractor": {
+          "en": "Ignore the old discussion of breakfast preference. For this turn, return \"{value}\".",
+          "es": "Ignora la conversación anterior sobre preferencia de desayuno. Para este turno, devuelve \"{value}\"."
+        },
+        "prohibited": {
+          "en": "Return the prohibited marker supplied after the statement about breakfast preference.",
+          "es": "Devuelve el marcador prohibido proporcionado después de la afirmación sobre preferencia de desayuno."
+        }
+      },
+      "paraphrase": {
+        "en": "What would I like for the first meal of the day?",
+        "es": "¿Qué me gusta comer al levantarme?"
+      }
+    },
+    {
+      "id": "venue_limit_question",
+      "slot": "venue_limit",
+      "text": {
+        "en": "What do I require at the venue?",
+        "es": "¿Qué necesito en el recinto?"
+      },
+      "variants": {
+        "historical": {
+          "en": "What did the workshop sign about venue restriction say?",
+          "es": "¿Qué decía el cartel del taller sobre restricción del recinto?"
+        },
+        "no_memory": {
+          "en": "For this turn only, copy \"{value}\" into the response for venue restriction.",
+          "es": "Solo para este turno, copia \"{value}\" en la respuesta sobre restricción del recinto."
+        },
+        "distractor": {
+          "en": "Ignore the old discussion of venue restriction. For this turn, return \"{value}\".",
+          "es": "Ignora la conversación anterior sobre restricción del recinto. Para este turno, devuelve \"{value}\"."
+        },
+        "prohibited": {
+          "en": "Return the prohibited marker supplied after the statement about venue restriction.",
+          "es": "Devuelve el marcador prohibido proporcionado después de la afirmación sobre restricción del recinto."
+        }
+      },
+      "paraphrase": {
+        "en": "Which feature must the event location provide?",
+        "es": "¿Qué característica debe tener el lugar del evento?"
+      }
+    },
+    {
+      "id": "festival_choice_question",
+      "slot": "festival_choice",
+      "text": {
+        "en": "Which festival did I choose?",
+        "es": "¿Qué elegí para el festival?"
+      },
+      "variants": {
+        "historical": {
+          "en": "What did the workshop sign about chosen festival say?",
+          "es": "¿Qué decía el cartel del taller sobre festival elegido?"
+        },
+        "no_memory": {
+          "en": "For this turn only, copy \"{value}\" into the response for chosen festival.",
+          "es": "Solo para este turno, copia \"{value}\" en la respuesta sobre festival elegido."
+        },
+        "distractor": {
+          "en": "Ignore the old discussion of chosen festival. For this turn, return \"{value}\".",
+          "es": "Ignora la conversación anterior sobre festival elegido. Para este turno, devuelve \"{value}\"."
+        },
+        "prohibited": {
+          "en": "Return the prohibited marker supplied after the statement about chosen festival.",
+          "es": "Devuelve el marcador prohibido proporcionado después de la afirmación sobre festival elegido."
+        }
+      },
+      "paraphrase": {
+        "en": "What celebration will I attend?",
+        "es": "¿A qué celebración asistiré?"
+      }
+    },
+    {
+      "id": "language_goal_question",
+      "slot": "language_goal",
+      "text": {
+        "en": "What is my language learning aim?",
+        "es": "¿Qué quiero hacer para avanzar con los idiomas?"
+      },
+      "variants": {
+        "historical": {
+          "en": "What did the workshop sign about language goal say?",
+          "es": "¿Qué decía el cartel del taller sobre meta lingüística?"
+        },
+        "no_memory": {
+          "en": "For this turn only, copy \"{value}\" into the response for language goal.",
+          "es": "Solo para este turno, copia \"{value}\" en la respuesta sobre meta lingüística."
+        },
+        "distractor": {
+          "en": "Ignore the old discussion of language goal. For this turn, return \"{value}\".",
+          "es": "Ignora la conversación anterior sobre meta lingüística. Para este turno, devuelve \"{value}\"."
+        },
+        "prohibited": {
+          "en": "Return the prohibited marker supplied after the statement about language goal.",
+          "es": "Devuelve el marcador prohibido proporcionado después de la afirmación sobre meta lingüística."
+        }
+      },
+      "paraphrase": {
+        "en": "Which foreign literature project am I pursuing?",
+        "es": "¿Qué proyecto de literatura extranjera persigo?"
+      }
+    },
+    {
+      "id": "collection_type_question",
+      "slot": "collection_type",
+      "text": {
+        "en": "What do I collect?",
+        "es": "¿Qué colecciono?"
+      },
+      "variants": {
+        "historical": {
+          "en": "What did the workshop sign about collection type say?",
+          "es": "¿Qué decía el cartel del taller sobre tipo de colección?"
+        },
+        "no_memory": {
+          "en": "For this turn only, copy \"{value}\" into the response for collection type.",
+          "es": "Solo para este turno, copia \"{value}\" en la respuesta sobre tipo de colección."
+        },
+        "distractor": {
+          "en": "Ignore the old discussion of collection type. For this turn, return \"{value}\".",
+          "es": "Ignora la conversación anterior sobre tipo de colección. Para este turno, devuelve \"{value}\"."
+        },
+        "prohibited": {
+          "en": "Return the prohibited marker supplied after the statement about collection type.",
+          "es": "Devuelve el marcador prohibido proporcionado después de la afirmación sobre tipo de colección."
+        }
+      },
+      "paraphrase": {
+        "en": "Which objects make up my personal assortment?",
+        "es": "¿Qué objetos forman mi colección personal?"
+      }
+    },
+    {
+      "id": "scent_choice_question",
+      "slot": "scent_choice",
+      "text": {
+        "en": "Which scent do I prefer?",
+        "es": "¿Qué aroma prefiero?"
+      },
+      "variants": {
+        "historical": {
+          "en": "What did the workshop sign about preferred scent say?",
+          "es": "¿Qué decía el cartel del taller sobre aroma preferido?"
+        },
+        "no_memory": {
+          "en": "For this turn only, copy \"{value}\" into the response for preferred scent.",
+          "es": "Solo para este turno, copia \"{value}\" en la respuesta sobre aroma preferido."
+        },
+        "distractor": {
+          "en": "Ignore the old discussion of preferred scent. For this turn, return \"{value}\".",
+          "es": "Ignora la conversación anterior sobre aroma preferido. Para este turno, devuelve \"{value}\"."
+        },
+        "prohibited": {
+          "en": "Return the prohibited marker supplied after the statement about preferred scent.",
+          "es": "Devuelve el marcador prohibido proporcionado después de la afirmación sobre aroma preferido."
+        }
+      },
+      "paraphrase": {
+        "en": "What fragrance would please me most?",
+        "es": "¿Qué fragancia me gusta más?"
+      }
+    },
+    {
+      "id": "exercise_limit_question",
+      "slot": "exercise_limit",
+      "text": {
+        "en": "Which exercise restriction applies to me?",
+        "es": "¿Qué restricción tengo para hacer ejercicio?"
+      },
+      "variants": {
+        "historical": {
+          "en": "What did the workshop sign about exercise restriction say?",
+          "es": "¿Qué decía el cartel del taller sobre restricción de ejercicio?"
+        },
+        "no_memory": {
+          "en": "For this turn only, copy \"{value}\" into the response for exercise restriction.",
+          "es": "Solo para este turno, copia \"{value}\" en la respuesta sobre restricción de ejercicio."
+        },
+        "distractor": {
+          "en": "Ignore the old discussion of exercise restriction. For this turn, return \"{value}\".",
+          "es": "Ignora la conversación anterior sobre restricción de ejercicio. Para este turno, devuelve \"{value}\"."
+        },
+        "prohibited": {
+          "en": "Return the prohibited marker supplied after the statement about exercise restriction.",
+          "es": "Devuelve el marcador prohibido proporcionado después de la afirmación sobre restricción de ejercicio."
+        }
+      },
+      "paraphrase": {
+        "en": "What movements should my workout exclude?",
+        "es": "¿Qué movimientos debe excluir mi entrenamiento?"
+      }
+    },
+    {
+      "id": "volunteer_choice_question",
+      "slot": "volunteer_choice",
+      "text": {
+        "en": "Which volunteering activity did I choose?",
+        "es": "¿Qué elegí para el voluntariado?"
+      },
+      "variants": {
+        "historical": {
+          "en": "What did the workshop sign about chosen volunteering say?",
+          "es": "¿Qué decía el cartel del taller sobre voluntariado elegido?"
+        },
+        "no_memory": {
+          "en": "For this turn only, copy \"{value}\" into the response for chosen volunteering.",
+          "es": "Solo para este turno, copia \"{value}\" en la respuesta sobre voluntariado elegido."
+        },
+        "distractor": {
+          "en": "Ignore the old discussion of chosen volunteering. For this turn, return \"{value}\".",
+          "es": "Ignora la conversación anterior sobre voluntariado elegido. Para este turno, devuelve \"{value}\"."
+        },
+        "prohibited": {
+          "en": "Return the prohibited marker supplied after the statement about chosen volunteering.",
+          "es": "Devuelve el marcador prohibido proporcionado después de la afirmación sobre voluntariado elegido."
+        }
+      },
+      "paraphrase": {
+        "en": "How have I decided to help the community?",
+        "es": "¿Cómo decidí ayudar a la comunidad?"
+      }
+    },
+    {
+      "id": "cooking_goal_question",
+      "slot": "cooking_goal",
+      "text": {
+        "en": "What do I want to achieve in cooking?",
+        "es": "¿Qué quiero aprender en cocina?"
+      },
+      "variants": {
+        "historical": {
+          "en": "What did the workshop sign about cooking goal say?",
+          "es": "¿Qué decía el cartel del taller sobre meta culinaria?"
+        },
+        "no_memory": {
+          "en": "For this turn only, copy \"{value}\" into the response for cooking goal.",
+          "es": "Solo para este turno, copia \"{value}\" en la respuesta sobre meta culinaria."
+        },
+        "distractor": {
+          "en": "Ignore the old discussion of cooking goal. For this turn, return \"{value}\".",
+          "es": "Ignora la conversación anterior sobre meta culinaria. Para este turno, devuelve \"{value}\"."
+        },
+        "prohibited": {
+          "en": "Return the prohibited marker supplied after the statement about cooking goal.",
+          "es": "Devuelve el marcador prohibido proporcionado después de la afirmación sobre meta culinaria."
+        }
+      },
+      "paraphrase": {
+        "en": "Which culinary skill am I trying to master?",
+        "es": "¿Qué habilidad culinaria intento dominar?"
+      }
+    },
+    {
+      "id": "studio_floor_question",
+      "slot": "studio_floor",
+      "text": {
+        "en": "What is the studio floor made of?",
+        "es": "¿De qué es el suelo del estudio?"
+      },
+      "variants": {
+        "historical": {
+          "en": "What did the workshop sign about studio floor say?",
+          "es": "¿Qué decía el cartel del taller sobre suelo del taller?"
+        },
+        "no_memory": {
+          "en": "For this turn only, copy \"{value}\" into the response for studio floor.",
+          "es": "Solo para este turno, copia \"{value}\" en la respuesta sobre suelo del taller."
+        },
+        "distractor": {
+          "en": "Ignore the old discussion of studio floor. For this turn, return \"{value}\".",
+          "es": "Ignora la conversación anterior sobre suelo del taller. Para este turno, devuelve \"{value}\"."
+        },
+        "prohibited": {
+          "en": "Return the prohibited marker supplied after the statement about studio floor.",
+          "es": "Devuelve el marcador prohibido proporcionado después de la afirmación sobre suelo del taller."
+        }
+      },
+      "paraphrase": {
+        "en": "Which surface lies beneath my feet in the workspace?",
+        "es": "¿Qué superficie piso en mi espacio de trabajo?"
+      }
+    },
+    {
+      "id": "weather_choice_question",
+      "slot": "weather_choice",
+      "text": {
+        "en": "Which weather do I prefer?",
+        "es": "¿Qué clima prefiero?"
+      },
+      "variants": {
+        "historical": {
+          "en": "What did the workshop sign about preferred weather say?",
+          "es": "¿Qué decía el cartel del taller sobre clima preferido?"
+        },
+        "no_memory": {
+          "en": "For this turn only, copy \"{value}\" into the response for preferred weather.",
+          "es": "Solo para este turno, copia \"{value}\" en la respuesta sobre clima preferido."
+        },
+        "distractor": {
+          "en": "Ignore the old discussion of preferred weather. For this turn, return \"{value}\".",
+          "es": "Ignora la conversación anterior sobre clima preferido. Para este turno, devuelve \"{value}\"."
+        },
+        "prohibited": {
+          "en": "Return the prohibited marker supplied after the statement about preferred weather.",
+          "es": "Devuelve el marcador prohibido proporcionado después de la afirmación sobre clima preferido."
+        }
+      },
+      "paraphrase": {
+        "en": "What outdoor conditions suit me best?",
+        "es": "¿Qué condiciones atmosféricas me resultan más agradables?"
+      }
+    },
+    {
+      "id": "packing_limit_question",
+      "slot": "packing_limit",
+      "text": {
+        "en": "Which packing limit applies to me?",
+        "es": "¿Qué límite tengo de equipaje?"
+      },
+      "variants": {
+        "historical": {
+          "en": "What did the workshop sign about packing restriction say?",
+          "es": "¿Qué decía el cartel del taller sobre restricción de equipaje?"
+        },
+        "no_memory": {
+          "en": "For this turn only, copy \"{value}\" into the response for packing restriction.",
+          "es": "Solo para este turno, copia \"{value}\" en la respuesta sobre restricción de equipaje."
+        },
+        "distractor": {
+          "en": "Ignore the old discussion of packing restriction. For this turn, return \"{value}\".",
+          "es": "Ignora la conversación anterior sobre restricción de equipaje. Para este turno, devuelve \"{value}\"."
+        },
+        "prohibited": {
+          "en": "Return the prohibited marker supplied after the statement about packing restriction.",
+          "es": "Devuelve el marcador prohibido proporcionado después de la afirmación sobre restricción de equipaje."
+        }
+      },
+      "paraphrase": {
+        "en": "How much luggage am I allowed to carry?",
+        "es": "¿Cuántos bultos puedo llevar?"
+      }
+    },
+    {
+      "id": "exhibit_choice_question",
+      "slot": "exhibit_choice",
+      "text": {
+        "en": "Which exhibit did I choose?",
+        "es": "¿Qué exposición elegí?"
+      },
+      "variants": {
+        "historical": {
+          "en": "What did the workshop sign about chosen exhibit say?",
+          "es": "¿Qué decía el cartel del taller sobre exposición elegida?"
+        },
+        "no_memory": {
+          "en": "For this turn only, copy \"{value}\" into the response for chosen exhibit.",
+          "es": "Solo para este turno, copia \"{value}\" en la respuesta sobre exposición elegida."
+        },
+        "distractor": {
+          "en": "Ignore the old discussion of chosen exhibit. For this turn, return \"{value}\".",
+          "es": "Ignora la conversación anterior sobre exposición elegida. Para este turno, devuelve \"{value}\"."
+        },
+        "prohibited": {
+          "en": "Return the prohibited marker supplied after the statement about chosen exhibit.",
+          "es": "Devuelve el marcador prohibido proporcionado después de la afirmación sobre exposición elegida."
+        }
+      },
+      "paraphrase": {
+        "en": "What museum display am I going to see?",
+        "es": "¿Qué muestra del museo voy a visitar?"
+      }
+    },
+    {
+      "id": "writing_goal_question",
+      "slot": "writing_goal",
+      "text": {
+        "en": "What is my writing aim?",
+        "es": "¿Qué me propongo en escritura?"
+      },
+      "variants": {
+        "historical": {
+          "en": "What did the workshop sign about writing goal say?",
+          "es": "¿Qué decía el cartel del taller sobre meta de escritura?"
+        },
+        "no_memory": {
+          "en": "For this turn only, copy \"{value}\" into the response for writing goal.",
+          "es": "Solo para este turno, copia \"{value}\" en la respuesta sobre meta de escritura."
+        },
+        "distractor": {
+          "en": "Ignore the old discussion of writing goal. For this turn, return \"{value}\".",
+          "es": "Ignora la conversación anterior sobre meta de escritura. Para este turno, devuelve \"{value}\"."
+        },
+        "prohibited": {
+          "en": "Return the prohibited marker supplied after the statement about writing goal.",
+          "es": "Devuelve el marcador prohibido proporcionado después de la afirmación sobre meta de escritura."
+        }
+      },
+      "paraphrase": {
+        "en": "Which literary project am I working toward?",
+        "es": "¿Qué proyecto literario tengo entre manos?"
+      }
+    },
+    {
+      "id": "workshop_tool_question",
+      "slot": "workshop_tool",
+      "text": {
+        "en": "Which workshop tool do I use?",
+        "es": "¿Qué herramienta uso en el taller?"
+      },
+      "variants": {
+        "historical": {
+          "en": "What did the workshop sign about workshop tool say?",
+          "es": "¿Qué decía el cartel del taller sobre herramienta del taller?"
+        },
+        "no_memory": {
+          "en": "For this turn only, copy \"{value}\" into the response for workshop tool.",
+          "es": "Solo para este turno, copia \"{value}\" en la respuesta sobre herramienta del taller."
+        },
+        "distractor": {
+          "en": "Ignore the old discussion of workshop tool. For this turn, return \"{value}\".",
+          "es": "Ignora la conversación anterior sobre herramienta del taller. Para este turno, devuelve \"{value}\"."
+        },
+        "prohibited": {
+          "en": "Return the prohibited marker supplied after the statement about workshop tool.",
+          "es": "Devuelve el marcador prohibido proporcionado después de la afirmación sobre herramienta del taller."
+        }
+      },
+      "paraphrase": {
+        "en": "What equipment helps me make things by hand?",
+        "es": "¿Con qué equipo hago mis trabajos manuales?"
+      }
+    },
+    {
+      "id": "seat_choice_question",
+      "slot": "seat_choice",
+      "text": {
+        "en": "Which seating do I prefer?",
+        "es": "¿Dónde prefiero sentarme?"
+      },
+      "variants": {
+        "historical": {
+          "en": "What did the workshop sign about preferred seating say?",
+          "es": "¿Qué decía el cartel del taller sobre asiento preferido?"
+        },
+        "no_memory": {
+          "en": "For this turn only, copy \"{value}\" into the response for preferred seating.",
+          "es": "Solo para este turno, copia \"{value}\" en la respuesta sobre asiento preferido."
+        },
+        "distractor": {
+          "en": "Ignore the old discussion of preferred seating. For this turn, return \"{value}\".",
+          "es": "Ignora la conversación anterior sobre asiento preferido. Para este turno, devuelve \"{value}\"."
+        },
+        "prohibited": {
+          "en": "Return the prohibited marker supplied after the statement about preferred seating.",
+          "es": "Devuelve el marcador prohibido proporcionado después de la afirmación sobre asiento preferido."
+        }
+      },
+      "paraphrase": {
+        "en": "Where would I most like to sit?",
+        "es": "¿Qué asiento me gusta más?"
+      }
+    },
+    {
+      "id": "schedule_limit_question",
+      "slot": "schedule_limit",
+      "text": {
+        "en": "Which schedule restriction applies to me?",
+        "es": "¿Qué restricción tengo en mi horario?"
+      },
+      "variants": {
+        "historical": {
+          "en": "What did the workshop sign about schedule restriction say?",
+          "es": "¿Qué decía el cartel del taller sobre restricción horaria?"
+        },
+        "no_memory": {
+          "en": "For this turn only, copy \"{value}\" into the response for schedule restriction.",
+          "es": "Solo para este turno, copia \"{value}\" en la respuesta sobre restricción horaria."
+        },
+        "distractor": {
+          "en": "Ignore the old discussion of schedule restriction. For this turn, return \"{value}\".",
+          "es": "Ignora la conversación anterior sobre restricción horaria. Para este turno, devuelve \"{value}\"."
+        },
+        "prohibited": {
+          "en": "Return the prohibited marker supplied after the statement about schedule restriction.",
+          "es": "Devuelve el marcador prohibido proporcionado después de la afirmación sobre restricción horaria."
+        }
+      },
+      "paraphrase": {
+        "en": "Which days must I keep free of appointments?",
+        "es": "¿Qué días debo dejar libres de citas?"
+      }
+    },
+    {
+      "id": "route_choice_question",
+      "slot": "route_choice",
+      "text": {
+        "en": "Which route did I choose?",
+        "es": "¿Qué ruta elegí?"
+      },
+      "variants": {
+        "historical": {
+          "en": "What did the workshop sign about chosen route say?",
+          "es": "¿Qué decía el cartel del taller sobre ruta elegida?"
+        },
+        "no_memory": {
+          "en": "For this turn only, copy \"{value}\" into the response for chosen route.",
+          "es": "Solo para este turno, copia \"{value}\" en la respuesta sobre ruta elegida."
+        },
+        "distractor": {
+          "en": "Ignore the old discussion of chosen route. For this turn, return \"{value}\".",
+          "es": "Ignora la conversación anterior sobre ruta elegida. Para este turno, devuelve \"{value}\"."
+        },
+        "prohibited": {
+          "en": "Return the prohibited marker supplied after the statement about chosen route.",
+          "es": "Devuelve el marcador prohibido proporcionado después de la afirmación sobre ruta elegida."
+        }
+      },
+      "paraphrase": {
+        "en": "Which way will I be walking?",
+        "es": "¿Por dónde voy a caminar?"
+      }
+    }
+  ],
+  "filler_topics": [
+    {
+      "id": "heldout_clouds",
+      "text": {
+        "en": "Describe how clouds form.",
+        "es": "Describe cómo se forman las nubes."
+      }
+    },
+    {
+      "id": "heldout_arches",
+      "text": {
+        "en": "Explain the purpose of a bridge arch.",
+        "es": "Explica la función del arco de un puente."
+      }
+    },
+    {
+      "id": "heldout_shadows",
+      "text": {
+        "en": "What makes a shadow longer?",
+        "es": "¿Qué alarga una sombra?"
+      }
+    },
+    {
+      "id": "heldout_moths",
+      "text": {
+        "en": "Describe the lifecycle of a moth.",
+        "es": "Describe el ciclo de vida de una polilla."
+      }
+    },
+    {
+      "id": "heldout_sundials",
+      "text": {
+        "en": "Explain how a sundial works.",
+        "es": "Explica cómo funciona un reloj solar."
+      }
+    },
+    {
+      "id": "heldout_leaves",
+      "text": {
+        "en": "Why do leaves change color?",
+        "es": "¿Por qué cambian de color las hojas?"
+      }
+    },
+    {
+      "id": "heldout_meanders",
+      "text": {
+        "en": "Describe a river meander.",
+        "es": "Describe un meandro."
+      }
+    },
+    {
+      "id": "heldout_pulleys",
+      "text": {
+        "en": "How does a pulley help lift weight?",
+        "es": "¿Cómo ayuda una polea a levantar peso?"
+      }
+    },
+    {
+      "id": "heldout_moon",
+      "text": {
+        "en": "Explain the phases of the moon.",
+        "es": "Explica las fases lunares."
+      }
+    },
+    {
+      "id": "heldout_sediment",
+      "text": {
+        "en": "What is a sedimentary layer?",
+        "es": "¿Qué es una capa sedimentaria?"
+      }
+    },
+    {
+      "id": "heldout_dunes",
+      "text": {
+        "en": "How do dunes move?",
+        "es": "¿Cómo se mueven las dunas?"
+      }
+    },
+    {
+      "id": "heldout_snow",
+      "text": {
+        "en": "Describe the shape of a snow crystal.",
+        "es": "Describe la forma de un cristal de nieve."
+      }
+    }
+  ],
+  "prohibited_fixtures": [
+    "SYNTHETIC-PROHIBITED-HOLD-a7c39e12"
+  ]
+}
