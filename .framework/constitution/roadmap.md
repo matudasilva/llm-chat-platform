@@ -586,8 +586,29 @@ invariant.
      candidates ahead of it, then ORQ-35 before this replan's ORQ-34 claim
      bumped it again (2026-08-26). Deferred and reordered, not discarded —
      purpose and prerequisites unchanged.
-   - **ORQ-39 — Conversational Semantic Memory: offline extracted-facts evaluation** (claimed, `ait-orq-number-ORQ-39`, 2026-09-22): independent successor to ORQ-29's semantic-memory line under ADR-010's successor rule (new hypothesis, protocol, dataset and held-out). Offline only, EN+ES paired, USD 10 ceiling; a `GO` authorizes only designing a later integration ORQ. Scope and decision rule: `.framework/orqs/ORQ-39-conversational-semantic-memory/spec.md` (single source of fact, not restated here).
-2. **ORQ-40 — Routing evidence dataset** (not yet claimed): `RoutingPolicy`
+   - **ORQ-39 — Conversational Semantic Memory: offline extracted-facts evaluation**
+     (Closed Locally — **INCONCLUSIVE**, 2026-10-06): stopped during T5
+     preparation because the complete T6 plan could not be certified under
+     the demonstrated instrument and cost-bound contract. No registration,
+     power analysis or held-out evaluation was completed. Development results
+     remain exploratory; closure does not imply that all acceptance criteria
+     passed or that semantic memory was shown ineffective. The final B arm
+     used dense-only retrieval over out-of-window turns. Local closure evidence:
+     `.framework/orqs/ORQ-39-conversational-semantic-memory/evidence/checks/documentary-closure/`.
+   - **ORQ-40 — Static conversational semantic representation: retrieval-only evaluation**
+     (reserved, `ait-orq-number-ORQ-40`; Planned / Plan, 2026-10-06): a new
+     independent protocol comparing lexical turn retrieval, dense retrieval
+     over the same turns, and dense retrieval over deterministic query-blind
+     facts derived from those turns. The primary endpoint is delivered
+     evidence coverage, with paired EN/ES reporting. All arms share a
+     prospectively approved 12000-character context budget and deterministic
+     skip-and-continue packing, with no candidate or delivered-item count cap.
+     There is no LLM extractor, dynamic lifecycle, reader, answer generation,
+     API or runtime integration. Encoder selection, the complete instrument
+     and implementation authorization remain pending. ORQ-39 results are not
+     confirmatory evidence for this successor. Local design:
+     `.framework/orqs/ORQ-40-static-semantic-retrieval/spec.md`.
+2. **ORQ-41 — Routing evidence dataset** (unreserved placeholder): `RoutingPolicy`
    interface with heuristic and static implementations by default; collect real
    signal before any model. Numbered ORQ-22 in the original plan, then ORQ-28
    before the 2026-08-07 split, then ORQ-32 before the 2026-08-20 replan, then
@@ -596,17 +617,19 @@ invariant.
    ORQ-36 after this replan's ORQ-34 claim bumped it again (2026-08-26), then
    ORQ-38 when ORQ-36/37 were claimed by the cross-model replication and RAG in
    Production (2026-08-28), then ORQ-39 when the Conversation History Substrate
-   took ORQ-38 (2026-09-01), then ORQ-40 when Conversational Semantic Memory took ORQ-39 (2026-09-22). Convergence note: the Agentic RAG LLM router is
-   conceptually the same classifier, so once ORQ-40/ORQ-41 produce real signal,
+   took ORQ-38 (2026-09-01), then ORQ-40 when Conversational Semantic Memory took ORQ-39 (2026-09-22), then ORQ-41 when Static Semantic Retrieval
+   reserved ORQ-40 (2026-10-06). Convergence note: the Agentic RAG LLM router is
+   conceptually the same classifier, so once ORQ-41/ORQ-42 produce real signal,
    the RAG router design follows at no extra cost.
-3. **ORQ-41 — Offline ML routing baseline** (not yet claimed): a simple,
-   explainable model, and only if ORQ-40's evidence dataset shows real signal.
+3. **ORQ-42 — Offline ML routing baseline** (unreserved placeholder): a simple,
+   explainable model, and only if ORQ-41's evidence dataset shows real signal.
    Numbered ORQ-23 in the original plan, then ORQ-29, then ORQ-33 before the
    2026-08-20 replan, then ORQ-34 before the 2026-08-25 replan's first pass,
    then ORQ-35 after the Memory-closure candidates were inserted ahead of it
    (2026-08-25), then ORQ-37 after this replan's ORQ-34 claim bumped it again
    (2026-08-26), then ORQ-39 on the 2026-08-28 reordering, then ORQ-40 when the
-   Conversation History Substrate took ORQ-38 (2026-09-01), then ORQ-41 when Conversational Semantic Memory took ORQ-39 (2026-09-22).
+   Conversation History Substrate took ORQ-38 (2026-09-01), then ORQ-41 when Conversational Semantic Memory took ORQ-39 (2026-09-22),
+   then ORQ-42 when Static Semantic Retrieval reserved ORQ-40 (2026-10-06).
 
 Reusable precedent: for broad or multilingual queries, reranking alone is not
 enough when the initial candidate set is poor — intent detection plus an
@@ -615,14 +638,15 @@ that worked. Relevant here because project documentation is bilingual.
 
 ## Phase 3 — AI Green extension
 
-**ORQ-42 — AI Green extension** (not yet claimed). Numbered ORQ-24 in the
+**ORQ-43 — AI Green extension** (unreserved placeholder). Numbered ORQ-24 in the
 original plan, then ORQ-30 before the 2026-08-07 evaluation split, then ORQ-34
 before the 2026-08-20 replan, then ORQ-35 before the 2026-08-25 replan's first
 pass, then ORQ-36 after the Memory-closure candidates were inserted ahead of
 it (2026-08-25), then ORQ-38 after this replan's ORQ-34 claim bumped it again
 (2026-08-26), then ORQ-40 on the 2026-08-28 reordering, then ORQ-41 when the
-Conversation History Substrate took ORQ-38 (2026-09-01), then ORQ-42 when Conversational Semantic Memory took ORQ-39 (2026-09-22). Sequenced as energy
-telemetry → carbon-aware routing → scheduler, and gated on ORQ-40 producing
+Conversation History Substrate took ORQ-38 (2026-09-01), then ORQ-42 when Conversational Semantic Memory took ORQ-39 (2026-09-22),
+then ORQ-43 when Static Semantic Retrieval reserved ORQ-40 (2026-10-06). Sequenced as energy
+telemetry → carbon-aware routing → scheduler, and gated on ORQ-41 producing
 real routing signal. Convergence
 note: Adaptive RAG rests on the same principle — spend the cheapest resource
 that still answers the question.
@@ -912,7 +936,23 @@ CO2e) this phase depends on.
   deferred again to a future RAG ORQ (`diagrams/INDEX.md`), not done here.
   Full rationale: `docs/adr/012-rag-production-observability-and-history-hardening.md`,
   `docs/adr/013-ebm25-controlled-evaluation-port.md`.
-- **Conversational Semantic Memory claims ORQ-39; unclaimed placeholders relabelled** (operator decision, 2026-09-22): ORQ-39 is an offline-only experiment comparing recent window + `E-BM25` (an experimental configuration with its flags on, not a validated baseline — see ORQ-37 and ADR-013), the same plus direct dense retrieval over turns, and the same plus extracted, conversation-scoped semantic facts, under the existing shared added-context budget. It changes no runtime, schema, endpoint or CI, and a `GO` would only authorize designing a later integration ORQ. `fw_claim_orq_number.py` allocates `max + 1`, so the claim necessarily took 39; consequent relabelling of unclaimed candidates, applied in the same edit: Routing evidence dataset 39→40, Offline ML routing baseline 40→41, AI Green 41→42. Full scope: `.framework/orqs/ORQ-39-conversational-semantic-memory/spec.md`.
+- **Conversational Semantic Memory claims ORQ-39; unclaimed placeholders relabelled** (operator decision, 2026-09-22; initial design at claim time, superseded by the closure below): ORQ-39 was scoped as an offline-only experiment comparing recent window + `E-BM25` (an experimental configuration with its flags on, not a validated baseline — see ORQ-37 and ADR-013), the same plus direct dense retrieval over turns, and the same plus extracted, conversation-scoped semantic facts, under the existing shared added-context budget. It changes no runtime, schema, endpoint or CI, and a `GO` would only authorize designing a later integration ORQ. `fw_claim_orq_number.py` allocates `max + 1`, so the claim necessarily took 39; consequent relabelling of unclaimed candidates, applied in the same edit: Routing evidence dataset 39→40, Offline ML routing baseline 40→41, AI Green 41→42. Full scope: `.framework/orqs/ORQ-39-conversational-semantic-memory/spec.md`.
+
+- **ORQ-39 closes INCONCLUSIVE; ORQ-40 reserved for retrieval-only representation**
+  (operator decisions, 2026-10-06): ORQ-39 stopped before registration and
+  held-out evaluation. Its bound gate remained blocked; outstanding acceptance
+  requirements are retained rather than waived. The synthetic T6 counterexample
+  establishes a parser/store-admitted state exceeding the candidate bound,
+  not that a provider can produce it within 1024 tokens. No negative or positive
+  production conclusion follows. ORQ-40 has its own hypothesis, dataset,
+  held-out and prospective registration; its design is planned, not executed.
+  It removes extraction, lifecycle and generation from the experiment. The
+  12000-character delivery budget is an independent prospective decision, not
+  evidence inherited from ORQ-39. Unreserved roadmap placeholders shift only
+  to avoid the claimed number: routing dataset 40→41, ML routing baseline
+  41→42, AI Green 42→43. Their scope and ordering are unchanged; these are not
+  remote reservations. Local closure and planning records remain under the
+  hybrid artifact policy; Notion synchronization is pending.
 
 ## Related
 
