@@ -10,8 +10,7 @@ from typing import Literal, Mapping, Sequence
 from .events import canonical_bytes, sha256_hex
 
 FACT_ID_ENCODING = "orq39-fact-id-v1"
-KINDS = frozenset({"stable_fact", "duplicate", "update", "contradiction_trap",
-                   "distractor", "isolation_canary", "no_memory", "historical", "prohibited"})
+KINDS = frozenset({"fact", "preference", "constraint", "decision", "goal"})
 
 
 def _text(value: str) -> str:
@@ -103,10 +102,11 @@ class Fact:
 
 @dataclass(frozen=True, slots=True)
 class AuditOperation:
-    reason: Literal["retract_without_active_fact", "prohibited"]
-    operation: Operation
+    reason: Literal["retract_without_active_fact", "validation_rejection"]
+    operation: Operation | None
     source_sequence: int
     op_index_within_extraction: int
+    detail: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -128,7 +128,7 @@ def apply(store: FactStore, operations: Sequence[Operation | Mapping[str, object
     """Apply one complete extraction atomically; reject backward or repeated turns.
 
     The caller supplies the source assertion text because the operation schema
-    does not include a statement. Prohibited operations are retained only in audit.
+    does not include a statement. Only validated operations enter the lifecycle.
     """
     _integer(source_sequence)
     if source_sequence <= store.last_sequence:
@@ -140,9 +140,6 @@ def apply(store: FactStore, operations: Sequence[Operation | Mapping[str, object
             operation = Operation.from_payload(operation)
         if not isinstance(operation, Operation):
             raise ValueError("expected validated Operation")
-        if operation.kind == "prohibited":
-            audit.append(AuditOperation("prohibited", operation, source_sequence, index))
-            continue
         active = next((i for i, fact in enumerate(facts)
                        if fact.slot_key == operation.slot_key and fact.status == "active"), None)
         prior = facts[active] if active is not None else None

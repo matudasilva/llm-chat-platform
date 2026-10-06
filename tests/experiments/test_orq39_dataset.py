@@ -12,7 +12,8 @@ from experiments.conversational_semantic_memory.dataset import (
 )
 
 
-def test_build_is_byte_identical_and_never_reads_heldout(tmp_path, monkeypatch):
+@pytest.mark.parametrize('seed', [19, 39])
+def test_build_is_byte_identical_and_never_reads_heldout(tmp_path, monkeypatch, seed):
     original = Path.open
 
     def guarded(path, *args, **kwargs):
@@ -21,11 +22,11 @@ def test_build_is_byte_identical_and_never_reads_heldout(tmp_path, monkeypatch):
         return original(path, *args, **kwargs)
 
     monkeypatch.setattr(Path, 'open', guarded)
-    first = build_dataset(seed=19, output=tmp_path / 'first.json')
-    second = build_dataset(seed=19, output=tmp_path / 'second.json')
+    first = build_dataset(seed=seed, output=tmp_path / 'first.json')
+    second = build_dataset(seed=seed, output=tmp_path / 'second.json')
     assert first.read_bytes() == second.read_bytes()
     dataset = load_dataset(first)
-    assert dataset.seed == 19
+    assert dataset.seed == seed
     assert len(dataset.cases) == 60
     for family in FAMILIES:
         assert sum(c.family == family for c in dataset.cases) == (12 if family == 'update' else 6)

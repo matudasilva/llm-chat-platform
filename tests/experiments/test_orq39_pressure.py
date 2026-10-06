@@ -77,3 +77,61 @@ def test_declared_defaults_ignore_environment(tmp_path, monkeypatch):
                        checks_dir=tmp_path / 'checks', event_log=tmp_path / 'events.jsonl')
     assert result['limits'] == expected
     assert result['passed']
+
+
+def test_budget_binding_uses_real_cap_and_binds_report_digest(tmp_path, monkeypatch):
+    import socket
+
+    def no_network(*args, **kwargs):
+        raise AssertionError('pressure checks must remain offline')
+
+    monkeypatch.setattr(socket, 'create_connection', no_network)
+    path = build_dataset(output=tmp_path / 'dev.json')
+    log = tmp_path / 'events.jsonl'
+    checks = tmp_path / 'checks'
+    result = run_check(dataset_path=path, checks_dir=checks, event_log=log,
+                       check='budget_binding')
+    assert result['passed']
+    assert result['semantic_steps'] == 60
+    for row in result['steps']:
+        assert 2 * row['cap'] <= row['corpus_chars'] <= 3 * row['cap']
+        assert row['window_chars'] < row['cap']
+        assert row['pre_cap_chars'] > row['cap']
+        assert 0 < row['delivered_units'] < row['corpus_units']
+    event, = verify(log)
+    assert event.type == 'budget_binding_dev'
+    assert event.payload == {'dataset_sha256': file_sha256(path), 'passed': True,
+                             'result_sha256': file_sha256(checks / 'budget-binding-dev.json')}
+
+
+def test_small_corpus_does_not_pass_budget_binding_vacuously(tmp_path):
+    case = load_dataset(build_dataset(output=tmp_path / 'dev.json')).cases[0]
+    # Keep a real, nonempty excluded corpus, but shrink its neutral turns.
+    case = replace(case, turns=tuple(replace(m, content='A brief science question.'
+                                            if m.role == 'user' else 'Noted.')
+                                    for m in case.turns))
+    row = asyncio.run(check_step(case, case.steps[0], check='budget_binding', **LIMITS))
+    assert row['corpus_units'] > row['delivered_units'] > 0
+    assert row['pre_cap_chars'] < row['cap']
+    assert not row['passed']
+    empty = asyncio.run(check_step(case, replace(case.steps[0], after_sequence=2),
+                                  check='budget_binding', **LIMITS))
+    assert empty['corpus_units'] == 0
+    assert not empty['passed']
+
+
+def test_zero_delivered_evidence_fails_even_when_budget_binds(tmp_path):
+    case = load_dataset(build_dataset(output=tmp_path / 'dev.json')).cases[0]
+    # Leave room for a short raw fact, but not its rendered evidence envelope.
+    turns = case.turns[:-20] + tuple(
+        replace(m, content='x' * 1184 if m.role == 'user' else 'Noted.')
+        for m in case.turns[-20:])
+    case = replace(case, turns=turns)
+    row = asyncio.run(check_step(case, case.steps[0], check='budget_binding', **LIMITS))
+    assert row['window_chars'] == 11900
+    assert row['pre_cap_chars'] > row['cap']
+    assert row['corpus_units'] > 0
+    assert row['delivered_units'] == 0
+    assert row['conditions'] == {'budget_binds': True, 'selection_is_real': True,
+                                 'evidence_is_not_starved': False}
+    assert not row['passed']

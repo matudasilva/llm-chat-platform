@@ -23,24 +23,62 @@ def _path_key(pool_path: Path) -> str:
 
 
 def _sealed_digest(pool_path: Path, events_log: Path) -> str:
-    matching = [event for event in events.verify(events_log)
-                if event.type == "heldout_pool_sealed"
-                and event.payload.get("pool_path") == _path_key(pool_path)]
-    if len(matching) != 1:
-        raise HeldoutSealError("exactly one seal is required")
-    digest = matching[0].payload.get("sha256")
+    """The digest of the seal currently in force, ignoring retired ones."""
+    live: list[str] = []
+    for event in events.verify(events_log):
+        if event.payload.get("pool_path") != _path_key(pool_path):
+            continue
+        if event.type == "heldout_pool_sealed":
+            live.append(str(event.payload.get("sha256")))
+        elif event.type == "heldout_pool_seal_invalidated":
+            if not live:
+                raise HeldoutSealError("invalidation without a live seal")
+            live.pop()
+    if len(live) != 1:
+        raise HeldoutSealError("exactly one live seal is required")
+    digest = live[0]
     if not isinstance(digest, str):
         raise HeldoutSealError("missing sealed digest")
     return digest
 
 
+def invalidate_seal(reason: str, pool_path: Path = paths.HELDOUT_POOL, *,
+                    events_log: Path = paths.EVENTS_LOG) -> events.Event:
+    """Retire the current seal explicitly, on the record, before the pool changes.
+
+    A seal cannot simply be replaced: that would let modified contents inherit
+    the credibility of the original. Re-sealing is possible only after this
+    event names the digest being retired and why, so the chain shows what was
+    sealed, when it stopped being trusted, and on what grounds.
+    """
+    pool_path = Path(pool_path).resolve()
+    reason = reason.strip()
+    if len(reason) < 20:
+        raise HeldoutSealError("an invalidation needs a substantive reason")
+    digest = _sealed_digest(pool_path, events_log)  # raises unless exactly one live seal
+    return events.append(events_log, "heldout_pool_seal_invalidated", {
+        "pool_path": _path_key(pool_path), "retired_sha256": digest, "reason": reason,
+    })
+
+
+def _live_seal_count(pool_path: Path, events_log: Path) -> int:
+    """Seals minus invalidations for this pool, in chain order."""
+    live = 0
+    for event in events.verify(events_log):
+        if event.payload.get("pool_path") != _path_key(pool_path):
+            continue
+        if event.type == "heldout_pool_sealed":
+            live += 1
+        elif event.type == "heldout_pool_seal_invalidated":
+            live -= 1
+    return live
+
+
 def seal(pool_path: Path = paths.HELDOUT_POOL, *,
          events_log: Path = paths.EVENTS_LOG) -> events.Event:
-    """Seal once; a later seal cannot legitimize modified pool contents."""
+    """Seal once; re-sealing requires an explicit `invalidate_seal` first."""
     pool_path = Path(pool_path).resolve()
-    if any(event.type == "heldout_pool_sealed"
-           and event.payload.get("pool_path") == _path_key(pool_path)
-           for event in events.verify(events_log)):
+    if _live_seal_count(pool_path, events_log) > 0:
         raise HeldoutSealError("pool is already sealed")
     return events.append(events_log, "heldout_pool_sealed", {
         "pool_path": _path_key(pool_path), "sha256": events.file_sha256(pool_path),

@@ -4,7 +4,7 @@ import json
 
 import pytest
 
-from experiments.conversational_semantic_memory import events
+from experiments.conversational_semantic_memory import events, heldout_access
 from experiments.conversational_semantic_memory.heldout_access import (
     HeldoutSealError, assert_not_heldout_path, read_for_scan, read_metadata, seal, verify_seal,
 )
@@ -68,3 +68,32 @@ def test_dev_runner_cannot_open_heldout_pool(pool, tmp_path):
         with pytest.raises(HeldoutSealError, match="dev runner"):
             assert_not_heldout_path(candidate, heldout_path=path)
     assert_not_heldout_path(tmp_path / "dev.json", heldout_path=path)
+
+
+def test_reseal_requires_an_explicit_invalidation(tmp_path) -> None:
+    """A changed pool must not inherit the credibility of the original seal."""
+    log = tmp_path / "events.jsonl"
+    pool = tmp_path / "heldout-pool.json"
+    pool.write_text('{"pool":"heldout"}')
+    heldout_access.seal(pool, events_log=log)
+    with pytest.raises(heldout_access.HeldoutSealError, match="already sealed"):
+        heldout_access.seal(pool, events_log=log)
+
+    with pytest.raises(heldout_access.HeldoutSealError, match="substantive reason"):
+        heldout_access.invalidate_seal("nope", pool, events_log=log)
+
+    heldout_access.invalidate_seal(
+        "role-announcing questions had to be re-authored before any held-out use",
+        pool,
+        events_log=log,
+    )
+    # While unsealed, no read is served.
+    with pytest.raises(heldout_access.HeldoutSealError, match="live seal"):
+        heldout_access.read_for_scan(pool, events_log=log)
+
+    pool.write_text('{"pool":"heldout","questions":"re-authored"}')
+    heldout_access.seal(pool, events_log=log)
+    assert heldout_access.verify_seal(pool, events_log=log)
+    types = [event.type for event in events.verify(log)]
+    assert types.count("heldout_pool_sealed") == 2
+    assert types.count("heldout_pool_seal_invalidated") == 1

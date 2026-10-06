@@ -15,7 +15,7 @@ EXPECTED = (
 )
 
 
-def operation(value, source="message", slot="home_city", kind="stable_fact"):
+def operation(value, source="message", slot="home_city", kind="fact"):
     return Operation("assert" if value is not None else "retract", slot, value, kind, (source,))
 
 
@@ -90,11 +90,17 @@ def test_scope_and_slot_drift_remain_distinct():
     assert all(f.status == "active" for f in result.facts)
 
 
-def test_prohibited_is_audited_never_stored():
-    result = apply(store(), (operation("SYNTHETIC-PROHIBITED-ABC-1234abcd", kind="prohibited"),),
-                   source_sequence=1, statement="Synthetic fixture")
-    assert result.facts == ()
-    assert result.audit[0].reason == "prohibited"
+@pytest.mark.parametrize("kind", ["stable_fact", "duplicate", "update", "contradiction_trap",
+                                 "distractor", "isolation_canary", "no_memory", "historical",
+                                 "prohibited"])
+def test_case_family_is_not_a_fact_kind(kind):
+    with pytest.raises(ValueError, match="unknown kind"):
+        operation("Paris", kind=kind)
+
+
+@pytest.mark.parametrize("kind", ["fact", "preference", "constraint", "decision", "goal"])
+def test_attribute_kinds_are_accepted(kind):
+    assert operation("value", kind=kind).kind == kind
 
 
 @pytest.mark.parametrize("changes", [
@@ -102,7 +108,7 @@ def test_prohibited_is_audited_never_stored():
     {"source_message_ids": ()}, {"value": None}, {"op": "retract", "value": "x"},
 ])
 def test_invalid_operations_rejected(changes):
-    fields = dict(op="assert", slot_key="home_city", value="Paris", kind="stable_fact",
+    fields = dict(op="assert", slot_key="home_city", value="Paris", kind="fact",
                   source_message_ids=("m1",))
     with pytest.raises(ValueError):
         Operation(**(fields | changes))
@@ -110,7 +116,7 @@ def test_invalid_operations_rejected(changes):
 
 def test_extractor_objects_and_atomic_validation():
     payload = {"op": "assert", "slot_key": "home_city", "value": "Paris",
-               "kind": "stable_fact", "source_message_ids": ["m1"]}
+               "kind": "fact", "source_message_ids": ["m1"]}
     original = store()
     result = apply(original, [payload], source_sequence=1, statement="I live in Paris")
     assert result.facts[0].value == "Paris"

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import re
 from collections import Counter
 from statistics import median
 from itertools import combinations
@@ -21,7 +22,71 @@ CHECK_FILES = {
     'capacity': 'pool-capacity.json',
     'en_es_pairing': 'en-es-pairing.json',
     'alias_uniqueness': 'alias-uniqueness.json',
+    'role_leakage': 'role-leakage.json',
 }
+
+HARNESS_IDENTIFIERS = ('stable_fact', 'contradiction_trap', 'isolation_canary',
+                       'no_memory', 'distractor')
+SELF_IDENTIFYING_PHRASES = (
+    'fixture', 'synthetic', 'trap', 'canary', 'distractor', 'test case',
+    'prohibited', 'this is a', 'sintético', 'sintética', 'prohibido',
+    'prohibida', 'trampa', 'canario', 'caso de prueba',
+)
+SYNTHETIC_TOKEN = re.compile(r'(?<![\w-])SYNTHETIC-PROHIBITED-[A-Z]{3,12}-[0-9a-f]{8}(?![\w-])')
+
+
+def role_leakage(surfaces: dict[str, str]) -> dict[str, Any]:
+    """Scan model-visible prose, exempting only the required complete gold token."""
+    violations = []
+    for location, text in surfaces.items():
+        prose = normalize(SYNTHETIC_TOKEN.sub(' ', text))
+        matches = [phrase for phrase in (*HARNESS_IDENTIFIERS, *SELF_IDENTIFYING_PHRASES)
+                   if re.search(r'(?<!\w)' + re.escape(phrase) + r'(?!\w)', prose)]
+        if matches:
+            violations.append({'location': location, 'phrases': sorted(set(matches))})
+    return {'passed': not violations, 'surfaces_checked': len(surfaces),
+            'violations': violations}
+
+
+def pool_surfaces(pool: dict[str, Any]) -> dict[str, str]:
+    """Select authored language surfaces without mistaking metadata for dialogue."""
+    surfaces: dict[str, str] = {}
+
+    def collect(value: Any, location: str) -> None:
+        if isinstance(value, dict):
+            for key, child in value.items():
+                collect(child, f'{location}/{key}')
+        elif isinstance(value, list):
+            for index, child in enumerate(value):
+                collect(child, f'{location}/{index}')
+        elif isinstance(value, str):
+            surfaces[location] = value
+
+    for section, fields in (
+        ('slots', ('assertions', 'retractions', 'labels')),
+        ('values', ('aliases',)),
+        ('question_templates', ('text', 'paraphrase', 'variants')),
+        ('filler_topics', ('text',)),
+    ):
+        for entry in pool[section]:
+            for field in fields:
+                collect(entry[field], f'{section}/{entry["id"]}/{field}')
+    return surfaces
+
+
+def dataset_surfaces(dataset: Dataset) -> dict[str, str]:
+    """Include generated dialogue and every isolation scope, not only pool prose."""
+    surfaces = {}
+    for case in dataset.cases:
+        prefix = f'{case.conceptual_case_id}/{case.language}'
+        for message in case.turns:
+            surfaces[f'{prefix}/turns/{message.message_id}'] = message.content
+        for step in case.steps:
+            surfaces[f'{prefix}/questions/{step.step_id}'] = step.question
+        for canary in case.canaries:
+            for message in canary.turns:
+                surfaces[f'{prefix}/canaries/{message.message_id}'] = message.content
+    return surfaces
 
 
 def alias_uniqueness(pool: dict[str, Any]) -> None:
@@ -203,6 +268,13 @@ def run_checks(*, check: str = 'all', dev_pool: Path = paths.DEV_POOL,
             elif name == 'capacity':
                 result['unique_capacity'] = {p['pool']: unique_capacity(p) for p in (dev, heldout)}
                 require(unique_capacity(heldout) >= 150, 'held-out capacity below 150')
+            elif name == 'role_leakage':
+                result['dev'] = role_leakage(dataset_surfaces(dataset))
+                result['pools'] = {p['pool']: role_leakage(pool_surfaces(p))
+                                   for p in (dev, heldout)}
+                require(result['dev']['passed'] and
+                        all(r['passed'] for r in result['pools'].values()),
+                        'role leakage in authored turns or questions')
             result['variation'] = {p['pool']: variation(p) for p in (dev, heldout)}
             result['passed'] = True
         except (ValueError, KeyError, TypeError) as exc:
