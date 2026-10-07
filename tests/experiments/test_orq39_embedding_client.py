@@ -95,7 +95,7 @@ def test_live_dispatch_without_a_guard_is_refused(tmp_path) -> None:
 def test_a_payload_that_fails_the_privacy_scan_is_never_dispatched(tmp_path) -> None:
     guard = make_guard(tmp_path)
     client = EmbeddingClient(
-        cache_dir=tmp_path / "cache", guard=guard, api_key="sk-test-not-used"
+        cache_dir=tmp_path / "cache", guard=guard, api_key="placeholder"
     )
     with pytest.raises(ValueError, match="payload scan failed"):
         client.embed(request(text="write to jane.doe@example.com about it"))
