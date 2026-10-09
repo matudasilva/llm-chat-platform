@@ -2195,4 +2195,73 @@ The deterministic suites are located in:
 Real-Postgres migration checks remain opt-in through the existing `postgres` marker and
 `RAG_TEST_DATABASE_URL` convention.
 
+## Appendix AG — ORQ-39 closure and ORQ-40 status
+
+Status reconciled on 2026-10-07. ORQ-39 closed locally as **INCONCLUSIVE** during
+T5 preparation: `bound_gate` could not certify the complete T6 plan. No
+registration, power analysis or held-out evaluation was completed. Development
+remains exploratory, establishing neither efficacy nor inefficacy of semantic
+memory. Closure is not comprehensive acceptance: the preserved matrix contains
+16 PASS, 15 FAIL (unfulfilled or incompletely demonstrated requirements) and
+8 NOT_APPLICABLE. The documentary trace is not execution of a complete terminal
+validator and makes no empirical underpower claim.
+
+Historical local evidence is under
+`.framework/orqs/ORQ-39-conversational-semantic-memory/evidence/checks/documentary-closure/`:
+`closure-report.md`, `decision-trace.json`, `acceptance-matrix.json`,
+`task-status.json` and `validation.json`. That snapshot records 217 passing
+hermetic tests; these were not rerun for this documentation reconciliation.
+It also discloses six pre-existing honesty findings in the ignored predecessor
+spec. Its then-provisional successor and pending Git actions describe the
+closure-time snapshot, not the current state. PR #13 subsequently merged into
+`main` at `0c4e776f91f91949d9d17e3e97da6fdd9dc76397`.
+
+At the 2026-10-07 snapshot, ORQ-40 was reserved and **Planned / Plan**, with its own dataset, held-out,
+hypothesis and prospective registration. A uses E-BM25 over out-of-window turns;
+B uses dense retrieval over exactly those turns; C uses dense retrieval over
+deterministic query-blind facts from those turns, including distractors. The
+primary endpoint is delivered evidence coverage after common packing. The
+12000-character total budget is an independent prospective ORQ-40 decision,
+not a conclusion from ORQ-39. There is no reader, generation, LLM extractor or
+lifecycle. The instrument, design review and checkpoint remain incomplete;
+implementation and execution were not authorized. This is the historical plan
+snapshot; see the administrative disposition below for current status.
+
+No semantic-memory runtime integration occurred. This documentary update
+changes no production contract, scientific contract, dataset, result, frozen
+parameter, runtime, migration or CI configuration. Governance synchronization
+receipts belong in the local ORQ-40 handoff under the hybrid artifact policy;
+neither Git integration nor documentary closure alone implies Fully Synced.
+
+### ORQ-40 administrative disposition (2026-10-08)
+
+The operator administratively closed ORQ-40 as **BLOCKED / RESEARCH LINE
+DEFERRED**. The scientific neutrality gate remains BLOCKED and has no scientific terminal
+state. No retrieval or development/held-out evaluation ran. The earlier local
+encoder smoke test is not scientific evaluation; this administrative closure
+ran no models or embeddings and created no checkpoint, registration or freeze
+decision. No runtime-readiness claim follows. This disposition
+preserves the sealed corpus (2,704 files; 157,254,367 bytes) and all prior
+technical artifacts, including the frozen counts Fd=3,158 and Fh=12,856.
+
+Reopening would require all three items: demonstrated independence of
+conceptual groups; resolution of query/fact-template lexical alignment or an
+acceptable documented bound; and completed human entailment and EN/ES review,
+plus explicit operator reauthorization before any evaluation. There is no
+automatic reopening. ORQ-40 provides zero scientifically usable evidence for a
+new capability; static facts remain disabled. No research follow-up, runtime
+measurement or traffic splitting is initiated. The approved sequence remains
+ORQ-40 → Production Retrieval Graduation → Routing Evidence Dataset → Offline
+ML Routing Baseline (only if signal) → AI Green. Production Retrieval
+Graduation is the next proposed step, unreserved ORQ-41, and may use only prior
+accumulated evidence-backed retrieval capabilities. Unsupported capabilities
+remain disabled; flags and rollback are mandatory, and runtime readiness is
+explicitly not claimed until demonstrated in graduation. Carry ORQ-37 debt
+forward: failed or unmeasured gates remain failed or unmeasured. Define
+operational acceptance criteria before measuring isolation, context delivery,
+failure behavior, latency, cost, streaming and rollback. The administrative
+deferral records all three conditions: concrete blockers (the three evidence
+items above), unsupported capabilities remain disabled, and no runtime
+readiness claim. All system invariants remain unchanged.
+
 **End of appendix — complements the live LLD document**

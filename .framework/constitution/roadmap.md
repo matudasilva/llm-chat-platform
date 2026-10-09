@@ -593,10 +593,17 @@ invariant.
      power analysis or held-out evaluation was completed. Development results
      remain exploratory; closure does not imply that all acceptance criteria
      passed or that semantic memory was shown ineffective. The final B arm
-     used dense-only retrieval over out-of-window turns. Local closure evidence:
+     used dense-only retrieval over out-of-window turns. PR #13 subsequently
+     merged into main at `0c4e776f91f91949d9d17e3e97da6fdd9dc76397`;
+     no semantic-memory runtime integration occurred. Local closure evidence:
      `.framework/orqs/ORQ-39-conversational-semantic-memory/evidence/checks/documentary-closure/`.
    - **ORQ-40 — Static conversational semantic representation: retrieval-only evaluation**
-     (reserved, `ait-orq-number-ORQ-40`; Planned / Plan, 2026-10-06): a new
+     (reserved, `ait-orq-number-ORQ-40`; **BLOCKED / RESEARCH LINE DEFERRED**,
+     administrative decision 2026-10-08): no evaluation or scientific terminal
+     result; zero new capabilities and no runtime-readiness claim. Unsupported
+     capabilities remain disabled. See the administrative disposition below and
+     `.framework/orqs/ORQ-40-static-semantic-retrieval/closure.md`.
+     Historical approved planning scope (2026-10-07): a new
      independent protocol comparing lexical turn retrieval, dense retrieval
      over the same turns, and dense retrieval over deterministic query-blind
      facts derived from those turns. The primary endpoint is delivered
@@ -604,11 +611,18 @@ invariant.
      prospectively approved 12000-character context budget and deterministic
      skip-and-continue packing, with no candidate or delivered-item count cap.
      There is no LLM extractor, dynamic lifecycle, reader, answer generation,
-     API or runtime integration. Encoder selection, the complete instrument
-     and implementation authorization remain pending. ORQ-39 results are not
+     API or runtime integration. At that planning snapshot, encoder selection,
+     the complete instrument and implementation authorization were pending.
+     The later encoder gate does not resolve the neutrality block. ORQ-39 results are not
      confirmatory evidence for this successor. Local design:
      `.framework/orqs/ORQ-40-static-semantic-retrieval/spec.md`.
-2. **ORQ-41 — Routing evidence dataset** (unreserved placeholder): `RoutingPolicy`
+2. **ORQ-41 — Production Retrieval Graduation** (proposed number, unreserved):
+   follows ORQ-40's documented terminal disposition or explicit research-line
+   deferral. Consolidate or integrate only conversational retrieval capabilities
+   supported by accumulated evidence, with feature flags, rollback and runtime
+   readiness evidence. No research reopening. See the scope and entry matrix
+   below. Completion or a valid explicit deferral permits routing to proceed.
+3. **ORQ-42 — Routing evidence dataset** (unreserved placeholder): `RoutingPolicy`
    interface with heuristic and static implementations by default; collect real
    signal before any model. Numbered ORQ-22 in the original plan, then ORQ-28
    before the 2026-08-07 split, then ORQ-32 before the 2026-08-20 replan, then
@@ -618,35 +632,95 @@ invariant.
    ORQ-38 when ORQ-36/37 were claimed by the cross-model replication and RAG in
    Production (2026-08-28), then ORQ-39 when the Conversation History Substrate
    took ORQ-38 (2026-09-01), then ORQ-40 when Conversational Semantic Memory took ORQ-39 (2026-09-22), then ORQ-41 when Static Semantic Retrieval
-   reserved ORQ-40 (2026-10-06). Convergence note: the Agentic RAG LLM router is
-   conceptually the same classifier, so once ORQ-41/ORQ-42 produce real signal,
+   reserved ORQ-40 (2026-10-06), then ORQ-42 when Production Retrieval Graduation
+   was inserted as an unreserved predecessor (2026-10-08).
+   Convergence note: the Agentic RAG LLM router is
+   conceptually the same classifier, so once ORQ-42/ORQ-43 produce real signal,
    the RAG router design follows at no extra cost.
-3. **ORQ-42 — Offline ML routing baseline** (unreserved placeholder): a simple,
-   explainable model, and only if ORQ-41's evidence dataset shows real signal.
+4. **ORQ-43 — Offline ML routing baseline** (unreserved placeholder): a simple,
+   explainable model, and only if ORQ-42's evidence dataset shows real signal.
    Numbered ORQ-23 in the original plan, then ORQ-29, then ORQ-33 before the
    2026-08-20 replan, then ORQ-34 before the 2026-08-25 replan's first pass,
    then ORQ-35 after the Memory-closure candidates were inserted ahead of it
    (2026-08-25), then ORQ-37 after this replan's ORQ-34 claim bumped it again
    (2026-08-26), then ORQ-39 on the 2026-08-28 reordering, then ORQ-40 when the
    Conversation History Substrate took ORQ-38 (2026-09-01), then ORQ-41 when Conversational Semantic Memory took ORQ-39 (2026-09-22),
-   then ORQ-42 when Static Semantic Retrieval reserved ORQ-40 (2026-10-06).
+   then ORQ-42 when Static Semantic Retrieval reserved ORQ-40 (2026-10-06),
+   then ORQ-43 after the Production Retrieval Graduation insertion (2026-10-08).
 
 Reusable precedent: for broad or multilingual queries, reranking alone is not
 enough when the initial candidate set is poor — intent detection plus an
 "overview" canonical query expansion plus path-priority reranking is the pattern
 that worked. Relevant here because project documentation is bilingual.
 
+### Production Retrieval Graduation — scope proposal
+
+Current sequence: **ORQ-40 → Production Retrieval Graduation → Routing Evidence
+Dataset → Offline ML Routing Baseline (only with signal) → AI Green**. The
+proposed numbers 41–44 are unreserved roadmap placeholders, not claims of remote
+availability; the reservation helper determines the actual next number. Existing
+reserved ORQs keep their identities.
+
+ORQ-40 is the final scientific gate of the current conversational retrieval /
+static semantic representation stage: A = E-BM25 turns, B = dense retrieval over
+the same turns, C = dense retrieval over deterministic query-blind static facts.
+A documented GO_REPRESENTATION, NO_GO_REPRESENTATION or INCONCLUSIVE terminal
+disposition under its existing protocol permits closure/deferral of this research
+stage and advancement to graduation. Planning blockers alone are not a scientific
+terminal result. No successor semantic-memory research ORQ opens automatically.
+The operator has now explicitly deferred this research line without changing
+the scientific contract or assigning a terminal result. Graduation is the next
+recommended step; no new ORQ is created or reserved by this disposition.
+
+| ORQ-40 disposition | Entry rule for production graduation |
+|---|---|
+| GO_REPRESENTATION | C may be eligible only if an admissible fact source exists within the evaluated representation contract. Extraction and lifecycle remain excluded; runtime readiness is not established by this result. |
+| NO_GO_REPRESENTATION | C is excluded. B may graduate only with sufficient evidence of its own; C's NO_GO does not imply B's superiority over A. |
+| INCONCLUSIVE | ORQ-40 enables no new capability. Only existing/evidence-backed capabilities may be consolidated. |
+| INVALID_EXPERIMENT | The experiment supplies no usable scientific evidence. Explicit operator deferral is required to close the research line; invalid evidence cannot support graduation. |
+| BLOCKED / RESEARCH LINE DEFERRED (administrative) | Current disposition: no scientific terminal result and zero new capabilities. Only prior evidence-backed capabilities may be considered; unsupported capabilities remain disabled and runtime readiness must be demonstrated in graduation. |
+
+Minimum proposed scope:
+
+- Record the evidence-to-capability decision and its limits. Consolidate A if it
+  remains the defensible option; do not promote an unsupported capability.
+- Reuse the conversation-history substrate, tenant/conversation scoping, shared
+  context budget, deterministic packing, provenance, telemetry and retrieval
+  primitives, checking behavioral equivalence for the selected integration.
+- Carry forward relevant ORQ-37 readiness debt explicitly. Its failed/unmeasured
+  runtime gates remain failed/unmeasured; they are not waived or relabeled as
+  passed. Set operational acceptance criteria before measuring isolation,
+  context delivery, failure behavior, latency, cost, streaming and rollback.
+  This is bounded integration/readiness work, not renewed scientific research.
+- Keep integration feature-flagged, disabled by default and reversible. Preserve
+  the existing baseline with the flag off and demonstrate rollback. DB/schema
+  migrations are conditional on a demonstrated need of the evidence-supported
+  capability, never a default deliverable.
+- Preserve `/chat` as the only write-path, atomic persistence, provider
+  abstraction, best-effort telemetry and streaming semantics, including no
+  fallback after partial stream emission. Exclude automatic extraction,
+  lifecycle, cross-conversation memory and new V2 scope.
+
+A Production Retrieval Graduation deferral must be explicitly approved by the
+operator and record all three: **the concrete blocker**, **unsupported
+capabilities remaining disabled**, and **an explicit statement that runtime
+readiness is not claimed**. Deferral is not successful graduation and does not
+erase outstanding requirements. A valid deferral, like completed graduation,
+permits Routing Evidence Dataset to proceed; semantic-memory research is no
+longer a prerequisite. The ML baseline still requires routing evidence signal.
+
 ## Phase 3 — AI Green extension
 
-**ORQ-43 — AI Green extension** (unreserved placeholder). Numbered ORQ-24 in the
+**ORQ-44 — AI Green extension** (unreserved placeholder). Numbered ORQ-24 in the
 original plan, then ORQ-30 before the 2026-08-07 evaluation split, then ORQ-34
 before the 2026-08-20 replan, then ORQ-35 before the 2026-08-25 replan's first
 pass, then ORQ-36 after the Memory-closure candidates were inserted ahead of
 it (2026-08-25), then ORQ-38 after this replan's ORQ-34 claim bumped it again
 (2026-08-26), then ORQ-40 on the 2026-08-28 reordering, then ORQ-41 when the
 Conversation History Substrate took ORQ-38 (2026-09-01), then ORQ-42 when Conversational Semantic Memory took ORQ-39 (2026-09-22),
-then ORQ-43 when Static Semantic Retrieval reserved ORQ-40 (2026-10-06). Sequenced as energy
-telemetry → carbon-aware routing → scheduler, and gated on ORQ-41 producing
+then ORQ-43 when Static Semantic Retrieval reserved ORQ-40 (2026-10-06), then
+ORQ-44 after the Production Retrieval Graduation insertion (2026-10-08). Sequenced as energy
+telemetry → carbon-aware routing → scheduler, and gated on ORQ-42 producing
 real routing signal. Convergence
 note: Adaptive RAG rests on the same principle — spend the cheapest resource
 that still answers the question.
@@ -952,7 +1026,45 @@ CO2e) this phase depends on.
   to avoid the claimed number: routing dataset 40→41, ML routing baseline
   41→42, AI Green 42→43. Their scope and ordering are unchanged; these are not
   remote reservations. Local closure and planning records remain under the
-  hybrid artifact policy; Notion synchronization is pending.
+  hybrid artifact policy. At that closure, Notion synchronization was pending.
+  On 2026-10-07, the Dashboard, Master Project Document, Prompt Library and
+  learning entry were written and read back. ORQ-39 remains Closed Locally:
+  canonical validation.md and formal closure reconciliation are still missing;
+  no Fully Synced transition is claimed. At that 2026-10-07 snapshot, ORQ-40
+  remained Planned / Plan; its current administrative disposition is recorded
+  below.
+
+- **Research exit → production graduation → routing** (operator decision,
+  2026-10-08): ORQ-40 is the final scientific gate of the current retrieval /
+  representation stage. Its terminal entry matrix and the explicit graduation
+  deferral rule are recorded in the scope proposal above. Insert Production
+  Retrieval Graduation as candidate ORQ-41; move unreserved routing evidence
+  41→42, offline ML 42→43 and AI Green 43→44, preserving their scope and history.
+  No number is reserved, no ORQ-40 artifact changes and no runtime work is
+  authorized by this roadmap update.
+
+- **ORQ-40 administrative disposition** (operator decision, 2026-10-08): the
+  operator closed ORQ-40 administratively as **BLOCKED / RESEARCH LINE
+  DEFERRED**. Its scientific neutrality gate remains BLOCKED; no scientific terminal state,
+  evaluation, freeze or runtime-readiness claim is made. Preserve the sealed
+  corpus and all prior technical artifacts (Fd=3,158; Fh=12,856). Reopening
+  requires demonstrated conceptual-group independence, resolution or an
+  acceptable documented bound for query/fact-template lexical alignment,
+  completed human entailment and EN/ES review, and explicit operator
+  reauthorization before evaluation. ORQ-40 provides zero scientifically usable
+  evidence for a new capability; static facts remain disabled and reopening is
+  not automatic. No research follow-up, runtime measurement or traffic splitting
+  is initiated. The next proposed step is Production Retrieval Graduation,
+  unreserved ORQ-41, using only prior accumulated evidence-backed retrieval
+  capabilities. Unsupported capabilities remain disabled; feature flags and
+  rollback are mandatory, and runtime readiness is explicitly not claimed until
+  demonstrated in graduation. Carry ORQ-37 debt forward: failed or unmeasured
+  gates remain failed or unmeasured. Define operational acceptance criteria
+  before measuring isolation, context delivery, failure behavior, latency, cost,
+  streaming and rollback. The deferral records all three required conditions:
+  concrete blockers (the three evidence items above), unsupported capabilities
+  remain disabled, and no runtime-readiness claim. No new ORQ-40 capability is
+  enabled; system invariants remain unchanged.
 
 ## Related
 
