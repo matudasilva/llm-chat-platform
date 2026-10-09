@@ -8,6 +8,29 @@
 
 ## 0. Implementation Summary
 
+**Research boundary (historical, 2026-10-07):** ORQ-39 closed locally as
+INCONCLUSIVE after
+`bound_gate` blocked the complete held-out plan; registration, power analysis
+and held-out evaluation were not completed. Exploratory development establishes
+neither semantic-memory efficacy nor inefficacy, and outstanding acceptance
+requirements remain. PR #13 merged at `0c4e776f91f91949d9d17e3e97da6fdd9dc76397`
+without semantic-memory runtime integration. ORQ-40 was reserved, Planned / Plan,
+with an incomplete retrieval-only instrument and no implementation or execution
+authorization. On 2026-10-08, the operator administratively closed ORQ-40 as
+**BLOCKED / RESEARCH LINE DEFERRED** while the scientific neutrality gate remains BLOCKED.
+No scientific terminal state, evaluation, freeze or runtime-readiness claim is
+made. The sealed corpus and all prior technical artifacts are preserved.
+Reopening requires demonstrated conceptual-group independence, an acceptable
+resolution or bound for query/fact-template lexical alignment, completed human
+entailment and EN/ES review, and explicit operator reauthorization. ORQ-40
+provides zero scientifically usable evidence for a new capability; static facts
+remain disabled, with no automatic reopening. The next proposed step is
+Production Retrieval Graduation (proposed, unreserved ORQ-41), which may use only prior
+accumulated evidence-backed retrieval capabilities. Unsupported capabilities
+remain disabled; runtime readiness is not claimed and must be demonstrated in
+graduation. No new research, runtime measurement or traffic splitting has
+started. See [Appendix AG](lld_apendix.md#appendix-ag--orq-39-closure-and-orq-40-status).
+
 The LLM Chat Platform implements the following core capabilities:
 
 ### Persistence Foundations

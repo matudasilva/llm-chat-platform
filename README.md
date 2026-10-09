@@ -557,6 +557,31 @@ It is a correctness-first backend reference system.
 
 ## Completed Work & Strategic Roadmap
 
+### Offline semantic-memory research status (updated 2026-10-08)
+
+ORQ-39 closed locally as **INCONCLUSIVE** because `bound_gate` could not certify
+the complete held-out plan. Registration, power analysis and held-out evaluation
+were not completed. Development remains exploratory and establishes neither
+efficacy nor inefficacy; the acceptance matrix retains unmet or incompletely
+demonstrated requirements. PR #13 was merged into `main` at
+`0c4e776f91f91949d9d17e3e97da6fdd9dc76397`, without semantic-memory runtime integration.
+
+ORQ-40's corpus-neutrality gate remains **BLOCKED**. On 2026-10-08, the operator
+administratively closed the ORQ as **BLOCKED / RESEARCH LINE DEFERRED**; this
+is not a scientific terminal state, evaluation, freeze decision or runtime-readiness
+claim. The corpus remains sealed (2,704 files; 157,254,367 bytes; Fd=3,158;
+Fh=12,856). Reopening requires demonstrated conceptual-group independence,
+resolution or acceptable documented bounds for query/fact-template lexical
+alignment, completed human entailment and EN/ES review, and explicit operator
+reauthorization. ORQ-40 provides zero scientifically usable evidence for a new
+capability; static facts remain disabled. No automatic reopening or follow-up
+is initiated. The next proposed step is Production Retrieval Graduation
+(unreserved ORQ-41), using only prior accumulated evidence-backed retrieval
+capabilities, with unsupported capabilities disabled and runtime readiness
+explicitly unclaimed until demonstrated there. See
+[Appendix AG](docs/lld_apendix.md#appendix-ag--orq-39-closure-and-orq-40-status)
+for evidence and claim boundaries.
+
 ### External Read Capabilities (Completed)
 
 ✅ **Consolidated via ORQ-14 (Closure: 2026-05-08)**
