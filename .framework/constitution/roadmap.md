@@ -616,12 +616,16 @@ invariant.
      The later encoder gate does not resolve the neutrality block. ORQ-39 results are not
      confirmatory evidence for this successor. Local design:
      `.framework/orqs/ORQ-40-static-semantic-retrieval/spec.md`.
-2. **ORQ-41 — Production Retrieval Graduation** (proposed number, unreserved):
+2. **ORQ-41 — Production Retrieval Graduation** (**Planned / Plan**, reserved
+   `ait-orq-number-ORQ-41`, 2026-10-09; concept approved, decision freeze pending):
    follows ORQ-40's documented terminal disposition or explicit research-line
    deferral. Consolidate or integrate only conversational retrieval capabilities
    supported by accumulated evidence, with feature flags, rollback and runtime
    readiness evidence. No research reopening. See the scope and entry matrix
    below. Completion or a valid explicit deferral permits routing to proceed.
+   The Plan inventories ORQ-27–40 evidence, preserves ORQ-37 debt and proposes
+   prospective operational gates. No runtime implementation or measurement is
+   authorized. Local spec: `.framework/orqs/ORQ-41-production-retrieval-graduation/spec.md`.
 3. **ORQ-42 — Routing evidence dataset** (unreserved placeholder): `RoutingPolicy`
    interface with heuristic and static implementations by default; collect real
    signal before any model. Numbered ORQ-22 in the original plan, then ORQ-28
@@ -656,10 +660,10 @@ that worked. Relevant here because project documentation is bilingual.
 ### Production Retrieval Graduation — scope proposal
 
 Current sequence: **ORQ-40 → Production Retrieval Graduation → Routing Evidence
-Dataset → Offline ML Routing Baseline (only with signal) → AI Green**. The
-proposed numbers 41–44 are unreserved roadmap placeholders, not claims of remote
-availability; the reservation helper determines the actual next number. Existing
-reserved ORQs keep their identities.
+Dataset → Offline ML Routing Baseline (only with signal) → AI Green**.
+ORQ-41 was reserved on 2026-10-09 for Plan only; numbers 42–44 remain unreserved
+roadmap placeholders, not claims of remote availability. The reservation helper
+determines actual next numbers. Existing reserved ORQs keep their identities.
 
 ORQ-40 is the final scientific gate of the current conversational retrieval /
 static semantic representation stage: A = E-BM25 turns, B = dense retrieval over
@@ -1067,5 +1071,11 @@ CO2e) this phase depends on.
   enabled; system invariants remain unchanged.
 
 ## Related
+
+Planning continuation (2026-10-09): ORQ-41 was reserved at
+`c75fb707f5a8f236846131f0da8f5a0c23b9d969` after PR #14 merged the ORQ-40
+research-line deferral. Historical statements above about unreserved ORQ-41
+describe the earlier decisions. Its current state is Planned / Plan, with no
+approved runtime implementation, measurement contract or readiness claim.
 
 Purpose and boundaries: [[mission]] · Constraints and invariants: [[tech-stack]]
