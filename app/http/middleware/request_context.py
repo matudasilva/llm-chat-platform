@@ -4,6 +4,8 @@ import uuid
 from typing import Callable, Iterable, List, Tuple
 
 from app.core.observability import schema
+from app.core.observability import context_evidence as c1
+from app.core.observability.retry_evidence import request_evidence
 from app.core.observability.tracing import span
 from app.http.pipeline_metrics import init_collector, reset_collector
 from app.http.request_context import (
@@ -96,7 +98,7 @@ class RequestContextMiddleware:
             attributes["request.correlation_id"] = telemetry_correlation_id
 
         try:
-            with span(schema.REQUEST_SPAN, **attributes):
+            with c1.request_evidence(request_instance_id, telemetry_correlation_id), request_evidence(validate_correlation_id(request_id_s)), span(schema.REQUEST_SPAN, **attributes):
                 await self.app(scope, receive, send_wrapper)
         finally:
             reset_collector(collector_token)

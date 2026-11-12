@@ -49,6 +49,8 @@ context from where it ran.
 
 from __future__ import annotations
 
+from app.core.observability import context_evidence as c1
+
 import dataclasses
 
 from .chat_memory import ChatMemoryContext
@@ -87,6 +89,7 @@ def _window_chars(memory_context: ChatMemoryContext) -> int:
     return sum(len(message.content) for message in memory_context.messages)
 
 
+@c1.final_cap
 def enforce_added_context_cap(
     *,
     memory_context: ChatMemoryContext,

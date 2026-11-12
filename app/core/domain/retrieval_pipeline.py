@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from app.core.observability import context_evidence as c1
+
 import logging
 import time
 from dataclasses import dataclass
@@ -110,6 +112,7 @@ class RetrievalPipeline:
             candidates = await self._vector_store.hybrid_search(
                 rewritten, embedding, top_k=self._top_k_candidates
             )
+            c1.documents("documents.retrieved", candidates)
             set_attribute(retrieve_span, "rag.candidate_count", len(candidates))
             set_attribute(
                 retrieve_span,
@@ -118,6 +121,7 @@ class RetrievalPipeline:
             )
 
         if not candidates:
+            c1.documents("documents.selected", (), ranked=True)
             self._log_completed(
                 request_id=request_id,
                 candidate_count=0,
@@ -143,6 +147,7 @@ class RetrievalPipeline:
             top_n=effective_top_n,
         )
 
+        c1.documents("documents.selected", ranked_chunks, ranked=True)
         evaluator_triggered = len(ranked_chunks) < self._min_reranked_results
         evaluator_verdict: str | None = None
         if evaluator_triggered:
@@ -169,6 +174,7 @@ class RetrievalPipeline:
             evaluator_verdict=evaluator_verdict,
         )
 
+    @c1.purpose("rewrite")
     async def _rewrite(self, *, request_id: UUID, query: str) -> str:
         # The span opens where the stage is *attempted*, so a rewrite that
         # falls back to the original query still counts as reached.
@@ -251,9 +257,22 @@ class RetrievalPipeline:
             set_attribute(rerank_span, "rag.ranked_count", len(ranked_chunks))
             return ranked_chunks, False
 
+    @c1.purpose("evaluator")
     async def _evaluate(
         self, *, request_id: UUID, query: str, chunks: Sequence[RankedChunk]
     ) -> str | None:
+        try:
+            logger.info(
+                "retrieval_pipeline.evaluator_triggered request_id=%s",
+                str(request_id),
+                extra={
+                    "event": "retrieval_pipeline.evaluator_triggered",
+                    "request_id": str(request_id),
+                },
+            )
+        except Exception:
+            # Activation telemetry must not change evaluator execution.
+            pass
         context = "\n\n".join(ranked.chunk.text for ranked in chunks)
         # Reached only when the evaluator actually triggered -- unlike rerank,
         # this stage is genuinely conditional, so no span is emitted when the
@@ -325,7 +344,9 @@ class RetrievalPipeline:
         # Content-free by construction (ORQ-23 AC8): only counts, flags and
         # latency -- no query text, no chunk text.
         logger.info(
-            "retrieval_pipeline.completed",
+            "retrieval_pipeline.completed request_id=%s evaluator_triggered=%s",
+            str(request_id),
+            "true" if evaluator_triggered else "false",
             extra={
                 "event": "retrieval_pipeline.completed",
                 "request_id": str(request_id),

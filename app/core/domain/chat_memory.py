@@ -13,6 +13,8 @@ added-context cap is still T13's and nothing here anticipates it.
 
 from __future__ import annotations
 
+from app.core.observability import context_evidence as c1
+
 from dataclasses import dataclass
 
 from typing import Any
@@ -94,6 +96,7 @@ class ChatMemoryContext:
         `sequence` is dropped deliberately: it is the ordering key, not
         content, and the provider has no use for it.
         """
+        c1.window_materialized(partition)
         return cls(
             messages=tuple(
                 ChatMessage(role=message.role, content=message.content)

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from app.core.observability import context_evidence as c1
+
 import asyncio
 import logging
 from dataclasses import dataclass
@@ -99,9 +101,11 @@ class RagGenerationAugmentor:
             # Classified HERE, where `wait_for` actually observes it. Inferred
             # downstream from an empty result, a timeout would be
             # indistinguishable from a corpus that matched nothing.
+            c1.observe("documents.aborted", lambda _: {"reason": type(exc).__name__})
             self._log_degraded(request_id=request_id, reason=type(exc).__name__)
             return RagGenerationContext(outcome=RETRIEVAL_TIMEOUT)
         except Exception as exc:
+            c1.observe("documents.aborted", lambda _: {"reason": type(exc).__name__})
             self._log_degraded(request_id=request_id, reason=type(exc).__name__)
             return RagGenerationContext(outcome=RETRIEVAL_ERROR)
 
@@ -134,6 +138,7 @@ class RagGenerationAugmentor:
         # AC24 does not ask for it, and the distinction would need the pre-trim
         # chunk count surfaced too. A real loss of diagnosis, recorded rather
         # than explained away.
+        c1.source_projection(result, retained)
         return RagGenerationContext(
             sources=tuple(retained),
             outcome=RETRIEVAL_OK if retained else RETRIEVAL_EMPTY,

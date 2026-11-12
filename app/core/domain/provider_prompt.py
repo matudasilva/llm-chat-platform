@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from app.core.observability import context_evidence as c1
+
 import json
 from typing import Any, Sequence
 from uuid import UUID
@@ -39,6 +41,7 @@ _MEMORY_ENVELOPE_TEMPLATE = (
 )
 
 
+@c1.rendered
 def messages_for_provider(input: ProviderInput) -> Sequence[ChatMessage]:
     """Materialize canonical RAG/memory metadata as provider-neutral system messages.
 
@@ -62,6 +65,7 @@ def messages_for_provider(input: ProviderInput) -> Sequence[ChatMessage]:
             ChatMessage(role="system", content=render_rag_sources_block(sources))
         )
 
+    c1.prompt_mapping(input, memory_events, sources, len(prefix))
     if not prefix:
         return input.messages
     return (*prefix, *input.messages)
