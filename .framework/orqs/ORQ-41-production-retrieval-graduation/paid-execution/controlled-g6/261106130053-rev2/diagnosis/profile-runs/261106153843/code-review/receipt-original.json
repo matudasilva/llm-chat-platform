@@ -1,0 +1,46 @@
+{
+  "status": "DIAGNOSTIC_PROFILE_HARNESS_REVIEW_PASS",
+  "reviewer": "/root/packet_review",
+  "plan_sha256": "df0031ace112d7bce1ae3d05d5d9d039a9c1ade75aba88c574bac01bec43b52f",
+  "harness_sha256": {
+    "experiments/production_graduation/gate_validation/controlled_latency.py": "a711e6161564e4f5fbf4f542c84bd6a3f1afb71df16760e4480cdae9073837f9",
+    "experiments/production_graduation/gate_validation/controlled_latency_worker.py": "a9f1996aadfe87406addbc9ba890ae291c186de76341b0f322aa2732b03804e8",
+    "experiments/production_graduation/gate_validation/controlled_latency_controller.py": "b77ab8466734b84f93d7ccf3476819054b674d0d6f98ae0402c7147d7b2656cd",
+    "experiments/production_graduation/gate_validation/local_api.py": "e9b8a886018ca60a7b77b2885b89fa813368373435464e455bd449589ea034eb",
+    "experiments/production_graduation/gate_validation/transports.py": "3c0f15acf79a08684fad8d89bfa7242d3779a980f89988a7f252e74cb7aef6e0",
+    "experiments/production_graduation/gate_validation/capture.py": "373dab408e467093a764720d6b9b6e5cd1617b7079e877c710b44cd3d24c68bf",
+    "experiments/production_graduation/gate_validation/fixtures.py": "ce7a3bc48939da71b4c3ac49829e9e21d9c686b5bdda7f72697c3ccbd14f1f0c",
+    "experiments/production_graduation/gate_validation/validate_g123.py": "d18aefea58b169264095466eafb81f5d1f0c259ae9e3ccb516c9534f228420c3",
+    "experiments/production_graduation/gate_validation/g9_controller.py": "4b3697b3d3eccf4eccb239060a50571bb91abe9bdd121143c6042b1ea91131ce",
+    "experiments/production_graduation/gate_validation/controlled_latency_profile.py": "0ff352c9734a07cab3046cac177c2e197ed8a9dbf8feeb419aab533a459ae437"
+  },
+  "support_files_sha256": {
+    ".framework/orqs/ORQ-41-production-retrieval-graduation/environment/g123/execution-freeze/settings/inspect.py": "501ea364ae3bfc21de353a0b6b0c6667dea5d44f682b7c456e4b01a6f1fbeb45",
+    ".framework/orqs/ORQ-41-production-retrieval-graduation/campaign-redesign/p2_netguard/sitecustomize.py": "2810dd72b69aa1c383c512a2ed6fb2444248c438b9a4b947330042020288a2f5"
+  },
+  "test_sha256": {
+    "tests/experiments/test_orq41_controlled_latency_profile.py": "c4ce01a32e0970dd365d7cd9be9cef8d582296250fe2db7f13975572cca28ad7"
+  },
+  "fixtures_sha256": "d31c5a889f8b3a2cf2184b5fff263679ef71e260cc943a1f5a45bc0c2563b005",
+  "prepared_databases_verification_sha256": "faf83fcd8888fa1428384381488862d8e5cd6b7af30f28648ed76e17058dba2e",
+  "independent_pure_controls_passed": 8,
+  "resolved_findings": [
+    "PROFILE-R1 shared retry handler double-wrapping"
+  ],
+  "open_blocker_high_medium_findings": [],
+  "review_sha256": "00767d8561d8f3d8d6e2609d6ec0e4b89385a407230c18aa1f24ce72829fb4bd",
+  "tests_xml_sha256": "8dc504c515d8a7e59db82d82662c56ecfe3fc91e524abacef950d6fdf1fdb244",
+  "not_a_gate": true,
+  "official_g6_status": "CONTROLLED_G6_FAIL",
+  "authorized_diagnostic_requests": 40,
+  "reviewer_platform_api_calls": 0,
+  "reviewer_database_calls": 0,
+  "reviewer_docker_calls": 0,
+  "reviewer_external_calls": 0,
+  "spend_usd": "0",
+  "limitations": [
+    "Instrumented diagnostic timings do not replace official G6",
+    "No exact causal percentage or live absolute bounds established",
+    "Prepared DB/config verifier executed read-only by parent, not reviewer"
+  ]
+}

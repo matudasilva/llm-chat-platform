@@ -1,0 +1,51 @@
+{
+  "status": "LEXICAL_AA_IMAGE_BINDING_IMPLEMENTED_SOURCE_REVIEW_PASS",
+  "completed_at": "2026-11-10T15:16:30.339547+00:00",
+  "technical_files_sha256": {
+    "experiments/production_graduation/gate_validation/blocked_latency.py": "7d1c56c4a432bb1d47714a166f72fa927c1492a0b93f52e8796b736701de3006",
+    "tests/experiments/test_orq41_blocked_latency.py": "437a889ca4cd822d1079538fbea7b32eea3c0f524e0d9d56402386c4b7064067"
+  },
+  "source_review_sha256": "2e8b7ca708e729a3ce8a2fa48e3590ba3a7b4d295f2eef0df2a7b9e045ba5298",
+  "image_amendment_approval_sha256": "1e367f6c279723ee8db757ac8a24cfa887835954f7ca9ad1d9fe45304fc306b8",
+  "regression_tests_passed": 219,
+  "regression_tests_skipped": 0,
+  "protected_source_config_files_unchanged": 503,
+  "authorized_source_changes": [
+    "experiments/production_graduation/gate_validation/blocked_latency.py",
+    "tests/experiments/test_orq41_blocked_latency.py"
+  ],
+  "prepared_packet": ".framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106225237/diagnosis/blocked-runs/261110150634",
+  "prepared_packet_plan_sha256": "e3f6f8efae1de5858e3402ee131cead41a28a42050b7115ded5c08a26f53eb54",
+  "packet_review_sha256": "9783d238f83f37b55abb7f72f41db20643ddb504e6777a1bcbbe4ffe3fba5d0c",
+  "report_note": "Immutable source report is a pre-review snapshot; this completion records subsequent source review and preparation.",
+  "aa_execution_authorized": false,
+  "provider_calls": 0,
+  "external_calls": 0,
+  "task_spend_usd": "0",
+  "official_g6_status": "CONTROLLED_G6_FAIL",
+  "paid_admission": "BLOCKED_CONTROLLED_G6_FAIL",
+  "artifacts_sha256": {
+    "authorization.json": "1e367f6c279723ee8db757ac8a24cfa887835954f7ca9ad1d9fe45304fc306b8",
+    "environment-preparation-result.json": "1e9f1b2cba12b79a0739d99aed40b05053d9735f112f55b77873cff5865aaa0f",
+    "focused-corrected.xml": "35c36defd601119559a17ca18ee91ff661b61ce6b2bc5d506d5d5ba16256f763",
+    "focused.xml": "5c80923b8b081b73979955099dceb980a63ddaffe115d9b8af909353b86b9e38",
+    "original-blocked_latency.py": "f0aa8e5211a0b2285d455a98784e9d7e75f0ef6e7b702de156e6ebdf8e57091b",
+    "original-test_orq41_blocked_latency.py": "3dbca037a1707be59b87941353691181baf9aa48606c324855181ca265afdd80",
+    "preparation-authorization.json": "577dcb835ec584dd01f927974dc0e5f0dd8e6c30a8d83be461a84d442f400e6c",
+    "preparation-command.json": "1404e3a06a2d840029dfb9bc3efb3f13a8232000963f89ee6f37720a917d4a3e",
+    "preparation-started.json": "b4ad9fb781922345f3e9f9affce814779988a4b94fb4d5b6d7001347aff492af",
+    "preparation.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "preparation.stdout": "b75fddf6cba0868383c832a11ecb859d4b90365886c7f7c928ca4cb287bbb260",
+    "prepare_environment.py": "f2efd99d7ee35d4eb7e1bcc5e29829e6d3b1dcd9d0e5731f3c328066832f14b2",
+    "regression.xml": "6c40fbd3850e5fa6342f30462f02dbb5cca264ea68ea16af579b00236090e7ba",
+    "report.md": "22d15494798de390a2577a550f4104b4e725fae1657160e128027386b6cada47",
+    "scope-before.json": "83c29bc27622300b6886e20af505dbd885035049c360a0a21350b00c18bdc2d0",
+    "source-environment-after.json": "089622ba5f1cfb37394132fed6a3a834b9717677a7866ea1952b242315b30adc",
+    "source-environment-before.json": "089622ba5f1cfb37394132fed6a3a834b9717677a7866ea1952b242315b30adc",
+    "source-review.json": "2e8b7ca708e729a3ce8a2fa48e3590ba3a7b4d295f2eef0df2a7b9e045ba5298",
+    "source-review.md": "e73b054a13e8f52897cb471688f1053dbd4dab97a31806c638b8ed94e691bdb9",
+    "source-validation.json": "58b9a3b4392bc0151c27d6b885a09b2e8737362007cbfef8b5bd053489aaa1cb",
+    "source.patch": "e786a186fcad61aec032e83f17f5d21d4136985d8aceb2022df88375d76d9927",
+    "validation-commands.json": "2d620bedbb34aa0a59db5b36f52ead323434d216124c20d678f30820cb2866d9"
+  }
+}

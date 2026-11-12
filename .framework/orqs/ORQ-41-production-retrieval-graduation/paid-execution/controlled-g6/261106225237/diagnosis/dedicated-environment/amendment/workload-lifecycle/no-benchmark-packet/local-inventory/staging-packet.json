@@ -1,0 +1,195 @@
+{
+  "status": "REVIEW_DRAFT_BLOCKED_NOT_EXECUTABLE",
+  "images": {
+    "worker": "sha256:775d925078229f173fc48a4b95d5ca1620cb518b46433ead60cec3440029b852",
+    "postgres": "sha256:8e5355e9ff399a002fa46148399a1ac22fb3e9b2d390f857296e6da6b5559ba1",
+    "redis": "sha256:13105d2858ded45aedf7b24f0870e6a4e7ce4964924bffce68e562ca72149f1e",
+    "collector": "sha256:50dccac76879873148242bb98c6472404f3af3388c318ef270a6912b855c2dbc"
+  },
+  "source_sha256": {
+    ".framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106225237/diagnosis/dedicated-environment/amendment/workload-lifecycle/no-benchmark-packet/synthetic_bootstrap.py": "6205f0fb191527036c8e995219f05815981764bd53bc5deeca9c741b336d552d",
+    ".framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106225237/diagnosis/dedicated-environment/amendment/workload-lifecycle/no-benchmark-packet/synthetic_worker.py": "0cf4030f75803fcb7c8490d4c4e0ff1c73a19816042d0c67a550a503cc582756",
+    ".framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106225237/diagnosis/dedicated-environment/amendment/workload-lifecycle/no-benchmark-packet/synthetic_controller.py": "08982aa66a4f0e0ba75793850fc5423342aa80369f6b0a4a8e31fea1a128d79f",
+    ".framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106225237/diagnosis/dedicated-environment/amendment/workload-lifecycle/no-benchmark-packet/synthetic_packet.py": "078de660840bf438e4eaf25ec8e007e863cdcbd2c087178c21835491cd2c3c71",
+    "experiments/production_graduation/gate_validation/dedicated_lifecycle.py": "9d8547bd60265c883ae46a1987776f6138f7c1a62dacb2f07dba26d8fc488545",
+    "experiments/production_graduation/gate_validation/dedicated_lifecycle_host.py": "dca3279c64ab8b26633e67b7416bfca6a7f17fc43a602299e11571d2570c66a6",
+    ".framework/orqs/ORQ-41-production-retrieval-graduation/environment/g8/collector.yaml": "d8c49befdfbd43f9312cfe111d3255ade68c52c0c0c0a299c3b311695fb22f0a"
+  },
+  "proposed_probe_name": "orq41-synthetic-bootstrap-probe-261112125713",
+  "probe_name_absent_at_inventory": true,
+  "probe_create_argv": [
+    "docker",
+    "create",
+    "--pull=never",
+    "--name",
+    "orq41-synthetic-bootstrap-probe-261112125713",
+    "--network=none",
+    "--restart=no",
+    "--read-only",
+    "--cap-drop=ALL",
+    "--security-opt=no-new-privileges",
+    "--user=1000:1000",
+    "--cgroup-parent=system.slice",
+    "--cpus=0.5",
+    "--memory=67108864",
+    "--memory-swap=67108864",
+    "--pids-limit=32",
+    "--mount",
+    "type=bind,src=/home/matias/Cursor/llm-chat-platform/.framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106225237/diagnosis/dedicated-environment/amendment/workload-lifecycle/no-benchmark-packet/synthetic_bootstrap.py,dst=/orq41-synthetic/synthetic_bootstrap.py,readonly",
+    "--mount",
+    "type=bind,src=/home/matias/Cursor/llm-chat-platform/experiments/production_graduation/gate_validation/dedicated_lifecycle.py,dst=/orq41-synthetic/core.py,readonly",
+    "--entrypoint=/usr/local/bin/python3",
+    "sha256:775d925078229f173fc48a4b95d5ca1620cb518b46433ead60cec3440029b852",
+    "-I",
+    "-B",
+    "-c",
+    "import os,runpy; assert os.getpid()==1; core=runpy.run_path('/orq41-synthetic/synthetic_bootstrap.py')['load_lifecycle'](); print('PID1_PINNED_CORE_OK',core.digest({'case':'offline'}))"
+  ],
+  "probe_start_argv": [
+    "docker",
+    "start",
+    "--attach",
+    "orq41-synthetic-bootstrap-probe-261112125713"
+  ],
+  "probe_inspect_argv": [
+    "docker",
+    "inspect",
+    "--format",
+    "{\"Id\":{{json .Id}},\"Image\":{{json .Image}},\"Status\":{{json .State.Status}},\"ExitCode\":{{json .State.ExitCode}}}",
+    "orq41-synthetic-bootstrap-probe-261112125713"
+  ],
+  "staging_create_argv_drafts": {
+    "postgres": [
+      "docker",
+      "create",
+      "--pull=never",
+      "--restart=no",
+      "--name=orq41-blocked-<RUN_ID>-postgres",
+      "--network=none",
+      "--cgroup-parent=orq41bench.slice",
+      "--cpus=2",
+      "--memory=2147483648",
+      "--memory-swap=2147483648",
+      "--cpuset-cpus=4,6",
+      "--env-file=<PRIVATE_POSTGRES_ENV>",
+      "--mount",
+      "type=volume,src=<FRESH_PG_VOLUME>,dst=/var/lib/postgresql/data",
+      "sha256:8e5355e9ff399a002fa46148399a1ac22fb3e9b2d390f857296e6da6b5559ba1"
+    ],
+    "redis": [
+      "docker",
+      "create",
+      "--pull=never",
+      "--restart=no",
+      "--name=orq41-blocked-<RUN_ID>-redis",
+      "--network=container:<PG_ID_FROM_CREATE>",
+      "--cgroup-parent=system.slice",
+      "--cpus=0.5",
+      "--memory=268435456",
+      "--memory-swap=268435456",
+      "--mount",
+      "type=volume,src=<FRESH_REDIS_VOLUME>,dst=/data",
+      "sha256:13105d2858ded45aedf7b24f0870e6a4e7ce4964924bffce68e562ca72149f1e",
+      "redis-server",
+      "--bind",
+      "127.0.0.1",
+      "--save",
+      "",
+      "--appendonly",
+      "no"
+    ],
+    "collector": [
+      "docker",
+      "create",
+      "--pull=never",
+      "--restart=no",
+      "--name=orq41-blocked-<RUN_ID>-collector",
+      "--network=container:<PG_ID_FROM_CREATE>",
+      "--cgroup-parent=system.slice",
+      "--cpus=0.5",
+      "--memory=268435456",
+      "--memory-swap=268435456",
+      "--mount",
+      "type=bind,src=/home/matias/Cursor/llm-chat-platform/.framework/orqs/ORQ-41-production-retrieval-graduation/environment/g8/collector.yaml,dst=/etc/otelcol/config.yaml,readonly",
+      "sha256:50dccac76879873148242bb98c6472404f3af3388c318ef270a6912b855c2dbc",
+      "--config=/etc/otelcol/config.yaml"
+    ]
+  },
+  "unbound_inputs": [
+    "RUN_ID",
+    "PG_ID_FROM_CREATE",
+    "PRIVATE_POSTGRES_ENV",
+    "FRESH_PG_VOLUME",
+    "FRESH_REDIS_VOLUME",
+    "controller PID/starttime",
+    "deployment hash"
+  ],
+  "blockers": [
+    "Root state parent /var/lib/orq41-cpuset is 0700 root:root; controller UID/GID 1000 cannot traverse to receipts. No parent permission change authorized; per-run mode 0711 alone does not solve this.",
+    "Full root-state collision inventory inaccessible to UID 1000; no run ID or private path reserved.",
+    "Actual image interpreter/PID1/bootstrap execution untested; the optional exact isolated probe requires new approval.",
+    "Exact sealed installer and persistent controller launcher remain absent; no reviewed command packet exists for those host actions.",
+    "System slices currently allow CPUs 0-31; four existing containers are running. Exclusive reservation/restoration and its shared impact require separately bound execution permission.",
+    "Future run/container/volume/controller identities, credential file, final plan/manifest/deployment hash and execution authorization do not yet exist.",
+    "Docker CLI --entrypoint plus positional -I/-B cannot encode the required three-element Entrypoint. A structured local Docker API create request is now drafted with exact Entrypoint/Cmd; transport/version/error handling, mount timing and resulting inspect projection remain unreviewed/unexecuted.",
+    "Public socket directory must be created by the reviewed helper with exist_ok=False; staging must not precreate it to satisfy a mount. Bind mount validation timing and stopped-worker creation order remain to be demonstrated or resolved without source changes."
+  ],
+  "staging_authorized": false,
+  "probe_authorized": false,
+  "execution_ready": false,
+  "g6": "FAIL",
+  "paid_execution": "BLOCKED",
+  "worker_create_api_request_draft": {
+    "transport": "local Unix socket /var/run/docker.sock; request NOT sent",
+    "method": "POST",
+    "path": "/containers/create?name=orq41-blocked-<RUN_ID>-synthetic-worker-b0",
+    "body": {
+      "Image": "sha256:775d925078229f173fc48a4b95d5ca1620cb518b46433ead60cec3440029b852",
+      "User": "1000:1000",
+      "Entrypoint": [
+        "/usr/local/bin/python3",
+        "-I",
+        "-B"
+      ],
+      "Cmd": [
+        "/orq41-synthetic/synthetic_worker.py",
+        "/orq41-synthetic/plan.json",
+        "/g6run"
+      ],
+      "HostConfig": {
+        "NetworkMode": "container:<PG_ID_FROM_CREATE>",
+        "CgroupParent": "orq41bench.slice",
+        "CpusetCpus": "0,2",
+        "NanoCpus": 2000000000,
+        "Memory": 2147483648,
+        "MemorySwap": 2147483648,
+        "RestartPolicy": {
+          "Name": "no"
+        },
+        "Privileged": false,
+        "CapAdd": [],
+        "PortBindings": {},
+        "Mounts": [
+          {
+            "Type": "bind",
+            "Source": "/var/lib/orq41-cpuset/<RUN_ID>/synthetic",
+            "Target": "/orq41-synthetic",
+            "ReadOnly": true
+          },
+          {
+            "Type": "bind",
+            "Source": "/var/lib/orq41-cpuset/<RUN_ID>/receipts",
+            "Target": "/g6run",
+            "ReadOnly": false
+          },
+          {
+            "Type": "bind",
+            "Source": "/run/orq41-lifecycle/<RUN_ID>",
+            "Target": "/orq41-lifecycle",
+            "ReadOnly": true
+          }
+        ]
+      }
+    }
+  }
+}

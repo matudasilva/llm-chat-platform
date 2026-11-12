@@ -1,0 +1,1388 @@
+{
+  "status": "PLAN_COMPARISON_RETAINED_RECORDS_VERIFIED",
+  "pairs": [
+    {
+      "case_id": "ES-document-01",
+      "category": "document",
+      "custom_execution_ms": 7.902,
+      "generic_execution_ms": 22.917,
+      "ratio": 2.9001518602885348,
+      "execution_difference_ms": 15.015,
+      "custom_keyword_ms": 0.717,
+      "generic_keyword_ms": 14.858,
+      "custom_semantic_ms": 6.37,
+      "generic_semantic_ms": 7.09,
+      "custom_keyword_filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ '''explic\u00e1'' & ''c\u00f3mo'' & ''la'' & ''abstracci\u00f3n'' & ''de'' & ''provid'' & ''separa'' & ''adapt'' & ''y'' & ''servicio'' & ''de'' & ''dominio'''::tsquery))",
+      "generic_keyword_filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ plainto_tsquery('english'::regconfig, $3)))",
+      "generic_has_parameterized_tsquery": true,
+      "custom_has_literal_tsquery": true
+    },
+    {
+      "case_id": "ES-combined-01",
+      "category": "combined",
+      "custom_execution_ms": 8.366,
+      "generic_execution_ms": 27.272,
+      "ratio": 3.259861343533349,
+      "execution_difference_ms": 18.906,
+      "custom_keyword_ms": 0.869,
+      "generic_keyword_ms": 19.776,
+      "custom_semantic_ms": 6.652,
+      "generic_semantic_ms": 6.618,
+      "custom_keyword_filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ '''explic\u00e1'' & ''c\u00f3mo'' & ''la'' & ''abstracci\u00f3n'' & ''de'' & ''provid'' & ''separa'' & ''adapt'' & ''y'' & ''servicio'' & ''de'' & ''dominio'' & ''record\u00e1'' & ''adem\u00e1'' & ''el'' & ''contacto'' & ''de'' & ''recuperaci\u00f3n'' & ''aprobado'' & ''para'' & ''orq41projectes01'''::tsquery))",
+      "generic_keyword_filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ plainto_tsquery('english'::regconfig, $3)))",
+      "generic_has_parameterized_tsquery": true,
+      "custom_has_literal_tsquery": true
+    },
+    {
+      "case_id": "ES-document-02",
+      "category": "document",
+      "custom_execution_ms": 8.429,
+      "generic_execution_ms": 18.235,
+      "ratio": 2.1633645746826433,
+      "execution_difference_ms": 9.806,
+      "custom_keyword_ms": 0.694,
+      "generic_keyword_ms": 10.255,
+      "custom_semantic_ms": 6.859,
+      "generic_semantic_ms": 7.011,
+      "custom_keyword_filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ '''explic\u00e1'' & ''c\u00f3mo'' & ''se'' & ''persisten'' & ''at\u00f3micament'' & ''los'' & ''intercambio'' & ''de'' & ''chat'''::tsquery))",
+      "generic_keyword_filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ plainto_tsquery('english'::regconfig, $3)))",
+      "generic_has_parameterized_tsquery": true,
+      "custom_has_literal_tsquery": true
+    },
+    {
+      "case_id": "ES-combined-02",
+      "category": "combined",
+      "custom_execution_ms": 7.973,
+      "generic_execution_ms": 24.255,
+      "ratio": 3.042142230026339,
+      "execution_difference_ms": 16.282,
+      "custom_keyword_ms": 0.724,
+      "generic_keyword_ms": 17.256,
+      "custom_semantic_ms": 6.428,
+      "generic_semantic_ms": 6.185,
+      "custom_keyword_filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ '''explic\u00e1'' & ''c\u00f3mo'' & ''se'' & ''persisten'' & ''at\u00f3micament'' & ''los'' & ''intercambio'' & ''de'' & ''chat'' & ''record\u00e1'' & ''adem\u00e1'' & ''el'' & ''contacto'' & ''de'' & ''recuperaci\u00f3n'' & ''aprobado'' & ''para'' & ''orq41projectes02'''::tsquery))",
+      "generic_keyword_filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ plainto_tsquery('english'::regconfig, $3)))",
+      "generic_has_parameterized_tsquery": true,
+      "custom_has_literal_tsquery": true
+    },
+    {
+      "case_id": "ES-document-03",
+      "category": "document",
+      "custom_execution_ms": 8.585,
+      "generic_execution_ms": 14.453,
+      "ratio": 1.6835177635410596,
+      "execution_difference_ms": 5.8679999999999986,
+      "custom_keyword_ms": 0.707,
+      "generic_keyword_ms": 7.342,
+      "custom_semantic_ms": 7.01,
+      "generic_semantic_ms": 6.265,
+      "custom_keyword_filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ '''explic\u00e1'' & ''el'' & ''aislamiento'' & ''por'' & ''tenant'' & ''en'' & ''retriev'''::tsquery))",
+      "generic_keyword_filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ plainto_tsquery('english'::regconfig, $3)))",
+      "generic_has_parameterized_tsquery": true,
+      "custom_has_literal_tsquery": true
+    },
+    {
+      "case_id": "ES-combined-03",
+      "category": "combined",
+      "custom_execution_ms": 8.6,
+      "generic_execution_ms": 23.776,
+      "ratio": 2.7646511627906976,
+      "execution_difference_ms": 15.176,
+      "custom_keyword_ms": 0.78,
+      "generic_keyword_ms": 16.047,
+      "custom_semantic_ms": 6.9,
+      "generic_semantic_ms": 6.805,
+      "custom_keyword_filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ '''explic\u00e1'' & ''el'' & ''aislamiento'' & ''por'' & ''tenant'' & ''en'' & ''retriev'' & ''record\u00e1'' & ''adem\u00e1'' & ''el'' & ''contacto'' & ''de'' & ''recuperaci\u00f3n'' & ''aprobado'' & ''para'' & ''orq41projectes03'''::tsquery))",
+      "generic_keyword_filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ plainto_tsquery('english'::regconfig, $3)))",
+      "generic_has_parameterized_tsquery": true,
+      "custom_has_literal_tsquery": true
+    },
+    {
+      "case_id": "ES-document-04",
+      "category": "document",
+      "custom_execution_ms": 8.495,
+      "generic_execution_ms": 17.195,
+      "ratio": 2.0241318422601533,
+      "execution_difference_ms": 8.700000000000001,
+      "custom_keyword_ms": 0.698,
+      "generic_keyword_ms": 9.915,
+      "custom_semantic_ms": 6.87,
+      "generic_semantic_ms": 6.438,
+      "custom_keyword_filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ '''explic\u00e1'' & ''c\u00f3mo'' & ''se'' & ''manejan'' & ''error'' & ''y'' & ''salida'' & ''parcial'' & ''en'' & ''stream'''::tsquery))",
+      "generic_keyword_filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ plainto_tsquery('english'::regconfig, $3)))",
+      "generic_has_parameterized_tsquery": true,
+      "custom_has_literal_tsquery": true
+    },
+    {
+      "case_id": "ES-combined-04",
+      "category": "combined",
+      "custom_execution_ms": 7.937,
+      "generic_execution_ms": 25.838,
+      "ratio": 3.2553861660577046,
+      "execution_difference_ms": 17.901,
+      "custom_keyword_ms": 0.73,
+      "generic_keyword_ms": 18.114,
+      "custom_semantic_ms": 6.352,
+      "generic_semantic_ms": 6.822,
+      "custom_keyword_filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ '''explic\u00e1'' & ''c\u00f3mo'' & ''se'' & ''manejan'' & ''error'' & ''y'' & ''salida'' & ''parcial'' & ''en'' & ''stream'' & ''record\u00e1'' & ''adem\u00e1'' & ''el'' & ''contacto'' & ''de'' & ''recuperaci\u00f3n'' & ''aprobado'' & ''para'' & ''orq41projectes04'''::tsquery))",
+      "generic_keyword_filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ plainto_tsquery('english'::regconfig, $3)))",
+      "generic_has_parameterized_tsquery": true,
+      "custom_has_literal_tsquery": true
+    },
+    {
+      "case_id": "ES-document-05",
+      "category": "document",
+      "custom_execution_ms": 8.145,
+      "generic_execution_ms": 17.995,
+      "ratio": 2.2093308778391654,
+      "execution_difference_ms": 9.850000000000001,
+      "custom_keyword_ms": 0.667,
+      "generic_keyword_ms": 10.346,
+      "custom_semantic_ms": 6.607,
+      "generic_semantic_ms": 6.77,
+      "custom_keyword_filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ '''explic\u00e1'' & ''por'' & ''qu\u00e9'' & ''los'' & ''fallo'' & ''de'' & ''telemetr\u00eda'' & ''deben'' & ''ser'' & ''best'' & ''effort'''::tsquery))",
+      "generic_keyword_filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ plainto_tsquery('english'::regconfig, $3)))",
+      "generic_has_parameterized_tsquery": true,
+      "custom_has_literal_tsquery": true
+    },
+    {
+      "case_id": "ES-combined-05",
+      "category": "combined",
+      "custom_execution_ms": 8.218,
+      "generic_execution_ms": 26.384,
+      "ratio": 3.2105135069359942,
+      "execution_difference_ms": 18.166,
+      "custom_keyword_ms": 0.842,
+      "generic_keyword_ms": 18.867,
+      "custom_semantic_ms": 6.486,
+      "generic_semantic_ms": 6.594,
+      "custom_keyword_filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ '''explic\u00e1'' & ''por'' & ''qu\u00e9'' & ''los'' & ''fallo'' & ''de'' & ''telemetr\u00eda'' & ''deben'' & ''ser'' & ''best'' & ''effort'' & ''record\u00e1'' & ''adem\u00e1'' & ''el'' & ''contacto'' & ''de'' & ''recuperaci\u00f3n'' & ''aprobado'' & ''para'' & ''orq41projectes05'''::tsquery))",
+      "generic_keyword_filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ plainto_tsquery('english'::regconfig, $3)))",
+      "generic_has_parameterized_tsquery": true,
+      "custom_has_literal_tsquery": true
+    }
+  ],
+  "rows": [
+    {
+      "index": 0,
+      "pair": 1,
+      "case_id": "ES-document-01",
+      "category": "document",
+      "mode": "force_custom_plan",
+      "planning_ms": 0.957,
+      "execution_ms": 7.902,
+      "scans": [
+        {
+          "path": "root/0/0/0/0/0/0",
+          "node_type": "Seq Scan",
+          "actual_rows": 2146,
+          "loops": 1,
+          "elapsed_ms": 6.37,
+          "rows_removed": 0,
+          "filter": "((tenant_id)::text = current_setting('app.tenant_id'::text, true))",
+          "shared_hits": 6717,
+          "shared_reads": 0
+        },
+        {
+          "path": "root/0/0/1/0/0/0/0/0",
+          "node_type": "Seq Scan",
+          "actual_rows": 0,
+          "loops": 1,
+          "elapsed_ms": 0.717,
+          "rows_removed": 2146,
+          "filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ '''explic\u00e1'' & ''c\u00f3mo'' & ''la'' & ''abstracci\u00f3n'' & ''de'' & ''provid'' & ''separa'' & ''adapt'' & ''y'' & ''servicio'' & ''de'' & ''dominio'''::tsquery))",
+          "shared_hits": 256,
+          "shared_reads": 0
+        }
+      ],
+      "keyword": {
+        "path": "root/0/0/1/0/0/0/0/0",
+        "node_type": "Seq Scan",
+        "actual_rows": 0,
+        "loops": 1,
+        "elapsed_ms": 0.717,
+        "rows_removed": 2146,
+        "filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ '''explic\u00e1'' & ''c\u00f3mo'' & ''la'' & ''abstracci\u00f3n'' & ''de'' & ''provid'' & ''separa'' & ''adapt'' & ''y'' & ''servicio'' & ''de'' & ''dominio'''::tsquery))",
+        "shared_hits": 256,
+        "shared_reads": 0
+      },
+      "semantic": {
+        "path": "root/0/0/0/0/0/0",
+        "node_type": "Seq Scan",
+        "actual_rows": 2146,
+        "loops": 1,
+        "elapsed_ms": 6.37,
+        "rows_removed": 0,
+        "filter": "((tenant_id)::text = current_setting('app.tenant_id'::text, true))",
+        "shared_hits": 6717,
+        "shared_reads": 0
+      },
+      "root_shared_reads": 0,
+      "temp_reads": 0,
+      "temp_writes": 0
+    },
+    {
+      "index": 1,
+      "pair": 1,
+      "case_id": "ES-document-01",
+      "category": "document",
+      "mode": "force_generic_plan",
+      "planning_ms": 0.892,
+      "execution_ms": 22.917,
+      "scans": [
+        {
+          "path": "root/0/0/0/0/0/0",
+          "node_type": "Seq Scan",
+          "actual_rows": 2146,
+          "loops": 1,
+          "elapsed_ms": 7.09,
+          "rows_removed": 0,
+          "filter": "((tenant_id)::text = current_setting('app.tenant_id'::text, true))",
+          "shared_hits": 6717,
+          "shared_reads": 0
+        },
+        {
+          "path": "root/0/0/1/0/0/0/0/0",
+          "node_type": "Seq Scan",
+          "actual_rows": 0,
+          "loops": 1,
+          "elapsed_ms": 14.858,
+          "rows_removed": 2146,
+          "filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ plainto_tsquery('english'::regconfig, $3)))",
+          "shared_hits": 278,
+          "shared_reads": 0
+        }
+      ],
+      "keyword": {
+        "path": "root/0/0/1/0/0/0/0/0",
+        "node_type": "Seq Scan",
+        "actual_rows": 0,
+        "loops": 1,
+        "elapsed_ms": 14.858,
+        "rows_removed": 2146,
+        "filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ plainto_tsquery('english'::regconfig, $3)))",
+        "shared_hits": 278,
+        "shared_reads": 0
+      },
+      "semantic": {
+        "path": "root/0/0/0/0/0/0",
+        "node_type": "Seq Scan",
+        "actual_rows": 2146,
+        "loops": 1,
+        "elapsed_ms": 7.09,
+        "rows_removed": 0,
+        "filter": "((tenant_id)::text = current_setting('app.tenant_id'::text, true))",
+        "shared_hits": 6717,
+        "shared_reads": 0
+      },
+      "root_shared_reads": 0,
+      "temp_reads": 0,
+      "temp_writes": 0
+    },
+    {
+      "index": 2,
+      "pair": 2,
+      "case_id": "ES-combined-01",
+      "category": "combined",
+      "mode": "force_generic_plan",
+      "planning_ms": 0.596,
+      "execution_ms": 27.272,
+      "scans": [
+        {
+          "path": "root/0/0/0/0/0/0",
+          "node_type": "Seq Scan",
+          "actual_rows": 2146,
+          "loops": 1,
+          "elapsed_ms": 6.618,
+          "rows_removed": 0,
+          "filter": "((tenant_id)::text = current_setting('app.tenant_id'::text, true))",
+          "shared_hits": 6717,
+          "shared_reads": 0
+        },
+        {
+          "path": "root/0/0/1/0/0/0/0/0",
+          "node_type": "Seq Scan",
+          "actual_rows": 0,
+          "loops": 1,
+          "elapsed_ms": 19.776,
+          "rows_removed": 2146,
+          "filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ plainto_tsquery('english'::regconfig, $3)))",
+          "shared_hits": 282,
+          "shared_reads": 0
+        }
+      ],
+      "keyword": {
+        "path": "root/0/0/1/0/0/0/0/0",
+        "node_type": "Seq Scan",
+        "actual_rows": 0,
+        "loops": 1,
+        "elapsed_ms": 19.776,
+        "rows_removed": 2146,
+        "filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ plainto_tsquery('english'::regconfig, $3)))",
+        "shared_hits": 282,
+        "shared_reads": 0
+      },
+      "semantic": {
+        "path": "root/0/0/0/0/0/0",
+        "node_type": "Seq Scan",
+        "actual_rows": 2146,
+        "loops": 1,
+        "elapsed_ms": 6.618,
+        "rows_removed": 0,
+        "filter": "((tenant_id)::text = current_setting('app.tenant_id'::text, true))",
+        "shared_hits": 6717,
+        "shared_reads": 0
+      },
+      "root_shared_reads": 0,
+      "temp_reads": 0,
+      "temp_writes": 0
+    },
+    {
+      "index": 3,
+      "pair": 2,
+      "case_id": "ES-combined-01",
+      "category": "combined",
+      "mode": "force_custom_plan",
+      "planning_ms": 1.031,
+      "execution_ms": 8.366,
+      "scans": [
+        {
+          "path": "root/0/0/0/0/0/0",
+          "node_type": "Seq Scan",
+          "actual_rows": 2146,
+          "loops": 1,
+          "elapsed_ms": 6.652,
+          "rows_removed": 0,
+          "filter": "((tenant_id)::text = current_setting('app.tenant_id'::text, true))",
+          "shared_hits": 6717,
+          "shared_reads": 0
+        },
+        {
+          "path": "root/0/0/1/0/0/0/0/0",
+          "node_type": "Seq Scan",
+          "actual_rows": 0,
+          "loops": 1,
+          "elapsed_ms": 0.869,
+          "rows_removed": 2146,
+          "filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ '''explic\u00e1'' & ''c\u00f3mo'' & ''la'' & ''abstracci\u00f3n'' & ''de'' & ''provid'' & ''separa'' & ''adapt'' & ''y'' & ''servicio'' & ''de'' & ''dominio'' & ''record\u00e1'' & ''adem\u00e1'' & ''el'' & ''contacto'' & ''de'' & ''recuperaci\u00f3n'' & ''aprobado'' & ''para'' & ''orq41projectes01'''::tsquery))",
+          "shared_hits": 256,
+          "shared_reads": 0
+        }
+      ],
+      "keyword": {
+        "path": "root/0/0/1/0/0/0/0/0",
+        "node_type": "Seq Scan",
+        "actual_rows": 0,
+        "loops": 1,
+        "elapsed_ms": 0.869,
+        "rows_removed": 2146,
+        "filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ '''explic\u00e1'' & ''c\u00f3mo'' & ''la'' & ''abstracci\u00f3n'' & ''de'' & ''provid'' & ''separa'' & ''adapt'' & ''y'' & ''servicio'' & ''de'' & ''dominio'' & ''record\u00e1'' & ''adem\u00e1'' & ''el'' & ''contacto'' & ''de'' & ''recuperaci\u00f3n'' & ''aprobado'' & ''para'' & ''orq41projectes01'''::tsquery))",
+        "shared_hits": 256,
+        "shared_reads": 0
+      },
+      "semantic": {
+        "path": "root/0/0/0/0/0/0",
+        "node_type": "Seq Scan",
+        "actual_rows": 2146,
+        "loops": 1,
+        "elapsed_ms": 6.652,
+        "rows_removed": 0,
+        "filter": "((tenant_id)::text = current_setting('app.tenant_id'::text, true))",
+        "shared_hits": 6717,
+        "shared_reads": 0
+      },
+      "root_shared_reads": 0,
+      "temp_reads": 0,
+      "temp_writes": 0
+    },
+    {
+      "index": 4,
+      "pair": 3,
+      "case_id": "ES-document-02",
+      "category": "document",
+      "mode": "force_custom_plan",
+      "planning_ms": 0.999,
+      "execution_ms": 8.429,
+      "scans": [
+        {
+          "path": "root/0/0/0/0/0/0",
+          "node_type": "Seq Scan",
+          "actual_rows": 2146,
+          "loops": 1,
+          "elapsed_ms": 6.859,
+          "rows_removed": 0,
+          "filter": "((tenant_id)::text = current_setting('app.tenant_id'::text, true))",
+          "shared_hits": 6717,
+          "shared_reads": 0
+        },
+        {
+          "path": "root/0/0/1/0/0/0/0/0",
+          "node_type": "Seq Scan",
+          "actual_rows": 0,
+          "loops": 1,
+          "elapsed_ms": 0.694,
+          "rows_removed": 2146,
+          "filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ '''explic\u00e1'' & ''c\u00f3mo'' & ''se'' & ''persisten'' & ''at\u00f3micament'' & ''los'' & ''intercambio'' & ''de'' & ''chat'''::tsquery))",
+          "shared_hits": 256,
+          "shared_reads": 0
+        }
+      ],
+      "keyword": {
+        "path": "root/0/0/1/0/0/0/0/0",
+        "node_type": "Seq Scan",
+        "actual_rows": 0,
+        "loops": 1,
+        "elapsed_ms": 0.694,
+        "rows_removed": 2146,
+        "filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ '''explic\u00e1'' & ''c\u00f3mo'' & ''se'' & ''persisten'' & ''at\u00f3micament'' & ''los'' & ''intercambio'' & ''de'' & ''chat'''::tsquery))",
+        "shared_hits": 256,
+        "shared_reads": 0
+      },
+      "semantic": {
+        "path": "root/0/0/0/0/0/0",
+        "node_type": "Seq Scan",
+        "actual_rows": 2146,
+        "loops": 1,
+        "elapsed_ms": 6.859,
+        "rows_removed": 0,
+        "filter": "((tenant_id)::text = current_setting('app.tenant_id'::text, true))",
+        "shared_hits": 6717,
+        "shared_reads": 0
+      },
+      "root_shared_reads": 0,
+      "temp_reads": 0,
+      "temp_writes": 0
+    },
+    {
+      "index": 5,
+      "pair": 3,
+      "case_id": "ES-document-02",
+      "category": "document",
+      "mode": "force_generic_plan",
+      "planning_ms": 0.87,
+      "execution_ms": 18.235,
+      "scans": [
+        {
+          "path": "root/0/0/0/0/0/0",
+          "node_type": "Seq Scan",
+          "actual_rows": 2146,
+          "loops": 1,
+          "elapsed_ms": 7.011,
+          "rows_removed": 0,
+          "filter": "((tenant_id)::text = current_setting('app.tenant_id'::text, true))",
+          "shared_hits": 6717,
+          "shared_reads": 0
+        },
+        {
+          "path": "root/0/0/1/0/0/0/0/0",
+          "node_type": "Seq Scan",
+          "actual_rows": 0,
+          "loops": 1,
+          "elapsed_ms": 10.255,
+          "rows_removed": 2146,
+          "filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ plainto_tsquery('english'::regconfig, $3)))",
+          "shared_hits": 278,
+          "shared_reads": 0
+        }
+      ],
+      "keyword": {
+        "path": "root/0/0/1/0/0/0/0/0",
+        "node_type": "Seq Scan",
+        "actual_rows": 0,
+        "loops": 1,
+        "elapsed_ms": 10.255,
+        "rows_removed": 2146,
+        "filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ plainto_tsquery('english'::regconfig, $3)))",
+        "shared_hits": 278,
+        "shared_reads": 0
+      },
+      "semantic": {
+        "path": "root/0/0/0/0/0/0",
+        "node_type": "Seq Scan",
+        "actual_rows": 2146,
+        "loops": 1,
+        "elapsed_ms": 7.011,
+        "rows_removed": 0,
+        "filter": "((tenant_id)::text = current_setting('app.tenant_id'::text, true))",
+        "shared_hits": 6717,
+        "shared_reads": 0
+      },
+      "root_shared_reads": 0,
+      "temp_reads": 0,
+      "temp_writes": 0
+    },
+    {
+      "index": 6,
+      "pair": 4,
+      "case_id": "ES-combined-02",
+      "category": "combined",
+      "mode": "force_generic_plan",
+      "planning_ms": 0.641,
+      "execution_ms": 24.255,
+      "scans": [
+        {
+          "path": "root/0/0/0/0/0/0",
+          "node_type": "Seq Scan",
+          "actual_rows": 2146,
+          "loops": 1,
+          "elapsed_ms": 6.185,
+          "rows_removed": 0,
+          "filter": "((tenant_id)::text = current_setting('app.tenant_id'::text, true))",
+          "shared_hits": 6717,
+          "shared_reads": 0
+        },
+        {
+          "path": "root/0/0/1/0/0/0/0/0",
+          "node_type": "Seq Scan",
+          "actual_rows": 0,
+          "loops": 1,
+          "elapsed_ms": 17.256,
+          "rows_removed": 2146,
+          "filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ plainto_tsquery('english'::regconfig, $3)))",
+          "shared_hits": 282,
+          "shared_reads": 0
+        }
+      ],
+      "keyword": {
+        "path": "root/0/0/1/0/0/0/0/0",
+        "node_type": "Seq Scan",
+        "actual_rows": 0,
+        "loops": 1,
+        "elapsed_ms": 17.256,
+        "rows_removed": 2146,
+        "filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ plainto_tsquery('english'::regconfig, $3)))",
+        "shared_hits": 282,
+        "shared_reads": 0
+      },
+      "semantic": {
+        "path": "root/0/0/0/0/0/0",
+        "node_type": "Seq Scan",
+        "actual_rows": 2146,
+        "loops": 1,
+        "elapsed_ms": 6.185,
+        "rows_removed": 0,
+        "filter": "((tenant_id)::text = current_setting('app.tenant_id'::text, true))",
+        "shared_hits": 6717,
+        "shared_reads": 0
+      },
+      "root_shared_reads": 0,
+      "temp_reads": 0,
+      "temp_writes": 0
+    },
+    {
+      "index": 7,
+      "pair": 4,
+      "case_id": "ES-combined-02",
+      "category": "combined",
+      "mode": "force_custom_plan",
+      "planning_ms": 0.939,
+      "execution_ms": 7.973,
+      "scans": [
+        {
+          "path": "root/0/0/0/0/0/0",
+          "node_type": "Seq Scan",
+          "actual_rows": 2146,
+          "loops": 1,
+          "elapsed_ms": 6.428,
+          "rows_removed": 0,
+          "filter": "((tenant_id)::text = current_setting('app.tenant_id'::text, true))",
+          "shared_hits": 6717,
+          "shared_reads": 0
+        },
+        {
+          "path": "root/0/0/1/0/0/0/0/0",
+          "node_type": "Seq Scan",
+          "actual_rows": 0,
+          "loops": 1,
+          "elapsed_ms": 0.724,
+          "rows_removed": 2146,
+          "filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ '''explic\u00e1'' & ''c\u00f3mo'' & ''se'' & ''persisten'' & ''at\u00f3micament'' & ''los'' & ''intercambio'' & ''de'' & ''chat'' & ''record\u00e1'' & ''adem\u00e1'' & ''el'' & ''contacto'' & ''de'' & ''recuperaci\u00f3n'' & ''aprobado'' & ''para'' & ''orq41projectes02'''::tsquery))",
+          "shared_hits": 256,
+          "shared_reads": 0
+        }
+      ],
+      "keyword": {
+        "path": "root/0/0/1/0/0/0/0/0",
+        "node_type": "Seq Scan",
+        "actual_rows": 0,
+        "loops": 1,
+        "elapsed_ms": 0.724,
+        "rows_removed": 2146,
+        "filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ '''explic\u00e1'' & ''c\u00f3mo'' & ''se'' & ''persisten'' & ''at\u00f3micament'' & ''los'' & ''intercambio'' & ''de'' & ''chat'' & ''record\u00e1'' & ''adem\u00e1'' & ''el'' & ''contacto'' & ''de'' & ''recuperaci\u00f3n'' & ''aprobado'' & ''para'' & ''orq41projectes02'''::tsquery))",
+        "shared_hits": 256,
+        "shared_reads": 0
+      },
+      "semantic": {
+        "path": "root/0/0/0/0/0/0",
+        "node_type": "Seq Scan",
+        "actual_rows": 2146,
+        "loops": 1,
+        "elapsed_ms": 6.428,
+        "rows_removed": 0,
+        "filter": "((tenant_id)::text = current_setting('app.tenant_id'::text, true))",
+        "shared_hits": 6717,
+        "shared_reads": 0
+      },
+      "root_shared_reads": 0,
+      "temp_reads": 0,
+      "temp_writes": 0
+    },
+    {
+      "index": 8,
+      "pair": 5,
+      "case_id": "ES-document-03",
+      "category": "document",
+      "mode": "force_custom_plan",
+      "planning_ms": 0.993,
+      "execution_ms": 8.585,
+      "scans": [
+        {
+          "path": "root/0/0/0/0/0/0",
+          "node_type": "Seq Scan",
+          "actual_rows": 2146,
+          "loops": 1,
+          "elapsed_ms": 7.01,
+          "rows_removed": 0,
+          "filter": "((tenant_id)::text = current_setting('app.tenant_id'::text, true))",
+          "shared_hits": 6717,
+          "shared_reads": 0
+        },
+        {
+          "path": "root/0/0/1/0/0/0/0/0",
+          "node_type": "Seq Scan",
+          "actual_rows": 0,
+          "loops": 1,
+          "elapsed_ms": 0.707,
+          "rows_removed": 2146,
+          "filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ '''explic\u00e1'' & ''el'' & ''aislamiento'' & ''por'' & ''tenant'' & ''en'' & ''retriev'''::tsquery))",
+          "shared_hits": 256,
+          "shared_reads": 0
+        }
+      ],
+      "keyword": {
+        "path": "root/0/0/1/0/0/0/0/0",
+        "node_type": "Seq Scan",
+        "actual_rows": 0,
+        "loops": 1,
+        "elapsed_ms": 0.707,
+        "rows_removed": 2146,
+        "filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ '''explic\u00e1'' & ''el'' & ''aislamiento'' & ''por'' & ''tenant'' & ''en'' & ''retriev'''::tsquery))",
+        "shared_hits": 256,
+        "shared_reads": 0
+      },
+      "semantic": {
+        "path": "root/0/0/0/0/0/0",
+        "node_type": "Seq Scan",
+        "actual_rows": 2146,
+        "loops": 1,
+        "elapsed_ms": 7.01,
+        "rows_removed": 0,
+        "filter": "((tenant_id)::text = current_setting('app.tenant_id'::text, true))",
+        "shared_hits": 6717,
+        "shared_reads": 0
+      },
+      "root_shared_reads": 0,
+      "temp_reads": 0,
+      "temp_writes": 0
+    },
+    {
+      "index": 9,
+      "pair": 5,
+      "case_id": "ES-document-03",
+      "category": "document",
+      "mode": "force_generic_plan",
+      "planning_ms": 0.689,
+      "execution_ms": 14.453,
+      "scans": [
+        {
+          "path": "root/0/0/0/0/0/0",
+          "node_type": "Seq Scan",
+          "actual_rows": 2146,
+          "loops": 1,
+          "elapsed_ms": 6.265,
+          "rows_removed": 0,
+          "filter": "((tenant_id)::text = current_setting('app.tenant_id'::text, true))",
+          "shared_hits": 6717,
+          "shared_reads": 0
+        },
+        {
+          "path": "root/0/0/1/0/0/0/0/0",
+          "node_type": "Seq Scan",
+          "actual_rows": 0,
+          "loops": 1,
+          "elapsed_ms": 7.342,
+          "rows_removed": 2146,
+          "filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ plainto_tsquery('english'::regconfig, $3)))",
+          "shared_hits": 278,
+          "shared_reads": 0
+        }
+      ],
+      "keyword": {
+        "path": "root/0/0/1/0/0/0/0/0",
+        "node_type": "Seq Scan",
+        "actual_rows": 0,
+        "loops": 1,
+        "elapsed_ms": 7.342,
+        "rows_removed": 2146,
+        "filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ plainto_tsquery('english'::regconfig, $3)))",
+        "shared_hits": 278,
+        "shared_reads": 0
+      },
+      "semantic": {
+        "path": "root/0/0/0/0/0/0",
+        "node_type": "Seq Scan",
+        "actual_rows": 2146,
+        "loops": 1,
+        "elapsed_ms": 6.265,
+        "rows_removed": 0,
+        "filter": "((tenant_id)::text = current_setting('app.tenant_id'::text, true))",
+        "shared_hits": 6717,
+        "shared_reads": 0
+      },
+      "root_shared_reads": 0,
+      "temp_reads": 0,
+      "temp_writes": 0
+    },
+    {
+      "index": 10,
+      "pair": 6,
+      "case_id": "ES-combined-03",
+      "category": "combined",
+      "mode": "force_generic_plan",
+      "planning_ms": 0.649,
+      "execution_ms": 23.776,
+      "scans": [
+        {
+          "path": "root/0/0/0/0/0/0",
+          "node_type": "Seq Scan",
+          "actual_rows": 2146,
+          "loops": 1,
+          "elapsed_ms": 6.805,
+          "rows_removed": 0,
+          "filter": "((tenant_id)::text = current_setting('app.tenant_id'::text, true))",
+          "shared_hits": 6717,
+          "shared_reads": 0
+        },
+        {
+          "path": "root/0/0/1/0/0/0/0/0",
+          "node_type": "Seq Scan",
+          "actual_rows": 0,
+          "loops": 1,
+          "elapsed_ms": 16.047,
+          "rows_removed": 2146,
+          "filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ plainto_tsquery('english'::regconfig, $3)))",
+          "shared_hits": 282,
+          "shared_reads": 0
+        }
+      ],
+      "keyword": {
+        "path": "root/0/0/1/0/0/0/0/0",
+        "node_type": "Seq Scan",
+        "actual_rows": 0,
+        "loops": 1,
+        "elapsed_ms": 16.047,
+        "rows_removed": 2146,
+        "filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ plainto_tsquery('english'::regconfig, $3)))",
+        "shared_hits": 282,
+        "shared_reads": 0
+      },
+      "semantic": {
+        "path": "root/0/0/0/0/0/0",
+        "node_type": "Seq Scan",
+        "actual_rows": 2146,
+        "loops": 1,
+        "elapsed_ms": 6.805,
+        "rows_removed": 0,
+        "filter": "((tenant_id)::text = current_setting('app.tenant_id'::text, true))",
+        "shared_hits": 6717,
+        "shared_reads": 0
+      },
+      "root_shared_reads": 0,
+      "temp_reads": 0,
+      "temp_writes": 0
+    },
+    {
+      "index": 11,
+      "pair": 6,
+      "case_id": "ES-combined-03",
+      "category": "combined",
+      "mode": "force_custom_plan",
+      "planning_ms": 0.984,
+      "execution_ms": 8.6,
+      "scans": [
+        {
+          "path": "root/0/0/0/0/0/0",
+          "node_type": "Seq Scan",
+          "actual_rows": 2146,
+          "loops": 1,
+          "elapsed_ms": 6.9,
+          "rows_removed": 0,
+          "filter": "((tenant_id)::text = current_setting('app.tenant_id'::text, true))",
+          "shared_hits": 6717,
+          "shared_reads": 0
+        },
+        {
+          "path": "root/0/0/1/0/0/0/0/0",
+          "node_type": "Seq Scan",
+          "actual_rows": 0,
+          "loops": 1,
+          "elapsed_ms": 0.78,
+          "rows_removed": 2146,
+          "filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ '''explic\u00e1'' & ''el'' & ''aislamiento'' & ''por'' & ''tenant'' & ''en'' & ''retriev'' & ''record\u00e1'' & ''adem\u00e1'' & ''el'' & ''contacto'' & ''de'' & ''recuperaci\u00f3n'' & ''aprobado'' & ''para'' & ''orq41projectes03'''::tsquery))",
+          "shared_hits": 256,
+          "shared_reads": 0
+        }
+      ],
+      "keyword": {
+        "path": "root/0/0/1/0/0/0/0/0",
+        "node_type": "Seq Scan",
+        "actual_rows": 0,
+        "loops": 1,
+        "elapsed_ms": 0.78,
+        "rows_removed": 2146,
+        "filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ '''explic\u00e1'' & ''el'' & ''aislamiento'' & ''por'' & ''tenant'' & ''en'' & ''retriev'' & ''record\u00e1'' & ''adem\u00e1'' & ''el'' & ''contacto'' & ''de'' & ''recuperaci\u00f3n'' & ''aprobado'' & ''para'' & ''orq41projectes03'''::tsquery))",
+        "shared_hits": 256,
+        "shared_reads": 0
+      },
+      "semantic": {
+        "path": "root/0/0/0/0/0/0",
+        "node_type": "Seq Scan",
+        "actual_rows": 2146,
+        "loops": 1,
+        "elapsed_ms": 6.9,
+        "rows_removed": 0,
+        "filter": "((tenant_id)::text = current_setting('app.tenant_id'::text, true))",
+        "shared_hits": 6717,
+        "shared_reads": 0
+      },
+      "root_shared_reads": 0,
+      "temp_reads": 0,
+      "temp_writes": 0
+    },
+    {
+      "index": 12,
+      "pair": 7,
+      "case_id": "ES-document-04",
+      "category": "document",
+      "mode": "force_custom_plan",
+      "planning_ms": 0.942,
+      "execution_ms": 8.495,
+      "scans": [
+        {
+          "path": "root/0/0/0/0/0/0",
+          "node_type": "Seq Scan",
+          "actual_rows": 2146,
+          "loops": 1,
+          "elapsed_ms": 6.87,
+          "rows_removed": 0,
+          "filter": "((tenant_id)::text = current_setting('app.tenant_id'::text, true))",
+          "shared_hits": 6717,
+          "shared_reads": 0
+        },
+        {
+          "path": "root/0/0/1/0/0/0/0/0",
+          "node_type": "Seq Scan",
+          "actual_rows": 0,
+          "loops": 1,
+          "elapsed_ms": 0.698,
+          "rows_removed": 2146,
+          "filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ '''explic\u00e1'' & ''c\u00f3mo'' & ''se'' & ''manejan'' & ''error'' & ''y'' & ''salida'' & ''parcial'' & ''en'' & ''stream'''::tsquery))",
+          "shared_hits": 256,
+          "shared_reads": 0
+        }
+      ],
+      "keyword": {
+        "path": "root/0/0/1/0/0/0/0/0",
+        "node_type": "Seq Scan",
+        "actual_rows": 0,
+        "loops": 1,
+        "elapsed_ms": 0.698,
+        "rows_removed": 2146,
+        "filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ '''explic\u00e1'' & ''c\u00f3mo'' & ''se'' & ''manejan'' & ''error'' & ''y'' & ''salida'' & ''parcial'' & ''en'' & ''stream'''::tsquery))",
+        "shared_hits": 256,
+        "shared_reads": 0
+      },
+      "semantic": {
+        "path": "root/0/0/0/0/0/0",
+        "node_type": "Seq Scan",
+        "actual_rows": 2146,
+        "loops": 1,
+        "elapsed_ms": 6.87,
+        "rows_removed": 0,
+        "filter": "((tenant_id)::text = current_setting('app.tenant_id'::text, true))",
+        "shared_hits": 6717,
+        "shared_reads": 0
+      },
+      "root_shared_reads": 0,
+      "temp_reads": 0,
+      "temp_writes": 0
+    },
+    {
+      "index": 13,
+      "pair": 7,
+      "case_id": "ES-document-04",
+      "category": "document",
+      "mode": "force_generic_plan",
+      "planning_ms": 0.614,
+      "execution_ms": 17.195,
+      "scans": [
+        {
+          "path": "root/0/0/0/0/0/0",
+          "node_type": "Seq Scan",
+          "actual_rows": 2146,
+          "loops": 1,
+          "elapsed_ms": 6.438,
+          "rows_removed": 0,
+          "filter": "((tenant_id)::text = current_setting('app.tenant_id'::text, true))",
+          "shared_hits": 6717,
+          "shared_reads": 0
+        },
+        {
+          "path": "root/0/0/1/0/0/0/0/0",
+          "node_type": "Seq Scan",
+          "actual_rows": 0,
+          "loops": 1,
+          "elapsed_ms": 9.915,
+          "rows_removed": 2146,
+          "filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ plainto_tsquery('english'::regconfig, $3)))",
+          "shared_hits": 278,
+          "shared_reads": 0
+        }
+      ],
+      "keyword": {
+        "path": "root/0/0/1/0/0/0/0/0",
+        "node_type": "Seq Scan",
+        "actual_rows": 0,
+        "loops": 1,
+        "elapsed_ms": 9.915,
+        "rows_removed": 2146,
+        "filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ plainto_tsquery('english'::regconfig, $3)))",
+        "shared_hits": 278,
+        "shared_reads": 0
+      },
+      "semantic": {
+        "path": "root/0/0/0/0/0/0",
+        "node_type": "Seq Scan",
+        "actual_rows": 2146,
+        "loops": 1,
+        "elapsed_ms": 6.438,
+        "rows_removed": 0,
+        "filter": "((tenant_id)::text = current_setting('app.tenant_id'::text, true))",
+        "shared_hits": 6717,
+        "shared_reads": 0
+      },
+      "root_shared_reads": 0,
+      "temp_reads": 0,
+      "temp_writes": 0
+    },
+    {
+      "index": 14,
+      "pair": 8,
+      "case_id": "ES-combined-04",
+      "category": "combined",
+      "mode": "force_generic_plan",
+      "planning_ms": 0.586,
+      "execution_ms": 25.838,
+      "scans": [
+        {
+          "path": "root/0/0/0/0/0/0",
+          "node_type": "Seq Scan",
+          "actual_rows": 2146,
+          "loops": 1,
+          "elapsed_ms": 6.822,
+          "rows_removed": 0,
+          "filter": "((tenant_id)::text = current_setting('app.tenant_id'::text, true))",
+          "shared_hits": 6717,
+          "shared_reads": 0
+        },
+        {
+          "path": "root/0/0/1/0/0/0/0/0",
+          "node_type": "Seq Scan",
+          "actual_rows": 0,
+          "loops": 1,
+          "elapsed_ms": 18.114,
+          "rows_removed": 2146,
+          "filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ plainto_tsquery('english'::regconfig, $3)))",
+          "shared_hits": 282,
+          "shared_reads": 0
+        }
+      ],
+      "keyword": {
+        "path": "root/0/0/1/0/0/0/0/0",
+        "node_type": "Seq Scan",
+        "actual_rows": 0,
+        "loops": 1,
+        "elapsed_ms": 18.114,
+        "rows_removed": 2146,
+        "filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ plainto_tsquery('english'::regconfig, $3)))",
+        "shared_hits": 282,
+        "shared_reads": 0
+      },
+      "semantic": {
+        "path": "root/0/0/0/0/0/0",
+        "node_type": "Seq Scan",
+        "actual_rows": 2146,
+        "loops": 1,
+        "elapsed_ms": 6.822,
+        "rows_removed": 0,
+        "filter": "((tenant_id)::text = current_setting('app.tenant_id'::text, true))",
+        "shared_hits": 6717,
+        "shared_reads": 0
+      },
+      "root_shared_reads": 0,
+      "temp_reads": 0,
+      "temp_writes": 0
+    },
+    {
+      "index": 15,
+      "pair": 8,
+      "case_id": "ES-combined-04",
+      "category": "combined",
+      "mode": "force_custom_plan",
+      "planning_ms": 1.102,
+      "execution_ms": 7.937,
+      "scans": [
+        {
+          "path": "root/0/0/0/0/0/0",
+          "node_type": "Seq Scan",
+          "actual_rows": 2146,
+          "loops": 1,
+          "elapsed_ms": 6.352,
+          "rows_removed": 0,
+          "filter": "((tenant_id)::text = current_setting('app.tenant_id'::text, true))",
+          "shared_hits": 6717,
+          "shared_reads": 0
+        },
+        {
+          "path": "root/0/0/1/0/0/0/0/0",
+          "node_type": "Seq Scan",
+          "actual_rows": 0,
+          "loops": 1,
+          "elapsed_ms": 0.73,
+          "rows_removed": 2146,
+          "filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ '''explic\u00e1'' & ''c\u00f3mo'' & ''se'' & ''manejan'' & ''error'' & ''y'' & ''salida'' & ''parcial'' & ''en'' & ''stream'' & ''record\u00e1'' & ''adem\u00e1'' & ''el'' & ''contacto'' & ''de'' & ''recuperaci\u00f3n'' & ''aprobado'' & ''para'' & ''orq41projectes04'''::tsquery))",
+          "shared_hits": 256,
+          "shared_reads": 0
+        }
+      ],
+      "keyword": {
+        "path": "root/0/0/1/0/0/0/0/0",
+        "node_type": "Seq Scan",
+        "actual_rows": 0,
+        "loops": 1,
+        "elapsed_ms": 0.73,
+        "rows_removed": 2146,
+        "filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ '''explic\u00e1'' & ''c\u00f3mo'' & ''se'' & ''manejan'' & ''error'' & ''y'' & ''salida'' & ''parcial'' & ''en'' & ''stream'' & ''record\u00e1'' & ''adem\u00e1'' & ''el'' & ''contacto'' & ''de'' & ''recuperaci\u00f3n'' & ''aprobado'' & ''para'' & ''orq41projectes04'''::tsquery))",
+        "shared_hits": 256,
+        "shared_reads": 0
+      },
+      "semantic": {
+        "path": "root/0/0/0/0/0/0",
+        "node_type": "Seq Scan",
+        "actual_rows": 2146,
+        "loops": 1,
+        "elapsed_ms": 6.352,
+        "rows_removed": 0,
+        "filter": "((tenant_id)::text = current_setting('app.tenant_id'::text, true))",
+        "shared_hits": 6717,
+        "shared_reads": 0
+      },
+      "root_shared_reads": 0,
+      "temp_reads": 0,
+      "temp_writes": 0
+    },
+    {
+      "index": 16,
+      "pair": 9,
+      "case_id": "ES-document-05",
+      "category": "document",
+      "mode": "force_custom_plan",
+      "planning_ms": 0.976,
+      "execution_ms": 8.145,
+      "scans": [
+        {
+          "path": "root/0/0/0/0/0/0",
+          "node_type": "Seq Scan",
+          "actual_rows": 2146,
+          "loops": 1,
+          "elapsed_ms": 6.607,
+          "rows_removed": 0,
+          "filter": "((tenant_id)::text = current_setting('app.tenant_id'::text, true))",
+          "shared_hits": 6717,
+          "shared_reads": 0
+        },
+        {
+          "path": "root/0/0/1/0/0/0/0/0",
+          "node_type": "Seq Scan",
+          "actual_rows": 0,
+          "loops": 1,
+          "elapsed_ms": 0.667,
+          "rows_removed": 2146,
+          "filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ '''explic\u00e1'' & ''por'' & ''qu\u00e9'' & ''los'' & ''fallo'' & ''de'' & ''telemetr\u00eda'' & ''deben'' & ''ser'' & ''best'' & ''effort'''::tsquery))",
+          "shared_hits": 256,
+          "shared_reads": 0
+        }
+      ],
+      "keyword": {
+        "path": "root/0/0/1/0/0/0/0/0",
+        "node_type": "Seq Scan",
+        "actual_rows": 0,
+        "loops": 1,
+        "elapsed_ms": 0.667,
+        "rows_removed": 2146,
+        "filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ '''explic\u00e1'' & ''por'' & ''qu\u00e9'' & ''los'' & ''fallo'' & ''de'' & ''telemetr\u00eda'' & ''deben'' & ''ser'' & ''best'' & ''effort'''::tsquery))",
+        "shared_hits": 256,
+        "shared_reads": 0
+      },
+      "semantic": {
+        "path": "root/0/0/0/0/0/0",
+        "node_type": "Seq Scan",
+        "actual_rows": 2146,
+        "loops": 1,
+        "elapsed_ms": 6.607,
+        "rows_removed": 0,
+        "filter": "((tenant_id)::text = current_setting('app.tenant_id'::text, true))",
+        "shared_hits": 6717,
+        "shared_reads": 0
+      },
+      "root_shared_reads": 0,
+      "temp_reads": 0,
+      "temp_writes": 0
+    },
+    {
+      "index": 17,
+      "pair": 9,
+      "case_id": "ES-document-05",
+      "category": "document",
+      "mode": "force_generic_plan",
+      "planning_ms": 0.619,
+      "execution_ms": 17.995,
+      "scans": [
+        {
+          "path": "root/0/0/0/0/0/0",
+          "node_type": "Seq Scan",
+          "actual_rows": 2146,
+          "loops": 1,
+          "elapsed_ms": 6.77,
+          "rows_removed": 0,
+          "filter": "((tenant_id)::text = current_setting('app.tenant_id'::text, true))",
+          "shared_hits": 6717,
+          "shared_reads": 0
+        },
+        {
+          "path": "root/0/0/1/0/0/0/0/0",
+          "node_type": "Seq Scan",
+          "actual_rows": 0,
+          "loops": 1,
+          "elapsed_ms": 10.346,
+          "rows_removed": 2146,
+          "filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ plainto_tsquery('english'::regconfig, $3)))",
+          "shared_hits": 278,
+          "shared_reads": 0
+        }
+      ],
+      "keyword": {
+        "path": "root/0/0/1/0/0/0/0/0",
+        "node_type": "Seq Scan",
+        "actual_rows": 0,
+        "loops": 1,
+        "elapsed_ms": 10.346,
+        "rows_removed": 2146,
+        "filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ plainto_tsquery('english'::regconfig, $3)))",
+        "shared_hits": 278,
+        "shared_reads": 0
+      },
+      "semantic": {
+        "path": "root/0/0/0/0/0/0",
+        "node_type": "Seq Scan",
+        "actual_rows": 2146,
+        "loops": 1,
+        "elapsed_ms": 6.77,
+        "rows_removed": 0,
+        "filter": "((tenant_id)::text = current_setting('app.tenant_id'::text, true))",
+        "shared_hits": 6717,
+        "shared_reads": 0
+      },
+      "root_shared_reads": 0,
+      "temp_reads": 0,
+      "temp_writes": 0
+    },
+    {
+      "index": 18,
+      "pair": 10,
+      "case_id": "ES-combined-05",
+      "category": "combined",
+      "mode": "force_generic_plan",
+      "planning_ms": 0.618,
+      "execution_ms": 26.384,
+      "scans": [
+        {
+          "path": "root/0/0/0/0/0/0",
+          "node_type": "Seq Scan",
+          "actual_rows": 2146,
+          "loops": 1,
+          "elapsed_ms": 6.594,
+          "rows_removed": 0,
+          "filter": "((tenant_id)::text = current_setting('app.tenant_id'::text, true))",
+          "shared_hits": 6717,
+          "shared_reads": 0
+        },
+        {
+          "path": "root/0/0/1/0/0/0/0/0",
+          "node_type": "Seq Scan",
+          "actual_rows": 0,
+          "loops": 1,
+          "elapsed_ms": 18.867,
+          "rows_removed": 2146,
+          "filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ plainto_tsquery('english'::regconfig, $3)))",
+          "shared_hits": 282,
+          "shared_reads": 0
+        }
+      ],
+      "keyword": {
+        "path": "root/0/0/1/0/0/0/0/0",
+        "node_type": "Seq Scan",
+        "actual_rows": 0,
+        "loops": 1,
+        "elapsed_ms": 18.867,
+        "rows_removed": 2146,
+        "filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ plainto_tsquery('english'::regconfig, $3)))",
+        "shared_hits": 282,
+        "shared_reads": 0
+      },
+      "semantic": {
+        "path": "root/0/0/0/0/0/0",
+        "node_type": "Seq Scan",
+        "actual_rows": 2146,
+        "loops": 1,
+        "elapsed_ms": 6.594,
+        "rows_removed": 0,
+        "filter": "((tenant_id)::text = current_setting('app.tenant_id'::text, true))",
+        "shared_hits": 6717,
+        "shared_reads": 0
+      },
+      "root_shared_reads": 0,
+      "temp_reads": 0,
+      "temp_writes": 0
+    },
+    {
+      "index": 19,
+      "pair": 10,
+      "case_id": "ES-combined-05",
+      "category": "combined",
+      "mode": "force_custom_plan",
+      "planning_ms": 1.024,
+      "execution_ms": 8.218,
+      "scans": [
+        {
+          "path": "root/0/0/0/0/0/0",
+          "node_type": "Seq Scan",
+          "actual_rows": 2146,
+          "loops": 1,
+          "elapsed_ms": 6.486,
+          "rows_removed": 0,
+          "filter": "((tenant_id)::text = current_setting('app.tenant_id'::text, true))",
+          "shared_hits": 6717,
+          "shared_reads": 0
+        },
+        {
+          "path": "root/0/0/1/0/0/0/0/0",
+          "node_type": "Seq Scan",
+          "actual_rows": 0,
+          "loops": 1,
+          "elapsed_ms": 0.842,
+          "rows_removed": 2146,
+          "filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ '''explic\u00e1'' & ''por'' & ''qu\u00e9'' & ''los'' & ''fallo'' & ''de'' & ''telemetr\u00eda'' & ''deben'' & ''ser'' & ''best'' & ''effort'' & ''record\u00e1'' & ''adem\u00e1'' & ''el'' & ''contacto'' & ''de'' & ''recuperaci\u00f3n'' & ''aprobado'' & ''para'' & ''orq41projectes05'''::tsquery))",
+          "shared_hits": 256,
+          "shared_reads": 0
+        }
+      ],
+      "keyword": {
+        "path": "root/0/0/1/0/0/0/0/0",
+        "node_type": "Seq Scan",
+        "actual_rows": 0,
+        "loops": 1,
+        "elapsed_ms": 0.842,
+        "rows_removed": 2146,
+        "filter": "(((tenant_id)::text = current_setting('app.tenant_id'::text, true)) AND (search_vector @@ '''explic\u00e1'' & ''por'' & ''qu\u00e9'' & ''los'' & ''fallo'' & ''de'' & ''telemetr\u00eda'' & ''deben'' & ''ser'' & ''best'' & ''effort'' & ''record\u00e1'' & ''adem\u00e1'' & ''el'' & ''contacto'' & ''de'' & ''recuperaci\u00f3n'' & ''aprobado'' & ''para'' & ''orq41projectes05'''::tsquery))",
+        "shared_hits": 256,
+        "shared_reads": 0
+      },
+      "semantic": {
+        "path": "root/0/0/0/0/0/0",
+        "node_type": "Seq Scan",
+        "actual_rows": 2146,
+        "loops": 1,
+        "elapsed_ms": 6.486,
+        "rows_removed": 0,
+        "filter": "((tenant_id)::text = current_setting('app.tenant_id'::text, true))",
+        "shared_hits": 6717,
+        "shared_reads": 0
+      },
+      "root_shared_reads": 0,
+      "temp_reads": 0,
+      "temp_writes": 0
+    }
+  ],
+  "categories": {
+    "document": {
+      "custom_execution_ms": {
+        "min": 7.902,
+        "max": 8.585,
+        "mean": 8.3112
+      },
+      "generic_execution_ms": {
+        "min": 14.453,
+        "max": 22.917,
+        "mean": 18.159
+      },
+      "custom_keyword_ms": {
+        "min": 0.667,
+        "max": 0.717,
+        "mean": 0.6966
+      },
+      "generic_keyword_ms": {
+        "min": 7.342,
+        "max": 14.858,
+        "mean": 10.5432
+      }
+    },
+    "combined": {
+      "custom_execution_ms": {
+        "min": 7.937,
+        "max": 8.6,
+        "mean": 8.2188
+      },
+      "generic_execution_ms": {
+        "min": 23.776,
+        "max": 27.272,
+        "mean": 25.505
+      },
+      "custom_keyword_ms": {
+        "min": 0.724,
+        "max": 0.869,
+        "mean": 0.789
+      },
+      "generic_keyword_ms": {
+        "min": 16.047,
+        "max": 19.776,
+        "mean": 18.012
+      }
+    }
+  },
+  "unique_backend_pids": 20,
+  "twenty_readonly_executions": true,
+  "all_generic_slower": true,
+  "all_generic_parameterized_filter": true,
+  "all_custom_literal_filter": true,
+  "no_shared_reads": true,
+  "no_temp_io": true,
+  "source_files_unchanged": 500,
+  "scope_limit": "Mode order coupled to category; R=1, direct server instrumentation; original AA cause not certified",
+  "exact_function_call_count_measured": false,
+  "no_new_sql_in_analysis": true,
+  "api_requests": 0,
+  "provider_calls": 0,
+  "spend_usd": "0",
+  "original_AA_status": "AA_CALIBRATION_FAIL"
+}

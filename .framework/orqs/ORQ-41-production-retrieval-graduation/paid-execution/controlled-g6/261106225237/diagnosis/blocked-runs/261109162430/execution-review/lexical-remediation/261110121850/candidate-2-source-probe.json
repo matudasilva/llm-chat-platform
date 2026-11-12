@@ -1,0 +1,25 @@
+{
+  "status": "DRIVER_IMAGE_SOURCE_SETTINGS_PROBE_PASS",
+  "config_identity": "e697c7db91221888eca5aa491e551c942458e77fb12eab87689f78a3e84293e2",
+  "versions": {
+    "SQLAlchemy": "2.0.52",
+    "asyncpg": "0.31.0",
+    "greenlet": "3.5.5"
+  },
+  "sources": {
+    "app/core/providers/pgvector_store.py": "81a41cba1227be5bceff0b34051b7f976b6a4db65a6853a51616935ff6b8b9b3",
+    "app/infra/db/session.py": "233005c915080a8d3e7c6a14faea66b86c702a9d66ac3ef0a349307ba52a41dd",
+    "app/http/middleware/tenant.py": "38a864d580e85a78d525a2c07b0a8326588d822a529901bb5f129f3b2d19412d"
+  },
+  "app_requests": 0,
+  "provider_calls": 0,
+  "database_connections": 0,
+  "compiled_sql_sha256": "c3b9c9f0f642ed4e42f4984235a5cc03bf352f283b4995c710b743aa033b2272",
+  "actual_bind_order": [
+    "query_embedding",
+    "top_k",
+    "query_text",
+    "rrf_k"
+  ],
+  "retrieval_selects": 1
+}

@@ -1,0 +1,14 @@
+--- preserved-baseline
+
++++ paid-target
+
+@@ -118,7 +118,7 @@
+
+     "timestamp" timestamp with time zone DEFAULT now() NOT NULL,
+     feedback character varying(8),
+     feedback_updated_at timestamp with time zone,
+-    CONSTRAINT ck_usage_events_feedback CHECK (((feedback IS NULL) OR ((feedback)::text = ANY ((ARRAY['up'::character varying, 'down'::character varying])::text[]))))
++    CONSTRAINT ck_usage_events_feedback CHECK (((feedback IS NULL) OR ((feedback)::text = ANY (ARRAY[('up'::character varying)::text, ('down'::character varying)::text]))))
+ );
+ ALTER TABLE public.usage_events OWNER TO orq41owner;
+ ALTER TABLE ONLY public.alembic_version

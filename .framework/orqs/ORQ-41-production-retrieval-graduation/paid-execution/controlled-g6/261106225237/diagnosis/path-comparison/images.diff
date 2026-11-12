@@ -1,0 +1,624 @@
+--- c0/api/deps.py
++++ c1/api/deps.py
+@@ -6,6 +6,8 @@
+ from typing import Sequence
+ 
+ from fastapi import Request
++
++from app.core.observability import context_evidence as c1
+ 
+ from app.core.domain.bm25_ranking import pack_selected_events, query_tokens, rank_events
+ from app.core.domain.chat_memory import ChatMemoryContext, RetrievedMemoryEvent
+@@ -59,6 +61,7 @@
+ 
+ 
+ async def get_chat_rag_context(payload: ChatRequest, request: Request) -> RagGenerationContext:
++    c1.bind_scope(lambda: (get_tenant_id(), payload.conversation_id))
+     if not settings.chat_rag_augmentation_enabled:
+         # AC24: the flag is only visible here, so `skipped` is the dependency's
+         # to record. The domain never learns the feature exists.
+@@ -127,7 +130,9 @@
+     captures `ProviderInput` for exactly that reason.
+ 
+     """
++    c1.bind_scope(lambda: (get_tenant_id(), payload.conversation_id))
+     if not settings.conversation_history_enabled:
++        c1.observe("window.outcome", lambda _: {"outcome": "disabled"})
+         return ChatMemoryContext()
+ 
+     # The RAW payload value, never the handler's derived `conversation_id`.
+@@ -233,6 +238,7 @@
+     # request. Tracked explicitly rather than calling `_record_memory_outcome`
+     # twice, which would let the final unconditional call silently clobber
+     # whichever of these two fired (`record()` is last-write-wins).
++    c1.observe("episodic.mode", lambda _: {"enabled": settings.ebm25_enabled})
+     mode_b_outcome: str | None = None
+     if settings.ebm25_enabled:
+         # H9: Mode B runs inside its own degradation boundary.
+@@ -253,7 +259,9 @@
+         # the same direction `budget_starved` degrades.
+         try:
+             corpus = RetrievalCorpus.from_partition(partition)
++            c1.episodic("episodic.retrieved", corpus.events)
+             if corpus.is_empty:
++                c1.episodic("episodic.selected", ())
+                 # §Diseño 8's first inert state: the snapped window already
+                 # covers the whole conversation, so there is nothing left to
+                 # retrieve.
+@@ -275,7 +283,9 @@
+                       len(m.content) for m in context.messages
+                   )
+                   ranked = rank_events(corpus.events, query_tokens(payload.message))
++                  c1.episodic("episodic.ranked", ranked, ranked=True)
+                   selected, _ = pack_selected_events(ranked, max_chars=max(remaining_budget, 0))
++                  c1.episodic("episodic.selected", selected)
+                   set_attribute(rank_span, "memory.selected_count", len(selected))
+                   if not selected:
+                       # §Diseño 8's second inert state: evidence existed and was
+@@ -366,12 +376,14 @@
+     # and -- since T12 -- the call that applies the SQL row cap
+     # (`conversation_history_max_rows`), not the assembler.
+     all_messages = await adapter.fetch_ordered(conversation_id, tenant_id)
++    c1.history("window.read", all_messages)
+     assembled = await assembler.assemble(
+         _PrefetchedHistoryPort(all_messages), conversation_id, tenant_id
+     )
+     partition = build_materialized_window(
+         all_messages=all_messages, bounded_messages=assembled.messages
+     )
++    c1.history("window.bounded", partition.window)
+     # AC36: the cap is reached when the SQL read returned exactly the limit --
+     # not "close to it", since a shorter conversation legitimately returns
+     # fewer rows than the cap without ever having been bounded.
+@@ -394,6 +406,7 @@
+     return partition, truncated, cap_reached
+ 
+ 
++@c1.outcome("documents.outcome")
+ async def _record_retrieval_outcome(outcome: str | None) -> None:
+     """AC24's field, recorded with the same containment N-2 gave the others.
+ 
+@@ -449,6 +462,7 @@
+         pass
+ 
+ 
++@c1.outcome("window.outcome")
+ async def _record_memory_outcome(outcome: str) -> None:
+     # Uses only the collector T8 already shipped. Nothing here writes a row:
+     # the `rag_request_metrics` table and its write sites are T14's.
+--- c0/core/domain/added_context_budget.py
++++ c1/core/domain/added_context_budget.py
+@@ -49,6 +49,8 @@
+ 
+ from __future__ import annotations
+ 
++from app.core.observability import context_evidence as c1
++
+ import dataclasses
+ 
+ from .chat_memory import ChatMemoryContext
+@@ -87,6 +89,7 @@
+     return sum(len(message.content) for message in memory_context.messages)
+ 
+ 
++@c1.final_cap
+ def enforce_added_context_cap(
+     *,
+     memory_context: ChatMemoryContext,
+--- c0/core/domain/chat_memory.py
++++ c1/core/domain/chat_memory.py
+@@ -12,6 +12,8 @@
+ """
+ 
+ from __future__ import annotations
++
++from app.core.observability import context_evidence as c1
+ 
+ from dataclasses import dataclass
+ 
+@@ -94,6 +96,7 @@
+         `sequence` is dropped deliberately: it is the ordering key, not
+         content, and the provider has no use for it.
+         """
++        c1.window_materialized(partition)
+         return cls(
+             messages=tuple(
+                 ChatMessage(role=message.role, content=message.content)
+--- c0/core/domain/context_packer.py
++++ c1/core/domain/context_packer.py
+@@ -33,6 +33,8 @@
+ 
+ from __future__ import annotations
+ 
++from app.core.observability import context_evidence as c1
++
+ from dataclasses import dataclass, replace
+ from typing import Sequence
+ 
+@@ -55,6 +57,7 @@
+     truncated: bool
+ 
+ 
++@c1.packed_window
+ def pack_recent_window(
+     messages: Sequence[ChatMessage], *, max_chars: int, reserved_chars: int = 0
+ ) -> PackedWindow:
+--- c0/core/domain/provider_prompt.py
++++ c1/core/domain/provider_prompt.py
+@@ -1,4 +1,6 @@
+ from __future__ import annotations
++
++from app.core.observability import context_evidence as c1
+ 
+ import json
+ from typing import Any, Sequence
+@@ -39,6 +41,7 @@
+ )
+ 
+ 
++@c1.rendered
+ def messages_for_provider(input: ProviderInput) -> Sequence[ChatMessage]:
+     """Materialize canonical RAG/memory metadata as provider-neutral system messages.
+ 
+@@ -62,6 +65,7 @@
+             ChatMessage(role="system", content=render_rag_sources_block(sources))
+         )
+ 
++    c1.prompt_mapping(input, memory_events, sources, len(prefix))
+     if not prefix:
+         return input.messages
+     return (*prefix, *input.messages)
+--- c0/core/domain/rag_generation.py
++++ c1/core/domain/rag_generation.py
+@@ -1,4 +1,6 @@
+ from __future__ import annotations
++
++from app.core.observability import context_evidence as c1
+ 
+ import asyncio
+ import logging
+@@ -99,9 +101,11 @@
+             # Classified HERE, where `wait_for` actually observes it. Inferred
+             # downstream from an empty result, a timeout would be
+             # indistinguishable from a corpus that matched nothing.
++            c1.observe("documents.aborted", lambda _: {"reason": type(exc).__name__})
+             self._log_degraded(request_id=request_id, reason=type(exc).__name__)
+             return RagGenerationContext(outcome=RETRIEVAL_TIMEOUT)
+         except Exception as exc:
++            c1.observe("documents.aborted", lambda _: {"reason": type(exc).__name__})
+             self._log_degraded(request_id=request_id, reason=type(exc).__name__)
+             return RagGenerationContext(outcome=RETRIEVAL_ERROR)
+ 
+@@ -134,6 +138,7 @@
+         # AC24 does not ask for it, and the distinction would need the pre-trim
+         # chunk count surfaced too. A real loss of diagnosis, recorded rather
+         # than explained away.
++        c1.source_projection(result, retained)
+         return RagGenerationContext(
+             sources=tuple(retained),
+             outcome=RETRIEVAL_OK if retained else RETRIEVAL_EMPTY,
+--- c0/core/domain/retrieval_pipeline.py
++++ c1/core/domain/retrieval_pipeline.py
+@@ -1,4 +1,6 @@
+ from __future__ import annotations
++
++from app.core.observability import context_evidence as c1
+ 
+ import logging
+ import time
+@@ -110,6 +112,7 @@
+             candidates = await self._vector_store.hybrid_search(
+                 rewritten, embedding, top_k=self._top_k_candidates
+             )
++            c1.documents("documents.retrieved", candidates)
+             set_attribute(retrieve_span, "rag.candidate_count", len(candidates))
+             set_attribute(
+                 retrieve_span,
+@@ -118,6 +121,7 @@
+             )
+ 
+         if not candidates:
++            c1.documents("documents.selected", (), ranked=True)
+             self._log_completed(
+                 request_id=request_id,
+                 candidate_count=0,
+@@ -143,6 +147,7 @@
+             top_n=effective_top_n,
+         )
+ 
++        c1.documents("documents.selected", ranked_chunks, ranked=True)
+         evaluator_triggered = len(ranked_chunks) < self._min_reranked_results
+         evaluator_verdict: str | None = None
+         if evaluator_triggered:
+@@ -169,6 +174,7 @@
+             evaluator_verdict=evaluator_verdict,
+         )
+ 
++    @c1.purpose("rewrite")
+     async def _rewrite(self, *, request_id: UUID, query: str) -> str:
+         # The span opens where the stage is *attempted*, so a rewrite that
+         # falls back to the original query still counts as reached.
+@@ -251,6 +257,7 @@
+             set_attribute(rerank_span, "rag.ranked_count", len(ranked_chunks))
+             return ranked_chunks, False
+ 
++    @c1.purpose("evaluator")
+     async def _evaluate(
+         self, *, request_id: UUID, query: str, chunks: Sequence[RankedChunk]
+     ) -> str | None:
+--- c0/core/observability/context_evidence.py
++++ c1/core/observability/context_evidence.py
+@@ -0,0 +1,354 @@
++"""Bounded, content-free C1 observations. Never participates in business decisions."""
++from __future__ import annotations
++
++import copy
++import hashlib
++import json
++import threading
++from contextlib import contextmanager
++from contextvars import ContextVar
++from functools import wraps
++
++MAX_BYTES = 8 * 1024 * 1024
++MAX_ITEMS = 10000
++_current = ContextVar("context_evidence", default=None)
++_purpose = ContextVar("context_evidence_purpose", default="primary")
++_invocation = ContextVar("context_evidence_invocation", default=None)
++
++
++def digest(value):
++    return hashlib.sha256(value).hexdigest()
++
++
++def encoded(value):
++    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()
++
++
++def text_receipt(key, text, *, original_chars=None, occurrence=0, **fields):
++    return dict(key=str(key), occurrence=occurrence, start=0, end=len(text), chars=len(text),
++                original_chars=len(text) if original_chars is None else original_chars,
++                bytes=len(text.encode()), sha256=digest(text.encode()), **fields)
++
++
++class Evidence:
++    def __init__(self, instance_id, correlation_id):
++        self.lock = threading.RLock()
++        self.instance_id = str(instance_id)
++        self.correlation_id = correlation_id
++        self.valid = True
++        self.closed = False
++        self.records = []
++        self.size = 0
++        self.items = 0
++        self.window = []
++        self.scope = None
++        self.documents = {}
++        self.invocations = 0
++        self.add("request.start", dict(instance_id=self.instance_id, correlation_id=correlation_id))
++
++    def add(self, stage, data):
++        with self.lock:
++            self._add(stage, data)
++
++    def _add(self, stage, data):
++        if self.closed:
++            self.valid = False
++            return
++        def count(value):
++            if isinstance(value, list):
++                return len(value) + sum(count(v) for v in value)
++            if isinstance(value, dict):
++                return sum(count(v) for v in value.values())
++            return 0
++        item_count = count(data)
++        record = dict(ordinal=len(self.records), stage=stage, data=data,
++                      invocation=_invocation.get(), purpose=_purpose.get(),
++                      previous=self.records[-1]["hash"] if self.records else "0" * 64)
++        raw = encoded(record)
++        if self.items + item_count + 1 > MAX_ITEMS or self.size + len(raw) > MAX_BYTES:
++            self.valid = False
++            return
++        record["hash"] = digest(raw)
++        self.records.append(record)
++        self.size += len(raw)
++        self.items += item_count + 1
++
++    def snapshot(self):
++        with self.lock:
++            return copy.deepcopy(dict(instance_id=self.instance_id,
++                                      correlation_id=self.correlation_id,
++                                      valid=self.valid, closed=self.closed,
++                                      records=self.records, count=len(self.records)))
++
++
++def observe(stage, builder):
++    """Evaluate even field access inside the best-effort boundary."""
++    state = _current.get()
++    if state is None:
++        return
++    try:
++        with state.lock:
++            if not state.valid or state.closed:
++                state.valid = False
++                return
++            data = builder(state)
++            if data is not None:
++                state.add(stage, data)
++    except Exception:
++        state.valid = False
++
++
++@contextmanager
++def request_evidence(instance_id, correlation_id):
++    state = token = None
++    try:
++        state = Evidence(instance_id, correlation_id)
++        token = _current.set(state)
++    except Exception:
++        pass
++    outcome = "returned"
++    try:
++        yield state
++    except BaseException:
++        outcome = "aborted"
++        raise
++    finally:
++        if state is not None:
++            try:
++                with state.lock:
++                    state.add("request.end", dict(outcome=outcome, valid=state.valid,
++                                                 checkpoints=[r["stage"] for r in state.records],
++                                                 invocations=state.invocations))
++                    state.closed = True
++            except Exception:
++                state.valid = False
++                state.closed = True
++        if token is not None:
++            _current.reset(token)
++
++
++@contextmanager
++def invocation():
++    """Harness entrypoint scope; independent of retry/call counting."""
++    state = _current.get()
++    token = None
++    if state is not None:
++        try:
++            state.invocations += 1
++            token = _invocation.set(state.invocations)
++            observe("invocation.start", lambda _: {})
++        except Exception:
++            state.valid = False
++    outcome = "returned"
++    try:
++        yield _invocation.get()
++    except BaseException as exc:
++        outcome = type(exc).__name__
++        raise
++    finally:
++        observe("invocation.end", lambda _: {"outcome": outcome})
++        if token is not None:
++            _invocation.reset(token)
++
++
++def purpose(name):
++    def decorate(fn):
++        @wraps(fn)
++        async def wrapped(*args, **kwargs):
++            token = None
++            try:
++                token = _purpose.set(name)
++            except Exception:
++                observe("purpose.invalid", lambda _: 1 / 0)
++            try:
++                return await fn(*args, **kwargs)
++            finally:
++                if token is not None:
++                    _purpose.reset(token)
++        return wrapped
++    return decorate
++
++
++def bind_scope(resolve):
++    def build(state):
++        tenant, conversation = resolve()
++        scope = dict(tenant_sha256=digest(str(tenant).encode()),
++                     conversation=str(conversation) if conversation else None)
++        if state.scope is not None:
++            if scope != state.scope:
++                state.valid = False
++            return None
++        state.scope = scope
++        return scope
++    observe("scope", build)
++
++
++def documents(stage, chunks, ranked=False):
++    def build(_):
++        items = []
++        occurrences = {}
++        for value in chunks:
++            chunk = value.chunk if ranked else value
++            key = str(chunk.chunk_id)
++            occurrence = occurrences.get(key, 0)
++            occurrences[key] = occurrence + 1
++            items.append(text_receipt(chunk.chunk_id, chunk.text, occurrence=occurrence,
++                                      document_id=str(chunk.document_id)))
++            if len(items) > MAX_ITEMS:
++                raise ValueError("receipt limit")
++        return dict(items=items)
++    observe(stage, build)
++
++
++def source_projection(result, sources):
++    def build(state):
++        original = {str(v.chunk.chunk_id): len(v.chunk.text) for v in result.chunks}
++        items = [text_receipt(v.chunk_id, v.content,
++                          original_chars=original[str(v.chunk_id)], citation=v.citation,
++                          document_id=str(v.document_id)) for v in sources]
++        occurrences = {}
++        for item in items:
++            item["occurrence"] = occurrences.get(item["key"], 0)
++            occurrences[item["key"]] = item["occurrence"] + 1
++        state.documents = {v["citation"]: v for v in items}
++        return dict(items=items)
++    observe("documents.projected", build)
++
++
++def history(stage, messages):
++    observe(stage, lambda _: dict(items=[text_receipt(m.sequence, m.content, role=m.role)
++                                         for m in messages]))
++
++
++def _copy_window_receipts(receipts):
++    # Immutable scalar fields need independent containers, not recursive copying.
++    if type(receipts) is list and len({id(row) for row in receipts}) == len(receipts) and all(
++        type(row) is dict and all(type(key) is str and type(value) in (str, int, bool, type(None))
++                                 for key, value in row.items())
++        for row in receipts
++    ):
++        return [row.copy() for row in receipts]
++    return copy.deepcopy(receipts)
++
++
++def window_materialized(partition):
++    def build(state):
++        if len(partition.window) > MAX_ITEMS:
++            raise ValueError("window observation limit")
++        state.window = [text_receipt(m.sequence, m.content, role=m.role)
++                        for m in partition.window]
++        return dict(items=_copy_window_receipts(state.window))
++    observe("window.materialized", build)
++
++
++def packed_window(fn):
++    @wraps(fn)
++    def wrapped(messages, *args, **kwargs):
++        result = fn(messages, *args, **kwargs)
++        def build(state):
++            previous = state.window
++            if len(previous) != len(messages):
++                raise ValueError("missing window identity")
++            offset = len(messages) - len(result.messages)
++            kept = []
++            for index, message in enumerate(result.messages, offset):
++                original = messages[index]
++                receipt = previous[index]
++                if not original.content.startswith(message.content):
++                    raise ValueError("non-prefix truncation")
++                if receipt["sha256"] != digest(original.content.encode()):
++                    raise ValueError("window identity mismatch")
++                kept.append(text_receipt(receipt["key"], message.content,
++                            original_chars=receipt["original_chars"], role=message.role))
++            state.window = kept
++            return dict(items=_copy_window_receipts(kept), removed=[r["key"] for r in previous[:offset]])
++        observe("window.pack", build)
++        return result
++    return wrapped
++
++
++def episodic(stage, events, *, ranked=False):
++    def build(_):
++        items = []
++        for value in events:
++            event = value.event if ranked else value
++            spans = [text_receipt(m.sequence, m.content, role=m.role) for m in event.unit.messages]
++            items.append(text_receipt(event.event_id, event.document_text, spans=spans,
++                                      separator="newline"))
++        return dict(items=items)
++    observe(stage, build)
++
++
++def final_cap(fn):
++    @wraps(fn)
++    def wrapped(*args, **kwargs):
++        result = fn(*args, **kwargs)
++        def build(state):
++            memory, rag, outcome = result
++            if not memory.messages:
++                state.window = []
++            if len(state.window) != len(memory.messages):
++                raise ValueError("missing packed identity")
++            for item, message in zip(state.window, memory.messages):
++                if item["sha256"] != digest(message.content.encode()):
++                    raise ValueError("packed span mismatch")
++            return dict(window=_copy_window_receipts(state.window),
++                        documents=[text_receipt(s.chunk_id, s.content, citation=s.citation,
++                                   document_id=str(s.document_id),
++                                   original_chars=state.documents[s.citation]["original_chars"],
++                                   occurrence=state.documents[s.citation]["occurrence"]) for s in rag.sources],
++                        episodic=[text_receipt(e.event_id, e.content) for e in memory.retrieved_events],
++                        dropped_documents=[s.citation for s in kwargs["rag_context"].sources
++                                           if s.citation not in {v.citation for v in rag.sources}],
++                        dropped_episodic=[str(e.event_id) for e in kwargs["memory_context"].retrieved_events
++                                         if e.event_id not in {v.event_id for v in memory.retrieved_events}],
++                        outcome=outcome, cap=kwargs["max_chars"],
++                        current_message_sha256=digest(kwargs["current_message"].encode()))
++        observe("context.packed", build)
++        return result
++    return wrapped
++
++
++def rendered(fn):
++    @wraps(fn)
++    def wrapped(input):
++        result = fn(input)
++        observe("prompt.rendered", lambda _: dict(items=[text_receipt(i, m.content, role=m.role)
++                                                         for i, m in enumerate(result)]))
++        return result
++    return wrapped
++
++
++def outcome(stage):
++    def decorate(fn):
++        @wraps(fn)
++        async def wrapped(value, *args, **kwargs):
++            observe(stage, lambda _: {"outcome": value})
++            return await fn(value, *args, **kwargs)
++        return wrapped
++    return decorate
++
++
++def prompt_mapping(input, memory_events, sources, prefix_count):
++    def build(state):
++        memory = memory_events or []
++        docs = sources or []
++        mappings = []
++        for index, item in enumerate(memory):
++            mappings.append(dict(channel="episodic", key=str(item["event_id"]),
++                                 message_index=0, item_index=index, field="content",
++                                 sha256=digest(item["content"].encode())))
++        for index, item in enumerate(docs):
++            mappings.append(dict(channel="documents", key=str(item["chunk_id"]),
++                                 citation=item["citation"], message_index=int(bool(memory)),
++                                 item_index=index, field="content",
++                                 sha256=digest(item["content"].encode())))
++        if _purpose.get() == "primary":
++            for index, item in enumerate(state.window):
++                if item["sha256"] != digest(input.messages[index].content.encode()):
++                    raise ValueError("rendered window identity mismatch")
++                mappings.append(dict(channel="window", key=item["key"],
++                                     message_index=prefix_count + index, field="content",
++                                     sha256=item["sha256"]))
++        return dict(mappings=mappings)
++    observe("prompt.mapping", build)
+--- c0/http/middleware/request_context.py
++++ c1/http/middleware/request_context.py
+@@ -4,6 +4,7 @@
+ from typing import Callable, Iterable, List, Tuple
+ 
+ from app.core.observability import schema
++from app.core.observability import context_evidence as c1
+ from app.core.observability.retry_evidence import request_evidence
+ from app.core.observability.tracing import span
+ from app.http.pipeline_metrics import init_collector, reset_collector
+@@ -97,7 +98,7 @@
+             attributes["request.correlation_id"] = telemetry_correlation_id
+ 
+         try:
+-            with request_evidence(validate_correlation_id(request_id_s)), span(schema.REQUEST_SPAN, **attributes):
++            with c1.request_evidence(request_instance_id, telemetry_correlation_id), request_evidence(validate_correlation_id(request_id_s)), span(schema.REQUEST_SPAN, **attributes):
+                 await self.app(scope, receive, send_wrapper)
+         finally:
+             reset_collector(collector_token)

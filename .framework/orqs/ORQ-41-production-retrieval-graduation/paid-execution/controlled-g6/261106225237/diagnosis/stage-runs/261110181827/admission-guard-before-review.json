@@ -1,0 +1,8 @@
+{
+  "status": "MISSING_PACKET_REVIEW_BLOCKS_BEFORE_IO",
+  "command": "unshare -rn env -i PATH=/usr/bin:/bin HOME=/tmp LANG=C.UTF-8 AWS_CONFIG_FILE=/nonexistent AWS_SHARED_CREDENTIALS_FILE=/nonexistent AWS_EC2_METADATA_DISABLED=true APP_SETTINGS_ENV_FILE= PYTHONHASHSEED=41 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/home/matias/Cursor/llm-chat-platform/.framework/orqs/ORQ-41-production-retrieval-graduation/campaign-redesign/p2_netguard:/home/matias/Cursor/llm-chat-platform P2_NET_AUDIT_LOG=/home/matias/Cursor/llm-chat-platform/.framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106225237/diagnosis/stage-diagnostic-design/261110181827/implementation/host-network-audit.log /home/matias/Cursor/llm-chat-platform/.venv/bin/python -c 'from pathlib import Path;from experiments.production_graduation.gate_validation.stage_latency import preflight;run=Path(\".framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106225237/diagnosis/stage-runs/261110181827\");\ntry: preflight(run)\nexcept FileNotFoundError as exc:\n assert exc.filename.endswith(\"independent-review.json\");assert not (run/\"execution-started.json\").exists();print(\"MISSING_PACKET_REVIEW_BLOCKS_BEFORE_IO\")\nelse: raise AssertionError(\"missing review was accepted\")'",
+  "exit_code": 0,
+  "experiment_requests": 0,
+  "execution_marker_present": false,
+  "meaning": "Parent called pure preflight while independent-review.json was absent; FileNotFoundError at that exact file blocked before any execution I/O."
+}

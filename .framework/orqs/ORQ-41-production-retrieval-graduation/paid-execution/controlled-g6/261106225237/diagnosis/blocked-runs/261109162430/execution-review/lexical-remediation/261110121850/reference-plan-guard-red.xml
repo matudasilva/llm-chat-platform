@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.119" timestamp="2026-11-10T12:46:18.643358+00:00" hostname="493ac380b60e"><testcase classname="tests.core.test_pgvector_query_equivalence" name="test_plan_materializes_lexical_value_before_chunk_filter[force_generic_plan]" time="0.048"><failure message="assert 'plainto_tsquery' not in '{&quot;Node Type...ig, $3)))&quot;]}'&#10;  &#10;  'plainto_tsquery' is contained here:&#10;    h_vector, plainto_tsquery('english'::regconfig, $3)))&quot;]}&#10;  ?           +++++++++++++++">corpus = {'a': 'lex-a-0d0b1f85bc7242f7a7ad905af3eae7dd', 'b': 'lex-b-71f188624b384a6897e8462b2e06423b', 'ids': {'lex-a-0d0b1f85...4a61-bd90-6fdf000003f2'), UUID('5c1353fc-be6c-4a61-bd90-6fdf000003fc'), UUID('5c1353fc-be6c-4a61-bd90-6fdf00000406')}}}
+mode = 'force_generic_plan'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("mode", _MODES)
+    async def test_plan_materializes_lexical_value_before_chunk_filter(corpus, mode):
+        capture = _CaptureStatement()
+        await PgVectorStore(capture).hybrid_search("alpha", _NEAR, top_k=3)
+        async with _session(_url("RAG_TEST_DATABASE_URL_APP"), corpus["a"], mode) as session:
+            compiled = capture.statement.compile(dialect=session.bind.dialect)
+            driver = (await (await session.connection()).get_raw_connection()).driver_connection
+            name = "lexical_plan_" + uuid.uuid4().hex[:10]
+            await driver.execute("PREPARE " + name + " AS " + str(compiled))
+            try:
+                args = ",".join(_literal(capture.parameters[k]) for k in compiled.positiontup)
+                plan = await driver.fetchval("EXPLAIN (ANALYZE TRUE,VERBOSE TRUE,FORMAT JSON) EXECUTE "
+                                             + name + "(" + args + ")")
+            finally:
+                await driver.execute("DEALLOCATE " + name)
+            if isinstance(plan, str):
+                plan = json.loads(plan)
+            producers = []
+    
+            def check(node, inside=False):
+                producer = node.get("Subplan Name") == "CTE lexical_query"
+                if producer:
+                    producers.append(node)
+                here = inside or producer
+                if not here:
+                    fields = {k: v for k, v in node.items() if k != "Plans"}
+                    assert "plainto_tsquery" not in json.dumps(fields)
+                for child in node.get("Plans", []):
+                    check(child, here)
+    
+&gt;           check(plan[0]["Plan"])
+
+tests/core/test_pgvector_query_equivalence.py:262: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/core/test_pgvector_query_equivalence.py:260: in check
+    check(child, here)
+tests/core/test_pgvector_query_equivalence.py:260: in check
+    check(child, here)
+tests/core/test_pgvector_query_equivalence.py:260: in check
+    check(child, here)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+node = {'Actual Loops': 1, 'Actual Rows': 3, 'Actual Startup Time': 0.333, 'Actual Total Time': 0.334, ...}
+inside = False
+
+    def check(node, inside=False):
+        producer = node.get("Subplan Name") == "CTE lexical_query"
+        if producer:
+            producers.append(node)
+        here = inside or producer
+        if not here:
+            fields = {k: v for k, v in node.items() if k != "Plans"}
+&gt;           assert "plainto_tsquery" not in json.dumps(fields)
+E           assert 'plainto_tsquery' not in '{"Node Type...ig, $3)))"]}'
+E             
+E             'plainto_tsquery' is contained here:
+E               h_vector, plainto_tsquery('english'::regconfig, $3)))"]}
+E             ?           +++++++++++++++
+
+tests/core/test_pgvector_query_equivalence.py:258: AssertionError</failure></testcase></testsuite></testsuites>

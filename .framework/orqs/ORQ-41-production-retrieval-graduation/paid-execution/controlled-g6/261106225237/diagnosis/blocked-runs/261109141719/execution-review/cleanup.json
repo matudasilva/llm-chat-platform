@@ -1,0 +1,181 @@
+{
+  "status": "BLOCKED_AA_FAILED_ATTEMPT_SERVICES_STOPPED_DATA_RETAINED",
+  "plan_sha256": "ae37ecfb95379e52c8feff53fedfaabb83a99b2b3b6a7d61521cd58aaa7177bc",
+  "before": {
+    "postgres": {
+      "name": "orq41-blocked-261109141719-postgres",
+      "id": "c434d5910059aed9674e0f2aca00f69457be4ced046a0c2b50b33a7d4bbee3b7",
+      "image": "sha256:8e5355e9ff399a002fa46148399a1ac22fb3e9b2d390f857296e6da6b5559ba1",
+      "state": {
+        "Status": "running",
+        "Running": true,
+        "ExitCode": 0,
+        "StartedAt": "2026-11-09T14:17:20.598052648Z",
+        "FinishedAt": "0001-01-01T00:00:00Z"
+      },
+      "mounts": [
+        {
+          "Type": "volume",
+          "Source": "/var/lib/docker/volumes/b7947c03161afa0cadc7ee37420384aad7da7f22a6d21e0646d4d329b20fa1fd/_data",
+          "Destination": "/var/lib/postgresql/data",
+          "RW": true
+        },
+        {
+          "Type": "bind",
+          "Source": "/home/matias/Cursor/llm-chat-platform/scripts/postgres-init",
+          "Destination": "/docker-entrypoint-initdb.d",
+          "RW": false
+        }
+      ]
+    },
+    "redis": {
+      "name": "orq41-blocked-261109141719-redis",
+      "id": "1628e7972db9e4de04a6cd00786de7a08b96720c72d6a2e9da31550a226d4d1a",
+      "image": "sha256:13105d2858ded45aedf7b24f0870e6a4e7ce4964924bffce68e562ca72149f1e",
+      "state": {
+        "Status": "running",
+        "Running": true,
+        "ExitCode": 0,
+        "StartedAt": "2026-11-09T14:17:21.796679366Z",
+        "FinishedAt": "0001-01-01T00:00:00Z"
+      },
+      "mounts": [
+        {
+          "Type": "volume",
+          "Source": "/var/lib/docker/volumes/c71a0fc1e98030dd46a4b9f9ab3fb87ed2bf7ec47859de1bc4cdad867fc4e661/_data",
+          "Destination": "/data",
+          "RW": true
+        }
+      ]
+    },
+    "collector": {
+      "name": "orq41-blocked-261109141719-collector",
+      "id": "22314a422850ea2225f9ee6ca37fa6ef912a22f6cb89f56289b545258c113c71",
+      "image": "sha256:50dccac76879873148242bb98c6472404f3af3388c318ef270a6912b855c2dbc",
+      "state": {
+        "Status": "running",
+        "Running": true,
+        "ExitCode": 0,
+        "StartedAt": "2026-11-09T14:17:21.907831308Z",
+        "FinishedAt": "0001-01-01T00:00:00Z"
+      },
+      "mounts": [
+        {
+          "Type": "bind",
+          "Source": "/home/matias/Cursor/llm-chat-platform/.framework/orqs/ORQ-41-production-retrieval-graduation/environment/g8/collector.yaml",
+          "Destination": "/etc/otelcol/config.yaml",
+          "RW": false
+        }
+      ]
+    }
+  },
+  "after": {
+    "postgres": {
+      "name": "orq41-blocked-261109141719-postgres",
+      "id": "c434d5910059aed9674e0f2aca00f69457be4ced046a0c2b50b33a7d4bbee3b7",
+      "image": "sha256:8e5355e9ff399a002fa46148399a1ac22fb3e9b2d390f857296e6da6b5559ba1",
+      "state": {
+        "Status": "exited",
+        "Running": false,
+        "ExitCode": 0,
+        "StartedAt": "2026-11-09T14:17:20.598052648Z",
+        "FinishedAt": "2026-11-09T15:33:02.614956119Z"
+      },
+      "mounts": [
+        {
+          "Type": "bind",
+          "Source": "/home/matias/Cursor/llm-chat-platform/scripts/postgres-init",
+          "Destination": "/docker-entrypoint-initdb.d",
+          "RW": false
+        },
+        {
+          "Type": "volume",
+          "Source": "/var/lib/docker/volumes/b7947c03161afa0cadc7ee37420384aad7da7f22a6d21e0646d4d329b20fa1fd/_data",
+          "Destination": "/var/lib/postgresql/data",
+          "RW": true
+        }
+      ]
+    },
+    "redis": {
+      "name": "orq41-blocked-261109141719-redis",
+      "id": "1628e7972db9e4de04a6cd00786de7a08b96720c72d6a2e9da31550a226d4d1a",
+      "image": "sha256:13105d2858ded45aedf7b24f0870e6a4e7ce4964924bffce68e562ca72149f1e",
+      "state": {
+        "Status": "exited",
+        "Running": false,
+        "ExitCode": 0,
+        "StartedAt": "2026-11-09T14:17:21.796679366Z",
+        "FinishedAt": "2026-11-09T15:33:02.470485646Z"
+      },
+      "mounts": [
+        {
+          "Type": "volume",
+          "Source": "/var/lib/docker/volumes/c71a0fc1e98030dd46a4b9f9ab3fb87ed2bf7ec47859de1bc4cdad867fc4e661/_data",
+          "Destination": "/data",
+          "RW": true
+        }
+      ]
+    },
+    "collector": {
+      "name": "orq41-blocked-261109141719-collector",
+      "id": "22314a422850ea2225f9ee6ca37fa6ef912a22f6cb89f56289b545258c113c71",
+      "image": "sha256:50dccac76879873148242bb98c6472404f3af3388c318ef270a6912b855c2dbc",
+      "state": {
+        "Status": "exited",
+        "Running": false,
+        "ExitCode": 0,
+        "StartedAt": "2026-11-09T14:17:21.907831308Z",
+        "FinishedAt": "2026-11-09T15:33:02.304184194Z"
+      },
+      "mounts": [
+        {
+          "Type": "bind",
+          "Source": "/home/matias/Cursor/llm-chat-platform/.framework/orqs/ORQ-41-production-retrieval-graduation/environment/g8/collector.yaml",
+          "Destination": "/etc/otelcol/config.yaml",
+          "RW": false
+        }
+      ]
+    }
+  },
+  "worker": {
+    "name": "orq41-blocked-261109141719-c0-en-json-b0",
+    "id": "91198a5ab113d0023a2b82955bb6b546314a712cb3db98a44c7c0659bffe21bd",
+    "image": "sha256:4e68ccdca15b97f7fd573034c74575d88a156d21ca7f4ff2251affc5db55e707",
+    "state": {
+      "Status": "exited",
+      "Running": false,
+      "ExitCode": 1,
+      "StartedAt": "2026-11-09T15:24:54.093940279Z",
+      "FinishedAt": "2026-11-09T15:24:55.742775114Z"
+    },
+    "mounts": [
+      {
+        "Type": "bind",
+        "Source": "/home/matias/Cursor/llm-chat-platform/.framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106225237/diagnosis/blocked-runs/261109141719",
+        "Destination": "/g6run",
+        "RW": true
+      },
+      {
+        "Type": "bind",
+        "Source": "/home/matias/Cursor/llm-chat-platform/experiments",
+        "Destination": "/app/experiments",
+        "RW": false
+      },
+      {
+        "Type": "bind",
+        "Source": "/home/matias/Cursor/llm-chat-platform/.framework/orqs/ORQ-41-production-retrieval-graduation/campaign-redesign/p2_netguard",
+        "Destination": "/p2_netguard",
+        "RW": false
+      }
+    ]
+  },
+  "original_source_postgres_still_running": true,
+  "original_source_postgres_id": "7ffc345f9c8efa3b1b0c63441db6d30821142ec7d5041cab40e77bfc266eba4f",
+  "containers_removed": 0,
+  "volumes_removed": 0,
+  "databases_deleted": 0,
+  "marker_removed": false,
+  "request_resend": false,
+  "external_provider_calls": 0,
+  "spend_usd": "0"
+}

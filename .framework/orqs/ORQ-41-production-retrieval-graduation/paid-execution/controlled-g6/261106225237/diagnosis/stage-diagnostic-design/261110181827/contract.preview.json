@@ -1,0 +1,116 @@
+{
+  "attempts_per_identity": 1,
+  "auxiliary_images": {
+    "collector": "sha256:50dccac76879873148242bb98c6472404f3af3388c318ef270a6912b855c2dbc",
+    "redis": "sha256:13105d2858ded45aedf7b24f0870e6a4e7ce4964924bffce68e562ca72149f1e"
+  },
+  "boundary": "ASGI ingress to primary native send entry; before capture bookkeeping",
+  "cleanup_bound_s": 10,
+  "concurrency": 1,
+  "effective_configuration_verified_now": false,
+  "environment": "NOT_PROVISIONED",
+  "execution_authorized": false,
+  "executions": 1,
+  "expected_final_messages_per_mode": 4584,
+  "expected_new_local_provider_spend_usd": "0",
+  "fixtures_preview_sha256": "7f33a4290575c5e469e17d9a03e12152414ba0b0c274b1581a2bdf51a17266bd",
+  "full_c1_both_modes": true,
+  "global_state": "In Progress / Implement / DECISION_FREEZE_PASS",
+  "images": {
+    "off": "sha256:775d925078229f173fc48a4b95d5ca1620cb518b46433ead60cec3440029b852",
+    "on": "sha256:775d925078229f173fc48a4b95d5ca1620cb518b46433ead60cec3440029b852"
+  },
+  "implementation_authorized": false,
+  "measured": 200,
+  "no_p95_correction": true,
+  "no_statistical_gate": true,
+  "normalized_config_reference_sha256": "ba8d318986a6c9b73d097e841916161f20bfae60f1d15f8bf1754567390ae4b0",
+  "not_a_gate": true,
+  "observer_limit_per_request": {
+    "coarse": 128,
+    "existing_wait_events": 256
+  },
+  "official_g6_status": "CONTROLLED_G6_FAIL",
+  "order": [
+    {
+      "block": 0,
+      "cell": "EN-json",
+      "full_c1": true,
+      "mode": "off"
+    },
+    {
+      "block": 0,
+      "cell": "EN-json",
+      "full_c1": true,
+      "mode": "on"
+    },
+    {
+      "block": 0,
+      "cell": "EN-sse",
+      "full_c1": true,
+      "mode": "on"
+    },
+    {
+      "block": 0,
+      "cell": "EN-sse",
+      "full_c1": true,
+      "mode": "off"
+    },
+    {
+      "block": 0,
+      "cell": "ES-json",
+      "full_c1": true,
+      "mode": "on"
+    },
+    {
+      "block": 0,
+      "cell": "ES-json",
+      "full_c1": true,
+      "mode": "off"
+    },
+    {
+      "block": 0,
+      "cell": "ES-sse",
+      "full_c1": true,
+      "mode": "off"
+    },
+    {
+      "block": 0,
+      "cell": "ES-sse",
+      "full_c1": true,
+      "mode": "on"
+    }
+  ],
+  "paid_admission": "BLOCKED_CONTROLLED_G6_FAIL",
+  "postgres_image": "sha256:8e5355e9ff399a002fa46148399a1ac22fb3e9b2d390f857296e6da6b5559ba1",
+  "preparation_authorized": false,
+  "prepared_conversations_per_mode": 180,
+  "prepared_history_messages_per_mode": 4224,
+  "preview_namespace": "c801baaf-ba2d-54d0-b0f3-b5f680846686",
+  "proposal_sha256": "d21f8b7b2b223804ee855ad14f9397fa8a882c29825dfafbb7daa8f727a4598f",
+  "prospective_databases": {
+    "off": "orq41_stage_261110181827_off",
+    "on": "orq41_stage_261110181827_on"
+  },
+  "request_deadline_s": 300,
+  "resources": {
+    "api_cpus": [
+      0,
+      2
+    ],
+    "memory_bytes": 2147483648,
+    "memory_swap_bytes": 2147483648,
+    "nano_cpus": 2000000000,
+    "postgres_cpus": [
+      4,
+      6
+    ]
+  },
+  "run_id": "261110181827",
+  "schema": "orq41-stage-diagnostic-design-v1",
+  "source_fixture_sha256": "f1e1a885de667410d59ed1840cfcda9cc0b22f2c08fea9a47b1b725012690a24",
+  "source_plan_sha256": "e3f6f8efae1de5858e3402ee131cead41a28a42050b7115ded5c08a26f53eb54",
+  "status": "DESIGN_PROPOSED_NOT_APPROVED_NOT_EXECUTABLE",
+  "total_local_requests": 360,
+  "warmups": 160
+}

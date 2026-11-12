@@ -1,0 +1,23 @@
+--- original/pgvector_store.py
++++ accepted/pgvector_store.py
+@@ -103,12 +103,17 @@
+                     ORDER BY embedding <=> CAST(:query_embedding AS vector), id
+                     LIMIT :top_k
+                 ),
++                lexical_query AS MATERIALIZED (
++                    SELECT plainto_tsquery('english', :query_text) AS terms
++                    FROM (SELECT count(*) FROM semantic) AS semantic_ready
++                ),
+                 keyword AS (
+                     SELECT id, document_id, text, metadata,
+-                           row_number() OVER (ORDER BY ts_rank(search_vector, plainto_tsquery('english', :query_text)) DESC, id) AS rank
++                           row_number() OVER (ORDER BY ts_rank(search_vector, lexical_query.terms) DESC, id) AS rank
+                     FROM chunks
+-                    WHERE search_vector @@ plainto_tsquery('english', :query_text)
+-                    ORDER BY ts_rank(search_vector, plainto_tsquery('english', :query_text)) DESC, id
++                    CROSS JOIN lexical_query
++                    WHERE search_vector @@ lexical_query.terms
++                    ORDER BY ts_rank(search_vector, lexical_query.terms) DESC, id
+                     LIMIT :top_k
+                 ),
+                 fused AS (

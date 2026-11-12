@@ -1,0 +1,33 @@
+{
+  "status": "CONTROLLED_G6_OFFLINE_DIAGNOSIS_INDEPENDENT_REVIEW_PASS",
+  "reviewer": "/root/packet_review",
+  "inputs_sha256": {
+    "analyze.py": "62d42f251abba139ae45644a61f16ced7aeea6e3218a9e9443086e47e983f0dd",
+    "offline-analysis.json": "5f04b6913285c0daead2c326a0fedd1e359d4e8357822450b2b9dc36f6375a3f",
+    "report.md": "10fb0edfedb2dec3c330b9eab7eb120188a0a7a3aa04bdf5b6bb423d0fd41711",
+    "profiling-proposal.md": "76b6c5869d475a90b0f6ed5039eef34c56133cfdf731e7315178096a84e9b110"
+  },
+  "original_gate_result_sha256": "a85ce6a66129b379f5d9eddc5fc7734a18a6e10711446dc4fc6286dcb8003a34",
+  "gate_disposition": "CONTROLLED_G6_FAIL",
+  "measured_pairs": 400,
+  "candidate_slower_pairs": 344,
+  "cell_slower_counts": {
+    "EN-json": 89,
+    "EN-sse": 95,
+    "ES-json": 84,
+    "ES-sse": 76
+  },
+  "category_medians_verified": true,
+  "causal_attribution_established": false,
+  "threshold_waiver": false,
+  "profiling_implemented_or_executed": false,
+  "profiling_proposal_requests": 40,
+  "profiling_requires_approval": true,
+  "reviewer_new_requests": 0,
+  "reviewer_api_calls": 0,
+  "reviewer_database_calls": 0,
+  "reviewer_docker_calls": 0,
+  "external_calls": 0,
+  "spend_usd": "0",
+  "findings": []
+}

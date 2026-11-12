@@ -1,0 +1,34 @@
+{
+  "status": "LEXICAL_SQL_REMEDIATION_PRE_DESIGN_REVIEW_PASS",
+  "reviewer": "/root/packet_review",
+  "conditional_proof_plan_only": true,
+  "authorization_sha256": "63e1dd5dabc26fdc37a87a818fe1ac030f14a8e5ba2922cd96c95e2cd644e7ee",
+  "proposal_sha256": "aca0a8ed27eafada1e9ea7a9e16323e471a017460d617e92b8013df04576b1cb",
+  "original_provider_sha256": "e5a43abc85745ce0a1b5c619c1d60298df9f382c529651448c88a08a98e5a84f",
+  "matched_plan_analysis_sha256": "f8e703c2f8edf49ace877f4a91d5ed0e79e9d3f2efc642e34d260349a2002232",
+  "review_sha256": "5e864d1a2aa8ee2f58ce07c460662cfd083ec1faf7028d9bbdd82092b77ad871",
+  "technical_scope": [
+    "app/core/providers/pgvector_store.py SQL only",
+    "tests/core/test_pgvector_query_equivalence.py"
+  ],
+  "mandatory_conditions": [
+    "Exact ordered fulloutput/scores/ranking and allfive tieorders preserved",
+    "Positivelexical/ties/RLS/empty/errors bothcustomgeneric actualdriver provenbeforeappchange",
+    "MaterializedCTEevaluationerrorplacement differences failcandidateclosed",
+    "SingleSELECT/call and actualplan onelexicalproducer verified",
+    "Predeclaredlocalproofvolume/freshPG/P2only",
+    "Distinctfinalpatchreview required"
+  ],
+  "error_parity_proven": false,
+  "semantic_equivalence_proven": false,
+  "performance_gain_proven": false,
+  "runtime_patch_accepted": false,
+  "image_build_authorized": false,
+  "aa_g6_campaign_authorized": false,
+  "new_reproduced_blocker_high_medium_findings": [],
+  "reviewer_database_calls": 0,
+  "reviewer_docker_calls": 0,
+  "reviewer_api_calls": 0,
+  "reviewer_external_calls": 0,
+  "official_g6_status": "CONTROLLED_G6_FAIL"
+}

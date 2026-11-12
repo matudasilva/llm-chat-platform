@@ -1,0 +1,17 @@
+{
+  "status": "ADMINISTRATIVE_RESTORE_REVIEW_PASS",
+  "scope": "Exact script static review and 11 deterministic temporary-file tests; no live restoration",
+  "script_sha256": "ed6208cd0355aa7683982e74b3ec067bc6a75447b406d601a1893d10186c3af5",
+  "technical_test_sha256": "f23706a21f6830920ee79f6df2eff48fb8759bbf3890217076b3ab4ba71000b4",
+  "review_sha256": "7d979f0967de7c470f7ee5f1e145f7c8247943cca6090fd9ccab4f5758154656",
+  "evidence_sha256": {
+    "seal-independent-tests.xml": "681aee84a2651a38a760003c058e83d9eaab592eecf8bd241c01336f44c333af",
+    "seal-failure-journal.tar": "fb1edb51be29e937604f5e385a998d1f5dfe0c80b9c9a670e58619097ddf906e",
+    "restore-local.seal-failed.sh": "b13d9981f60c42a51422b2a61b4b5ac1b181d091c5dc708e55f21f7c84cfa6d3"
+  },
+  "new_blocker_high_medium_findings": [],
+  "independent_tests_passed": 11,
+  "host_operations": 0,
+  "source_edits": 0,
+  "live_restoration_demonstrated": false
+}

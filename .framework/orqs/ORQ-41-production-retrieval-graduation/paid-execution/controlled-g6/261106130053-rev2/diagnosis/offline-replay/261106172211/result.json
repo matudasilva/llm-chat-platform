@@ -1,0 +1,168 @@
+{
+  "schema": "orq41-offline-c1-cpu-replay-v1",
+  "run_id": "261106172211",
+  "not_a_gate": true,
+  "external_calls": 0,
+  "api_requests": 0,
+  "database_queries": 0,
+  "provider_calls": 0,
+  "paid_spend_usd": "0",
+  "network_mode": "offline process; P3 dump read from local file; no service/network calls",
+  "source_identity": {
+    "snapshot_sha256": "0334e3af47edf9c885093a6ad061390f6f85ba62517e56b94450339950599d4f",
+    "p3_content_sha256": "9fa959aeeb5d332882d61f60528eaa72468f110705c51ce05b70e213dd168506",
+    "chunks_loaded": 2146,
+    "snapshot_archive_sha256_verified": "0334e3af47edf9c885093a6ad061390f6f85ba62517e56b94450339950599d4f",
+    "extracted_chunk_text_bytes": 746554,
+    "max_chunk_chars": 500
+  },
+  "workload": {
+    "fixture_sha256": "d31c5a889f8b3a2cf2184b5fff263679ef71e260cc943a1f5a45bc0c2563b005",
+    "fixture_cases": 20,
+    "categories": [
+      "combined",
+      "document",
+      "empty",
+      "history"
+    ],
+    "retrieved_candidates": 20,
+    "selected_sources": 5,
+    "history_messages_max": 48,
+    "selection": "deterministic lexical-overlap reconstruction from frozen P3 chunks; not the original retrieval ranking",
+    "receipt_calls": "existing context_evidence helpers: request/scope, rewrite and primary invocations/prompts, retrieved/selected/projected sources, window read/bound/materialized/packed, final combined cap, prompt mapping and rendering",
+    "batch_repetitions": 20,
+    "measured_batches_per_arm": 5
+  },
+  "integrity": {
+    "passive_and_active_rendered_payloads_equal": true,
+    "active_receipt_chains_validated": true,
+    "observed_output_hashes": [
+      "10a2610cb6a22a4890d7bfc1c50a12da2465b22bb8a77cc023342733daa21a37",
+      "10a2610cb6a22a4890d7bfc1c50a12da2465b22bb8a77cc023342733daa21a37",
+      "f4bb10bd0ce8b0e87699fafeb98c85e7c39bba2565abeb89c8f69c564a3cb9f6",
+      "15bcde9d9f6d95041915e1ed4ecc7e181023d9fe0b4779d9dec4c63e474de8d1",
+      "abdea8b05a9484eb703a25faebef6eb8ce62c86b8c1f1d1da4281f809dd791d9",
+      "10a2610cb6a22a4890d7bfc1c50a12da2465b22bb8a77cc023342733daa21a37",
+      "10a2610cb6a22a4890d7bfc1c50a12da2465b22bb8a77cc023342733daa21a37",
+      "f4bb10bd0ce8b0e87699fafeb98c85e7c39bba2565abeb89c8f69c564a3cb9f6",
+      "15bcde9d9f6d95041915e1ed4ecc7e181023d9fe0b4779d9dec4c63e474de8d1",
+      "abdea8b05a9484eb703a25faebef6eb8ce62c86b8c1f1d1da4281f809dd791d9",
+      "f4584c4a248f91948b07c4297febe395a3452635b1521e8871c1cc69b58f83f2",
+      "f4584c4a248f91948b07c4297febe395a3452635b1521e8871c1cc69b58f83f2",
+      "6a8a234e9e1fac99e84460f05268a55f67788f098df465d581035493f22be97c",
+      "0f0894f905f36f3cf4292e925236f350919a5c42b59270675cc609b26f0b3846",
+      "17928407a5f181fb1abc02a123a2ba58b34d0d1fd708f74f1e162ce50cfdb6d8",
+      "f4584c4a248f91948b07c4297febe395a3452635b1521e8871c1cc69b58f83f2",
+      "f4584c4a248f91948b07c4297febe395a3452635b1521e8871c1cc69b58f83f2",
+      "6a8a234e9e1fac99e84460f05268a55f67788f098df465d581035493f22be97c",
+      "0f0894f905f36f3cf4292e925236f350919a5c42b59270675cc609b26f0b3846",
+      "17928407a5f181fb1abc02a123a2ba58b34d0d1fd708f74f1e162ce50cfdb6d8"
+    ],
+    "limit_bytes": 8388608,
+    "limit_items": 10000
+  },
+  "measurements": {
+    "passive_no_request_evidence": [
+      {
+        "requests": 400,
+        "wall_ns": 40399942,
+        "thread_cpu_ns": 40393578,
+        "output_batch_sha256": "b1c8e3209f8286cb0118e4b1857a361b2b1c16bf3cddb6534aac5df09c1f8125",
+        "evidence_records": 0,
+        "evidence_bytes": 0
+      },
+      {
+        "requests": 400,
+        "wall_ns": 41685786,
+        "thread_cpu_ns": 41687111,
+        "output_batch_sha256": "b1c8e3209f8286cb0118e4b1857a361b2b1c16bf3cddb6534aac5df09c1f8125",
+        "evidence_records": 0,
+        "evidence_bytes": 0
+      },
+      {
+        "requests": 400,
+        "wall_ns": 41361469,
+        "thread_cpu_ns": 41362234,
+        "output_batch_sha256": "b1c8e3209f8286cb0118e4b1857a361b2b1c16bf3cddb6534aac5df09c1f8125",
+        "evidence_records": 0,
+        "evidence_bytes": 0
+      },
+      {
+        "requests": 400,
+        "wall_ns": 40215868,
+        "thread_cpu_ns": 40210672,
+        "output_batch_sha256": "b1c8e3209f8286cb0118e4b1857a361b2b1c16bf3cddb6534aac5df09c1f8125",
+        "evidence_records": 0,
+        "evidence_bytes": 0
+      },
+      {
+        "requests": 400,
+        "wall_ns": 39825113,
+        "thread_cpu_ns": 39826050,
+        "output_batch_sha256": "b1c8e3209f8286cb0118e4b1857a361b2b1c16bf3cddb6534aac5df09c1f8125",
+        "evidence_records": 0,
+        "evidence_bytes": 0
+      }
+    ],
+    "active_c1_evidence": [
+      {
+        "requests": 400,
+        "wall_ns": 553837442,
+        "thread_cpu_ns": 553827768,
+        "output_batch_sha256": "b1c8e3209f8286cb0118e4b1857a361b2b1c16bf3cddb6534aac5df09c1f8125",
+        "evidence_records": 6640,
+        "evidence_bytes": 13533600
+      },
+      {
+        "requests": 400,
+        "wall_ns": 558600456,
+        "thread_cpu_ns": 558433587,
+        "output_batch_sha256": "b1c8e3209f8286cb0118e4b1857a361b2b1c16bf3cddb6534aac5df09c1f8125",
+        "evidence_records": 6640,
+        "evidence_bytes": 13533600
+      },
+      {
+        "requests": 400,
+        "wall_ns": 555838114,
+        "thread_cpu_ns": 555801483,
+        "output_batch_sha256": "b1c8e3209f8286cb0118e4b1857a361b2b1c16bf3cddb6534aac5df09c1f8125",
+        "evidence_records": 6640,
+        "evidence_bytes": 13533600
+      },
+      {
+        "requests": 400,
+        "wall_ns": 554373271,
+        "thread_cpu_ns": 554312631,
+        "output_batch_sha256": "b1c8e3209f8286cb0118e4b1857a361b2b1c16bf3cddb6534aac5df09c1f8125",
+        "evidence_records": 6640,
+        "evidence_bytes": 13533600
+      },
+      {
+        "requests": 400,
+        "wall_ns": 554163881,
+        "thread_cpu_ns": 554098163,
+        "output_batch_sha256": "b1c8e3209f8286cb0118e4b1857a361b2b1c16bf3cddb6534aac5df09c1f8125",
+        "evidence_records": 6640,
+        "evidence_bytes": 13533600
+      }
+    ]
+  },
+  "interpretation": "Aggregate local CPU/wall comparison of active C1 evidence versus the same provider-neutral prompt path with no request evidence context. Reconstructed retrieval selection and synthetic fixture histories are not a full API replay; timing is descriptive and cannot replace controlled G6 p95 or attribute the prior regression.",
+  "summary": {
+    "active_median_cpu_ns_per_workload": 1385781.5775,
+    "passive_median_cpu_ns_per_workload": 100983.945,
+    "incremental_median_cpu_ns_per_workload": 1284797.6325
+  },
+  "method_limits": [
+    "retrieval/reranking and async database/API work were not executed",
+    "top-20/5 ranking was deterministic lexical overlap from real frozen P3 text, not original vector/reranker selection",
+    "no complete ASGI request, provider dispatch, or live p95 was measured",
+    "passive arm is the same local path without active request evidence state, not the pinned C0 image"
+  ],
+  "reproducibility": {
+    "archive_sha256": "0334e3af47edf9c885093a6ad061390f6f85ba62517e56b94450339950599d4f",
+    "extract_command": "docker run --rm --network none -v <absolute P3 pgdump>:/snapshot:ro pgvector/pgvector:pg16 pg_restore -a -t chunks -f - /snapshot > /tmp/orq41-p3-chunks.sql",
+    "replay_command": "python3 replay.py",
+    "runtime_files_modified": false
+  }
+}

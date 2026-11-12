@@ -1,0 +1,114 @@
+{
+  "status": "OFFLINE_DRAFTS_NOT_EXECUTABLE",
+  "selected_variant": null,
+  "strict_mounts": {
+    "transport": "local Unix socket /var/run/docker.sock; request NOT sent",
+    "method": "POST",
+    "path": "/containers/create?name=orq41-blocked-<RUN_ID>-synthetic-worker-b0",
+    "body": {
+      "Image": "sha256:775d925078229f173fc48a4b95d5ca1620cb518b46433ead60cec3440029b852",
+      "User": "1000:1000",
+      "Entrypoint": [
+        "/usr/local/bin/python3",
+        "-I",
+        "-B"
+      ],
+      "Cmd": [
+        "/orq41-synthetic/synthetic_worker.py",
+        "/orq41-synthetic/plan.json",
+        "/g6run"
+      ],
+      "HostConfig": {
+        "NetworkMode": "container:<PG_ID_FROM_CREATE>",
+        "CgroupParent": "orq41bench.slice",
+        "CpusetCpus": "0,2",
+        "NanoCpus": 2000000000,
+        "Memory": 2147483648,
+        "MemorySwap": 2147483648,
+        "RestartPolicy": {
+          "Name": "no"
+        },
+        "Privileged": false,
+        "CapAdd": [],
+        "PortBindings": {},
+        "Mounts": [
+          {
+            "Type": "bind",
+            "Source": "/var/lib/orq41-cpuset/<RUN_ID>/synthetic",
+            "Target": "/orq41-synthetic",
+            "ReadOnly": true,
+            "BindOptions": {
+              "CreateMountpoint": false
+            }
+          },
+          {
+            "Type": "bind",
+            "Source": "/var/lib/orq41-cpuset/<RUN_ID>/receipts",
+            "Target": "/g6run",
+            "ReadOnly": false,
+            "BindOptions": {
+              "CreateMountpoint": false
+            }
+          },
+          {
+            "Type": "bind",
+            "Source": "/run/orq41-lifecycle/<RUN_ID>",
+            "Target": "/orq41-lifecycle",
+            "ReadOnly": true,
+            "BindOptions": {
+              "CreateMountpoint": false
+            }
+          }
+        ]
+      }
+    }
+  },
+  "conditional_legacy_binds": {
+    "transport": "local Unix socket /var/run/docker.sock; request NOT sent",
+    "method": "POST",
+    "path": "/containers/create?name=orq41-blocked-<RUN_ID>-synthetic-worker-b0",
+    "body": {
+      "Image": "sha256:775d925078229f173fc48a4b95d5ca1620cb518b46433ead60cec3440029b852",
+      "User": "1000:1000",
+      "Entrypoint": [
+        "/usr/local/bin/python3",
+        "-I",
+        "-B"
+      ],
+      "Cmd": [
+        "/orq41-synthetic/synthetic_worker.py",
+        "/orq41-synthetic/plan.json",
+        "/g6run"
+      ],
+      "HostConfig": {
+        "NetworkMode": "container:<PG_ID_FROM_CREATE>",
+        "CgroupParent": "orq41bench.slice",
+        "CpusetCpus": "0,2",
+        "NanoCpus": 2000000000,
+        "Memory": 2147483648,
+        "MemorySwap": 2147483648,
+        "RestartPolicy": {
+          "Name": "no"
+        },
+        "Privileged": false,
+        "CapAdd": [],
+        "PortBindings": {},
+        "Binds": [
+          "/var/lib/orq41-cpuset/<RUN_ID>/synthetic:/orq41-synthetic:ro",
+          "/var/lib/orq41-cpuset/<RUN_ID>/receipts:/g6run:rw",
+          "/run/orq41-lifecycle/<RUN_ID>:/orq41-lifecycle:ro"
+        ]
+      }
+    }
+  },
+  "conditions": [
+    "No API request was sent; future run/container identities remain unbound.",
+    "Strict Mounts must not auto-create any source; absent public path may reject creation.",
+    "Legacy Binds can be selected only after a separately approved probe proves no early source creation and exact final inspect mounts.",
+    "Neither variant may precreate the helper-owned public lifecycle directory.",
+    "Inspect Entrypoint/Cmd/User/mounts/resources must match the frozen manifest before any worker start."
+  ],
+  "staging_authorized": false,
+  "g6": "FAIL",
+  "paid_execution": "BLOCKED"
+}

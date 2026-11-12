@@ -1,0 +1,11 @@
+{
+  "stage": "file-only freeze before output allocation",
+  "error": "KeyError: casefile_sha256",
+  "cause": "The balanced-block manifest pins cases.json under support_files_sha256, unlike the older A/A format.",
+  "source_before_sha256": "57773322b40a33e04a7a17793980d111dd64ba101fcea91ec13480cffa08e7a2",
+  "planned_correction": "Read the exact existing support_files_sha256 entry; keep the pinned digest unchanged.",
+  "containers_created": 0,
+  "queries_executed": 0,
+  "requests": 0,
+  "provider_calls": 0
+}

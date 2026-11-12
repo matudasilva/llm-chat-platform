@@ -1,0 +1,73 @@
+{
+  "status": "DIAGNOSTIC_AGGREGATE_EXECUTION_INDEPENDENT_REVIEW_PASS",
+  "reviewer": "/root/packet_review",
+  "plan_sha256": "fafa3fe071b734d55c06b08bae85c699acbe96f151138c0ca0377829dd29e35f",
+  "result_sha256": "d651d1c0eae03ce35c3954b1a3e10d2acc3f1de9a95e090b64b4c9acf2407462",
+  "analysis_sha256": "ff21f5b35185a58cc5a8bfbc8c84937a0e88a92dec4cdcdc9cf6cb8dfc26ff23",
+  "analyzer_sha256": "b133cf0651df266c2d7730664e29c8a3380ddea5c65a3492678f3f2dcc21275b",
+  "verifier_sha256": "de6b29e1cd0652aeea9bf7c0ffe3adc4795926a6c225d25db05b55cc2a05884d",
+  "worker_receipts": {
+    "c1-ES-sse.json": "feb3c8f9c6d4a59be9322f3591a964b4fd419819688f4faa7f7be31f4df36d35",
+    "c1-ES-json.json": "d4410dfff6655db49f2515e11f8d3f42ad9f11a99196fd6b602001df683ec833",
+    "c0-ES-json.json": "ce69b21c15185acccdaec94b64b56c12b6416857dd74ecdba5e390fad1db58aa",
+    "c1-EN-sse.json": "3ec4f7b5cc09f12cd8035038730f290a556dde54adb36cc2f52110cab6878809",
+    "c0-EN-json.json": "d55e72f82463dfac8d7c978875f0b2f550a034d245fa84d1040af853984c1381",
+    "c0-ES-sse.json": "1d1b7615bc1d4118f702f86974b256d813063cd9cc4651d8454fe66596ebb8f1",
+    "c1-EN-json.json": "7fe6850f435f1bf16f11d38430413e4aec261e87685c9c5a2b34935d27db78d8",
+    "c0-EN-sse.json": "3e384a796b85a2ba121022e52a581ee9af9f643fb21fcee2777a59b23bd7c70f"
+  },
+  "database_verification_sha256": "0b2fb460e8acbdc97ff8d85071ab642b5dc026781350c520fa4e3e0385877574",
+  "requests": 40,
+  "measured": 32,
+  "warmups": 8,
+  "candidate_accounting_instances": 20,
+  "native_payload_and_call_parity": true,
+  "exact_interval_arithmetic_verified": true,
+  "category_pair_deltas": [
+    {
+      "category": "document",
+      "cpu_delta_median_ms": 1.8230735,
+      "wall_delta_median_ms": 1.103455
+    },
+    {
+      "category": "history",
+      "cpu_delta_median_ms": 4.6101555,
+      "wall_delta_median_ms": 4.175962
+    },
+    {
+      "category": "combined",
+      "cpu_delta_median_ms": 7.319369,
+      "wall_delta_median_ms": 6.889512
+    },
+    {
+      "category": "empty",
+      "cpu_delta_median_ms": 4.1354435,
+      "wall_delta_median_ms": 3.8010625000000005
+    }
+  ],
+  "reviewer_api_calls": 0,
+  "reviewer_database_calls": 0,
+  "reviewer_docker_calls": 0,
+  "observed_guard_attempts": 0,
+  "external_calls": 0,
+  "spend_usd": "0",
+  "official_g6_status": "CONTROLLED_G6_FAIL",
+  "not_a_gate": true,
+  "limits": [
+    "Aggregate process CPU includes all threads and background work",
+    "Descriptive N4 per category; no causal component percentage",
+    "Raw candidate chains validated by reviewed worker, not retained for independent replay",
+    "Parent executed read-only final DB verifier; reviewer inspected source/receipt"
+  ],
+  "candidate_image": "sha256:4e68ccdca15b97f7fd573034c74575d88a156d21ca7f4ff2251affc5db55e707",
+  "candidate_app_source_sha256": "32490a738e58d2499b6f3a2bac9ee961f6d060a486830752d7b5207b5398ba20",
+  "only_changed_app_file": "core/observability/context_evidence.py",
+  "image_pin_receipt_sha256": "15fbd41517ebd30ddc86a60aa95a30c976573fcc80d43ee8efb51739caae2a79",
+  "review_sha256": "32c1608f853961ecf2103fe1ffafd15a388e51d72964dd672a27a80804aea33e",
+  "historical_comparison": "Mixed; distinct run/identities/times, not causal optimization proof",
+  "uniform_performance_improvement_established": false,
+  "report_sha256": "4e9af985ad2a6e761a2b0a7c6993527f71c93ed38219d589054981cb4ce7764a",
+  "report_interpretation_reviewed": true,
+  "positive_cpu_pairs": 14,
+  "positive_wall_pairs": 13
+}

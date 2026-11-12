@@ -1,0 +1,269 @@
+{
+  "status": "BLOCKED_AA_EXECUTION_PREFLIGHT_PASS",
+  "checked_at": "2026-11-09T19:03:17.388548+00:00",
+  "plan_sha256": "b3d7cbe4aa4587ca20a3dadd79e2a10d7813981b8a33550d661c58af6f19026b",
+  "authorization_sha256": "32760f1a69b93f38fa64ea2838ee4ca6048733078fe2e1d15eac0dca71d225f4",
+  "packet_review_sha256": "8f447eae61aac94704a6c5700a595df520e3f8192ed1a49b8440b1f8002019a2",
+  "protected_source_files": 500,
+  "databases": [
+    {
+      "arm": "c0",
+      "database": "orq41_blocked_261109162430_c0",
+      "conversations": 720,
+      "messages": 17280,
+      "generated_message_ids": 0,
+      "normalized_business_sha256": "b0d7e09b514e24a4f3d8da2c6aca170bd48d92280e92484a431a3cb6c0c7d2ca",
+      "rls": {
+        "": 0,
+        "blocked-unknown": 0,
+        "orq37-t23": 2146,
+        "orq41-6b2ab547-en-empty": 0,
+        "orq41-6b2ab547-en-history": 0,
+        "orq41-6b2ab547-es-empty": 0,
+        "orq41-6b2ab547-es-history": 0
+      },
+      "corpus_content_sha256": "9fa959aeeb5d332882d61f60528eaa72468f110705c51ce05b70e213dd168506"
+    },
+    {
+      "arm": "c1",
+      "database": "orq41_blocked_261109162430_c1",
+      "conversations": 720,
+      "messages": 17280,
+      "generated_message_ids": 0,
+      "normalized_business_sha256": "b0d7e09b514e24a4f3d8da2c6aca170bd48d92280e92484a431a3cb6c0c7d2ca",
+      "rls": {
+        "": 0,
+        "blocked-unknown": 0,
+        "orq37-t23": 2146,
+        "orq41-6b2ab547-en-empty": 0,
+        "orq41-6b2ab547-en-history": 0,
+        "orq41-6b2ab547-es-empty": 0,
+        "orq41-6b2ab547-es-history": 0
+      },
+      "corpus_content_sha256": "9fa959aeeb5d332882d61f60528eaa72468f110705c51ce05b70e213dd168506"
+    }
+  ],
+  "resources": {
+    "affinity": [
+      4,
+      6
+    ],
+    "effective_cpuset": [
+      4,
+      6
+    ],
+    "cpu_max": "200000 100000",
+    "cpu_stat": {
+      "usage_usec": 17715645,
+      "user_usec": 12624650,
+      "system_usec": 5090995,
+      "nice_usec": 0,
+      "core_sched.force_idle_usec": 0,
+      "nr_periods": 2007,
+      "nr_throttled": 0,
+      "throttled_usec": 0,
+      "nr_bursts": 0,
+      "burst_usec": 0
+    },
+    "topology": [
+      {
+        "cpu": 0,
+        "core_id": 0,
+        "siblings": [
+          0,
+          1
+        ],
+        "max_khz": 5600000,
+        "governor": "powersave"
+      },
+      {
+        "cpu": 2,
+        "core_id": 4,
+        "siblings": [
+          2,
+          3
+        ],
+        "max_khz": 5600000,
+        "governor": "powersave"
+      },
+      {
+        "cpu": 4,
+        "core_id": 8,
+        "siblings": [
+          4,
+          5
+        ],
+        "max_khz": 5600000,
+        "governor": "powersave"
+      },
+      {
+        "cpu": 6,
+        "core_id": 12,
+        "siblings": [
+          6,
+          7
+        ],
+        "max_khz": 5600000,
+        "governor": "powersave"
+      }
+    ]
+  },
+  "configs": [
+    {
+      "config": "bb92a739790630b0d40cb93136e60188b789444a54b051a8fa4b2c415b31ee0d",
+      "normalized": "ba8d318986a6c9b73d097e841916161f20bfae60f1d15f8bf1754567390ae4b0",
+      "seed": {
+        "seed": "41",
+        "string_hash": 928176814434627218,
+        "python": "3.13.15 (main, Sep  1 2026, 00:07:39) [GCC 14.2.0]",
+        "hash_algorithm": "siphash13",
+        "hash_width": 64
+      },
+      "resources": {
+        "affinity": [
+          0,
+          2
+        ],
+        "effective_cpuset": [
+          0,
+          2
+        ],
+        "cpu_max": "200000 100000",
+        "cpu_stat": {
+          "usage_usec": 484512,
+          "user_usec": 451477,
+          "system_usec": 33034,
+          "nice_usec": 0,
+          "core_sched.force_idle_usec": 0,
+          "nr_periods": 5,
+          "nr_throttled": 0,
+          "throttled_usec": 0,
+          "nr_bursts": 0,
+          "burst_usec": 0
+        },
+        "topology": [
+          {
+            "cpu": 0,
+            "core_id": 0,
+            "siblings": [
+              0,
+              1
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 2,
+            "core_id": 4,
+            "siblings": [
+              2,
+              3
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 4,
+            "core_id": 8,
+            "siblings": [
+              4,
+              5
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 6,
+            "core_id": 12,
+            "siblings": [
+              6,
+              7
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          }
+        ]
+      }
+    },
+    {
+      "config": "1b194c45af893e9c47b34069e11b9b3f4f694f8988f1c7936b9351638cb16b16",
+      "normalized": "ba8d318986a6c9b73d097e841916161f20bfae60f1d15f8bf1754567390ae4b0",
+      "seed": {
+        "seed": "41",
+        "string_hash": 928176814434627218,
+        "python": "3.13.15 (main, Sep  1 2026, 00:07:39) [GCC 14.2.0]",
+        "hash_algorithm": "siphash13",
+        "hash_width": 64
+      },
+      "resources": {
+        "affinity": [
+          0,
+          2
+        ],
+        "effective_cpuset": [
+          0,
+          2
+        ],
+        "cpu_max": "200000 100000",
+        "cpu_stat": {
+          "usage_usec": 479035,
+          "user_usec": 450093,
+          "system_usec": 28941,
+          "nice_usec": 0,
+          "core_sched.force_idle_usec": 0,
+          "nr_periods": 5,
+          "nr_throttled": 0,
+          "throttled_usec": 0,
+          "nr_bursts": 0,
+          "burst_usec": 0
+        },
+        "topology": [
+          {
+            "cpu": 0,
+            "core_id": 0,
+            "siblings": [
+              0,
+              1
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 2,
+            "core_id": 4,
+            "siblings": [
+              2,
+              3
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 4,
+            "core_id": 8,
+            "siblings": [
+              4,
+              5
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 6,
+            "core_id": 12,
+            "siblings": [
+              6,
+              7
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          }
+        ]
+      }
+    }
+  ],
+  "disk_free_bytes": 22750314496,
+  "application_requests": 0,
+  "external_provider_calls": 0,
+  "spend_usd": "0"
+}

@@ -1,0 +1,16 @@
+{
+  "status": "OPERATOR_APPROVED_TEMPORARY_SHARED_SLICE_CPU_IMPACT_SUBJECT_TO_TECHNICAL_REVIEW",
+  "operator_message": "aprobado",
+  "context": "Approval immediately followed explicit warning that system.slice restriction affects all four existing local containers; complete technical rollback/review before application.",
+  "affected_containers": [
+    "orq41-paid-pg",
+    "orq41-env-pg",
+    "orq41-env-redis",
+    "orq41-env-otel"
+  ],
+  "benchmark_authorized": false,
+  "paid_campaign_authorized": false,
+  "host_power_changes_authorized": false,
+  "procedure_review_required": true,
+  "rollback_required": true
+}

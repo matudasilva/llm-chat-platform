@@ -1,0 +1,765 @@
+{
+  "entry": {
+    "arm": "c0",
+    "cell": "ES-json",
+    "block": 2
+  },
+  "host_before": {
+    "start_ns": 652838408626325,
+    "end_ns": 652838409021876,
+    "cpu_ticks": {
+      "cpu0": [
+        1197293,
+        1260,
+        534706,
+        62028526,
+        14548,
+        0,
+        16013,
+        0,
+        141556,
+        0
+      ],
+      "cpu1": [
+        130146,
+        480,
+        36608,
+        64807742,
+        12005,
+        0,
+        8872,
+        0,
+        12257,
+        0
+      ],
+      "cpu2": [
+        1788800,
+        1681,
+        703979,
+        62212510,
+        17465,
+        0,
+        9610,
+        0,
+        199090,
+        0
+      ],
+      "cpu3": [
+        156540,
+        175,
+        46079,
+        65017252,
+        1015,
+        0,
+        6439,
+        0,
+        16843,
+        0
+      ],
+      "cpu4": [
+        1952524,
+        1672,
+        815497,
+        61716868,
+        13614,
+        0,
+        9582,
+        0,
+        220365,
+        0
+      ],
+      "cpu5": [
+        167790,
+        204,
+        87491,
+        64598479,
+        1046,
+        0,
+        30092,
+        0,
+        17525,
+        0
+      ],
+      "cpu6": [
+        1991520,
+        1732,
+        831610,
+        61795450,
+        22213,
+        0,
+        8267,
+        0,
+        231192,
+        0
+      ],
+      "cpu7": [
+        171293,
+        143,
+        51418,
+        64949659,
+        783,
+        0,
+        40967,
+        0,
+        24226,
+        0
+      ]
+    },
+    "reported_frequency_khz": {
+      "0": 3906075,
+      "2": 800332,
+      "4": 800245,
+      "6": 800449
+    }
+  },
+  "host_after": {
+    "start_ns": 652840525981556,
+    "end_ns": 652840526517336,
+    "cpu_ticks": {
+      "cpu0": [
+        1197319,
+        1260,
+        534708,
+        62028701,
+        14548,
+        0,
+        16013,
+        0,
+        141556,
+        0
+      ],
+      "cpu1": [
+        130146,
+        480,
+        36608,
+        64807951,
+        12005,
+        0,
+        8872,
+        0,
+        12257,
+        0
+      ],
+      "cpu2": [
+        1788944,
+        1681,
+        703987,
+        62212569,
+        17465,
+        0,
+        9610,
+        0,
+        199090,
+        0
+      ],
+      "cpu3": [
+        156542,
+        175,
+        46079,
+        65017460,
+        1015,
+        0,
+        6439,
+        0,
+        16843,
+        0
+      ],
+      "cpu4": [
+        1952539,
+        1672,
+        815500,
+        61717059,
+        13615,
+        0,
+        9582,
+        0,
+        220365,
+        0
+      ],
+      "cpu5": [
+        167790,
+        204,
+        87491,
+        64598691,
+        1046,
+        0,
+        30092,
+        0,
+        17525,
+        0
+      ],
+      "cpu6": [
+        1991531,
+        1732,
+        831616,
+        61795644,
+        22214,
+        0,
+        8267,
+        0,
+        231192,
+        0
+      ],
+      "cpu7": [
+        171296,
+        143,
+        51418,
+        64949868,
+        783,
+        0,
+        40967,
+        0,
+        24226,
+        0
+      ]
+    },
+    "reported_frequency_khz": {
+      "0": 4316833,
+      "2": 1288131,
+      "4": 2866429,
+      "6": 4316568
+    }
+  },
+  "host_delta": {
+    "cpu0": [
+      26,
+      0,
+      2,
+      175,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "cpu1": [
+      0,
+      0,
+      0,
+      209,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "cpu2": [
+      144,
+      0,
+      8,
+      59,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "cpu3": [
+      2,
+      0,
+      0,
+      208,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "cpu4": [
+      15,
+      0,
+      3,
+      191,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "cpu5": [
+      0,
+      0,
+      0,
+      212,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "cpu6": [
+      11,
+      0,
+      6,
+      194,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "cpu7": [
+      3,
+      0,
+      0,
+      209,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "pg_before": {
+    "affinity": [
+      4,
+      6
+    ],
+    "effective_cpuset": [
+      4,
+      6
+    ],
+    "cpu_max": "200000 100000",
+    "cpu_stat": {
+      "usage_usec": 36326425,
+      "user_usec": 27751173,
+      "system_usec": 8575251,
+      "nice_usec": 0,
+      "core_sched.force_idle_usec": 0,
+      "nr_periods": 3027,
+      "nr_throttled": 0,
+      "throttled_usec": 0,
+      "nr_bursts": 0,
+      "burst_usec": 0
+    },
+    "topology": [
+      {
+        "cpu": 0,
+        "core_id": 0,
+        "siblings": [
+          0,
+          1
+        ],
+        "max_khz": 5600000,
+        "governor": "powersave"
+      },
+      {
+        "cpu": 2,
+        "core_id": 4,
+        "siblings": [
+          2,
+          3
+        ],
+        "max_khz": 5600000,
+        "governor": "powersave"
+      },
+      {
+        "cpu": 4,
+        "core_id": 8,
+        "siblings": [
+          4,
+          5
+        ],
+        "max_khz": 5600000,
+        "governor": "powersave"
+      },
+      {
+        "cpu": 6,
+        "core_id": 12,
+        "siblings": [
+          6,
+          7
+        ],
+        "max_khz": 5600000,
+        "governor": "powersave"
+      }
+    ]
+  },
+  "pg_after": {
+    "affinity": [
+      4,
+      6
+    ],
+    "effective_cpuset": [
+      4,
+      6
+    ],
+    "cpu_max": "200000 100000",
+    "cpu_stat": {
+      "usage_usec": 36802147,
+      "user_usec": 28154953,
+      "system_usec": 8647193,
+      "nice_usec": 0,
+      "core_sched.force_idle_usec": 0,
+      "nr_periods": 3046,
+      "nr_throttled": 0,
+      "throttled_usec": 0,
+      "nr_bursts": 0,
+      "burst_usec": 0
+    },
+    "topology": [
+      {
+        "cpu": 0,
+        "core_id": 0,
+        "siblings": [
+          0,
+          1
+        ],
+        "max_khz": 5600000,
+        "governor": "powersave"
+      },
+      {
+        "cpu": 2,
+        "core_id": 4,
+        "siblings": [
+          2,
+          3
+        ],
+        "max_khz": 5600000,
+        "governor": "powersave"
+      },
+      {
+        "cpu": 4,
+        "core_id": 8,
+        "siblings": [
+          4,
+          5
+        ],
+        "max_khz": 5600000,
+        "governor": "powersave"
+      },
+      {
+        "cpu": 6,
+        "core_id": 12,
+        "siblings": [
+          6,
+          7
+        ],
+        "max_khz": 5600000,
+        "governor": "powersave"
+      }
+    ]
+  },
+  "pg_delta": {
+    "usage_usec": 475722,
+    "user_usec": 403780,
+    "system_usec": 71942,
+    "nice_usec": 0,
+    "core_sched.force_idle_usec": 0,
+    "nr_periods": 19,
+    "nr_throttled": 0,
+    "throttled_usec": 0,
+    "nr_bursts": 0,
+    "burst_usec": 0
+  },
+  "db_before": {
+    "c0": {
+      "counters": {
+        "datid": "16389",
+        "datname": "orq41_blocked_261110150634_c0",
+        "stats_reset": null,
+        "xact_commit": 986,
+        "xact_rollback": 2386,
+        "blks_read": 2153,
+        "blks_hit": 5584506,
+        "tup_returned": 3514141,
+        "tup_fetched": 3003568,
+        "tup_inserted": 32073,
+        "tup_updated": 91,
+        "tup_deleted": 21,
+        "deadlocks": 0
+      },
+      "maintenance": [
+        {
+          "relname": "alembic_version",
+          "last_analyze": "2026-11-10 15:06:41.181796+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": null
+        },
+        {
+          "relname": "chunks",
+          "last_analyze": "2026-11-10 15:06:41.280253+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": "2026-11-10 15:07:56.153651+00"
+        },
+        {
+          "relname": "conversations",
+          "last_analyze": "2026-11-10 15:06:41.370307+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": null
+        },
+        {
+          "relname": "documents",
+          "last_analyze": "2026-11-10 15:06:41.444461+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": null
+        },
+        {
+          "relname": "messages",
+          "last_analyze": "2026-11-10 15:06:41.552018+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": "2026-11-10 15:07:56.161601+00"
+        },
+        {
+          "relname": "rag_request_metrics",
+          "last_analyze": "2026-11-10 15:06:41.618434+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": null
+        },
+        {
+          "relname": "usage_events",
+          "last_analyze": "2026-11-10 15:06:41.688376+00",
+          "last_autoanalyze": "2026-11-10 17:15:57.338229+00",
+          "last_vacuum": null,
+          "last_autovacuum": null
+        }
+      ]
+    },
+    "c1": {
+      "counters": {
+        "datid": "18975",
+        "datname": "orq41_blocked_261110150634_c1",
+        "stats_reset": null,
+        "xact_commit": 1036,
+        "xact_rollback": 2611,
+        "blks_read": 2153,
+        "blks_hit": 5756347,
+        "tup_returned": 3814629,
+        "tup_fetched": 3290944,
+        "tup_inserted": 32208,
+        "tup_updated": 107,
+        "tup_deleted": 21,
+        "deadlocks": 0
+      },
+      "maintenance": [
+        {
+          "relname": "alembic_version",
+          "last_analyze": "2026-11-10 15:06:45.936802+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": null
+        },
+        {
+          "relname": "chunks",
+          "last_analyze": "2026-11-10 15:06:46.027529+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": "2026-11-10 15:08:08.192257+00"
+        },
+        {
+          "relname": "conversations",
+          "last_analyze": "2026-11-10 15:06:46.100819+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": null
+        },
+        {
+          "relname": "documents",
+          "last_analyze": "2026-11-10 15:06:46.191201+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": null
+        },
+        {
+          "relname": "messages",
+          "last_analyze": "2026-11-10 15:06:46.296032+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": "2026-11-10 15:08:08.203064+00"
+        },
+        {
+          "relname": "rag_request_metrics",
+          "last_analyze": "2026-11-10 15:06:46.389315+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": null
+        },
+        {
+          "relname": "usage_events",
+          "last_analyze": "2026-11-10 15:06:46.464561+00",
+          "last_autoanalyze": "2026-11-10 17:16:09.363173+00",
+          "last_vacuum": null,
+          "last_autovacuum": null
+        }
+      ]
+    }
+  },
+  "db_after": {
+    "c0": {
+      "counters": {
+        "datid": "16389",
+        "datname": "orq41_blocked_261110150634_c0",
+        "stats_reset": null,
+        "xact_commit": 1036,
+        "xact_rollback": 2613,
+        "blks_read": 2153,
+        "blks_hit": 5753985,
+        "tup_returned": 3817627,
+        "tup_fetched": 3293608,
+        "tup_inserted": 32208,
+        "tup_updated": 91,
+        "tup_deleted": 21,
+        "deadlocks": 0
+      },
+      "maintenance": [
+        {
+          "relname": "alembic_version",
+          "last_analyze": "2026-11-10 15:06:41.181796+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": null
+        },
+        {
+          "relname": "chunks",
+          "last_analyze": "2026-11-10 15:06:41.280253+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": "2026-11-10 15:07:56.153651+00"
+        },
+        {
+          "relname": "conversations",
+          "last_analyze": "2026-11-10 15:06:41.370307+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": null
+        },
+        {
+          "relname": "documents",
+          "last_analyze": "2026-11-10 15:06:41.444461+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": null
+        },
+        {
+          "relname": "messages",
+          "last_analyze": "2026-11-10 15:06:41.552018+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": "2026-11-10 15:07:56.161601+00"
+        },
+        {
+          "relname": "rag_request_metrics",
+          "last_analyze": "2026-11-10 15:06:41.618434+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": null
+        },
+        {
+          "relname": "usage_events",
+          "last_analyze": "2026-11-10 15:06:41.688376+00",
+          "last_autoanalyze": "2026-11-10 17:15:57.338229+00",
+          "last_vacuum": null,
+          "last_autovacuum": null
+        }
+      ]
+    },
+    "c1": {
+      "counters": {
+        "datid": "18975",
+        "datname": "orq41_blocked_261110150634_c1",
+        "stats_reset": null,
+        "xact_commit": 1038,
+        "xact_rollback": 2613,
+        "blks_read": 2153,
+        "blks_hit": 5757520,
+        "tup_returned": 3815780,
+        "tup_fetched": 3291635,
+        "tup_inserted": 32208,
+        "tup_updated": 107,
+        "tup_deleted": 21,
+        "deadlocks": 0
+      },
+      "maintenance": [
+        {
+          "relname": "alembic_version",
+          "last_analyze": "2026-11-10 15:06:45.936802+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": null
+        },
+        {
+          "relname": "chunks",
+          "last_analyze": "2026-11-10 15:06:46.027529+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": "2026-11-10 15:08:08.192257+00"
+        },
+        {
+          "relname": "conversations",
+          "last_analyze": "2026-11-10 15:06:46.100819+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": null
+        },
+        {
+          "relname": "documents",
+          "last_analyze": "2026-11-10 15:06:46.191201+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": null
+        },
+        {
+          "relname": "messages",
+          "last_analyze": "2026-11-10 15:06:46.296032+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": "2026-11-10 15:08:08.203064+00"
+        },
+        {
+          "relname": "rag_request_metrics",
+          "last_analyze": "2026-11-10 15:06:46.389315+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": null
+        },
+        {
+          "relname": "usage_events",
+          "last_analyze": "2026-11-10 15:06:46.464561+00",
+          "last_autoanalyze": "2026-11-10 17:16:09.363173+00",
+          "last_vacuum": null,
+          "last_autovacuum": null
+        }
+      ]
+    }
+  },
+  "db_delta": {
+    "c0": {
+      "xact_commit": 50,
+      "xact_rollback": 227,
+      "blks_read": 0,
+      "blks_hit": 169479,
+      "tup_returned": 303486,
+      "tup_fetched": 290040,
+      "tup_inserted": 135,
+      "tup_updated": 0,
+      "tup_deleted": 0,
+      "deadlocks": 0
+    },
+    "c1": {
+      "xact_commit": 2,
+      "xact_rollback": 2,
+      "blks_read": 0,
+      "blks_hit": 1173,
+      "tup_returned": 1151,
+      "tup_fetched": 691,
+      "tup_inserted": 0,
+      "tup_updated": 0,
+      "tup_deleted": 0,
+      "deadlocks": 0
+    }
+  }
+}

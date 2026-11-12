@@ -1,0 +1,75 @@
+{
+  "status": "AA_CALIBRATION_EXECUTION_INDEPENDENT_REPLAY_VERIFIED_FAIL",
+  "reviewer": "/root/packet_review",
+  "plan_sha256": "f5dbe8d18bded1666f98d53403b9d613a731ca7089307897e5c2c9312979a659",
+  "result_sha256": "8d43b8f76472381a621a939a0c7420e231d8f98609394de03d6ce4a238b2ae94",
+  "verifier_sha256": "8d01496b06b93b4df0a99cae186d24b2f163ae2889e5b30bf68f0d312422057b",
+  "worker_receipts": {
+    "c1-ES-sse.json": "1649636f59530fdcca838843675950ade6d56ca7e04189dfb12f98ad6f3ec738",
+    "c1-ES-json.json": "07ff13d976578c0f209b467892e39067f4cec2627d21ca2d780aee9d782fd115",
+    "c0-ES-json.json": "b0308f2743b85c557b194e38b78a057cbccd71fb4515069d5077c596354f006f",
+    "c1-EN-sse.json": "de3311f5dc3becfa6ad4aac0601b1b817e0cf85afdc97facd01bc61309dc336c",
+    "c0-EN-json.json": "bb4772d9b708bbcb37e10c98aef5ab8e53be08725daac2e6a623186342075710",
+    "c0-ES-sse.json": "48b29cde732242ffc82bbd650355abd5179f5ff7b651076e7d6652226e34d6af",
+    "c1-EN-json.json": "61da89b5a1f6f2e45c09082d5110a800b87dbb9e8cb1b97c3971895a689a4a2a",
+    "c0-EN-sse.json": "7094527dfaa8f4fbe077553d775e1e87990331637d40f5897d4def17641a87f2"
+  },
+  "database_verification_sha256": "15b0368b868293fe87e8d8e4cd7e07e0465e8a24172d28242844309c36dfce80",
+  "requests": 840,
+  "measured": 800,
+  "warmups": 40,
+  "unique_full_c1_instances": 840,
+  "cells": [
+    {
+      "cell": "EN-json",
+      "a_p95_ns": 14886998,
+      "b_p95_ns": 16734379,
+      "signed_percent": 12.409358824391592,
+      "status": "FAIL"
+    },
+    {
+      "cell": "EN-sse",
+      "a_p95_ns": 15727774,
+      "b_p95_ns": 17114485,
+      "signed_percent": 8.816956550876176,
+      "status": "FAIL"
+    },
+    {
+      "cell": "ES-json",
+      "a_p95_ns": 15454352,
+      "b_p95_ns": 16318824,
+      "signed_percent": 5.593712373058411,
+      "status": "FAIL"
+    },
+    {
+      "cell": "ES-sse",
+      "a_p95_ns": 14373277,
+      "b_p95_ns": 15705842,
+      "signed_percent": 9.271128636844612,
+      "status": "FAIL"
+    }
+  ],
+  "all_cpu_counter_deltas_recomputed": true,
+  "recorded_throttling_zero": true,
+  "reviewer_api_calls": 0,
+  "reviewer_database_calls": 0,
+  "reviewer_docker_calls": 0,
+  "external_calls": 0,
+  "spend_usd": "0",
+  "official_g6_status": "CONTROLLED_G6_FAIL",
+  "causal_attribution_established": false,
+  "review_sha256": "5ba66f84ed38534a43815f361f6e969e69bd17b3dfb88729843f571f76860a1d",
+  "final_database_verifier_source_sha256": "490e0fcfa7592ab9efa925f63e96dacf2cb01ea31f4ad86657eb74360e42da6c",
+  "new_blocker_high_medium_findings": [],
+  "author_report_reviewed": true,
+  "limitations": [
+    "R=1 identical-image calibration not statisticalequivalence",
+    "Zero recorded CFSthrottling does not ruleout othercontention or prove hardwarecause",
+    "Parent executed finalSQL verifier; reviewer inspected source/receipt",
+    "RawC1chains checkedbyreviewedworker not retained for secondreplay"
+  ],
+  "author_report_sha256": "e140bdf1dfe377166dc06c74d87c5c0fabf3cfa3c70ebaa85cab7224bf8b64cf",
+  "author_report_numbers_and_limits_checked": true,
+  "cleanup_record_sha256": "27e9412602b0a1ae14aa8c56cd6380513030341879fe47b83bd90bdc69195f98",
+  "cleanup_claims_independently_docker_verified": false
+}

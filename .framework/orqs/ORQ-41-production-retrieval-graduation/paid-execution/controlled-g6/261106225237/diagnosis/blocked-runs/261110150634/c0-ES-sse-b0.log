@@ -1,0 +1,543 @@
+2026-11-10T17:16:29+0000 INFO root logging configured tenant_id=default
+2026-11-10T17:16:29+0000 INFO app app starting application tenant_id=default
+2026-11-10T17:16:29+0000 INFO app.observability.tracing tracing.enabled tenant_id=default
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.total tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.domain.retrieval_pipeline retrieval_pipeline.completed request_id=91c5298c-d2ed-573d-a2c1-70c3dc2e306b evaluator_triggered=false tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.services.chat_response_cache chat_cache_bypass tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.api.routes.chat chat_streaming_start request_id=91c5298c-d2ed-573d-a2c1-70c3dc2e306b conversation_id=27d33a5d-68f9-577f-90cc-431ded1e832a is_new=False tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq37-t23
+{"request_id":"91c5298c-d2ed-573d-a2c1-70c3dc2e306b","correlation_id":"91c5298c-d2ed-573d-a2c1-70c3dc2e306b","tenant_id":"orq37-t23","path":"/chat","method":"POST","status":200,"latency_ms":40,"app_env":"development"}
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.stream.complete tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.observability.retry_evidence campaign.retry_summary request_id=91c5298c-d2ed-573d-a2c1-70c3dc2e306b retry_announced=false evidence_valid=true tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO httpx HTTP Request: POST http://local/chat "HTTP/1.1 200 OK" tenant_id=default
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.total tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.domain.retrieval_pipeline retrieval_pipeline.completed request_id=c312637a-76d6-5a73-abe3-ef246dcdacef evaluator_triggered=false tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.services.chat_response_cache chat_cache_bypass tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.api.routes.chat chat_streaming_start request_id=c312637a-76d6-5a73-abe3-ef246dcdacef conversation_id=57179822-ce26-56c1-bfc6-c1b4a26d16fd is_new=False tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq41-6b2ab547-es-history
+{"request_id":"c312637a-76d6-5a73-abe3-ef246dcdacef","correlation_id":"c312637a-76d6-5a73-abe3-ef246dcdacef","tenant_id":"orq41-6b2ab547-es-history","path":"/chat","method":"POST","status":200,"latency_ms":6,"app_env":"development"}
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.stream.complete tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.observability.retry_evidence campaign.retry_summary request_id=c312637a-76d6-5a73-abe3-ef246dcdacef retry_announced=false evidence_valid=true tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO httpx HTTP Request: POST http://local/chat "HTTP/1.1 200 OK" tenant_id=default
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.total tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.domain.retrieval_pipeline retrieval_pipeline.completed request_id=5ad50314-cdd4-5070-9a67-712ff495245a evaluator_triggered=false tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.services.chat_response_cache chat_cache_bypass tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.api.routes.chat chat_streaming_start request_id=5ad50314-cdd4-5070-9a67-712ff495245a conversation_id=cfdb19d6-58c8-54f5-9ff6-a907a5d32dfc is_new=False tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq37-t23
+{"request_id":"5ad50314-cdd4-5070-9a67-712ff495245a","correlation_id":"5ad50314-cdd4-5070-9a67-712ff495245a","tenant_id":"orq37-t23","path":"/chat","method":"POST","status":200,"latency_ms":12,"app_env":"development"}
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.stream.complete tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.observability.retry_evidence campaign.retry_summary request_id=5ad50314-cdd4-5070-9a67-712ff495245a retry_announced=false evidence_valid=true tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO httpx HTTP Request: POST http://local/chat "HTTP/1.1 200 OK" tenant_id=default
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.total tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.domain.retrieval_pipeline retrieval_pipeline.completed request_id=ba5cf330-d4cc-5565-b5d3-3a253327b8fb evaluator_triggered=false tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.services.chat_response_cache chat_cache_bypass tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.api.routes.chat chat_streaming_start request_id=ba5cf330-d4cc-5565-b5d3-3a253327b8fb conversation_id=a43021a2-ac3a-57fb-bbfc-1c276e83d4a1 is_new=False tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq41-6b2ab547-es-empty
+{"request_id":"ba5cf330-d4cc-5565-b5d3-3a253327b8fb","correlation_id":"ba5cf330-d4cc-5565-b5d3-3a253327b8fb","tenant_id":"orq41-6b2ab547-es-empty","path":"/chat","method":"POST","status":200,"latency_ms":5,"app_env":"development"}
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.stream.complete tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.observability.retry_evidence campaign.retry_summary request_id=ba5cf330-d4cc-5565-b5d3-3a253327b8fb retry_announced=false evidence_valid=true tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO httpx HTTP Request: POST http://local/chat "HTTP/1.1 200 OK" tenant_id=default
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.total tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.domain.retrieval_pipeline retrieval_pipeline.completed request_id=24de7d5b-9228-5b35-9027-e4fc96ffcb10 evaluator_triggered=false tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.services.chat_response_cache chat_cache_bypass tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.api.routes.chat chat_streaming_start request_id=24de7d5b-9228-5b35-9027-e4fc96ffcb10 conversation_id=a23d8cbd-5662-53ef-bf53-d8854f26c688 is_new=False tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq37-t23
+{"request_id":"24de7d5b-9228-5b35-9027-e4fc96ffcb10","correlation_id":"24de7d5b-9228-5b35-9027-e4fc96ffcb10","tenant_id":"orq37-t23","path":"/chat","method":"POST","status":200,"latency_ms":13,"app_env":"development"}
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.stream.complete tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.observability.retry_evidence campaign.retry_summary request_id=24de7d5b-9228-5b35-9027-e4fc96ffcb10 retry_announced=false evidence_valid=true tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO httpx HTTP Request: POST http://local/chat "HTTP/1.1 200 OK" tenant_id=default
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.total tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.domain.retrieval_pipeline retrieval_pipeline.completed request_id=b920a269-db0c-5eda-ab04-e5262566e6b2 evaluator_triggered=false tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.services.chat_response_cache chat_cache_bypass tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.api.routes.chat chat_streaming_start request_id=b920a269-db0c-5eda-ab04-e5262566e6b2 conversation_id=c03da725-1d7a-569b-b5c2-17ab13151adb is_new=False tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq41-6b2ab547-es-history
+{"request_id":"b920a269-db0c-5eda-ab04-e5262566e6b2","correlation_id":"b920a269-db0c-5eda-ab04-e5262566e6b2","tenant_id":"orq41-6b2ab547-es-history","path":"/chat","method":"POST","status":200,"latency_ms":6,"app_env":"development"}
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.stream.complete tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.observability.retry_evidence campaign.retry_summary request_id=b920a269-db0c-5eda-ab04-e5262566e6b2 retry_announced=false evidence_valid=true tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO httpx HTTP Request: POST http://local/chat "HTTP/1.1 200 OK" tenant_id=default
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.total tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.domain.retrieval_pipeline retrieval_pipeline.completed request_id=aac4660e-ccb0-594a-8d82-cb0839d7305f evaluator_triggered=false tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.services.chat_response_cache chat_cache_bypass tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.api.routes.chat chat_streaming_start request_id=aac4660e-ccb0-594a-8d82-cb0839d7305f conversation_id=2e2b152f-8a09-5ae8-9c38-f761f45607e1 is_new=False tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq37-t23
+{"request_id":"aac4660e-ccb0-594a-8d82-cb0839d7305f","correlation_id":"aac4660e-ccb0-594a-8d82-cb0839d7305f","tenant_id":"orq37-t23","path":"/chat","method":"POST","status":200,"latency_ms":13,"app_env":"development"}
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.stream.complete tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.observability.retry_evidence campaign.retry_summary request_id=aac4660e-ccb0-594a-8d82-cb0839d7305f retry_announced=false evidence_valid=true tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO httpx HTTP Request: POST http://local/chat "HTTP/1.1 200 OK" tenant_id=default
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.total tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.domain.retrieval_pipeline retrieval_pipeline.completed request_id=0b7e397e-97e6-53a5-a1e3-d0b371ccfe0d evaluator_triggered=false tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.services.chat_response_cache chat_cache_bypass tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.api.routes.chat chat_streaming_start request_id=0b7e397e-97e6-53a5-a1e3-d0b371ccfe0d conversation_id=8e1cc2a5-9a07-5f52-b7e5-5123c310e9ac is_new=False tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq41-6b2ab547-es-empty
+{"request_id":"0b7e397e-97e6-53a5-a1e3-d0b371ccfe0d","correlation_id":"0b7e397e-97e6-53a5-a1e3-d0b371ccfe0d","tenant_id":"orq41-6b2ab547-es-empty","path":"/chat","method":"POST","status":200,"latency_ms":5,"app_env":"development"}
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.stream.complete tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.observability.retry_evidence campaign.retry_summary request_id=0b7e397e-97e6-53a5-a1e3-d0b371ccfe0d retry_announced=false evidence_valid=true tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO httpx HTTP Request: POST http://local/chat "HTTP/1.1 200 OK" tenant_id=default
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.total tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.domain.retrieval_pipeline retrieval_pipeline.completed request_id=377f1d1f-35f4-5f84-9ac0-e55f3f279d5a evaluator_triggered=false tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.services.chat_response_cache chat_cache_bypass tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.api.routes.chat chat_streaming_start request_id=377f1d1f-35f4-5f84-9ac0-e55f3f279d5a conversation_id=182eb571-841a-5094-8d87-7620701d53d0 is_new=False tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq37-t23
+{"request_id":"377f1d1f-35f4-5f84-9ac0-e55f3f279d5a","correlation_id":"377f1d1f-35f4-5f84-9ac0-e55f3f279d5a","tenant_id":"orq37-t23","path":"/chat","method":"POST","status":200,"latency_ms":12,"app_env":"development"}
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.stream.complete tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.observability.retry_evidence campaign.retry_summary request_id=377f1d1f-35f4-5f84-9ac0-e55f3f279d5a retry_announced=false evidence_valid=true tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO httpx HTTP Request: POST http://local/chat "HTTP/1.1 200 OK" tenant_id=default
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.total tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.domain.retrieval_pipeline retrieval_pipeline.completed request_id=df7fa9c5-e490-55e8-9c7d-ae756f8674c4 evaluator_triggered=false tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.services.chat_response_cache chat_cache_bypass tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.api.routes.chat chat_streaming_start request_id=df7fa9c5-e490-55e8-9c7d-ae756f8674c4 conversation_id=ed0d5fe1-02c7-530f-bc75-6238fa15e7a9 is_new=False tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq41-6b2ab547-es-history
+{"request_id":"df7fa9c5-e490-55e8-9c7d-ae756f8674c4","correlation_id":"df7fa9c5-e490-55e8-9c7d-ae756f8674c4","tenant_id":"orq41-6b2ab547-es-history","path":"/chat","method":"POST","status":200,"latency_ms":5,"app_env":"development"}
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.stream.complete tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.observability.retry_evidence campaign.retry_summary request_id=df7fa9c5-e490-55e8-9c7d-ae756f8674c4 retry_announced=false evidence_valid=true tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO httpx HTTP Request: POST http://local/chat "HTTP/1.1 200 OK" tenant_id=default
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.total tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.domain.retrieval_pipeline retrieval_pipeline.completed request_id=241310e1-818a-59bb-ad36-b52dd2cab682 evaluator_triggered=false tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.services.chat_response_cache chat_cache_bypass tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.api.routes.chat chat_streaming_start request_id=241310e1-818a-59bb-ad36-b52dd2cab682 conversation_id=eb726f32-7d0b-5dfb-bc9c-5d29ab2556cb is_new=False tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq37-t23
+{"request_id":"241310e1-818a-59bb-ad36-b52dd2cab682","correlation_id":"241310e1-818a-59bb-ad36-b52dd2cab682","tenant_id":"orq37-t23","path":"/chat","method":"POST","status":200,"latency_ms":15,"app_env":"development"}
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.stream.complete tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.observability.retry_evidence campaign.retry_summary request_id=241310e1-818a-59bb-ad36-b52dd2cab682 retry_announced=false evidence_valid=true tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO httpx HTTP Request: POST http://local/chat "HTTP/1.1 200 OK" tenant_id=default
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.total tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.domain.retrieval_pipeline retrieval_pipeline.completed request_id=9229a469-e45f-5f71-8a5c-61dfbc0fa82b evaluator_triggered=false tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.services.chat_response_cache chat_cache_bypass tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.api.routes.chat chat_streaming_start request_id=9229a469-e45f-5f71-8a5c-61dfbc0fa82b conversation_id=bf32869a-7ef8-55e7-9042-b66d46d7244d is_new=False tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq41-6b2ab547-es-empty
+{"request_id":"9229a469-e45f-5f71-8a5c-61dfbc0fa82b","correlation_id":"9229a469-e45f-5f71-8a5c-61dfbc0fa82b","tenant_id":"orq41-6b2ab547-es-empty","path":"/chat","method":"POST","status":200,"latency_ms":5,"app_env":"development"}
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.stream.complete tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.observability.retry_evidence campaign.retry_summary request_id=9229a469-e45f-5f71-8a5c-61dfbc0fa82b retry_announced=false evidence_valid=true tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO httpx HTTP Request: POST http://local/chat "HTTP/1.1 200 OK" tenant_id=default
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.total tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.domain.retrieval_pipeline retrieval_pipeline.completed request_id=7c7b22d4-0668-5d44-8110-83c1bd03603a evaluator_triggered=false tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.services.chat_response_cache chat_cache_bypass tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.api.routes.chat chat_streaming_start request_id=7c7b22d4-0668-5d44-8110-83c1bd03603a conversation_id=1a1d9858-a2ed-5f83-a766-bb17647e115f is_new=False tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq37-t23
+{"request_id":"7c7b22d4-0668-5d44-8110-83c1bd03603a","correlation_id":"7c7b22d4-0668-5d44-8110-83c1bd03603a","tenant_id":"orq37-t23","path":"/chat","method":"POST","status":200,"latency_ms":11,"app_env":"development"}
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.stream.complete tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.observability.retry_evidence campaign.retry_summary request_id=7c7b22d4-0668-5d44-8110-83c1bd03603a retry_announced=false evidence_valid=true tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO httpx HTTP Request: POST http://local/chat "HTTP/1.1 200 OK" tenant_id=default
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.total tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.domain.retrieval_pipeline retrieval_pipeline.completed request_id=bbc721b9-7c6e-54d3-bb5c-55ea3dcdeae9 evaluator_triggered=false tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.services.chat_response_cache chat_cache_bypass tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.api.routes.chat chat_streaming_start request_id=bbc721b9-7c6e-54d3-bb5c-55ea3dcdeae9 conversation_id=700c490b-f035-5416-b773-0fe76c8e7b5c is_new=False tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq41-6b2ab547-es-history
+{"request_id":"bbc721b9-7c6e-54d3-bb5c-55ea3dcdeae9","correlation_id":"bbc721b9-7c6e-54d3-bb5c-55ea3dcdeae9","tenant_id":"orq41-6b2ab547-es-history","path":"/chat","method":"POST","status":200,"latency_ms":5,"app_env":"development"}
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.stream.complete tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.observability.retry_evidence campaign.retry_summary request_id=bbc721b9-7c6e-54d3-bb5c-55ea3dcdeae9 retry_announced=false evidence_valid=true tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO httpx HTTP Request: POST http://local/chat "HTTP/1.1 200 OK" tenant_id=default
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.total tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.domain.retrieval_pipeline retrieval_pipeline.completed request_id=62656d6a-72a5-52d3-8112-628e7a6fc3fd evaluator_triggered=false tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.services.chat_response_cache chat_cache_bypass tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.api.routes.chat chat_streaming_start request_id=62656d6a-72a5-52d3-8112-628e7a6fc3fd conversation_id=df87e1b2-6fea-5211-814a-34bc2048df83 is_new=False tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq37-t23
+{"request_id":"62656d6a-72a5-52d3-8112-628e7a6fc3fd","correlation_id":"62656d6a-72a5-52d3-8112-628e7a6fc3fd","tenant_id":"orq37-t23","path":"/chat","method":"POST","status":200,"latency_ms":12,"app_env":"development"}
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.stream.complete tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.observability.retry_evidence campaign.retry_summary request_id=62656d6a-72a5-52d3-8112-628e7a6fc3fd retry_announced=false evidence_valid=true tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO httpx HTTP Request: POST http://local/chat "HTTP/1.1 200 OK" tenant_id=default
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.total tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.domain.retrieval_pipeline retrieval_pipeline.completed request_id=8b4ea874-a189-5ff2-8ce6-c3b175202fcd evaluator_triggered=false tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.services.chat_response_cache chat_cache_bypass tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.api.routes.chat chat_streaming_start request_id=8b4ea874-a189-5ff2-8ce6-c3b175202fcd conversation_id=b19e03b1-76e8-551a-a859-b8925ab72ba8 is_new=False tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq41-6b2ab547-es-empty
+{"request_id":"8b4ea874-a189-5ff2-8ce6-c3b175202fcd","correlation_id":"8b4ea874-a189-5ff2-8ce6-c3b175202fcd","tenant_id":"orq41-6b2ab547-es-empty","path":"/chat","method":"POST","status":200,"latency_ms":4,"app_env":"development"}
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.stream.complete tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.observability.retry_evidence campaign.retry_summary request_id=8b4ea874-a189-5ff2-8ce6-c3b175202fcd retry_announced=false evidence_valid=true tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO httpx HTTP Request: POST http://local/chat "HTTP/1.1 200 OK" tenant_id=default
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.total tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.domain.retrieval_pipeline retrieval_pipeline.completed request_id=5c660051-9ba1-549a-af51-4b2212b41706 evaluator_triggered=false tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.services.chat_response_cache chat_cache_bypass tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.api.routes.chat chat_streaming_start request_id=5c660051-9ba1-549a-af51-4b2212b41706 conversation_id=618d208b-9076-54e5-afb2-e7daaf364c6a is_new=False tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq37-t23
+{"request_id":"5c660051-9ba1-549a-af51-4b2212b41706","correlation_id":"5c660051-9ba1-549a-af51-4b2212b41706","tenant_id":"orq37-t23","path":"/chat","method":"POST","status":200,"latency_ms":11,"app_env":"development"}
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.stream.complete tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.observability.retry_evidence campaign.retry_summary request_id=5c660051-9ba1-549a-af51-4b2212b41706 retry_announced=false evidence_valid=true tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO httpx HTTP Request: POST http://local/chat "HTTP/1.1 200 OK" tenant_id=default
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.total tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.domain.retrieval_pipeline retrieval_pipeline.completed request_id=6513c90f-f6b7-5290-836b-a2f95961363e evaluator_triggered=false tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.services.chat_response_cache chat_cache_bypass tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.api.routes.chat chat_streaming_start request_id=6513c90f-f6b7-5290-836b-a2f95961363e conversation_id=ae5f4f66-4b63-5adb-9ba6-1bc329241068 is_new=False tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq41-6b2ab547-es-history
+{"request_id":"6513c90f-f6b7-5290-836b-a2f95961363e","correlation_id":"6513c90f-f6b7-5290-836b-a2f95961363e","tenant_id":"orq41-6b2ab547-es-history","path":"/chat","method":"POST","status":200,"latency_ms":4,"app_env":"development"}
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.stream.complete tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.observability.retry_evidence campaign.retry_summary request_id=6513c90f-f6b7-5290-836b-a2f95961363e retry_announced=false evidence_valid=true tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO httpx HTTP Request: POST http://local/chat "HTTP/1.1 200 OK" tenant_id=default
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.total tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.domain.retrieval_pipeline retrieval_pipeline.completed request_id=18659206-10c3-589e-a991-a923df6cc196 evaluator_triggered=false tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.services.chat_response_cache chat_cache_bypass tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.api.routes.chat chat_streaming_start request_id=18659206-10c3-589e-a991-a923df6cc196 conversation_id=165c254a-7fcb-5789-96dd-d5ac9b25b3c6 is_new=False tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq37-t23
+{"request_id":"18659206-10c3-589e-a991-a923df6cc196","correlation_id":"18659206-10c3-589e-a991-a923df6cc196","tenant_id":"orq37-t23","path":"/chat","method":"POST","status":200,"latency_ms":14,"app_env":"development"}
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.stream.complete tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.observability.retry_evidence campaign.retry_summary request_id=18659206-10c3-589e-a991-a923df6cc196 retry_announced=false evidence_valid=true tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO httpx HTTP Request: POST http://local/chat "HTTP/1.1 200 OK" tenant_id=default
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.total tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.domain.retrieval_pipeline retrieval_pipeline.completed request_id=67f6169d-2d92-5903-abef-c0ef90202875 evaluator_triggered=false tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.services.chat_response_cache chat_cache_bypass tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.api.routes.chat chat_streaming_start request_id=67f6169d-2d92-5903-abef-c0ef90202875 conversation_id=6f4f9517-806b-5258-b7fb-1f36e98facdc is_new=False tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq41-6b2ab547-es-empty
+{"request_id":"67f6169d-2d92-5903-abef-c0ef90202875","correlation_id":"67f6169d-2d92-5903-abef-c0ef90202875","tenant_id":"orq41-6b2ab547-es-empty","path":"/chat","method":"POST","status":200,"latency_ms":5,"app_env":"development"}
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.stream.complete tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.observability.retry_evidence campaign.retry_summary request_id=67f6169d-2d92-5903-abef-c0ef90202875 retry_announced=false evidence_valid=true tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO httpx HTTP Request: POST http://local/chat "HTTP/1.1 200 OK" tenant_id=default
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.total tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.domain.retrieval_pipeline retrieval_pipeline.completed request_id=859192bf-94da-5731-8d1c-de52514d8087 evaluator_triggered=false tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.services.chat_response_cache chat_cache_bypass tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.api.routes.chat chat_streaming_start request_id=859192bf-94da-5731-8d1c-de52514d8087 conversation_id=db0cc662-05e8-57de-a97a-ad1eaeabfbdd is_new=False tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq37-t23
+{"request_id":"859192bf-94da-5731-8d1c-de52514d8087","correlation_id":"859192bf-94da-5731-8d1c-de52514d8087","tenant_id":"orq37-t23","path":"/chat","method":"POST","status":200,"latency_ms":12,"app_env":"development"}
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.stream.complete tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.observability.retry_evidence campaign.retry_summary request_id=859192bf-94da-5731-8d1c-de52514d8087 retry_announced=false evidence_valid=true tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO httpx HTTP Request: POST http://local/chat "HTTP/1.1 200 OK" tenant_id=default
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.total tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.domain.retrieval_pipeline retrieval_pipeline.completed request_id=3346d339-0d46-557c-a936-3919212efed3 evaluator_triggered=false tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.services.chat_response_cache chat_cache_bypass tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.api.routes.chat chat_streaming_start request_id=3346d339-0d46-557c-a936-3919212efed3 conversation_id=d1a871fc-4c87-5bcd-992f-ba4bbb5da002 is_new=False tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq41-6b2ab547-es-history
+{"request_id":"3346d339-0d46-557c-a936-3919212efed3","correlation_id":"3346d339-0d46-557c-a936-3919212efed3","tenant_id":"orq41-6b2ab547-es-history","path":"/chat","method":"POST","status":200,"latency_ms":7,"app_env":"development"}
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.stream.complete tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.observability.retry_evidence campaign.retry_summary request_id=3346d339-0d46-557c-a936-3919212efed3 retry_announced=false evidence_valid=true tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO httpx HTTP Request: POST http://local/chat "HTTP/1.1 200 OK" tenant_id=default
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.total tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.domain.retrieval_pipeline retrieval_pipeline.completed request_id=72d7871e-35e2-525c-ae41-0efa51039cae evaluator_triggered=false tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.services.chat_response_cache chat_cache_bypass tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.api.routes.chat chat_streaming_start request_id=72d7871e-35e2-525c-ae41-0efa51039cae conversation_id=2731bbb7-4148-5d2b-928a-f2fd89b24aad is_new=False tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq37-t23
+{"request_id":"72d7871e-35e2-525c-ae41-0efa51039cae","correlation_id":"72d7871e-35e2-525c-ae41-0efa51039cae","tenant_id":"orq37-t23","path":"/chat","method":"POST","status":200,"latency_ms":12,"app_env":"development"}
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.stream.complete tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.observability.retry_evidence campaign.retry_summary request_id=72d7871e-35e2-525c-ae41-0efa51039cae retry_announced=false evidence_valid=true tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO httpx HTTP Request: POST http://local/chat "HTTP/1.1 200 OK" tenant_id=default
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.total tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.domain.retrieval_pipeline retrieval_pipeline.completed request_id=5196ada6-b05b-5455-bbdb-9fdb8b4b548d evaluator_triggered=false tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.services.chat_response_cache chat_cache_bypass tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.api.routes.chat chat_streaming_start request_id=5196ada6-b05b-5455-bbdb-9fdb8b4b548d conversation_id=1f52162c-b2a2-5de0-a68e-8e36748b583d is_new=False tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq41-6b2ab547-es-empty
+{"request_id":"5196ada6-b05b-5455-bbdb-9fdb8b4b548d","correlation_id":"5196ada6-b05b-5455-bbdb-9fdb8b4b548d","tenant_id":"orq41-6b2ab547-es-empty","path":"/chat","method":"POST","status":200,"latency_ms":5,"app_env":"development"}
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.stream.complete tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.observability.retry_evidence campaign.retry_summary request_id=5196ada6-b05b-5455-bbdb-9fdb8b4b548d retry_announced=false evidence_valid=true tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO httpx HTTP Request: POST http://local/chat "HTTP/1.1 200 OK" tenant_id=default
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.total tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.domain.retrieval_pipeline retrieval_pipeline.completed request_id=e91d7b5f-5bb9-503b-9266-be48edff4e99 evaluator_triggered=false tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.services.chat_response_cache chat_cache_bypass tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.api.routes.chat chat_streaming_start request_id=e91d7b5f-5bb9-503b-9266-be48edff4e99 conversation_id=9329d60d-d57a-550b-861e-afb33e0c5b08 is_new=False tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq37-t23
+{"request_id":"e91d7b5f-5bb9-503b-9266-be48edff4e99","correlation_id":"e91d7b5f-5bb9-503b-9266-be48edff4e99","tenant_id":"orq37-t23","path":"/chat","method":"POST","status":200,"latency_ms":12,"app_env":"development"}
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.stream.complete tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.observability.retry_evidence campaign.retry_summary request_id=e91d7b5f-5bb9-503b-9266-be48edff4e99 retry_announced=false evidence_valid=true tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO httpx HTTP Request: POST http://local/chat "HTTP/1.1 200 OK" tenant_id=default
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.total tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.domain.retrieval_pipeline retrieval_pipeline.completed request_id=87ef40ca-847c-5a5d-adc8-f6dd4e9c0476 evaluator_triggered=false tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.services.chat_response_cache chat_cache_bypass tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.api.routes.chat chat_streaming_start request_id=87ef40ca-847c-5a5d-adc8-f6dd4e9c0476 conversation_id=607c903c-f8eb-5c33-bb47-4d93fd6c5a1c is_new=False tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq41-6b2ab547-es-history
+{"request_id":"87ef40ca-847c-5a5d-adc8-f6dd4e9c0476","correlation_id":"87ef40ca-847c-5a5d-adc8-f6dd4e9c0476","tenant_id":"orq41-6b2ab547-es-history","path":"/chat","method":"POST","status":200,"latency_ms":5,"app_env":"development"}
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.stream.complete tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.observability.retry_evidence campaign.retry_summary request_id=87ef40ca-847c-5a5d-adc8-f6dd4e9c0476 retry_announced=false evidence_valid=true tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO httpx HTTP Request: POST http://local/chat "HTTP/1.1 200 OK" tenant_id=default
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.total tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.domain.retrieval_pipeline retrieval_pipeline.completed request_id=bee4696f-27ba-50ac-b71a-7558c16bd31b evaluator_triggered=false tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.services.chat_response_cache chat_cache_bypass tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.api.routes.chat chat_streaming_start request_id=bee4696f-27ba-50ac-b71a-7558c16bd31b conversation_id=caede0a0-53e4-54b8-bce1-7ceb9e798785 is_new=False tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq37-t23
+{"request_id":"bee4696f-27ba-50ac-b71a-7558c16bd31b","correlation_id":"bee4696f-27ba-50ac-b71a-7558c16bd31b","tenant_id":"orq37-t23","path":"/chat","method":"POST","status":200,"latency_ms":13,"app_env":"development"}
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.stream.complete tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.observability.retry_evidence campaign.retry_summary request_id=bee4696f-27ba-50ac-b71a-7558c16bd31b retry_announced=false evidence_valid=true tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO httpx HTTP Request: POST http://local/chat "HTTP/1.1 200 OK" tenant_id=default
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.total tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.domain.retrieval_pipeline retrieval_pipeline.completed request_id=87fc2c67-1142-5558-be07-d8cfdd767cf4 evaluator_triggered=false tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.services.chat_response_cache chat_cache_bypass tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.api.routes.chat chat_streaming_start request_id=87fc2c67-1142-5558-be07-d8cfdd767cf4 conversation_id=e06a372c-b1dc-52b9-8ae8-ecfddb0d66f6 is_new=False tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq41-6b2ab547-es-empty
+{"request_id":"87fc2c67-1142-5558-be07-d8cfdd767cf4","correlation_id":"87fc2c67-1142-5558-be07-d8cfdd767cf4","tenant_id":"orq41-6b2ab547-es-empty","path":"/chat","method":"POST","status":200,"latency_ms":4,"app_env":"development"}
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.stream.complete tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.observability.retry_evidence campaign.retry_summary request_id=87fc2c67-1142-5558-be07-d8cfdd767cf4 retry_announced=false evidence_valid=true tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO httpx HTTP Request: POST http://local/chat "HTTP/1.1 200 OK" tenant_id=default
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.total tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.domain.retrieval_pipeline retrieval_pipeline.completed request_id=9537e1e6-310c-5b91-a60f-d8757a2a0d90 evaluator_triggered=false tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.services.chat_response_cache chat_cache_bypass tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.api.routes.chat chat_streaming_start request_id=9537e1e6-310c-5b91-a60f-d8757a2a0d90 conversation_id=81cdbe1c-bf2e-5514-acf1-8c60644be19d is_new=False tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq37-t23
+{"request_id":"9537e1e6-310c-5b91-a60f-d8757a2a0d90","correlation_id":"9537e1e6-310c-5b91-a60f-d8757a2a0d90","tenant_id":"orq37-t23","path":"/chat","method":"POST","status":200,"latency_ms":11,"app_env":"development"}
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.stream.complete tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.observability.retry_evidence campaign.retry_summary request_id=9537e1e6-310c-5b91-a60f-d8757a2a0d90 retry_announced=false evidence_valid=true tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO httpx HTTP Request: POST http://local/chat "HTTP/1.1 200 OK" tenant_id=default
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.total tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.domain.retrieval_pipeline retrieval_pipeline.completed request_id=f7e458d8-0d2d-5e7d-a61a-ad9a0a7063a7 evaluator_triggered=false tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.services.chat_response_cache chat_cache_bypass tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.api.routes.chat chat_streaming_start request_id=f7e458d8-0d2d-5e7d-a61a-ad9a0a7063a7 conversation_id=fa0b9b0e-b925-5ad5-a12c-6bd6a51c2f7f is_new=False tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq41-6b2ab547-es-history
+{"request_id":"f7e458d8-0d2d-5e7d-a61a-ad9a0a7063a7","correlation_id":"f7e458d8-0d2d-5e7d-a61a-ad9a0a7063a7","tenant_id":"orq41-6b2ab547-es-history","path":"/chat","method":"POST","status":200,"latency_ms":6,"app_env":"development"}
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.stream.complete tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.observability.retry_evidence campaign.retry_summary request_id=f7e458d8-0d2d-5e7d-a61a-ad9a0a7063a7 retry_announced=false evidence_valid=true tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO httpx HTTP Request: POST http://local/chat "HTTP/1.1 200 OK" tenant_id=default
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.total tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.domain.retrieval_pipeline retrieval_pipeline.completed request_id=082c4249-d379-57ee-96c8-b5b10c8e2847 evaluator_triggered=false tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.services.chat_response_cache chat_cache_bypass tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.api.routes.chat chat_streaming_start request_id=082c4249-d379-57ee-96c8-b5b10c8e2847 conversation_id=ab366dca-dc0a-5027-94ec-139cb6a0205d is_new=False tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq37-t23
+{"request_id":"082c4249-d379-57ee-96c8-b5b10c8e2847","correlation_id":"082c4249-d379-57ee-96c8-b5b10c8e2847","tenant_id":"orq37-t23","path":"/chat","method":"POST","status":200,"latency_ms":14,"app_env":"development"}
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.stream.complete tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.observability.retry_evidence campaign.retry_summary request_id=082c4249-d379-57ee-96c8-b5b10c8e2847 retry_announced=false evidence_valid=true tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO httpx HTTP Request: POST http://local/chat "HTTP/1.1 200 OK" tenant_id=default
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.total tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.domain.retrieval_pipeline retrieval_pipeline.completed request_id=9aba5b7b-cc0a-53db-b6e2-d401abac5159 evaluator_triggered=false tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.services.chat_response_cache chat_cache_bypass tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.api.routes.chat chat_streaming_start request_id=9aba5b7b-cc0a-53db-b6e2-d401abac5159 conversation_id=40aed41c-df9d-5c19-9c0b-84cb57345738 is_new=False tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq41-6b2ab547-es-empty
+{"request_id":"9aba5b7b-cc0a-53db-b6e2-d401abac5159","correlation_id":"9aba5b7b-cc0a-53db-b6e2-d401abac5159","tenant_id":"orq41-6b2ab547-es-empty","path":"/chat","method":"POST","status":200,"latency_ms":6,"app_env":"development"}
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.stream.complete tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.observability.retry_evidence campaign.retry_summary request_id=9aba5b7b-cc0a-53db-b6e2-d401abac5159 retry_announced=false evidence_valid=true tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO httpx HTTP Request: POST http://local/chat "HTTP/1.1 200 OK" tenant_id=default
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.total tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.domain.retrieval_pipeline retrieval_pipeline.completed request_id=e2e7fd74-bd33-5873-8668-c7da325a1e59 evaluator_triggered=false tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.services.chat_response_cache chat_cache_bypass tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.api.routes.chat chat_streaming_start request_id=e2e7fd74-bd33-5873-8668-c7da325a1e59 conversation_id=79277cb0-5a27-5e48-8917-571fbb203542 is_new=False tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq37-t23
+{"request_id":"e2e7fd74-bd33-5873-8668-c7da325a1e59","correlation_id":"e2e7fd74-bd33-5873-8668-c7da325a1e59","tenant_id":"orq37-t23","path":"/chat","method":"POST","status":200,"latency_ms":11,"app_env":"development"}
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.stream.complete tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.observability.retry_evidence campaign.retry_summary request_id=e2e7fd74-bd33-5873-8668-c7da325a1e59 retry_announced=false evidence_valid=true tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO httpx HTTP Request: POST http://local/chat "HTTP/1.1 200 OK" tenant_id=default
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.total tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.domain.retrieval_pipeline retrieval_pipeline.completed request_id=6f002734-cf98-55b4-b82d-280f55ec80b5 evaluator_triggered=false tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.services.chat_response_cache chat_cache_bypass tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.api.routes.chat chat_streaming_start request_id=6f002734-cf98-55b4-b82d-280f55ec80b5 conversation_id=e47495ad-95cb-5e79-a045-dc6d8bd28a48 is_new=False tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq41-6b2ab547-es-history
+{"request_id":"6f002734-cf98-55b4-b82d-280f55ec80b5","correlation_id":"6f002734-cf98-55b4-b82d-280f55ec80b5","tenant_id":"orq41-6b2ab547-es-history","path":"/chat","method":"POST","status":200,"latency_ms":6,"app_env":"development"}
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.stream.complete tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO app.core.observability.retry_evidence campaign.retry_summary request_id=6f002734-cf98-55b4-b82d-280f55ec80b5 retry_announced=false evidence_valid=true tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:29+0000 INFO httpx HTTP Request: POST http://local/chat "HTTP/1.1 200 OK" tenant_id=default
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.total tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.domain.retrieval_pipeline retrieval_pipeline.completed request_id=010639cd-ffb1-5a79-8063-58ce0776598b evaluator_triggered=false tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.services.chat_response_cache chat_cache_bypass tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.api.routes.chat chat_streaming_start request_id=010639cd-ffb1-5a79-8063-58ce0776598b conversation_id=38eadd23-0f62-526b-8421-596286c08b68 is_new=False tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq37-t23
+{"request_id":"010639cd-ffb1-5a79-8063-58ce0776598b","correlation_id":"010639cd-ffb1-5a79-8063-58ce0776598b","tenant_id":"orq37-t23","path":"/chat","method":"POST","status":200,"latency_ms":13,"app_env":"development"}
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.stream.complete tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.observability.retry_evidence campaign.retry_summary request_id=010639cd-ffb1-5a79-8063-58ce0776598b retry_announced=false evidence_valid=true tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO httpx HTTP Request: POST http://local/chat "HTTP/1.1 200 OK" tenant_id=default
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.total tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.domain.retrieval_pipeline retrieval_pipeline.completed request_id=6b4241d3-692a-589c-9996-5f2c32cfe1f8 evaluator_triggered=false tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.services.chat_response_cache chat_cache_bypass tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.api.routes.chat chat_streaming_start request_id=6b4241d3-692a-589c-9996-5f2c32cfe1f8 conversation_id=e1dd2163-7cf1-5796-b19b-e676b750e1ec is_new=False tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq41-6b2ab547-es-empty
+{"request_id":"6b4241d3-692a-589c-9996-5f2c32cfe1f8","correlation_id":"6b4241d3-692a-589c-9996-5f2c32cfe1f8","tenant_id":"orq41-6b2ab547-es-empty","path":"/chat","method":"POST","status":200,"latency_ms":4,"app_env":"development"}
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.stream.complete tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO app.core.observability.retry_evidence campaign.retry_summary request_id=6b4241d3-692a-589c-9996-5f2c32cfe1f8 retry_announced=false evidence_valid=true tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:29+0000 INFO httpx HTTP Request: POST http://local/chat "HTTP/1.1 200 OK" tenant_id=default
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.total tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.domain.retrieval_pipeline retrieval_pipeline.completed request_id=ff5efe65-f25a-54db-a88e-b3d863da425f evaluator_triggered=false tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.services.chat_response_cache chat_cache_bypass tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.api.routes.chat chat_streaming_start request_id=ff5efe65-f25a-54db-a88e-b3d863da425f conversation_id=fd822267-1cb1-54e1-8ff4-990d0e7fa5d8 is_new=False tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq37-t23
+{"request_id":"ff5efe65-f25a-54db-a88e-b3d863da425f","correlation_id":"ff5efe65-f25a-54db-a88e-b3d863da425f","tenant_id":"orq37-t23","path":"/chat","method":"POST","status":200,"latency_ms":11,"app_env":"development"}
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq37-t23
+2026-11-10T17:16:29+0000 INFO app.core.providers.bedrock_provider provider.stream.complete tenant_id=orq37-t23
+2026-11-10T17:16:30+0000 INFO app.core.observability.retry_evidence campaign.retry_summary request_id=ff5efe65-f25a-54db-a88e-b3d863da425f retry_announced=false evidence_valid=true tenant_id=orq37-t23
+2026-11-10T17:16:30+0000 INFO httpx HTTP Request: POST http://local/chat "HTTP/1.1 200 OK" tenant_id=default
+2026-11-10T17:16:30+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:30+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:30+0000 INFO app.core.providers.bedrock_provider provider.total tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:30+0000 INFO app.core.domain.retrieval_pipeline retrieval_pipeline.completed request_id=f7a32029-7423-53b7-afd8-300375a7cc7a evaluator_triggered=false tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:30+0000 INFO app.services.chat_response_cache chat_cache_bypass tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:30+0000 INFO app.api.routes.chat chat_streaming_start request_id=f7a32029-7423-53b7-afd8-300375a7cc7a conversation_id=718c9e11-cd06-59cf-833e-6cbb37f7a467 is_new=False tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:30+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq41-6b2ab547-es-history
+{"request_id":"f7a32029-7423-53b7-afd8-300375a7cc7a","correlation_id":"f7a32029-7423-53b7-afd8-300375a7cc7a","tenant_id":"orq41-6b2ab547-es-history","path":"/chat","method":"POST","status":200,"latency_ms":5,"app_env":"development"}
+2026-11-10T17:16:30+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:30+0000 INFO app.core.providers.bedrock_provider provider.stream.complete tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:30+0000 INFO app.core.observability.retry_evidence campaign.retry_summary request_id=f7a32029-7423-53b7-afd8-300375a7cc7a retry_announced=false evidence_valid=true tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:30+0000 INFO httpx HTTP Request: POST http://local/chat "HTTP/1.1 200 OK" tenant_id=default
+2026-11-10T17:16:30+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq37-t23
+2026-11-10T17:16:30+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq37-t23
+2026-11-10T17:16:30+0000 INFO app.core.providers.bedrock_provider provider.total tenant_id=orq37-t23
+2026-11-10T17:16:30+0000 INFO app.core.domain.retrieval_pipeline retrieval_pipeline.completed request_id=34ad418b-3f5d-5e0d-bb27-8add0095663a evaluator_triggered=false tenant_id=orq37-t23
+2026-11-10T17:16:30+0000 INFO app.services.chat_response_cache chat_cache_bypass tenant_id=orq37-t23
+2026-11-10T17:16:30+0000 INFO app.api.routes.chat chat_streaming_start request_id=34ad418b-3f5d-5e0d-bb27-8add0095663a conversation_id=27329453-20e3-5d36-8e4a-cb97d2b77ea2 is_new=False tenant_id=orq37-t23
+2026-11-10T17:16:30+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq37-t23
+{"request_id":"34ad418b-3f5d-5e0d-bb27-8add0095663a","correlation_id":"34ad418b-3f5d-5e0d-bb27-8add0095663a","tenant_id":"orq37-t23","path":"/chat","method":"POST","status":200,"latency_ms":12,"app_env":"development"}
+2026-11-10T17:16:30+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq37-t23
+2026-11-10T17:16:30+0000 INFO app.core.providers.bedrock_provider provider.stream.complete tenant_id=orq37-t23
+2026-11-10T17:16:30+0000 INFO app.core.observability.retry_evidence campaign.retry_summary request_id=34ad418b-3f5d-5e0d-bb27-8add0095663a retry_announced=false evidence_valid=true tenant_id=orq37-t23
+2026-11-10T17:16:30+0000 INFO httpx HTTP Request: POST http://local/chat "HTTP/1.1 200 OK" tenant_id=default
+2026-11-10T17:16:30+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:30+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:30+0000 INFO app.core.providers.bedrock_provider provider.total tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:30+0000 INFO app.core.domain.retrieval_pipeline retrieval_pipeline.completed request_id=99d4c43b-ed4c-5fa9-be8a-8599b5372f02 evaluator_triggered=false tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:30+0000 INFO app.services.chat_response_cache chat_cache_bypass tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:30+0000 INFO app.api.routes.chat chat_streaming_start request_id=99d4c43b-ed4c-5fa9-be8a-8599b5372f02 conversation_id=6c5fc4ea-2046-5202-9dd2-49ee56487f23 is_new=False tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:30+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq41-6b2ab547-es-empty
+{"request_id":"99d4c43b-ed4c-5fa9-be8a-8599b5372f02","correlation_id":"99d4c43b-ed4c-5fa9-be8a-8599b5372f02","tenant_id":"orq41-6b2ab547-es-empty","path":"/chat","method":"POST","status":200,"latency_ms":5,"app_env":"development"}
+2026-11-10T17:16:30+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:30+0000 INFO app.core.providers.bedrock_provider provider.stream.complete tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:30+0000 INFO app.core.observability.retry_evidence campaign.retry_summary request_id=99d4c43b-ed4c-5fa9-be8a-8599b5372f02 retry_announced=false evidence_valid=true tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:30+0000 INFO httpx HTTP Request: POST http://local/chat "HTTP/1.1 200 OK" tenant_id=default
+2026-11-10T17:16:30+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq37-t23
+2026-11-10T17:16:30+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq37-t23
+2026-11-10T17:16:30+0000 INFO app.core.providers.bedrock_provider provider.total tenant_id=orq37-t23
+2026-11-10T17:16:30+0000 INFO app.core.domain.retrieval_pipeline retrieval_pipeline.completed request_id=6520b43a-64c2-5e67-a776-fd9f6ae58182 evaluator_triggered=false tenant_id=orq37-t23
+2026-11-10T17:16:30+0000 INFO app.services.chat_response_cache chat_cache_bypass tenant_id=orq37-t23
+2026-11-10T17:16:30+0000 INFO app.api.routes.chat chat_streaming_start request_id=6520b43a-64c2-5e67-a776-fd9f6ae58182 conversation_id=15a1dd14-60d3-5b22-a934-e37e5c23d50f is_new=False tenant_id=orq37-t23
+2026-11-10T17:16:30+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq37-t23
+{"request_id":"6520b43a-64c2-5e67-a776-fd9f6ae58182","correlation_id":"6520b43a-64c2-5e67-a776-fd9f6ae58182","tenant_id":"orq37-t23","path":"/chat","method":"POST","status":200,"latency_ms":10,"app_env":"development"}
+2026-11-10T17:16:30+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq37-t23
+2026-11-10T17:16:30+0000 INFO app.core.providers.bedrock_provider provider.stream.complete tenant_id=orq37-t23
+2026-11-10T17:16:30+0000 INFO app.core.observability.retry_evidence campaign.retry_summary request_id=6520b43a-64c2-5e67-a776-fd9f6ae58182 retry_announced=false evidence_valid=true tenant_id=orq37-t23
+2026-11-10T17:16:30+0000 INFO httpx HTTP Request: POST http://local/chat "HTTP/1.1 200 OK" tenant_id=default
+2026-11-10T17:16:30+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:30+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:30+0000 INFO app.core.providers.bedrock_provider provider.total tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:30+0000 INFO app.core.domain.retrieval_pipeline retrieval_pipeline.completed request_id=786a8cb6-669c-55a0-92a6-f06d1090f93b evaluator_triggered=false tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:30+0000 INFO app.services.chat_response_cache chat_cache_bypass tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:30+0000 INFO app.api.routes.chat chat_streaming_start request_id=786a8cb6-669c-55a0-92a6-f06d1090f93b conversation_id=7a07e83a-7066-5aea-89eb-44de8158d661 is_new=False tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:30+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq41-6b2ab547-es-history
+{"request_id":"786a8cb6-669c-55a0-92a6-f06d1090f93b","correlation_id":"786a8cb6-669c-55a0-92a6-f06d1090f93b","tenant_id":"orq41-6b2ab547-es-history","path":"/chat","method":"POST","status":200,"latency_ms":5,"app_env":"development"}
+2026-11-10T17:16:30+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:30+0000 INFO app.core.providers.bedrock_provider provider.stream.complete tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:30+0000 INFO app.core.observability.retry_evidence campaign.retry_summary request_id=786a8cb6-669c-55a0-92a6-f06d1090f93b retry_announced=false evidence_valid=true tenant_id=orq41-6b2ab547-es-history
+2026-11-10T17:16:30+0000 INFO httpx HTTP Request: POST http://local/chat "HTTP/1.1 200 OK" tenant_id=default
+2026-11-10T17:16:30+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq37-t23
+2026-11-10T17:16:30+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq37-t23
+2026-11-10T17:16:30+0000 INFO app.core.providers.bedrock_provider provider.total tenant_id=orq37-t23
+2026-11-10T17:16:30+0000 INFO app.core.domain.retrieval_pipeline retrieval_pipeline.completed request_id=b134ee5b-8a32-5931-b908-1fd7a0842c4a evaluator_triggered=false tenant_id=orq37-t23
+2026-11-10T17:16:30+0000 INFO app.services.chat_response_cache chat_cache_bypass tenant_id=orq37-t23
+2026-11-10T17:16:30+0000 INFO app.api.routes.chat chat_streaming_start request_id=b134ee5b-8a32-5931-b908-1fd7a0842c4a conversation_id=53ed2828-30fd-5dff-8eda-4d8314e4365d is_new=False tenant_id=orq37-t23
+2026-11-10T17:16:30+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq37-t23
+{"request_id":"b134ee5b-8a32-5931-b908-1fd7a0842c4a","correlation_id":"b134ee5b-8a32-5931-b908-1fd7a0842c4a","tenant_id":"orq37-t23","path":"/chat","method":"POST","status":200,"latency_ms":13,"app_env":"development"}
+2026-11-10T17:16:30+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq37-t23
+2026-11-10T17:16:30+0000 INFO app.core.providers.bedrock_provider provider.stream.complete tenant_id=orq37-t23
+2026-11-10T17:16:30+0000 INFO app.core.observability.retry_evidence campaign.retry_summary request_id=b134ee5b-8a32-5931-b908-1fd7a0842c4a retry_announced=false evidence_valid=true tenant_id=orq37-t23
+2026-11-10T17:16:30+0000 INFO httpx HTTP Request: POST http://local/chat "HTTP/1.1 200 OK" tenant_id=default
+2026-11-10T17:16:30+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:30+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:30+0000 INFO app.core.providers.bedrock_provider provider.total tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:30+0000 INFO app.core.domain.retrieval_pipeline retrieval_pipeline.completed request_id=80fd740d-a3ba-5cac-8239-68e3dd084ecd evaluator_triggered=false tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:30+0000 INFO app.services.chat_response_cache chat_cache_bypass tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:30+0000 INFO app.api.routes.chat chat_streaming_start request_id=80fd740d-a3ba-5cac-8239-68e3dd084ecd conversation_id=a0ceb823-49df-5a7c-b408-ce715f8c50bb is_new=False tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:30+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq41-6b2ab547-es-empty
+{"request_id":"80fd740d-a3ba-5cac-8239-68e3dd084ecd","correlation_id":"80fd740d-a3ba-5cac-8239-68e3dd084ecd","tenant_id":"orq41-6b2ab547-es-empty","path":"/chat","method":"POST","status":200,"latency_ms":4,"app_env":"development"}
+2026-11-10T17:16:30+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:30+0000 INFO app.core.providers.bedrock_provider provider.stream.complete tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:30+0000 INFO app.core.observability.retry_evidence campaign.retry_summary request_id=80fd740d-a3ba-5cac-8239-68e3dd084ecd retry_announced=false evidence_valid=true tenant_id=orq41-6b2ab547-es-empty
+2026-11-10T17:16:30+0000 INFO httpx HTTP Request: POST http://local/chat "HTTP/1.1 200 OK" tenant_id=default
+2026-11-10T17:16:30+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq37-t23
+2026-11-10T17:16:30+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq37-t23
+2026-11-10T17:16:30+0000 INFO app.core.providers.bedrock_provider provider.total tenant_id=orq37-t23
+2026-11-10T17:16:30+0000 INFO app.core.domain.retrieval_pipeline retrieval_pipeline.completed request_id=6c3b3cab-d3e2-5fb6-8498-2ba3217c2236 evaluator_triggered=false tenant_id=orq37-t23
+2026-11-10T17:16:30+0000 INFO app.services.chat_response_cache chat_cache_bypass tenant_id=orq37-t23
+2026-11-10T17:16:30+0000 INFO app.api.routes.chat chat_streaming_start request_id=6c3b3cab-d3e2-5fb6-8498-2ba3217c2236 conversation_id=d5820696-b629-5207-b2d3-bbc5bc0d0968 is_new=False tenant_id=orq37-t23
+2026-11-10T17:16:30+0000 INFO app.core.providers.bedrock_provider provider.request tenant_id=orq37-t23
+{"request_id":"6c3b3cab-d3e2-5fb6-8498-2ba3217c2236","correlation_id":"6c3b3cab-d3e2-5fb6-8498-2ba3217c2236","tenant_id":"orq37-t23","path":"/chat","method":"POST","status":200,"latency_ms":12,"app_env":"development"}
+2026-11-10T17:16:30+0000 INFO app.core.providers.bedrock_provider provider.response tenant_id=orq37-t23
+2026-11-10T17:16:30+0000 INFO app.core.providers.bedrock_provider provider.stream.complete tenant_id=orq37-t23
+2026-11-10T17:16:30+0000 INFO app.core.observability.retry_evidence campaign.retry_summary request_id=6c3b3cab-d3e2-5fb6-8498-2ba3217c2236 retry_announced=false evidence_valid=true tenant_id=orq37-t23
+2026-11-10T17:16:30+0000 INFO httpx HTTP Request: POST http://local/chat "HTTP/1.1 200 OK" tenant_id=default

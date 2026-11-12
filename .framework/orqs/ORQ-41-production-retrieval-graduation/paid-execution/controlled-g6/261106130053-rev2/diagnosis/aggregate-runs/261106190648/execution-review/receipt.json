@@ -1,0 +1,67 @@
+{
+  "status": "DIAGNOSTIC_AGGREGATE_EXECUTION_INDEPENDENT_REVIEW_PASS",
+  "reviewer": "/root/packet_review",
+  "plan_sha256": "c2c19931906ba8964320d436cef554ffb4f13eb03dae84f53bd3801e96cba7f6",
+  "result_sha256": "d03e08ec06af8ba9df1fca1e0924eaf26c5675ee5069a8d2f31fc500ce7db134",
+  "analysis_sha256": "b2ef9c968fa9158c6bb7cb1681cb526a6051f801d630618b01a53106e49597e0",
+  "analyzer_sha256": "f35fea603147111678e536c86f2e3823061626664e742a65bafdc9f772acf29a",
+  "verifier_sha256": "de6b29e1cd0652aeea9bf7c0ffe3adc4795926a6c225d25db05b55cc2a05884d",
+  "worker_receipts": {
+    "c1-ES-sse.json": "d1c62e32736c603a7825cafe68a4a287097bc5b23f39d3d3543d9383aa8e4e6e",
+    "c1-ES-json.json": "9e7c0668da0fa1d2ee5858e700d22b5a072c63a9eabbd106a1d83b603ce2b2e3",
+    "c0-ES-json.json": "bfd9661c1ca55b91cf948e7679f0c2fe307d6a0403328f133ef77dae5441b2bd",
+    "c1-EN-sse.json": "bf9ea91d15af2936370c9d375469f1022e70d6d3174e0fcbb0ee6bb307ad3d8f",
+    "c0-EN-json.json": "c514dee9dfdf9fa2a6643c38701a030785ba9cd4a1b126a5af21d14c3dc8e3e2",
+    "c0-ES-sse.json": "6104e9432e6eceb8b853ca1b02e4ff1c9750bf6ca1222e57d25beb1df8d8fcf8",
+    "c1-EN-json.json": "a2c5ae63317fd632fede7bcc2f2bc62075db1410d6dd41f09edc7446be1f5b65",
+    "c0-EN-sse.json": "abadf35cf8c3103637b563621d52277c559f30638d604094ddd59d10c7df647d"
+  },
+  "database_verification_sha256": "2ef8d7cefd76e92ce24019bc13745376247d225c6c070fd2d2050fb775cd4ee9",
+  "requests": 40,
+  "measured": 32,
+  "warmups": 8,
+  "candidate_accounting_instances": 20,
+  "native_payload_and_call_parity": true,
+  "exact_interval_arithmetic_verified": true,
+  "category_pair_deltas": [
+    {
+      "category": "document",
+      "cpu_delta_median_ms": 2.8265135,
+      "wall_delta_median_ms": 1.9319289999999998
+    },
+    {
+      "category": "history",
+      "cpu_delta_median_ms": 3.671681,
+      "wall_delta_median_ms": 3.6166505000000004
+    },
+    {
+      "category": "combined",
+      "cpu_delta_median_ms": 8.514116,
+      "wall_delta_median_ms": 9.5574625
+    },
+    {
+      "category": "empty",
+      "cpu_delta_median_ms": 1.34646,
+      "wall_delta_median_ms": 1.4145755
+    }
+  ],
+  "reviewer_api_calls": 0,
+  "reviewer_database_calls": 0,
+  "reviewer_docker_calls": 0,
+  "observed_guard_attempts": 0,
+  "external_calls": 0,
+  "spend_usd": "0",
+  "official_g6_status": "CONTROLLED_G6_FAIL",
+  "not_a_gate": true,
+  "limits": [
+    "Aggregate process CPU includes all threads and background work",
+    "Descriptive N4 per category; no causal component percentage",
+    "Raw candidate chains validated by reviewed worker, not retained for independent replay",
+    "Parent executed read-only final DB verifier; reviewer inspected source/receipt"
+  ],
+  "report_sha256": "10b174134a3b7808ddca2bf93fb5672b354a9f6af081268853f586d9e65aa0fd",
+  "review_sha256": "59e653b95a6013fe8430d56e47f1aff57fc48959748f4338e03dcfebe952eb93",
+  "positive_cpu_pairs": 15,
+  "positive_wall_pairs": 13,
+  "report_interpretation_reviewed": true
+}

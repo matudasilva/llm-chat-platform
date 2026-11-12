@@ -1,0 +1,106 @@
+{
+  "status": "ENVIRONMENT_AMENDMENT_PREPARED_AWAITING_INDEPENDENT_REVIEW",
+  "base_contract_sha256": "12f9032a4361170238bb710b5903c43160797c86d9b7be0c6b382d685fef670d",
+  "operator_profile_sha256": "dbf25d18d5abe91dda92c5999bc26d521edcd1797e4987c49f02f4ad1034bd9d",
+  "proposal_sha256": "88699d3293822df0bbbd36bff3148aee34fee6e347aea526a19b5bb8ecc8896d",
+  "power_profile": {
+    "cpus": {
+      "0": {
+        "scaling_driver": "intel_pstate",
+        "scaling_governor": "powersave",
+        "scaling_min_freq": "800000",
+        "scaling_max_freq": "5600000",
+        "energy_performance_preference": "performance",
+        "siblings": "0-1"
+      },
+      "2": {
+        "scaling_driver": "intel_pstate",
+        "scaling_governor": "powersave",
+        "scaling_min_freq": "800000",
+        "scaling_max_freq": "5600000",
+        "energy_performance_preference": "performance",
+        "siblings": "2-3"
+      },
+      "4": {
+        "scaling_driver": "intel_pstate",
+        "scaling_governor": "powersave",
+        "scaling_min_freq": "800000",
+        "scaling_max_freq": "5600000",
+        "energy_performance_preference": "performance",
+        "siblings": "4-5"
+      },
+      "6": {
+        "scaling_driver": "intel_pstate",
+        "scaling_governor": "powersave",
+        "scaling_min_freq": "800000",
+        "scaling_max_freq": "5600000",
+        "energy_performance_preference": "performance",
+        "siblings": "6-7"
+      }
+    },
+    "intel_pstate_status": "active",
+    "no_turbo": "0"
+  },
+  "api_cpus": [
+    0,
+    2
+  ],
+  "postgres_cpus": [
+    4,
+    6
+  ],
+  "housekeeping_cpus": [
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31
+  ],
+  "smts_reserved_for_interference_control": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "host_changes_authorized": false,
+  "harness_implementation_authorized": false,
+  "benchmark_authorized": false,
+  "requests": 1440,
+  "measured": 800,
+  "warmups": 640,
+  "p95_index": 94,
+  "symmetric_limit_percent": 5,
+  "executions": 1,
+  "concurrency": 1,
+  "reservation_proven": false,
+  "restoration_procedure_ready": false,
+  "read_only_root_cgroup_observation": {
+    "cgroup.controllers": "cpuset cpu io memory hugetlb pids rdma misc dmem",
+    "cpuset.cpus.effective": "0-31",
+    "cpuset.cpus.exclusive.effective": null,
+    "cpuset.cpus.partition": null
+  }
+}

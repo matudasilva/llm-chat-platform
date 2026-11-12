@@ -1,0 +1,5 @@
+# Paid G6 measurement readiness observation
+
+Independent static review confirms a paid execution evidence gap: `campaign_runner/runner.py:21` Completion retains only success/request_id; the SSE parser at lines346-376 does not retain a monotonic first-content arrival timestamp. Ledger UTC start/completion windows, request-total latency and provider `first_token_emitted` booleans cannot reconstruct first-content TTFT. Existing G123 semantic/fault assertions and G9 restarts do not substitute for the separate approved controlled G6 C1/C0 timing population or live TTFT population.
+
+This is an execution-readiness gap, not a newly found P5 accounting/STOP defect and not a reason to erase prior P5 closure. The optional campaign transport observation proposal is a concrete scope proposal requiring approval before implementation. No timestamp was inferred or measurement seam implemented by reviewer. No paid samples should be admitted until the approved required measurements can be retained and independently checked. Fixture materialization/seeding review remains a distinct acceptance boundary.

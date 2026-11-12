@@ -1,0 +1,28 @@
+{
+  "status": "BLOCKED_AA_OWN_SERVICES_STOPPED_DATA_RETAINED",
+  "services": {
+    "collector": {
+      "container": "orq41-blocked-261109162430-collector",
+      "id": "daa4d8564662689a87aa84a6c6fc92d247f889e93798f66e159eb31e57c394e2",
+      "running": false,
+      "data_retained": true
+    },
+    "redis": {
+      "container": "orq41-blocked-261109162430-redis",
+      "id": "fc4516c6c4403be37cf0ed0de085638511e144342bb5286f4ecd3b2e31a31c6c",
+      "running": false,
+      "data_retained": true
+    },
+    "postgres": {
+      "container": "orq41-blocked-261109162430-postgres",
+      "id": "91b462f53423ad5a5de7b4e7ebb2d6d951dce2a28c4c3673cab9e261cd5f37a7",
+      "running": false,
+      "data_retained": true
+    }
+  },
+  "source_postgres_id": "7ffc345f9c8efa3b1b0c63441db6d30821142ec7d5041cab40e77bfc266eba4f",
+  "source_postgres_running": true,
+  "worker_containers_retained": 32,
+  "markers_retained": true,
+  "no_resume": true
+}

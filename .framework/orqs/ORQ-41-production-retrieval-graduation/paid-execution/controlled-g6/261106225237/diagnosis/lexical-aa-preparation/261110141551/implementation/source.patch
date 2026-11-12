@@ -1,0 +1,362 @@
+--- original-blocked_latency.py
++++ experiments/production_graduation/gate_validation/blocked_latency.py
+@@ -31,6 +31,10 @@
+ TABLES = ("alembic_version", "chunks", "conversations", "documents", "messages",
+           "rag_request_metrics", "usage_events")
+ OWN_MODULES = ("blocked_latency.py", "blocked_latency_worker.py")
++IMAGE_AMENDMENT = DESIGN.parent / "lexical-aa-preparation/261110141551"
++IMAGE_APPROVAL = IMAGE_AMENDMENT / "implementation/authorization.json"
++IMAGE_APPROVAL_SHA256 = "1e367f6c279723ee8db757ac8a24cfa887835954f7ca9ad1d9fe45304fc306b8"
++IMAGE_SOURCE_REVIEW = IMAGE_AMENDMENT / "implementation/source-review.json"
+ DB_COUNTERS = ("xact_commit", "xact_rollback", "blks_read", "blks_hit", "tup_returned",
+                "tup_fetched", "tup_inserted", "tup_updated", "tup_deleted", "deadlocks")
+ LOCALE_SQL = ("SELECT json_build_object('encoding',pg_encoding_to_char(encoding),"
+@@ -122,7 +126,58 @@
+     return harness, {str(path.relative_to(ROOT)): sha_file(path) for path in support}
+ 
+ 
+-def make_plan(namespace, run_id):
++def load_image_binding():
++    """Only the explicitly approved lexical-image chain; never a free-form override."""
++    require(sha_file(IMAGE_APPROVAL) == IMAGE_APPROVAL_SHA256, "Image amendment approval changed")
++    approval = json.loads(IMAGE_APPROVAL.read_text())
++    require(approval.get("status") == "OPERATOR_APPROVED_LEXICAL_AA_IMAGE_AMENDMENT"
++            and approval.get("harness_implementation_authorized") is True
++            and approval.get("base_contract_sha256") == CONTRACT_SHA256
++            and approval.get("proposal_sha256") == sha_file(IMAGE_AMENDMENT / "proposal.md")
++            and approval.get("image_amendment_sha256") == sha_file(IMAGE_AMENDMENT / "image-identity-amendment.json"),
++            "Image amendment is not approved")
++    pin_path = ROOT / approval["image_pin_receipt"]
++    review_path = ROOT / approval["source_patch_review"]
++    require(sha_file(pin_path) == approval["image_pin_receipt_sha256"]
++            and sha_file(review_path) == approval["source_patch_review_sha256"], "Image/source receipt changed")
++    pin, review = json.loads(pin_path.read_text()), json.loads(review_path.read_text())
++    require(pin.get("status") == "LEXICAL_SQL_LOCAL_IMAGE_PINNED"
++            and review.get("status") == "LEXICAL_SQL_REMEDIATION_FINAL_PATCH_REVIEW_PASS"
++            and not review.get("new_blocker_high_medium_findings")
++            and pin.get("parent_image_id") == approval["parent_image_id"]
++            and load_contract()["identities"]["images"] == dict.fromkeys(ARMS, pin["parent_image_id"])
++            and pin.get("image_id") == approval["new_image_id"]
++            and pin.get("source_patch_review_sha256") == approval["source_patch_review_sha256"]
++            and pin.get("changed_app_files") == ["core/providers/pgvector_store.py"]
++            and pin.get("source_sha256") == review.get("provider_sha256") == approval["provider_sha256"],
++            "Image/source/parent binding differs")
++    inventory_path = pin_path.parent / "candidate-inventory.json"
++    require(sha_file(inventory_path) == pin["candidate_inventory_sha256"], "Image inventory changed")
++    inventory = json.loads(inventory_path.read_text())["app_files"]
++    current = {str(path.relative_to(ROOT / "app")): sha_file(path)
++               for path in sorted((ROOT / "app").rglob("*"))
++               if path.is_file() and "__pycache__" not in path.parts and path.suffix != ".pyc"}
++    require(current == inventory, "Application source differs from the approved image")
++    support = [IMAGE_APPROVAL, IMAGE_AMENDMENT / "proposal.md", IMAGE_AMENDMENT / "image-identity-amendment.json",
++               pin_path, review_path, inventory_path, *(ROOT / "app" / name for name in inventory)]
++    binding = dict(approval_sha256=IMAGE_APPROVAL_SHA256, image_pin_sha256=sha_file(pin_path),
++                   source_review_sha256=sha_file(review_path), image_id=pin["image_id"],
++                   parent_image_id=pin["parent_image_id"], provider_sha256=pin["source_sha256"])
++    return binding, {str(path.relative_to(ROOT)): sha_file(path) for path in support}
++
++
++def check_image_source_review(digest):
++    require(digest == sha_file(IMAGE_SOURCE_REVIEW), "Amended harness source review missing/changed")
++    review = json.loads(IMAGE_SOURCE_REVIEW.read_text())
++    require(review.get("status") == "LEXICAL_AA_IMAGE_BINDING_SOURCE_REVIEW_PASS"
++            and review.get("image_amendment_approval_sha256") == IMAGE_APPROVAL_SHA256
++            and review.get("technical_files_sha256") == {
++                name: sha_file(ROOT / name) for name in (
++                    "experiments/production_graduation/gate_validation/blocked_latency.py",
++                    "tests/experiments/test_orq41_blocked_latency.py")}, "Amended harness source review invalid")
++
++
++def make_plan(namespace, run_id, *, image_binding=None):
+     contract = load_contract()
+     require(re.fullmatch(r"[0-9]{12}", run_id) is not None, "Invalid run identity")
+     for name, digest in contract["source_evidence_sha256"].items():
+@@ -133,6 +188,10 @@
+     samples, fixtures, schedule = build_samples(cases, namespace)
+     previous = json.loads((DESIGN.parent / "aa-runs/261108131511/plan.json").read_text())
+     harness, support = pinned_files()
++    if image_binding is not None:
++        approved, image_support = load_image_binding()
++        require(canonical_hash(image_binding) == canonical_hash(approved), "Unapproved image binding")
++        support.update(image_support)
+     plan = dict(schema=SCHEMA, protocol_id="orq41-balanced-blocks-v1", not_a_gate=True,
+                 mode="aa_full_c1_both_arms", full_c1_both_arms=True, run_id=run_id,
+                 namespace=str(UUID(str(namespace))), amendment_sha256=CONTRACT_SHA256,
+@@ -151,11 +210,15 @@
+                 harness_sha256=harness, support_files_sha256=support, config_sha256={},
+                 normalized_config_sha256=None, seed_probe=None,
+                 external_calls=0, paid_requests=0, official_g6_status="CONTROLLED_G6_FAIL")
++    if image_binding is not None:
++        plan.update(image_binding=copy.deepcopy(approved), images=dict.fromkeys(ARMS, approved["image_id"]))
+     return plan, fixtures
+ 
+ 
+ def validate_plan(plan, fixtures, *, prepared=False):
+-    expected, expected_fixtures = make_plan(plan["namespace"], plan["run_id"])
++    binding = plan.get("image_binding")
++    require("image_binding" not in plan or isinstance(binding, dict), "Invalid image binding")
++    expected, expected_fixtures = make_plan(plan["namespace"], plan["run_id"], image_binding=binding)
+     for key, value in expected.items():
+         if key not in ("config_sha256", "normalized_config_sha256", "seed_probe"):
+             require(canonical_hash(plan.get(key)) == canonical_hash(value), "Frozen plan drift: " + key)
+@@ -461,6 +524,8 @@
+     require(authorization.get("status") == "OPERATOR_AUTHORIZED_BLOCKED_AA_EXECUTION"
+             and authorization.get("plan_sha256") == digest, "Local A/A execution not authorized")
+     prep = json.loads((out / "preparation.json").read_text())
++    if "image_binding" in plan:
++        check_image_source_review(prep.get("image_binding_source_review_sha256"))
+     require(prep.get("status") == "BLOCKED_AA_PREPARED_NOT_EXECUTED"
+             and prep.get("plan_sha256") == digest and prep.get("fixtures_sha256") == sha_file(out / "fixtures.json"),
+             "Preparation identity incomplete")
+@@ -520,11 +585,17 @@
+     approval = json.loads(Path(authorization_path).read_text())
+     require(approval.get("status") == "OPERATOR_AUTHORIZED_BLOCKED_AA_PREPARATION"
+             and approval.get("amendment_sha256") == CONTRACT_SHA256, "Environment preparation not authorized")
++    binding = approval.get("image_binding")
++    if "image_binding" in approval:
++        approved, _ = load_image_binding()
++        require(isinstance(binding, dict) and canonical_hash(binding) == canonical_hash(approved),
++                "Preparation image binding differs")
++        check_image_source_review(approval.get("harness_source_review_sha256"))
+     from .validate_g123 import check_p2
+     check_p2()
+     require(not sys.flags.optimize, "Optimized interpreter disables reviewed helper checks")
+     run_id = datetime.now(timezone.utc).strftime("%y%m%d%H%M%S")
+-    plan, fixtures = make_plan(uuid4(), run_id)
++    plan, fixtures = make_plan(uuid4(), run_id, image_binding=binding)
+     require(set((0, 2, 4, 6)) <= os.sched_getaffinity(0), "Required CPUs unavailable")
+     require(aa.topology() == plan["cpu_topology"], "Host topology/governor changed")
+     host_snapshot()
+@@ -605,7 +676,8 @@
+     write_json(out / "fixtures.json", fixtures)
+     write_json(out / "preparation.json", dict(status="BLOCKED_AA_PREPARED_NOT_EXECUTED",
+         plan_sha256=sha_file(out / "plan.json"), fixtures_sha256=sha_file(out / "fixtures.json"),
+-        private_state=str(private), analyses=analyses, databases=data_proof, config_probes=probes, api_requests=0))
++        private_state=str(private), analyses=analyses, databases=data_proof, config_probes=probes, api_requests=0,
++        image_binding_source_review_sha256=approval.get("harness_source_review_sha256")))
+     print(str(out.relative_to(ROOT)))
+     return out
+ 
+--- original-test_orq41_blocked_latency.py
++++ tests/experiments/test_orq41_blocked_latency.py
+@@ -3,6 +3,7 @@
+ import asyncio
+ from collections import Counter
+ import copy
++import hashlib
+ import json
+ import os
+ from pathlib import Path
+@@ -59,7 +60,7 @@
+     return result
+ 
+ 
+-def write_packet(path, packet):
++def write_packet(path, packet, *, source_review_sha256=None):
+     plan, fixtures = packet
+     driver.write_json(path / "plan.json", plan)
+     driver.write_json(path / "fixtures.json", fixtures)
+@@ -72,6 +73,8 @@
+                 databases=[], analyses=analyses, api_requests=0, config_probes=[
+                     dict(config=plan["config_sha256"][arm], normalized=plan["normalized_config_sha256"],
+                          seed=plan["seed_probe"]) for arm in driver.ARMS])
++    if source_review_sha256 is not None:
++        prep["image_binding_source_review_sha256"] = source_review_sha256
+     driver.write_json(path / "preparation.json", prep)
+     driver.write_json(path / "independent-review.json", dict(status="BLOCKED_AA_HARNESS_REVIEW_PASS",
+         plan_sha256=driver.sha_file(path / "plan.json"), fixtures_sha256=driver.sha_file(path / "fixtures.json"),
+@@ -343,8 +346,16 @@
+ 
+ 
+ @pytest.mark.parametrize("fault", [None, "exit", "cleanup", "observation"])
+-def test_controller_simulation_completes_only_valid_blocks_and_never_resends(packet, tmp_path, monkeypatch, fault):
+-    plan, _ = packet;prep = write_packet(tmp_path, packet);calls = []
++@pytest.mark.parametrize("amended", [False, True])
++def test_controller_simulation_completes_only_valid_blocks_and_never_resends(packet, tmp_path, monkeypatch, fault, amended):
++    plan, fixtures = packet
++    review = None
++    if amended:
++        old = plan;binding, _ = driver.load_image_binding()
++        plan, fixtures = driver.make_plan(old["namespace"], old["run_id"], image_binding=binding)
++        plan.update({key: old[key] for key in ("config_sha256", "normalized_config_sha256", "seed_probe")})
++        review = _source_review_double(monkeypatch)
++    prep = write_packet(tmp_path, (plan, fixtures), source_review_sha256=review);calls = []
+     class DB:
+         container = plan["containers"]["postgres"]
+         def sql(self, database, query): return "{}"
+@@ -524,3 +535,175 @@
+     assert not set(values) & {worker._cache_namespace(other, entry) for entry in plan["arm_cell_order"]}
+     with pytest.raises(HarnessError):
+         NamespacedRedis(None, "orq41:g123:261109010101:c0-EN-json-b0:")
++
++
++def _image_chain_double(monkeypatch, mutate):
++    """Hash-consistent synthetic receipts exercise policy below the outer pin.
++
++    Real repository artifacts remain read-only. Rebinding the expected approval
++    hash is a unit seam, not an operation exposed to preparation callers.
++    """
++    approval = json.loads(driver.IMAGE_APPROVAL.read_text())
++    pin_path = driver.ROOT / approval["image_pin_receipt"]
++    review_path = driver.ROOT / approval["source_patch_review"]
++    inventory_path = pin_path.parent / "candidate-inventory.json"
++    objects = dict(approval=approval, pin=json.loads(pin_path.read_text()),
++                   review=json.loads(review_path.read_text()), inventory=json.loads(inventory_path.read_text()))
++    mutate(objects)
++    encode = lambda value: json.dumps(value, sort_keys=True)
++    digest = lambda value: hashlib.sha256(encode(value).encode()).hexdigest()
++    objects["pin"]["source_patch_review_sha256"] = digest(objects["review"])
++    objects["pin"]["candidate_inventory_sha256"] = digest(objects["inventory"])
++    approval["source_patch_review_sha256"] = digest(objects["review"])
++    approval["image_pin_receipt_sha256"] = digest(objects["pin"])
++    payloads = {path: encode(objects[name]) for path, name in (
++        (driver.IMAGE_APPROVAL, "approval"), (pin_path, "pin"),
++        (review_path, "review"), (inventory_path, "inventory"))}
++    read, sha = Path.read_text, driver.sha_file
++    monkeypatch.setattr(Path, "read_text", lambda path, *a, **k: payloads[path] if path in payloads else read(path, *a, **k))
++    monkeypatch.setattr(driver, "sha_file", lambda path: hashlib.sha256(payloads[Path(path)].encode()).hexdigest()
++                        if Path(path) in payloads else sha(path))
++    monkeypatch.setattr(driver, "IMAGE_APPROVAL_SHA256", digest(approval))
++
++
++def _source_review_double(monkeypatch, mutate=lambda value: None):
++    value = dict(status="LEXICAL_AA_IMAGE_BINDING_SOURCE_REVIEW_PASS",
++                 image_amendment_approval_sha256=driver.IMAGE_APPROVAL_SHA256,
++                 technical_files_sha256={name: driver.sha_file(driver.ROOT / name) for name in (
++                     "experiments/production_graduation/gate_validation/blocked_latency.py",
++                     "tests/experiments/test_orq41_blocked_latency.py")})
++    mutate(value)
++    raw = json.dumps(value)
++    digest = hashlib.sha256(raw.encode()).hexdigest()
++    read, sha = Path.read_text, driver.sha_file
++    monkeypatch.setattr(Path, "read_text", lambda path, *a, **k: raw if path == driver.IMAGE_SOURCE_REVIEW else read(path, *a, **k))
++    monkeypatch.setattr(driver, "sha_file", lambda path: digest if Path(path) == driver.IMAGE_SOURCE_REVIEW else sha(path))
++    return digest
++
++
++def test_approved_image_binding_preserves_legacy_default_and_exact_protocol(packet):
++    old, fixtures = packet
++    binding, files = driver.load_image_binding()
++    new, new_fixtures = driver.make_plan(old["namespace"], old["run_id"], image_binding=binding)
++    assert "image_binding" not in old
++    assert old["images"] == driver.load_contract()["identities"]["images"]
++    assert new["images"] == dict.fromkeys(driver.ARMS, binding["image_id"])
++    assert new["images"] != old["images"] and new_fixtures == fixtures
++    assert set(new) - set(old) == {"image_binding"}
++    assert {key for key in old if new[key] != old[key]} == {"images", "support_files_sha256", "config_sha256", "normalized_config_sha256", "seed_probe"}
++    assert all(new["support_files_sha256"][key] == value for key, value in old["support_files_sha256"].items())
++    assert all(new["support_files_sha256"][key] == value for key, value in files.items())
++    driver.validate_plan(new, fixtures)
++
++
++@pytest.mark.parametrize("fault", ["none", "list", "missing", "extra", "approval", "pin", "source", "parent", "image"])
++def test_image_binding_unknown_missing_or_changed_fields_fail_closed(packet, fault):
++    old, fixtures = packet
++    binding, _ = driver.load_image_binding()
++    plan, _ = driver.make_plan(old["namespace"], old["run_id"], image_binding=binding)
++    if fault == "none": plan["image_binding"] = None
++    elif fault == "list": plan["image_binding"] = []
++    elif fault == "missing": plan.pop("image_binding")
++    elif fault == "extra": plan["image_binding"]["unapproved"] = True
++    else:
++        field = dict(approval="approval_sha256", pin="image_pin_sha256", source="source_review_sha256",
++                     parent="parent_image_id", image="image_id")[fault]
++        plan["image_binding"][field] = "unapproved"
++    with pytest.raises(ValueError): driver.validate_plan(plan, fixtures)
++
++
++@pytest.mark.parametrize("arm", ["c0", "c1", "both"])
++def test_unbound_image_replacement_is_rejected(packet, arm):
++    plan, fixtures = packet
++    binding, _ = driver.load_image_binding()
++    for key in driver.ARMS if arm == "both" else [arm]: plan["images"][key] = binding["image_id"]
++    with pytest.raises(ValueError): driver.validate_plan(plan, fixtures)
++
++
++@pytest.mark.parametrize("field", ["images", "support_files_sha256", "boundary", "symmetric_limit_percent", "unexpected"])
++def test_bound_image_does_not_relax_any_other_plan_guard(packet, field):
++    old, fixtures = packet;binding, _ = driver.load_image_binding()
++    plan, _ = driver.make_plan(old["namespace"], old["run_id"], image_binding=binding)
++    if field == "images": plan["images"]["c0"] = binding["parent_image_id"]
++    elif field == "support_files_sha256": plan[field].pop(str(driver.IMAGE_APPROVAL.relative_to(driver.ROOT)))
++    elif field == "symmetric_limit_percent": plan[field] = 6
++    else: plan[field] = "unapproved"
++    with pytest.raises(ValueError): driver.validate_plan(plan, fixtures)
++
++
++@pytest.mark.parametrize("artifact,field,value", [
++    ("approval", "status", "IMPLEMENTATION_ONLY"),
++    ("approval", "base_contract_sha256", "0" * 64),
++    ("approval", "harness_implementation_authorized", False),
++    ("approval", "proposal_sha256", "0" * 64),
++    ("pin", "status", "UNREVIEWED"),
++    ("pin", "parent_image_id", "sha256:" + "0" * 64),
++    ("pin", "image_id", "sha256:" + "0" * 64),
++    ("pin", "changed_app_files", ["api/routes/chat.py"]),
++    ("pin", "source_sha256", "0" * 64),
++    ("review", "status", "UNREVIEWED"),
++    ("review", "new_blocker_high_medium_findings", ["unresolved"]),
++    ("review", "provider_sha256", "0" * 64),
++])
++def test_hash_consistent_image_chain_still_requires_approved_policy(monkeypatch, artifact, field, value):
++    _image_chain_double(monkeypatch, lambda objects: objects[artifact].__setitem__(field, value))
++    with pytest.raises(ValueError): driver.load_image_binding()
++
++
++def test_approved_image_requires_exact_current_application_inventory(monkeypatch):
++    def mutate(objects): objects["inventory"]["app_files"]["core/providers/pgvector_store.py"] = "0" * 64
++    _image_chain_double(monkeypatch, mutate)
++    with pytest.raises(ValueError, match="Application source"): driver.load_image_binding()
++
++
++@pytest.mark.parametrize("target", ["approval", "pin", "source", "inventory"])
++def test_receipt_hash_drift_is_rejected_before_service_io(monkeypatch, target):
++    approval = json.loads(driver.IMAGE_APPROVAL.read_text())
++    path = {"approval": driver.IMAGE_APPROVAL, "pin": driver.ROOT / approval["image_pin_receipt"],
++            "source": driver.ROOT / approval["source_patch_review"],
++            "inventory": (driver.ROOT / approval["image_pin_receipt"]).parent / "candidate-inventory.json"}[target]
++    sha = driver.sha_file
++    monkeypatch.setattr(driver, "sha_file", lambda value: "0" * 64 if Path(value) == path else sha(value))
++    monkeypatch.setattr(driver, "docker", lambda *a, **k: pytest.fail("Service I/O before binding validation"))
++    with pytest.raises(ValueError): driver.load_image_binding()
++
++
++@pytest.mark.parametrize("fault", [None, "status", "approval", "source", "digest"])
++def test_amended_harness_review_must_bind_exact_current_code(monkeypatch, fault):
++    def mutate(value):
++        if fault == "status": value["status"] = "UNREVIEWED"
++        elif fault == "approval": value["image_amendment_approval_sha256"] = "0" * 64
++        elif fault == "source": value["technical_files_sha256"] = {}
++    digest = _source_review_double(monkeypatch, mutate)
++    if fault:
++        with pytest.raises(ValueError): driver.check_image_source_review("0" * 64 if fault == "digest" else digest)
++    else: driver.check_image_source_review(digest)
++
++
++@pytest.mark.parametrize("fault", [None, "none", "binding", "review"])
++def test_new_image_preparation_review_checks_precede_all_service_io(tmp_path, monkeypatch, fault):
++    from experiments.production_graduation.gate_validation import validate_g123
++    class BeforeServiceIO(Exception): pass
++    binding, _ = driver.load_image_binding()
++    digest = _source_review_double(monkeypatch)
++    approval = dict(status="OPERATOR_AUTHORIZED_BLOCKED_AA_PREPARATION", amendment_sha256=driver.CONTRACT_SHA256,
++                    image_binding=binding, harness_source_review_sha256=digest)
++    if fault == "none": approval["image_binding"] = None
++    elif fault == "binding": approval["image_binding"]["image_id"] = "unapproved"
++    elif fault == "review": approval["harness_source_review_sha256"] = "0" * 64
++    path = tmp_path / "approval.json";path.write_text(json.dumps(approval))
++    monkeypatch.setattr(validate_g123, "check_p2", lambda: (_ for _ in ()).throw(BeforeServiceIO()))
++    monkeypatch.setattr(driver, "docker", lambda *a, **k: pytest.fail("Service I/O before review"))
++    monkeypatch.setattr(driver.aa, "docker", lambda *a, **k: pytest.fail("Database I/O before review"))
++    with pytest.raises(ValueError if fault else BeforeServiceIO): driver.prepare(path)
++
++
++def test_image_receipt_drift_after_plan_creation_stops_before_docker(packet, tmp_path, monkeypatch):
++    old, _ = packet;binding, _ = driver.load_image_binding()
++    plan, fixtures = driver.make_plan(old["namespace"], old["run_id"], image_binding=binding)
++    plan.update({key: old[key] for key in ("config_sha256", "normalized_config_sha256", "seed_probe")})
++    write_packet(tmp_path, (plan, fixtures))
++    sha = driver.sha_file
++    monkeypatch.setattr(driver, "sha_file", lambda path: "0" * 64 if Path(path) == driver.IMAGE_APPROVAL else sha(path))
++    monkeypatch.setattr(driver, "docker", lambda *a, **k: pytest.fail("Docker after receipt drift"))
++    with pytest.raises(ValueError): driver.execute(tmp_path)

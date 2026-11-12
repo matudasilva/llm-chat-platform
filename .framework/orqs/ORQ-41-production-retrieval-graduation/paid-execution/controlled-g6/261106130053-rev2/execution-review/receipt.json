@@ -1,0 +1,65 @@
+{
+  "status": "CONTROLLED_G6_EXECUTION_INDEPENDENT_REPLAY_VERIFIED_FAIL",
+  "reviewer": "/root/packet_review",
+  "plan_sha256": "d27e1cdabcd6bfdbf2fc43d22e510522d9c3f0f53db0bea6c14eefb7d940bee6",
+  "result_sha256": "a85ce6a66129b379f5d9eddc5fc7734a18a6e10711446dc4fc6286dcb8003a34",
+  "verifier_sha256": "b8830e257c29041c5a9c8822540b12ae37ae2d181cd83d62841b8cfc07b6e72d",
+  "worker_receipts": {
+    "c1-ES-sse.json": "63028575f4bea6ce376dbe49a8a23f7ff96b6baf22dfd755a09f4802a791fa19",
+    "c1-ES-json.json": "c2b5197d1d1b7113b224734a1c07d5ae3999739acd12295a4eef69ebf7e53c31",
+    "c0-ES-json.json": "27104c3b8b5bd3a46ebce154ae27b06579bca85a3d4368b2f7992d75b3f120c2",
+    "c1-EN-sse.json": "ae5f1bead78d4a990868e3a951428babe20a22a4be1ea608cedf3d2d0f0e7076",
+    "c0-EN-json.json": "3e53606a12b9bb4a49de2d763f0030420857b5e7d8d1b14b7faa3f8f9041ebbe",
+    "c0-ES-sse.json": "d178f616bc60aa479bb757ac6c0d972ef21e594ff71726923b3ad19a7bb4466f",
+    "c1-EN-json.json": "11db9792d7d356c784bf13a5c83e6acc3b95f7c3b3d15022d3ab5529b09b0138",
+    "c0-EN-sse.json": "817d7efd46cdc46999025ec75ac313bc59fee8792d3a0127e5fe705bb960d8ce"
+  },
+  "total_requests": 840,
+  "measured_requests": 800,
+  "warmups": 40,
+  "functional_failures": 0,
+  "candidate_unique_accounting_instances": 420,
+  "cells": [
+    {
+      "language": "EN",
+      "protocol": "json",
+      "baseline_p95_ns": 80236189,
+      "candidate_p95_ns": 88975023,
+      "overhead_percent": "10.89138717692586321616047840",
+      "status": "FAIL"
+    },
+    {
+      "language": "EN",
+      "protocol": "sse",
+      "baseline_p95_ns": 70654420,
+      "candidate_p95_ns": 79399885,
+      "overhead_percent": "12.37780311550218655817994120",
+      "status": "FAIL"
+    },
+    {
+      "language": "ES",
+      "protocol": "json",
+      "baseline_p95_ns": 78821390,
+      "candidate_p95_ns": 85851376,
+      "overhead_percent": "8.918881029629140008822478300",
+      "status": "FAIL"
+    },
+    {
+      "language": "ES",
+      "protocol": "sse",
+      "baseline_p95_ns": 74142925,
+      "candidate_p95_ns": 81396829,
+      "overhead_percent": "9.783676594900996959588524500",
+      "status": "FAIL"
+    }
+  ],
+  "payload_and_call_parity": true,
+  "network_guard_attempts_observed": 0,
+  "request_resends_by_reviewer": 0,
+  "reviewer_api_calls": 0,
+  "reviewer_database_writes": 0,
+  "external_calls": 0,
+  "spend_usd": "0",
+  "driver_exit_zero_is_gate_pass": false,
+  "live_absolute_bounds_claimed": false
+}

@@ -1,0 +1,2417 @@
+{
+  "status": "DIAGNOSTIC_CROSSOVER_ANALYSIS_COMPLETE_NOT_A_GATE",
+  "plan_sha256": "bcd882d10e1bf57b359135dc7b2eb408c55eed8412dbf717aa6f097f016c4f4b",
+  "result_sha256": "9b25938af4d6dc16a8617935aaacef7a2191650bd82bb828bb31808e94777663",
+  "analyzer_sha256": "469f3da6586cbe0927deec7deb5808bea452ec4e606dd86a44500d1766796722",
+  "rows": [
+    {
+      "arm": "c0",
+      "cell": "EN-json",
+      "sample_id": "EN/json/b0/warm/combined",
+      "category": "combined",
+      "block": 0,
+      "case_id": "EN-combined-01",
+      "warmup": true,
+      "counts": {
+        "sql": 4,
+        "gc": 4,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 61558486,
+      "gc_union_ns": 3918281,
+      "sdk_queue_union_ns": 416272,
+      "sdk_execution_union_ns": 2799618,
+      "sdk_return_union_ns": 140263,
+      "wall_ns": 83970715,
+      "cpu_ns": 42420684,
+      "all_captured_union_ns": 65089707
+    },
+    {
+      "arm": "c0",
+      "cell": "EN-json",
+      "sample_id": "EN/json/b0/warm/empty",
+      "category": "empty",
+      "block": 0,
+      "case_id": "EN-empty-01",
+      "warmup": true,
+      "counts": {
+        "sql": 4,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 10659919,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 364837,
+      "sdk_execution_union_ns": 2669740,
+      "sdk_return_union_ns": 207518,
+      "wall_ns": 26300571,
+      "cpu_ns": 21445053,
+      "all_captured_union_ns": 13902014
+    },
+    {
+      "arm": "c0",
+      "cell": "EN-json",
+      "sample_id": "EN/json/b0/measured/combined",
+      "category": "combined",
+      "block": 0,
+      "case_id": "EN-combined-02",
+      "warmup": false,
+      "counts": {
+        "sql": 4,
+        "gc": 1,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 30926564,
+      "gc_union_ns": 2164100,
+      "sdk_queue_union_ns": 457207,
+      "sdk_execution_union_ns": 6389382,
+      "sdk_return_union_ns": 362453,
+      "wall_ns": 63749677,
+      "cpu_ns": 42084912,
+      "all_captured_union_ns": 40299706
+    },
+    {
+      "arm": "c0",
+      "cell": "EN-json",
+      "sample_id": "EN/json/b0/measured/empty",
+      "category": "empty",
+      "block": 0,
+      "case_id": "EN-empty-02",
+      "warmup": false,
+      "counts": {
+        "sql": 4,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 14770659,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 359944,
+      "sdk_execution_union_ns": 3807730,
+      "sdk_return_union_ns": 363895,
+      "wall_ns": 38948224,
+      "cpu_ns": 32668371,
+      "all_captured_union_ns": 19302228
+    },
+    {
+      "arm": "c1",
+      "cell": "EN-json",
+      "sample_id": "EN/json/b0/warm/combined",
+      "category": "combined",
+      "block": 0,
+      "case_id": "EN-combined-01",
+      "warmup": true,
+      "counts": {
+        "sql": 4,
+        "gc": 4,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 48578425,
+      "gc_union_ns": 2911471,
+      "sdk_queue_union_ns": 488186,
+      "sdk_execution_union_ns": 4512645,
+      "sdk_return_union_ns": 126963,
+      "wall_ns": 75855707,
+      "cpu_ns": 40771808,
+      "all_captured_union_ns": 53924624
+    },
+    {
+      "arm": "c1",
+      "cell": "EN-json",
+      "sample_id": "EN/json/b0/warm/empty",
+      "category": "empty",
+      "block": 0,
+      "case_id": "EN-empty-01",
+      "warmup": true,
+      "counts": {
+        "sql": 4,
+        "gc": 1,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 7219823,
+      "gc_union_ns": 841891,
+      "sdk_queue_union_ns": 379752,
+      "sdk_execution_union_ns": 3354039,
+      "sdk_return_union_ns": 270874,
+      "wall_ns": 21891190,
+      "cpu_ns": 18039933,
+      "all_captured_union_ns": 11224488
+    },
+    {
+      "arm": "c1",
+      "cell": "EN-json",
+      "sample_id": "EN/json/b0/measured/combined",
+      "category": "combined",
+      "block": 0,
+      "case_id": "EN-combined-02",
+      "warmup": false,
+      "counts": {
+        "sql": 4,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 24362095,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 386798,
+      "sdk_execution_union_ns": 2650067,
+      "sdk_return_union_ns": 244111,
+      "wall_ns": 42088005,
+      "cpu_ns": 21197703,
+      "all_captured_union_ns": 27643071
+    },
+    {
+      "arm": "c1",
+      "cell": "EN-json",
+      "sample_id": "EN/json/b0/measured/empty",
+      "category": "empty",
+      "block": 0,
+      "case_id": "EN-empty-02",
+      "warmup": false,
+      "counts": {
+        "sql": 4,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 5451098,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 281480,
+      "sdk_execution_union_ns": 1253046,
+      "sdk_return_union_ns": 213006,
+      "wall_ns": 14585901,
+      "cpu_ns": 11231792,
+      "all_captured_union_ns": 7198630
+    },
+    {
+      "arm": "c1",
+      "cell": "EN-json",
+      "sample_id": "EN/json/b1/warm/combined",
+      "category": "combined",
+      "block": 1,
+      "case_id": "EN-combined-01",
+      "warmup": true,
+      "counts": {
+        "sql": 4,
+        "gc": 4,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 63158621,
+      "gc_union_ns": 4498301,
+      "sdk_queue_union_ns": 435399,
+      "sdk_execution_union_ns": 4275825,
+      "sdk_return_union_ns": 207084,
+      "wall_ns": 109176969,
+      "cpu_ns": 53839735,
+      "all_captured_union_ns": 68249707
+    },
+    {
+      "arm": "c1",
+      "cell": "EN-json",
+      "sample_id": "EN/json/b1/warm/empty",
+      "category": "empty",
+      "block": 1,
+      "case_id": "EN-empty-01",
+      "warmup": true,
+      "counts": {
+        "sql": 4,
+        "gc": 1,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 4112675,
+      "gc_union_ns": 560847,
+      "sdk_queue_union_ns": 329308,
+      "sdk_execution_union_ns": 2511090,
+      "sdk_return_union_ns": 228709,
+      "wall_ns": 19104241,
+      "cpu_ns": 16241448,
+      "all_captured_union_ns": 7181782
+    },
+    {
+      "arm": "c1",
+      "cell": "EN-json",
+      "sample_id": "EN/json/b1/measured/combined",
+      "category": "combined",
+      "block": 1,
+      "case_id": "EN-combined-02",
+      "warmup": false,
+      "counts": {
+        "sql": 4,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 18677577,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 315969,
+      "sdk_execution_union_ns": 2662895,
+      "sdk_return_union_ns": 176215,
+      "wall_ns": 34297085,
+      "cpu_ns": 17528241,
+      "all_captured_union_ns": 21832656
+    },
+    {
+      "arm": "c1",
+      "cell": "EN-json",
+      "sample_id": "EN/json/b1/measured/empty",
+      "category": "empty",
+      "block": 1,
+      "case_id": "EN-empty-02",
+      "warmup": false,
+      "counts": {
+        "sql": 4,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 6858088,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 286062,
+      "sdk_execution_union_ns": 2068235,
+      "sdk_return_union_ns": 244997,
+      "wall_ns": 20133886,
+      "cpu_ns": 16098237,
+      "all_captured_union_ns": 9457382
+    },
+    {
+      "arm": "c0",
+      "cell": "EN-json",
+      "sample_id": "EN/json/b1/warm/combined",
+      "category": "combined",
+      "block": 1,
+      "case_id": "EN-combined-01",
+      "warmup": true,
+      "counts": {
+        "sql": 4,
+        "gc": 4,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 92440012,
+      "gc_union_ns": 5024075,
+      "sdk_queue_union_ns": 465308,
+      "sdk_execution_union_ns": 4937522,
+      "sdk_return_union_ns": 187817,
+      "wall_ns": 150620556,
+      "cpu_ns": 74134766,
+      "all_captured_union_ns": 98228824
+    },
+    {
+      "arm": "c0",
+      "cell": "EN-json",
+      "sample_id": "EN/json/b1/warm/empty",
+      "category": "empty",
+      "block": 1,
+      "case_id": "EN-empty-01",
+      "warmup": true,
+      "counts": {
+        "sql": 4,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 17151838,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 466859,
+      "sdk_execution_union_ns": 5348458,
+      "sdk_return_union_ns": 390503,
+      "wall_ns": 46429751,
+      "cpu_ns": 38739832,
+      "all_captured_union_ns": 23357658
+    },
+    {
+      "arm": "c0",
+      "cell": "EN-json",
+      "sample_id": "EN/json/b1/measured/combined",
+      "category": "combined",
+      "block": 1,
+      "case_id": "EN-combined-02",
+      "warmup": false,
+      "counts": {
+        "sql": 4,
+        "gc": 1,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 27702255,
+      "gc_union_ns": 1754061,
+      "sdk_queue_union_ns": 389661,
+      "sdk_execution_union_ns": 3879681,
+      "sdk_return_union_ns": 387480,
+      "wall_ns": 49253308,
+      "cpu_ns": 26219938,
+      "all_captured_union_ns": 34113138
+    },
+    {
+      "arm": "c0",
+      "cell": "EN-json",
+      "sample_id": "EN/json/b1/measured/empty",
+      "category": "empty",
+      "block": 1,
+      "case_id": "EN-empty-02",
+      "warmup": false,
+      "counts": {
+        "sql": 4,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 6263438,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 320352,
+      "sdk_execution_union_ns": 1864821,
+      "sdk_return_union_ns": 263691,
+      "wall_ns": 19226613,
+      "cpu_ns": 15526453,
+      "all_captured_union_ns": 8712302
+    },
+    {
+      "arm": "c1",
+      "cell": "EN-sse",
+      "sample_id": "EN/sse/b0/warm/combined",
+      "category": "combined",
+      "block": 0,
+      "case_id": "EN-combined-01",
+      "warmup": true,
+      "counts": {
+        "sql": 3,
+        "gc": 4,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 64100373,
+      "gc_union_ns": 5909092,
+      "sdk_queue_union_ns": 663215,
+      "sdk_execution_union_ns": 4701588,
+      "sdk_return_union_ns": 175374,
+      "wall_ns": 86034317,
+      "cpu_ns": 51098714,
+      "all_captured_union_ns": 69819846
+    },
+    {
+      "arm": "c1",
+      "cell": "EN-sse",
+      "sample_id": "EN/sse/b0/warm/empty",
+      "category": "empty",
+      "block": 0,
+      "case_id": "EN-empty-01",
+      "warmup": true,
+      "counts": {
+        "sql": 3,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 9408305,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 655933,
+      "sdk_execution_union_ns": 3533581,
+      "sdk_return_union_ns": 389214,
+      "wall_ns": 30048670,
+      "cpu_ns": 25716718,
+      "all_captured_union_ns": 13987033
+    },
+    {
+      "arm": "c1",
+      "cell": "EN-sse",
+      "sample_id": "EN/sse/b0/measured/combined",
+      "category": "combined",
+      "block": 0,
+      "case_id": "EN-combined-02",
+      "warmup": false,
+      "counts": {
+        "sql": 3,
+        "gc": 1,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 15242400,
+      "gc_union_ns": 545338,
+      "sdk_queue_union_ns": 326874,
+      "sdk_execution_union_ns": 1389733,
+      "sdk_return_union_ns": 151059,
+      "wall_ns": 25770324,
+      "cpu_ns": 13695371,
+      "all_captured_union_ns": 17110066
+    },
+    {
+      "arm": "c1",
+      "cell": "EN-sse",
+      "sample_id": "EN/sse/b0/measured/empty",
+      "category": "empty",
+      "block": 0,
+      "case_id": "EN-empty-02",
+      "warmup": false,
+      "counts": {
+        "sql": 3,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 2410232,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 272126,
+      "sdk_execution_union_ns": 905817,
+      "sdk_return_union_ns": 90282,
+      "wall_ns": 7707941,
+      "cpu_ns": 6023257,
+      "all_captured_union_ns": 3678457
+    },
+    {
+      "arm": "c0",
+      "cell": "EN-sse",
+      "sample_id": "EN/sse/b0/warm/combined",
+      "category": "combined",
+      "block": 0,
+      "case_id": "EN-combined-01",
+      "warmup": true,
+      "counts": {
+        "sql": 3,
+        "gc": 4,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 59094548,
+      "gc_union_ns": 3267496,
+      "sdk_queue_union_ns": 615069,
+      "sdk_execution_union_ns": 4874526,
+      "sdk_return_union_ns": 139218,
+      "wall_ns": 78192774,
+      "cpu_ns": 38335979,
+      "all_captured_union_ns": 64902644
+    },
+    {
+      "arm": "c0",
+      "cell": "EN-sse",
+      "sample_id": "EN/sse/b0/warm/empty",
+      "category": "empty",
+      "block": 0,
+      "case_id": "EN-empty-01",
+      "warmup": true,
+      "counts": {
+        "sql": 3,
+        "gc": 1,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 13168195,
+      "gc_union_ns": 750271,
+      "sdk_queue_union_ns": 1628533,
+      "sdk_execution_union_ns": 4201879,
+      "sdk_return_union_ns": 254691,
+      "wall_ns": 33703357,
+      "cpu_ns": 28610372,
+      "all_captured_union_ns": 19253298
+    },
+    {
+      "arm": "c0",
+      "cell": "EN-sse",
+      "sample_id": "EN/sse/b0/measured/combined",
+      "category": "combined",
+      "block": 0,
+      "case_id": "EN-combined-02",
+      "warmup": false,
+      "counts": {
+        "sql": 3,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 37515373,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 622008,
+      "sdk_execution_union_ns": 5143932,
+      "sdk_return_union_ns": 382085,
+      "wall_ns": 58580771,
+      "cpu_ns": 27593295,
+      "all_captured_union_ns": 43663398
+    },
+    {
+      "arm": "c0",
+      "cell": "EN-sse",
+      "sample_id": "EN/sse/b0/measured/empty",
+      "category": "empty",
+      "block": 0,
+      "case_id": "EN-empty-02",
+      "warmup": false,
+      "counts": {
+        "sql": 3,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 9530385,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 546035,
+      "sdk_execution_union_ns": 2779091,
+      "sdk_return_union_ns": 304939,
+      "wall_ns": 26582482,
+      "cpu_ns": 22593775,
+      "all_captured_union_ns": 13160450
+    },
+    {
+      "arm": "c0",
+      "cell": "EN-sse",
+      "sample_id": "EN/sse/b1/warm/combined",
+      "category": "combined",
+      "block": 1,
+      "case_id": "EN-combined-01",
+      "warmup": true,
+      "counts": {
+        "sql": 3,
+        "gc": 4,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 68706971,
+      "gc_union_ns": 5828638,
+      "sdk_queue_union_ns": 576373,
+      "sdk_execution_union_ns": 4203314,
+      "sdk_return_union_ns": 191960,
+      "wall_ns": 86479394,
+      "cpu_ns": 52974079,
+      "all_captured_union_ns": 73868261
+    },
+    {
+      "arm": "c0",
+      "cell": "EN-sse",
+      "sample_id": "EN/sse/b1/warm/empty",
+      "category": "empty",
+      "block": 1,
+      "case_id": "EN-empty-01",
+      "warmup": true,
+      "counts": {
+        "sql": 3,
+        "gc": 1,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 8411336,
+      "gc_union_ns": 750902,
+      "sdk_queue_union_ns": 1816616,
+      "sdk_execution_union_ns": 2787945,
+      "sdk_return_union_ns": 219991,
+      "wall_ns": 24172542,
+      "cpu_ns": 20158353,
+      "all_captured_union_ns": 13235888
+    },
+    {
+      "arm": "c0",
+      "cell": "EN-sse",
+      "sample_id": "EN/sse/b1/measured/combined",
+      "category": "combined",
+      "block": 1,
+      "case_id": "EN-combined-02",
+      "warmup": false,
+      "counts": {
+        "sql": 3,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 43151821,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 663787,
+      "sdk_execution_union_ns": 3455441,
+      "sdk_return_union_ns": 311363,
+      "wall_ns": 62856499,
+      "cpu_ns": 27938875,
+      "all_captured_union_ns": 47582412
+    },
+    {
+      "arm": "c0",
+      "cell": "EN-sse",
+      "sample_id": "EN/sse/b1/measured/empty",
+      "category": "empty",
+      "block": 1,
+      "case_id": "EN-empty-02",
+      "warmup": false,
+      "counts": {
+        "sql": 3,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 10736126,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 602200,
+      "sdk_execution_union_ns": 4555466,
+      "sdk_return_union_ns": 376429,
+      "wall_ns": 28893896,
+      "cpu_ns": 24137017,
+      "all_captured_union_ns": 16270221
+    },
+    {
+      "arm": "c1",
+      "cell": "EN-sse",
+      "sample_id": "EN/sse/b1/warm/combined",
+      "category": "combined",
+      "block": 1,
+      "case_id": "EN-combined-01",
+      "warmup": true,
+      "counts": {
+        "sql": 3,
+        "gc": 4,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 56529110,
+      "gc_union_ns": 3786324,
+      "sdk_queue_union_ns": 799423,
+      "sdk_execution_union_ns": 6538391,
+      "sdk_return_union_ns": 114191,
+      "wall_ns": 82069082,
+      "cpu_ns": 48671736,
+      "all_captured_union_ns": 64198451
+    },
+    {
+      "arm": "c1",
+      "cell": "EN-sse",
+      "sample_id": "EN/sse/b1/warm/empty",
+      "category": "empty",
+      "block": 1,
+      "case_id": "EN-empty-01",
+      "warmup": true,
+      "counts": {
+        "sql": 3,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 7684710,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 486173,
+      "sdk_execution_union_ns": 2218686,
+      "sdk_return_union_ns": 220438,
+      "wall_ns": 22213180,
+      "cpu_ns": 18735834,
+      "all_captured_union_ns": 10610007
+    },
+    {
+      "arm": "c1",
+      "cell": "EN-sse",
+      "sample_id": "EN/sse/b1/measured/combined",
+      "category": "combined",
+      "block": 1,
+      "case_id": "EN-combined-02",
+      "warmup": false,
+      "counts": {
+        "sql": 3,
+        "gc": 1,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 11732115,
+      "gc_union_ns": 432852,
+      "sdk_queue_union_ns": 437412,
+      "sdk_execution_union_ns": 1911107,
+      "sdk_return_union_ns": 106888,
+      "wall_ns": 21928672,
+      "cpu_ns": 12095171,
+      "all_captured_union_ns": 14187522
+    },
+    {
+      "arm": "c1",
+      "cell": "EN-sse",
+      "sample_id": "EN/sse/b1/measured/empty",
+      "category": "empty",
+      "block": 1,
+      "case_id": "EN-empty-02",
+      "warmup": false,
+      "counts": {
+        "sql": 3,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 5726914,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 619386,
+      "sdk_execution_union_ns": 1895309,
+      "sdk_return_union_ns": 194462,
+      "wall_ns": 16925991,
+      "cpu_ns": 13898853,
+      "all_captured_union_ns": 8436071
+    },
+    {
+      "arm": "c1",
+      "cell": "ES-json",
+      "sample_id": "ES/json/b0/warm/combined",
+      "category": "combined",
+      "block": 0,
+      "case_id": "ES-combined-01",
+      "warmup": true,
+      "counts": {
+        "sql": 4,
+        "gc": 4,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 72797864,
+      "gc_union_ns": 3649576,
+      "sdk_queue_union_ns": 392782,
+      "sdk_execution_union_ns": 3348362,
+      "sdk_return_union_ns": 70903,
+      "wall_ns": 125244786,
+      "cpu_ns": 65025226,
+      "all_captured_union_ns": 76791086
+    },
+    {
+      "arm": "c1",
+      "cell": "ES-json",
+      "sample_id": "ES/json/b0/warm/empty",
+      "category": "empty",
+      "block": 0,
+      "case_id": "ES-empty-01",
+      "warmup": true,
+      "counts": {
+        "sql": 4,
+        "gc": 1,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 5714248,
+      "gc_union_ns": 475844,
+      "sdk_queue_union_ns": 188979,
+      "sdk_execution_union_ns": 2112206,
+      "sdk_return_union_ns": 198730,
+      "wall_ns": 17488245,
+      "cpu_ns": 14039915,
+      "all_captured_union_ns": 8214163
+    },
+    {
+      "arm": "c1",
+      "cell": "ES-json",
+      "sample_id": "ES/json/b0/measured/combined",
+      "category": "combined",
+      "block": 0,
+      "case_id": "ES-combined-02",
+      "warmup": false,
+      "counts": {
+        "sql": 4,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 11359483,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 115981,
+      "sdk_execution_union_ns": 1754930,
+      "sdk_return_union_ns": 76977,
+      "wall_ns": 21365701,
+      "cpu_ns": 11780587,
+      "all_captured_union_ns": 13307371
+    },
+    {
+      "arm": "c1",
+      "cell": "ES-json",
+      "sample_id": "ES/json/b0/measured/empty",
+      "category": "empty",
+      "block": 0,
+      "case_id": "ES-empty-02",
+      "warmup": false,
+      "counts": {
+        "sql": 4,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 3968084,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 170688,
+      "sdk_execution_union_ns": 1660890,
+      "sdk_return_union_ns": 183710,
+      "wall_ns": 14103739,
+      "cpu_ns": 11996546,
+      "all_captured_union_ns": 5983372
+    },
+    {
+      "arm": "c0",
+      "cell": "ES-json",
+      "sample_id": "ES/json/b0/warm/combined",
+      "category": "combined",
+      "block": 0,
+      "case_id": "ES-combined-01",
+      "warmup": true,
+      "counts": {
+        "sql": 4,
+        "gc": 4,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 62689392,
+      "gc_union_ns": 2904209,
+      "sdk_queue_union_ns": 391901,
+      "sdk_execution_union_ns": 5640650,
+      "sdk_return_union_ns": 144593,
+      "wall_ns": 99955439,
+      "cpu_ns": 53550295,
+      "all_captured_union_ns": 69059602
+    },
+    {
+      "arm": "c0",
+      "cell": "ES-json",
+      "sample_id": "ES/json/b0/warm/empty",
+      "category": "empty",
+      "block": 0,
+      "case_id": "ES-empty-01",
+      "warmup": true,
+      "counts": {
+        "sql": 4,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 10560326,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 355005,
+      "sdk_execution_union_ns": 4089569,
+      "sdk_return_union_ns": 381894,
+      "wall_ns": 30789845,
+      "cpu_ns": 25519340,
+      "all_captured_union_ns": 15386794
+    },
+    {
+      "arm": "c0",
+      "cell": "ES-json",
+      "sample_id": "ES/json/b0/measured/combined",
+      "category": "combined",
+      "block": 0,
+      "case_id": "ES-combined-02",
+      "warmup": false,
+      "counts": {
+        "sql": 4,
+        "gc": 1,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 17105881,
+      "gc_union_ns": 584798,
+      "sdk_queue_union_ns": 336347,
+      "sdk_execution_union_ns": 1861221,
+      "sdk_return_union_ns": 197465,
+      "wall_ns": 28901994,
+      "cpu_ns": 13581028,
+      "all_captured_union_ns": 20085712
+    },
+    {
+      "arm": "c0",
+      "cell": "ES-json",
+      "sample_id": "ES/json/b0/measured/empty",
+      "category": "empty",
+      "block": 0,
+      "case_id": "ES-empty-02",
+      "warmup": false,
+      "counts": {
+        "sql": 4,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 5419991,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 308711,
+      "sdk_execution_union_ns": 1241438,
+      "sdk_return_union_ns": 185310,
+      "wall_ns": 14376182,
+      "cpu_ns": 10793899,
+      "all_captured_union_ns": 7155450
+    },
+    {
+      "arm": "c0",
+      "cell": "ES-json",
+      "sample_id": "ES/json/b1/warm/combined",
+      "category": "combined",
+      "block": 1,
+      "case_id": "ES-combined-01",
+      "warmup": true,
+      "counts": {
+        "sql": 4,
+        "gc": 4,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 73381479,
+      "gc_union_ns": 4811070,
+      "sdk_queue_union_ns": 473272,
+      "sdk_execution_union_ns": 3540538,
+      "sdk_return_union_ns": 119866,
+      "wall_ns": 99414566,
+      "cpu_ns": 50316155,
+      "all_captured_union_ns": 77696114
+    },
+    {
+      "arm": "c0",
+      "cell": "ES-json",
+      "sample_id": "ES/json/b1/warm/empty",
+      "category": "empty",
+      "block": 1,
+      "case_id": "ES-empty-01",
+      "warmup": true,
+      "counts": {
+        "sql": 4,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 4244277,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 288794,
+      "sdk_execution_union_ns": 1137838,
+      "sdk_return_union_ns": 131625,
+      "wall_ns": 12147695,
+      "cpu_ns": 9288283,
+      "all_captured_union_ns": 5802534
+    },
+    {
+      "arm": "c0",
+      "cell": "ES-json",
+      "sample_id": "ES/json/b1/measured/combined",
+      "category": "combined",
+      "block": 1,
+      "case_id": "ES-combined-02",
+      "warmup": false,
+      "counts": {
+        "sql": 4,
+        "gc": 1,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 17972208,
+      "gc_union_ns": 497107,
+      "sdk_queue_union_ns": 290909,
+      "sdk_execution_union_ns": 1456056,
+      "sdk_return_union_ns": 118434,
+      "wall_ns": 29049825,
+      "cpu_ns": 14247038,
+      "all_captured_union_ns": 20334714
+    },
+    {
+      "arm": "c0",
+      "cell": "ES-json",
+      "sample_id": "ES/json/b1/measured/empty",
+      "category": "empty",
+      "block": 1,
+      "case_id": "ES-empty-02",
+      "warmup": false,
+      "counts": {
+        "sql": 4,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 4241243,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 206327,
+      "sdk_execution_union_ns": 1135092,
+      "sdk_return_union_ns": 184140,
+      "wall_ns": 12148512,
+      "cpu_ns": 9608083,
+      "all_captured_union_ns": 5766802
+    },
+    {
+      "arm": "c1",
+      "cell": "ES-json",
+      "sample_id": "ES/json/b1/warm/combined",
+      "category": "combined",
+      "block": 1,
+      "case_id": "ES-combined-01",
+      "warmup": true,
+      "counts": {
+        "sql": 4,
+        "gc": 4,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 72962439,
+      "gc_union_ns": 6625746,
+      "sdk_queue_union_ns": 360897,
+      "sdk_execution_union_ns": 5366316,
+      "sdk_return_union_ns": 119851,
+      "wall_ns": 128484199,
+      "cpu_ns": 71746472,
+      "all_captured_union_ns": 79020703
+    },
+    {
+      "arm": "c1",
+      "cell": "ES-json",
+      "sample_id": "ES/json/b1/warm/empty",
+      "category": "empty",
+      "block": 1,
+      "case_id": "ES-empty-01",
+      "warmup": true,
+      "counts": {
+        "sql": 4,
+        "gc": 1,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 10390261,
+      "gc_union_ns": 451022,
+      "sdk_queue_union_ns": 266883,
+      "sdk_execution_union_ns": 2559361,
+      "sdk_return_union_ns": 209497,
+      "wall_ns": 27262300,
+      "cpu_ns": 21921639,
+      "all_captured_union_ns": 13426002
+    },
+    {
+      "arm": "c1",
+      "cell": "ES-json",
+      "sample_id": "ES/json/b1/measured/combined",
+      "category": "combined",
+      "block": 1,
+      "case_id": "ES-combined-02",
+      "warmup": false,
+      "counts": {
+        "sql": 4,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 18031287,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 284692,
+      "sdk_execution_union_ns": 1684301,
+      "sdk_return_union_ns": 209185,
+      "wall_ns": 34252616,
+      "cpu_ns": 19935137,
+      "all_captured_union_ns": 20209465
+    },
+    {
+      "arm": "c1",
+      "cell": "ES-json",
+      "sample_id": "ES/json/b1/measured/empty",
+      "category": "empty",
+      "block": 1,
+      "case_id": "ES-empty-02",
+      "warmup": false,
+      "counts": {
+        "sql": 4,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 12299326,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 245598,
+      "sdk_execution_union_ns": 2810103,
+      "sdk_return_union_ns": 303860,
+      "wall_ns": 31032391,
+      "cpu_ns": 25346027,
+      "all_captured_union_ns": 15658887
+    },
+    {
+      "arm": "c0",
+      "cell": "ES-sse",
+      "sample_id": "ES/sse/b0/warm/combined",
+      "category": "combined",
+      "block": 0,
+      "case_id": "ES-combined-01",
+      "warmup": true,
+      "counts": {
+        "sql": 3,
+        "gc": 4,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 46046679,
+      "gc_union_ns": 3916605,
+      "sdk_queue_union_ns": 660235,
+      "sdk_execution_union_ns": 2841648,
+      "sdk_return_union_ns": 143646,
+      "wall_ns": 60905701,
+      "cpu_ns": 36536678,
+      "all_captured_union_ns": 49871331
+    },
+    {
+      "arm": "c0",
+      "cell": "ES-sse",
+      "sample_id": "ES/sse/b0/warm/empty",
+      "category": "empty",
+      "block": 0,
+      "case_id": "ES-empty-01",
+      "warmup": true,
+      "counts": {
+        "sql": 3,
+        "gc": 1,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 7295114,
+      "gc_union_ns": 740965,
+      "sdk_queue_union_ns": 719545,
+      "sdk_execution_union_ns": 2874007,
+      "sdk_return_union_ns": 214619,
+      "wall_ns": 22311100,
+      "cpu_ns": 20142130,
+      "all_captured_union_ns": 11844250
+    },
+    {
+      "arm": "c0",
+      "cell": "ES-sse",
+      "sample_id": "ES/sse/b0/measured/combined",
+      "category": "combined",
+      "block": 0,
+      "case_id": "ES-combined-02",
+      "warmup": false,
+      "counts": {
+        "sql": 3,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 27321294,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 513874,
+      "sdk_execution_union_ns": 5114054,
+      "sdk_return_union_ns": 321929,
+      "wall_ns": 45872985,
+      "cpu_ns": 22251702,
+      "all_captured_union_ns": 33271151
+    },
+    {
+      "arm": "c0",
+      "cell": "ES-sse",
+      "sample_id": "ES/sse/b0/measured/empty",
+      "category": "empty",
+      "block": 0,
+      "case_id": "ES-empty-02",
+      "warmup": false,
+      "counts": {
+        "sql": 3,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 9180706,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 467074,
+      "sdk_execution_union_ns": 2679614,
+      "sdk_return_union_ns": 226312,
+      "wall_ns": 24881379,
+      "cpu_ns": 20804697,
+      "all_captured_union_ns": 12553706
+    },
+    {
+      "arm": "c1",
+      "cell": "ES-sse",
+      "sample_id": "ES/sse/b0/warm/combined",
+      "category": "combined",
+      "block": 0,
+      "case_id": "ES-combined-01",
+      "warmup": true,
+      "counts": {
+        "sql": 3,
+        "gc": 4,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 59064599,
+      "gc_union_ns": 5052318,
+      "sdk_queue_union_ns": 528440,
+      "sdk_execution_union_ns": 4386197,
+      "sdk_return_union_ns": 200113,
+      "wall_ns": 78189246,
+      "cpu_ns": 40558715,
+      "all_captured_union_ns": 64368693
+    },
+    {
+      "arm": "c1",
+      "cell": "ES-sse",
+      "sample_id": "ES/sse/b0/warm/empty",
+      "category": "empty",
+      "block": 0,
+      "case_id": "ES-empty-01",
+      "warmup": true,
+      "counts": {
+        "sql": 3,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 6030561,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 357208,
+      "sdk_execution_union_ns": 1965667,
+      "sdk_return_union_ns": 255427,
+      "wall_ns": 17809581,
+      "cpu_ns": 14805929,
+      "all_captured_union_ns": 8608863
+    },
+    {
+      "arm": "c1",
+      "cell": "ES-sse",
+      "sample_id": "ES/sse/b0/measured/combined",
+      "category": "combined",
+      "block": 0,
+      "case_id": "ES-combined-02",
+      "warmup": false,
+      "counts": {
+        "sql": 3,
+        "gc": 1,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 8619073,
+      "gc_union_ns": 241405,
+      "sdk_queue_union_ns": 172858,
+      "sdk_execution_union_ns": 945520,
+      "sdk_return_union_ns": 191515,
+      "wall_ns": 14805588,
+      "cpu_ns": 7471028,
+      "all_captured_union_ns": 9928966
+    },
+    {
+      "arm": "c1",
+      "cell": "ES-sse",
+      "sample_id": "ES/sse/b0/measured/empty",
+      "category": "empty",
+      "block": 0,
+      "case_id": "ES-empty-02",
+      "warmup": false,
+      "counts": {
+        "sql": 3,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 2782078,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 114293,
+      "sdk_execution_union_ns": 720777,
+      "sdk_return_union_ns": 100089,
+      "wall_ns": 7771543,
+      "cpu_ns": 5755299,
+      "all_captured_union_ns": 3717237
+    },
+    {
+      "arm": "c1",
+      "cell": "ES-sse",
+      "sample_id": "ES/sse/b1/warm/combined",
+      "category": "combined",
+      "block": 1,
+      "case_id": "ES-combined-01",
+      "warmup": true,
+      "counts": {
+        "sql": 3,
+        "gc": 4,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 62433844,
+      "gc_union_ns": 5842929,
+      "sdk_queue_union_ns": 730989,
+      "sdk_execution_union_ns": 6173917,
+      "sdk_return_union_ns": 153712,
+      "wall_ns": 83762296,
+      "cpu_ns": 49628793,
+      "all_captured_union_ns": 69672363
+    },
+    {
+      "arm": "c1",
+      "cell": "ES-sse",
+      "sample_id": "ES/sse/b1/warm/empty",
+      "category": "empty",
+      "block": 1,
+      "case_id": "ES-empty-01",
+      "warmup": true,
+      "counts": {
+        "sql": 3,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 9197649,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 811096,
+      "sdk_execution_union_ns": 3921091,
+      "sdk_return_union_ns": 341810,
+      "wall_ns": 29330530,
+      "cpu_ns": 26086816,
+      "all_captured_union_ns": 14271646
+    },
+    {
+      "arm": "c1",
+      "cell": "ES-sse",
+      "sample_id": "ES/sse/b1/measured/combined",
+      "category": "combined",
+      "block": 1,
+      "case_id": "ES-combined-02",
+      "warmup": false,
+      "counts": {
+        "sql": 3,
+        "gc": 1,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 16799212,
+      "gc_union_ns": 360111,
+      "sdk_queue_union_ns": 400476,
+      "sdk_execution_union_ns": 3446513,
+      "sdk_return_union_ns": 207341,
+      "wall_ns": 29785506,
+      "cpu_ns": 15729310,
+      "all_captured_union_ns": 20853542
+    },
+    {
+      "arm": "c1",
+      "cell": "ES-sse",
+      "sample_id": "ES/sse/b1/measured/empty",
+      "category": "empty",
+      "block": 1,
+      "case_id": "ES-empty-02",
+      "warmup": false,
+      "counts": {
+        "sql": 3,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 2843018,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 204968,
+      "sdk_execution_union_ns": 948572,
+      "sdk_return_union_ns": 164639,
+      "wall_ns": 9040837,
+      "cpu_ns": 7619241,
+      "all_captured_union_ns": 4161197
+    },
+    {
+      "arm": "c0",
+      "cell": "ES-sse",
+      "sample_id": "ES/sse/b1/warm/combined",
+      "category": "combined",
+      "block": 1,
+      "case_id": "ES-combined-01",
+      "warmup": true,
+      "counts": {
+        "sql": 3,
+        "gc": 4,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 47707118,
+      "gc_union_ns": 2594444,
+      "sdk_queue_union_ns": 432348,
+      "sdk_execution_union_ns": 3823769,
+      "sdk_return_union_ns": 157229,
+      "wall_ns": 63667382,
+      "cpu_ns": 31853806,
+      "all_captured_union_ns": 52318051
+    },
+    {
+      "arm": "c0",
+      "cell": "ES-sse",
+      "sample_id": "ES/sse/b1/warm/empty",
+      "category": "empty",
+      "block": 1,
+      "case_id": "ES-empty-01",
+      "warmup": true,
+      "counts": {
+        "sql": 3,
+        "gc": 1,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 12860192,
+      "gc_union_ns": 1646457,
+      "sdk_queue_union_ns": 2305207,
+      "sdk_execution_union_ns": 5016677,
+      "sdk_return_union_ns": 383408,
+      "wall_ns": 38609816,
+      "cpu_ns": 34000314,
+      "all_captured_union_ns": 20565484
+    },
+    {
+      "arm": "c0",
+      "cell": "ES-sse",
+      "sample_id": "ES/sse/b1/measured/combined",
+      "category": "combined",
+      "block": 1,
+      "case_id": "ES-combined-02",
+      "warmup": false,
+      "counts": {
+        "sql": 3,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 41595773,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 729364,
+      "sdk_execution_union_ns": 6388757,
+      "sdk_return_union_ns": 335380,
+      "wall_ns": 65807531,
+      "cpu_ns": 32456355,
+      "all_captured_union_ns": 49049274
+    },
+    {
+      "arm": "c0",
+      "cell": "ES-sse",
+      "sample_id": "ES/sse/b1/measured/empty",
+      "category": "empty",
+      "block": 1,
+      "case_id": "ES-empty-02",
+      "warmup": false,
+      "counts": {
+        "sql": 3,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 9852894,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 519361,
+      "sdk_execution_union_ns": 2613162,
+      "sdk_return_union_ns": 343013,
+      "wall_ns": 26634799,
+      "cpu_ns": 22308173,
+      "all_captured_union_ns": 13328430
+    }
+  ],
+  "paired_deltas": [
+    {
+      "sample_id": "EN/json/b0/measured/combined",
+      "cell": "EN-json",
+      "category": "combined",
+      "block": 0,
+      "case_id": "EN-combined-02",
+      "sql_union_ns": -6564469,
+      "gc_union_ns": -2164100,
+      "sdk_queue_union_ns": -70409,
+      "sdk_execution_union_ns": -3739315,
+      "sdk_return_union_ns": -118342,
+      "wall_ns": -21661672,
+      "cpu_ns": -20887209,
+      "all_captured_union_ns": -12656635
+    },
+    {
+      "sample_id": "EN/json/b0/measured/empty",
+      "cell": "EN-json",
+      "category": "empty",
+      "block": 0,
+      "case_id": "EN-empty-02",
+      "sql_union_ns": -9319561,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": -78464,
+      "sdk_execution_union_ns": -2554684,
+      "sdk_return_union_ns": -150889,
+      "wall_ns": -24362323,
+      "cpu_ns": -21436579,
+      "all_captured_union_ns": -12103598
+    },
+    {
+      "sample_id": "EN/json/b1/measured/combined",
+      "cell": "EN-json",
+      "category": "combined",
+      "block": 1,
+      "case_id": "EN-combined-02",
+      "sql_union_ns": -9024678,
+      "gc_union_ns": -1754061,
+      "sdk_queue_union_ns": -73692,
+      "sdk_execution_union_ns": -1216786,
+      "sdk_return_union_ns": -211265,
+      "wall_ns": -14956223,
+      "cpu_ns": -8691697,
+      "all_captured_union_ns": -12280482
+    },
+    {
+      "sample_id": "EN/json/b1/measured/empty",
+      "cell": "EN-json",
+      "category": "empty",
+      "block": 1,
+      "case_id": "EN-empty-02",
+      "sql_union_ns": 594650,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": -34290,
+      "sdk_execution_union_ns": 203414,
+      "sdk_return_union_ns": -18694,
+      "wall_ns": 907273,
+      "cpu_ns": 571784,
+      "all_captured_union_ns": 745080
+    },
+    {
+      "sample_id": "EN/sse/b0/measured/combined",
+      "cell": "EN-sse",
+      "category": "combined",
+      "block": 0,
+      "case_id": "EN-combined-02",
+      "sql_union_ns": -22272973,
+      "gc_union_ns": 545338,
+      "sdk_queue_union_ns": -295134,
+      "sdk_execution_union_ns": -3754199,
+      "sdk_return_union_ns": -231026,
+      "wall_ns": -32810447,
+      "cpu_ns": -13897924,
+      "all_captured_union_ns": -26553332
+    },
+    {
+      "sample_id": "EN/sse/b0/measured/empty",
+      "cell": "EN-sse",
+      "category": "empty",
+      "block": 0,
+      "case_id": "EN-empty-02",
+      "sql_union_ns": -7120153,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": -273909,
+      "sdk_execution_union_ns": -1873274,
+      "sdk_return_union_ns": -214657,
+      "wall_ns": -18874541,
+      "cpu_ns": -16570518,
+      "all_captured_union_ns": -9481993
+    },
+    {
+      "sample_id": "EN/sse/b1/measured/combined",
+      "cell": "EN-sse",
+      "category": "combined",
+      "block": 1,
+      "case_id": "EN-combined-02",
+      "sql_union_ns": -31419706,
+      "gc_union_ns": 432852,
+      "sdk_queue_union_ns": -226375,
+      "sdk_execution_union_ns": -1544334,
+      "sdk_return_union_ns": -204475,
+      "wall_ns": -40927827,
+      "cpu_ns": -15843704,
+      "all_captured_union_ns": -33394890
+    },
+    {
+      "sample_id": "EN/sse/b1/measured/empty",
+      "cell": "EN-sse",
+      "category": "empty",
+      "block": 1,
+      "case_id": "EN-empty-02",
+      "sql_union_ns": -5009212,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 17186,
+      "sdk_execution_union_ns": -2660157,
+      "sdk_return_union_ns": -181967,
+      "wall_ns": -11967905,
+      "cpu_ns": -10238164,
+      "all_captured_union_ns": -7834150
+    },
+    {
+      "sample_id": "ES/json/b0/measured/combined",
+      "cell": "ES-json",
+      "category": "combined",
+      "block": 0,
+      "case_id": "ES-combined-02",
+      "sql_union_ns": -5746398,
+      "gc_union_ns": -584798,
+      "sdk_queue_union_ns": -220366,
+      "sdk_execution_union_ns": -106291,
+      "sdk_return_union_ns": -120488,
+      "wall_ns": -7536293,
+      "cpu_ns": -1800441,
+      "all_captured_union_ns": -6778341
+    },
+    {
+      "sample_id": "ES/json/b0/measured/empty",
+      "cell": "ES-json",
+      "category": "empty",
+      "block": 0,
+      "case_id": "ES-empty-02",
+      "sql_union_ns": -1451907,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": -138023,
+      "sdk_execution_union_ns": 419452,
+      "sdk_return_union_ns": -1600,
+      "wall_ns": -272443,
+      "cpu_ns": 1202647,
+      "all_captured_union_ns": -1172078
+    },
+    {
+      "sample_id": "ES/json/b1/measured/combined",
+      "cell": "ES-json",
+      "category": "combined",
+      "block": 1,
+      "case_id": "ES-combined-02",
+      "sql_union_ns": 59079,
+      "gc_union_ns": -497107,
+      "sdk_queue_union_ns": -6217,
+      "sdk_execution_union_ns": 228245,
+      "sdk_return_union_ns": 90751,
+      "wall_ns": 5202791,
+      "cpu_ns": 5688099,
+      "all_captured_union_ns": -125249
+    },
+    {
+      "sample_id": "ES/json/b1/measured/empty",
+      "cell": "ES-json",
+      "category": "empty",
+      "block": 1,
+      "case_id": "ES-empty-02",
+      "sql_union_ns": 8058083,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 39271,
+      "sdk_execution_union_ns": 1675011,
+      "sdk_return_union_ns": 119720,
+      "wall_ns": 18883879,
+      "cpu_ns": 15737944,
+      "all_captured_union_ns": 9892085
+    },
+    {
+      "sample_id": "ES/sse/b0/measured/combined",
+      "cell": "ES-sse",
+      "category": "combined",
+      "block": 0,
+      "case_id": "ES-combined-02",
+      "sql_union_ns": -18702221,
+      "gc_union_ns": 241405,
+      "sdk_queue_union_ns": -341016,
+      "sdk_execution_union_ns": -4168534,
+      "sdk_return_union_ns": -130414,
+      "wall_ns": -31067397,
+      "cpu_ns": -14780674,
+      "all_captured_union_ns": -23342185
+    },
+    {
+      "sample_id": "ES/sse/b0/measured/empty",
+      "cell": "ES-sse",
+      "category": "empty",
+      "block": 0,
+      "case_id": "ES-empty-02",
+      "sql_union_ns": -6398628,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": -352781,
+      "sdk_execution_union_ns": -1958837,
+      "sdk_return_union_ns": -126223,
+      "wall_ns": -17109836,
+      "cpu_ns": -15049398,
+      "all_captured_union_ns": -8836469
+    },
+    {
+      "sample_id": "ES/sse/b1/measured/combined",
+      "cell": "ES-sse",
+      "category": "combined",
+      "block": 1,
+      "case_id": "ES-combined-02",
+      "sql_union_ns": -24796561,
+      "gc_union_ns": 360111,
+      "sdk_queue_union_ns": -328888,
+      "sdk_execution_union_ns": -2942244,
+      "sdk_return_union_ns": -128039,
+      "wall_ns": -36022025,
+      "cpu_ns": -16727045,
+      "all_captured_union_ns": -28195732
+    },
+    {
+      "sample_id": "ES/sse/b1/measured/empty",
+      "cell": "ES-sse",
+      "category": "empty",
+      "block": 1,
+      "case_id": "ES-empty-02",
+      "sql_union_ns": -7009876,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": -314393,
+      "sdk_execution_union_ns": -1664590,
+      "sdk_return_union_ns": -178374,
+      "wall_ns": -17593962,
+      "cpu_ns": -14688932,
+      "all_captured_union_ns": -9167233
+    }
+  ],
+  "contrasts": [
+    {
+      "cell": "EN-json",
+      "category": "combined",
+      "case_id": "EN-combined-02",
+      "source": {
+        "sql_union_ns": -7794573.5,
+        "gc_union_ns": -1959080.5,
+        "sdk_queue_union_ns": -72050.5,
+        "sdk_execution_union_ns": -2478050.5,
+        "sdk_return_union_ns": -164803.5,
+        "wall_ns": -18308947.5,
+        "cpu_ns": -14789453.0,
+        "all_captured_union_ns": -12468558.5
+      },
+      "order": {
+        "sql_union_ns": 1230104.5,
+        "gc_union_ns": -205019.5,
+        "sdk_queue_union_ns": 1641.5,
+        "sdk_execution_union_ns": -1261264.5,
+        "sdk_return_union_ns": 46461.5,
+        "wall_ns": -3352724.5,
+        "cpu_ns": -6097756.0,
+        "all_captured_union_ns": -188076.5
+      }
+    },
+    {
+      "cell": "EN-json",
+      "category": "empty",
+      "case_id": "EN-empty-02",
+      "source": {
+        "sql_union_ns": -4362455.5,
+        "gc_union_ns": 0.0,
+        "sdk_queue_union_ns": -56377.0,
+        "sdk_execution_union_ns": -1175635.0,
+        "sdk_return_union_ns": -84791.5,
+        "wall_ns": -11727525.0,
+        "cpu_ns": -10432397.5,
+        "all_captured_union_ns": -5679259.0
+      },
+      "order": {
+        "sql_union_ns": -4957105.5,
+        "gc_union_ns": 0.0,
+        "sdk_queue_union_ns": -22087.0,
+        "sdk_execution_union_ns": -1379049.0,
+        "sdk_return_union_ns": -66097.5,
+        "wall_ns": -12634798.0,
+        "cpu_ns": -11004181.5,
+        "all_captured_union_ns": -6424339.0
+      }
+    },
+    {
+      "cell": "EN-sse",
+      "category": "combined",
+      "case_id": "EN-combined-02",
+      "source": {
+        "sql_union_ns": -26846339.5,
+        "gc_union_ns": 489095.0,
+        "sdk_queue_union_ns": -260754.5,
+        "sdk_execution_union_ns": -2649266.5,
+        "sdk_return_union_ns": -217750.5,
+        "wall_ns": -36869137.0,
+        "cpu_ns": -14870814.0,
+        "all_captured_union_ns": -29974111.0
+      },
+      "order": {
+        "sql_union_ns": -4573366.5,
+        "gc_union_ns": -56243.0,
+        "sdk_queue_union_ns": 34379.5,
+        "sdk_execution_union_ns": 1104932.5,
+        "sdk_return_union_ns": 13275.5,
+        "wall_ns": -4058690.0,
+        "cpu_ns": -972890.0,
+        "all_captured_union_ns": -3420779.0
+      }
+    },
+    {
+      "cell": "EN-sse",
+      "category": "empty",
+      "case_id": "EN-empty-02",
+      "source": {
+        "sql_union_ns": -6064682.5,
+        "gc_union_ns": 0.0,
+        "sdk_queue_union_ns": -128361.5,
+        "sdk_execution_union_ns": -2266715.5,
+        "sdk_return_union_ns": -198312.0,
+        "wall_ns": -15421223.0,
+        "cpu_ns": -13404341.0,
+        "all_captured_union_ns": -8658071.5
+      },
+      "order": {
+        "sql_union_ns": 1055470.5,
+        "gc_union_ns": 0.0,
+        "sdk_queue_union_ns": 145547.5,
+        "sdk_execution_union_ns": -393441.5,
+        "sdk_return_union_ns": 16345.0,
+        "wall_ns": 3453318.0,
+        "cpu_ns": 3166177.0,
+        "all_captured_union_ns": 823921.5
+      }
+    },
+    {
+      "cell": "ES-json",
+      "category": "combined",
+      "case_id": "ES-combined-02",
+      "source": {
+        "sql_union_ns": -2843659.5,
+        "gc_union_ns": -540952.5,
+        "sdk_queue_union_ns": -113291.5,
+        "sdk_execution_union_ns": 60977.0,
+        "sdk_return_union_ns": -14868.5,
+        "wall_ns": -1166751.0,
+        "cpu_ns": 1943829.0,
+        "all_captured_union_ns": -3451795.0
+      },
+      "order": {
+        "sql_union_ns": 2902738.5,
+        "gc_union_ns": 43845.5,
+        "sdk_queue_union_ns": 107074.5,
+        "sdk_execution_union_ns": 167268.0,
+        "sdk_return_union_ns": 105619.5,
+        "wall_ns": 6369542.0,
+        "cpu_ns": 3744270.0,
+        "all_captured_union_ns": 3326546.0
+      }
+    },
+    {
+      "cell": "ES-json",
+      "category": "empty",
+      "case_id": "ES-empty-02",
+      "source": {
+        "sql_union_ns": 3303088.0,
+        "gc_union_ns": 0.0,
+        "sdk_queue_union_ns": -49376.0,
+        "sdk_execution_union_ns": 1047231.5,
+        "sdk_return_union_ns": 59060.0,
+        "wall_ns": 9305718.0,
+        "cpu_ns": 8470295.5,
+        "all_captured_union_ns": 4360003.5
+      },
+      "order": {
+        "sql_union_ns": 4754995.0,
+        "gc_union_ns": 0.0,
+        "sdk_queue_union_ns": 88647.0,
+        "sdk_execution_union_ns": 627779.5,
+        "sdk_return_union_ns": 60660.0,
+        "wall_ns": 9578161.0,
+        "cpu_ns": 7267648.5,
+        "all_captured_union_ns": 5532081.5
+      }
+    },
+    {
+      "cell": "ES-sse",
+      "category": "combined",
+      "case_id": "ES-combined-02",
+      "source": {
+        "sql_union_ns": -21749391.0,
+        "gc_union_ns": 300758.0,
+        "sdk_queue_union_ns": -334952.0,
+        "sdk_execution_union_ns": -3555389.0,
+        "sdk_return_union_ns": -129226.5,
+        "wall_ns": -33544711.0,
+        "cpu_ns": -15753859.5,
+        "all_captured_union_ns": -25768958.5
+      },
+      "order": {
+        "sql_union_ns": 3047170.0,
+        "gc_union_ns": -59353.0,
+        "sdk_queue_union_ns": -6064.0,
+        "sdk_execution_union_ns": -613145.0,
+        "sdk_return_union_ns": -1187.5,
+        "wall_ns": 2477314.0,
+        "cpu_ns": 973185.5,
+        "all_captured_union_ns": 2426773.5
+      }
+    },
+    {
+      "cell": "ES-sse",
+      "category": "empty",
+      "case_id": "ES-empty-02",
+      "source": {
+        "sql_union_ns": -6704252.0,
+        "gc_union_ns": 0.0,
+        "sdk_queue_union_ns": -333587.0,
+        "sdk_execution_union_ns": -1811713.5,
+        "sdk_return_union_ns": -152298.5,
+        "wall_ns": -17351899.0,
+        "cpu_ns": -14869165.0,
+        "all_captured_union_ns": -9001851.0
+      },
+      "order": {
+        "sql_union_ns": 305624.0,
+        "gc_union_ns": 0.0,
+        "sdk_queue_union_ns": -19194.0,
+        "sdk_execution_union_ns": -147123.5,
+        "sdk_return_union_ns": 26075.5,
+        "wall_ns": 242063.0,
+        "cpu_ns": -180233.0,
+        "all_captured_union_ns": 165382.0
+      }
+    }
+  ],
+  "contrast_summary": {
+    "combined": {
+      "source": {
+        "sql_union_ns": {
+          "median_ms": -14.77198225,
+          "range_ms": [
+            -26.8463395,
+            -2.8436595
+          ]
+        },
+        "gc_union_ns": {
+          "median_ms": -0.12009725,
+          "range_ms": [
+            -1.9590805,
+            0.489095
+          ]
+        },
+        "sdk_queue_union_ns": {
+          "median_ms": -0.187023,
+          "range_ms": [
+            -0.334952,
+            -0.0720505
+          ]
+        },
+        "sdk_execution_union_ns": {
+          "median_ms": -2.5636585,
+          "range_ms": [
+            -3.555389,
+            0.060977
+          ]
+        },
+        "sdk_return_union_ns": {
+          "median_ms": -0.147015,
+          "range_ms": [
+            -0.2177505,
+            -0.0148685
+          ]
+        },
+        "wall_ns": {
+          "median_ms": -25.92682925,
+          "range_ms": [
+            -36.869137,
+            -1.166751
+          ]
+        },
+        "cpu_ns": {
+          "median_ms": -14.8301335,
+          "range_ms": [
+            -15.7538595,
+            1.943829
+          ]
+        },
+        "all_captured_union_ns": {
+          "median_ms": -19.1187585,
+          "range_ms": [
+            -29.974111,
+            -3.451795
+          ]
+        }
+      },
+      "order": {
+        "sql_union_ns": {
+          "median_ms": 2.0664215,
+          "range_ms": [
+            -4.5733665,
+            3.04717
+          ]
+        },
+        "gc_union_ns": {
+          "median_ms": -0.057798,
+          "range_ms": [
+            -0.2050195,
+            0.0438455
+          ]
+        },
+        "sdk_queue_union_ns": {
+          "median_ms": 0.0180105,
+          "range_ms": [
+            -0.006064,
+            0.1070745
+          ]
+        },
+        "sdk_execution_union_ns": {
+          "median_ms": -0.2229385,
+          "range_ms": [
+            -1.2612645,
+            1.1049325
+          ]
+        },
+        "sdk_return_union_ns": {
+          "median_ms": 0.0298685,
+          "range_ms": [
+            -0.0011875,
+            0.1056195
+          ]
+        },
+        "wall_ns": {
+          "median_ms": -0.43770525,
+          "range_ms": [
+            -4.05869,
+            6.369542
+          ]
+        },
+        "cpu_ns": {
+          "median_ms": 0.00014775,
+          "range_ms": [
+            -6.097756,
+            3.74427
+          ]
+        },
+        "all_captured_union_ns": {
+          "median_ms": 1.1193485,
+          "range_ms": [
+            -3.420779,
+            3.326546
+          ]
+        }
+      }
+    },
+    "empty": {
+      "source": {
+        "sql_union_ns": {
+          "median_ms": -5.213569,
+          "range_ms": [
+            -6.704252,
+            3.303088
+          ]
+        },
+        "gc_union_ns": {
+          "median_ms": 0.0,
+          "range_ms": [
+            0.0,
+            0.0
+          ]
+        },
+        "sdk_queue_union_ns": {
+          "median_ms": -0.09236925,
+          "range_ms": [
+            -0.333587,
+            -0.049376
+          ]
+        },
+        "sdk_execution_union_ns": {
+          "median_ms": -1.49367425,
+          "range_ms": [
+            -2.2667155,
+            1.0472315
+          ]
+        },
+        "sdk_return_union_ns": {
+          "median_ms": -0.118545,
+          "range_ms": [
+            -0.198312,
+            0.05906
+          ]
+        },
+        "wall_ns": {
+          "median_ms": -13.574374,
+          "range_ms": [
+            -17.351899,
+            9.305718
+          ]
+        },
+        "cpu_ns": {
+          "median_ms": -11.91836925,
+          "range_ms": [
+            -14.869165,
+            8.4702955
+          ]
+        },
+        "all_captured_union_ns": {
+          "median_ms": -7.16866525,
+          "range_ms": [
+            -9.001851,
+            4.3600035
+          ]
+        }
+      },
+      "order": {
+        "sql_union_ns": {
+          "median_ms": 0.68054725,
+          "range_ms": [
+            -4.9571055,
+            4.754995
+          ]
+        },
+        "gc_union_ns": {
+          "median_ms": 0.0,
+          "range_ms": [
+            0.0,
+            0.0
+          ]
+        },
+        "sdk_queue_union_ns": {
+          "median_ms": 0.0347265,
+          "range_ms": [
+            -0.022087,
+            0.1455475
+          ]
+        },
+        "sdk_execution_union_ns": {
+          "median_ms": -0.2702825,
+          "range_ms": [
+            -1.379049,
+            0.6277795
+          ]
+        },
+        "sdk_return_union_ns": {
+          "median_ms": 0.02121025,
+          "range_ms": [
+            -0.0660975,
+            0.06066
+          ]
+        },
+        "wall_ns": {
+          "median_ms": 1.8476905,
+          "range_ms": [
+            -12.634798,
+            9.578161
+          ]
+        },
+        "cpu_ns": {
+          "median_ms": 1.492972,
+          "range_ms": [
+            -11.0041815,
+            7.2676485
+          ]
+        },
+        "all_captured_union_ns": {
+          "median_ms": 0.49465175,
+          "range_ms": [
+            -6.424339,
+            5.5320815
+          ]
+        }
+      }
+    }
+  },
+  "summary": {
+    "combined": {
+      "sql_union_ns": {
+        "median_ms": -13.8634495,
+        "range_ms": [
+          -31.419706,
+          0.059079
+        ]
+      },
+      "gc_union_ns": {
+        "median_ms": -0.127851,
+        "range_ms": [
+          -2.1641,
+          0.545338
+        ]
+      },
+      "sdk_queue_union_ns": {
+        "median_ms": -0.2233705,
+        "range_ms": [
+          -0.341016,
+          -0.006217
+        ]
+      },
+      "sdk_execution_union_ns": {
+        "median_ms": -2.243289,
+        "range_ms": [
+          -4.168534,
+          0.228245
+        ]
+      },
+      "sdk_return_union_ns": {
+        "median_ms": -0.1292265,
+        "range_ms": [
+          -0.231026,
+          0.090751
+        ]
+      },
+      "wall_ns": {
+        "median_ms": -26.3645345,
+        "range_ms": [
+          -40.927827,
+          5.202791
+        ]
+      },
+      "cpu_ns": {
+        "median_ms": -14.339299,
+        "range_ms": [
+          -20.887209,
+          5.688099
+        ]
+      },
+      "all_captured_union_ns": {
+        "median_ms": -17.99941,
+        "range_ms": [
+          -33.39489,
+          -0.125249
+        ]
+      }
+    },
+    "empty": {
+      "sql_union_ns": {
+        "median_ms": -5.70392,
+        "range_ms": [
+          -9.319561,
+          8.058083
+        ]
+      },
+      "gc_union_ns": {
+        "median_ms": 0.0,
+        "range_ms": [
+          0.0,
+          0.0
+        ]
+      },
+      "sdk_queue_union_ns": {
+        "median_ms": -0.1082435,
+        "range_ms": [
+          -0.352781,
+          0.039271
+        ]
+      },
+      "sdk_execution_union_ns": {
+        "median_ms": -1.768932,
+        "range_ms": [
+          -2.660157,
+          1.675011
+        ]
+      },
+      "sdk_return_union_ns": {
+        "median_ms": -0.138556,
+        "range_ms": [
+          -0.214657,
+          0.11972
+        ]
+      },
+      "wall_ns": {
+        "median_ms": -14.5388705,
+        "range_ms": [
+          -24.362323,
+          18.883879
+        ]
+      },
+      "cpu_ns": {
+        "median_ms": -12.463548,
+        "range_ms": [
+          -21.436579,
+          15.737944
+        ]
+      },
+      "all_captured_union_ns": {
+        "median_ms": -8.3353095,
+        "range_ms": [
+          -12.103598,
+          9.892085
+        ]
+      }
+    }
+  },
+  "arm_medians_ms": {
+    "c0": {
+      "combined": {
+        "sql_union_ns": 29.3144095,
+        "gc_union_ns": 0.2485535,
+        "sdk_queue_union_ns": 0.4855405,
+        "sdk_execution_union_ns": 4.4968675,
+        "sdk_return_union_ns": 0.3286545,
+        "wall_ns": 53.9170395,
+        "cpu_ns": 26.9066165,
+        "all_captured_union_ns": 37.206422
+      },
+      "empty": {
+        "sql_union_ns": 9.3555455,
+        "gc_union_ns": 0.0,
+        "sdk_queue_union_ns": 0.413509,
+        "sdk_execution_union_ns": 2.646388,
+        "sdk_return_union_ns": 0.284315,
+        "wall_ns": 25.7319305,
+        "cpu_ns": 21.556435,
+        "all_captured_union_ns": 12.857078
+      }
+    },
+    "c1": {
+      "combined": {
+        "sql_union_ns": 16.020806,
+        "gc_union_ns": 0.1207025,
+        "sdk_queue_union_ns": 0.3214215,
+        "sdk_execution_union_ns": 1.8330185,
+        "sdk_return_union_ns": 0.183865,
+        "wall_ns": 27.777915,
+        "cpu_ns": 14.7123405,
+        "all_captured_union_ns": 18.6597655
+      },
+      "empty": {
+        "sql_union_ns": 4.709591,
+        "gc_union_ns": 0.0,
+        "sdk_queue_union_ns": 0.258862,
+        "sdk_execution_union_ns": 1.456968,
+        "sdk_return_union_ns": 0.189086,
+        "wall_ns": 14.34482,
+        "cpu_ns": 11.614169,
+        "all_captured_union_ns": 6.591001
+      }
+    }
+  },
+  "order_medians_ms": {
+    "c0_first": {
+      "sql_union_ns": -6.4815485,
+      "gc_union_ns": 0.0,
+      "sdk_queue_union_ns": -0.0744365,
+      "sdk_execution_union_ns": -2.2567605,
+      "sdk_return_union_ns": -0.1283185,
+      "wall_ns": -19.385754,
+      "cpu_ns": -14.915036,
+      "all_captured_union_ns": -10.4700335
+    },
+    "c1_first": {
+      "sql_union_ns": -7.0650145,
+      "gc_union_ns": 0.0,
+      "sdk_queue_union_ns": -0.2471375,
+      "sdk_execution_union_ns": -1.440688,
+      "sdk_return_union_ns": -0.1532065,
+      "wall_ns": -16.2750925,
+      "cpu_ns": -11.2948105,
+      "all_captured_union_ns": -9.324613
+    }
+  },
+  "external_calls": 0,
+  "provider_calls": 0,
+  "paid_spend_usd": "0",
+  "official_g6_status": "CONTROLLED_G6_FAIL",
+  "interpretation": "Descriptive only; overlapping unions are not additive, process CPU cannot be subtracted from wall, no causal GC/SQL/scheduling share or corrected p95."
+}

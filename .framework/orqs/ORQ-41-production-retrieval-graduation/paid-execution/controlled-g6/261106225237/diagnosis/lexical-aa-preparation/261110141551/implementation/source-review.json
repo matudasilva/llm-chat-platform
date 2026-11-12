@@ -1,0 +1,49 @@
+{
+  "status": "LEXICAL_AA_IMAGE_BINDING_SOURCE_REVIEW_PASS",
+  "reviewer": "/root/packet_review",
+  "source_only": true,
+  "image_amendment_approval_sha256": "1e367f6c279723ee8db757ac8a24cfa887835954f7ca9ad1d9fe45304fc306b8",
+  "technical_files_sha256": {
+    "experiments/production_graduation/gate_validation/blocked_latency.py": "7d1c56c4a432bb1d47714a166f72fa927c1492a0b93f52e8796b736701de3006",
+    "tests/experiments/test_orq41_blocked_latency.py": "437a889ca4cd822d1079538fbea7b32eea3c0f524e0d9d56402386c4b7064067"
+  },
+  "review_sha256": "e73b054a13e8f52897cb471688f1053dbd4dab97a31806c638b8ed94e691bdb9",
+  "evidence_sha256": {
+    "authorization.json": "1e367f6c279723ee8db757ac8a24cfa887835954f7ca9ad1d9fe45304fc306b8",
+    "source-validation.json": "58b9a3b4392bc0151c27d6b885a09b2e8737362007cbfef8b5bd053489aaa1cb",
+    "source.patch": "e786a186fcad61aec032e83f17f5d21d4136985d8aceb2022df88375d76d9927",
+    "report.md": "22d15494798de390a2577a550f4104b4e725fae1657160e128027386b6cada47",
+    "validation-commands.json": "2d620bedbb34aa0a59db5b36f52ead323434d216124c20d678f30820cb2866d9",
+    "focused.xml": "5c80923b8b081b73979955099dceb980a63ddaffe115d9b8af909353b86b9e38",
+    "focused-corrected.xml": "35c36defd601119559a17ca18ee91ff661b61ce6b2bc5d506d5d5ba16256f763",
+    "regression.xml": "6c40fbd3850e5fa6342f30462f02dbb5cca264ea68ea16af579b00236090e7ba",
+    "scope-before.json": "83c29bc27622300b6886e20af505dbd885035049c360a0a21350b00c18bdc2d0"
+  },
+  "proposal_sha256": "5be5a6269f48fa07a47b9f04649f56c152035cec7bdaac89f1ee0be428194e35",
+  "image_amendment_sha256": "fae82ccd8b6226209ac3fe4d0c54592fd3c73e8ac3de197f3615ac8d5bc65bf7",
+  "image_pin_receipt_sha256": "c717cbeecbfa83132906abc11ec538073074553d9937697e8fc3076500d61a89",
+  "source_patch_review_sha256": "982dd27f7730713ccf3a6f4b3e9e90eefd875567e7885dceb0ddfde24bef2f39",
+  "independent_pure_binding_reconstruction_passed": true,
+  "independent_core_function_asts_unchanged": 17,
+  "independent_protected_files_unchanged": 503,
+  "baseline_files": 505,
+  "parent_focused_tests_passed": 53,
+  "parent_regression_tests_passed": 219,
+  "parent_regression_skipped": 0,
+  "new_blocker_high_medium_findings": [],
+  "reviewer_api_calls": 0,
+  "reviewer_database_calls": 0,
+  "reviewer_docker_calls": 0,
+  "reviewer_external_calls": 0,
+  "new_tests_executed_by_reviewer": 0,
+  "environment_prepared_by_reviewer": false,
+  "exact_future_packet_review_required": true,
+  "aa_execution_authorized_by_review": false,
+  "formal_g6_paid_authorized_by_review": false,
+  "official_g6_status": "CONTROLLED_G6_FAIL",
+  "limitations": [
+    "Sourceonly;freshrealenvironment/packetreviewstillrequired",
+    "Parentimage/P2testXMLinspected not reviewerDockerexecution",
+    "No performancegain/statisticalequivalence/G6PASS/readiness claimed"
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "status": "AA_AUDIT_FINDINGS",
+  "findings": [
+    {
+      "id": "AA-AUDIT-R1",
+      "severity": "MEDIUM",
+      "status": "CONFIRMED_REPRODUCIBLE_NOT_FIXED",
+      "files": {
+        "experiments/production_graduation/gate_validation/local_api.py": [
+          25,
+          39,
+          63
+        ],
+        "experiments/production_graduation/gate_validation/aa_calibration_worker.py": [
+          90
+        ],
+        "experiments/production_graduation/gate_validation/controlled_latency_worker.py": [
+          90
+        ]
+      },
+      "proof": {
+        "empty_evidence_list": true,
+        "completed_tasks_retained": 8,
+        "live_evidence_objects": 8,
+        "live_after_releasing_completed_tasks": 0
+      },
+      "scope": "Performance harness request-state retention; not a proven production leak or quantified latency cause"
+    }
+  ],
+  "api_requests": 0,
+  "database_queries": 0,
+  "provider_calls": 0,
+  "external_calls": 0,
+  "spend_usd": "0",
+  "harness_source_unchanged": true,
+  "report_sha256": "06391cfe251113c4753dc09cda9dbdec897a4e13631eea05645cbb65784ba271",
+  "artifacts": {
+    "worker-audit.json": "372b0442cc41a08b2298715e37e63ba2ac79df42ffda062ceaaa3edc1a29dc6d",
+    "probe_retention.py": "6431d198d6fdc548dd06acb53db02d7fbfceadbfb92857bd1618592ece377a8a",
+    "timing-audit.json": "ff195c2633c4480bd92f4fac5d1df34c8ef31940692e06625acb4f3658a5a9a8",
+    "audit_workers.py": "116e81e921eba966076af4a9878aa5630511b62145cac7bb2d2166208d8f31a7",
+    "retention.json": "e61ea88bd263126ade47ed59b8dcbbb2a15bc7ceddc7db5ef337f6ae1ff1b31f",
+    "report.md": "06391cfe251113c4753dc09cda9dbdec897a4e13631eea05645cbb65784ba271",
+    "audit_timings.py": "3362153697db9e38b5dde498cf33a90da4b89ed0be19b76a9d44737da7f5b79d"
+  }
+}

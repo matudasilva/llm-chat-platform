@@ -1,0 +1,46 @@
+--- a/app/core/observability/context_evidence.py
++++ b/app/core/observability/context_evidence.py
+@@ -220,13 +220,24 @@
+                                          for m in messages]))
+ 
+ 
++def _copy_window_receipts(receipts):
++    # Immutable scalar fields need independent containers, not recursive copying.
++    if type(receipts) is list and all(
++        type(row) is dict and all(type(key) is str and type(value) in (str, int, bool, type(None))
++                                 for key, value in row.items())
++        for row in receipts
++    ):
++        return [row.copy() for row in receipts]
++    return copy.deepcopy(receipts)
++
++
+ def window_materialized(partition):
+     def build(state):
+         if len(partition.window) > MAX_ITEMS:
+             raise ValueError("window observation limit")
+         state.window = [text_receipt(m.sequence, m.content, role=m.role)
+                         for m in partition.window]
+-        return dict(items=copy.deepcopy(state.window))
++        return dict(items=_copy_window_receipts(state.window))
+     observe("window.materialized", build)
+ 
+ 
+@@ -250,7 +261,7 @@
+                 kept.append(text_receipt(receipt["key"], message.content,
+                             original_chars=receipt["original_chars"], role=message.role))
+             state.window = kept
+-            return dict(items=copy.deepcopy(kept), removed=[r["key"] for r in previous[:offset]])
++            return dict(items=_copy_window_receipts(kept), removed=[r["key"] for r in previous[:offset]])
+         observe("window.pack", build)
+         return result
+     return wrapped
+@@ -281,7 +292,7 @@
+             for item, message in zip(state.window, memory.messages):
+                 if item["sha256"] != digest(message.content.encode()):
+                     raise ValueError("packed span mismatch")
+-            return dict(window=copy.deepcopy(state.window),
++            return dict(window=_copy_window_receipts(state.window),
+                         documents=[text_receipt(s.chunk_id, s.content, citation=s.citation,
+                                    document_id=str(s.document_id),
+                                    original_chars=state.documents[s.citation]["original_chars"],

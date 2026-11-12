@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="2" time="0.026" timestamp="2026-11-07T03:30:58.336836-03:00" hostname="matias-Sword-16-HX-B14VFKG"><testcase classname=".framework.orqs.ORQ-41-production-retrieval-graduation.paid-execution.controlled-g6.261106225237.diagnosis.wait-runs.261107062530.independent-audit.review-findings.test_gc_counterexamples" name="test_initial_validator_accepts_invalid_completed_gc_cycle[duplicate_complete_gc]" time="0.001"><failure message="ValueError: Duplicated or backwards GC cycle">fault = 'duplicate_complete_gc'
+
+    @pytest.mark.parametrize('fault',['duplicate_complete_gc','backwards_same_key_gc'])
+    def test_initial_validator_accepts_invalid_completed_gc_cycle(fault):
+        base=[event('sql',1,'start',1),event('sql',1,'stop',2)]
+        for identity,start in [(2,3),(3,7)]:
+            base += [event('sdk',identity,phase,start+i,1 if i in (0,3) else 2)
+                     for i,phase in enumerate(('queued','entered','exited','returned'))]
+        cycle=[event('gc','1:0','start',11),event('gc','1:0','stop',12)]
+        invalid=(copy.deepcopy(cycle) if fault=='duplicate_complete_gc' else
+                 [event('gc','1:0','start',9),event('gc','1:0','stop',10)])
+&gt;       assert sum(i['kind']=='gc'for i in initial_validator()(base+cycle+invalid,'r'))==2
+
+.framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106225237/diagnosis/wait-runs/261107062530/independent-audit/review-findings/test_gc_counterexamples.py:33: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+.framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106225237/diagnosis/wait-runs/261107062530/independent-audit/review-findings/wait_observer-initial.py:146: in validate_request_intervals
+    intervals = validate_intervals(events, request_id)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+events = [{'at_ns': 1, 'context_owner': 'r', 'identity': 1, 'kind': 'sql', ...}, {'at_ns': 2, 'context_owner': 'r', 'identity':...': 'r', 'identity': 2, 'kind': 'sdk', ...}, {'at_ns': 6, 'context_owner': 'r', 'identity': 2, 'kind': 'sdk', ...}, ...]
+request_id = 'r'
+
+    def validate_intervals(events, request_id):
+        """Check correlation/order; retain intervals for clipping, never add overlaps."""
+        phases = {'sql': ('start', 'stop'), 'sdk': ('queued', 'entered', 'exited', 'returned'),
+                  'gc': ('start', 'stop')}
+        active, intervals, completed, gc_previous = {}, [], set(), {}
+        for event in events:
+            kind = event['kind']
+            if (kind not in phases or event['request_id'] != request_id
+                    or type(event['at_ns']) is not int or event['at_ns'] &lt; 0
+                    or type(event['thread']) is not int
+                    or (kind != 'gc' and event['context_owner'] != request_id)):
+                raise ValueError('Uncorrelated diagnostic interval')
+            key = kind, event['identity']
+            wanted = phases[kind]
+            if event['phase'] == wanted[0]:
+                if key in active or (kind != 'gc' and key in completed):
+                    raise ValueError('Duplicated interval start')
+                if kind == 'gc' and key in gc_previous:
+                    start, stop = gc_previous[key]
+                    if event['at_ns'] &lt; stop or event['at_ns'] &lt;= start:
+&gt;                       raise ValueError('Duplicated or backwards GC cycle')
+E                       ValueError: Duplicated or backwards GC cycle
+
+.framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106225237/diagnosis/wait-runs/261107062530/independent-audit/review-findings/wait_observer-initial.py:119: ValueError</failure></testcase><testcase classname=".framework.orqs.ORQ-41-production-retrieval-graduation.paid-execution.controlled-g6.261106225237.diagnosis.wait-runs.261107062530.independent-audit.review-findings.test_gc_counterexamples" name="test_initial_validator_accepts_invalid_completed_gc_cycle[backwards_same_key_gc]" time="0.001"><failure message="ValueError: Duplicated or backwards GC cycle">fault = 'backwards_same_key_gc'
+
+    @pytest.mark.parametrize('fault',['duplicate_complete_gc','backwards_same_key_gc'])
+    def test_initial_validator_accepts_invalid_completed_gc_cycle(fault):
+        base=[event('sql',1,'start',1),event('sql',1,'stop',2)]
+        for identity,start in [(2,3),(3,7)]:
+            base += [event('sdk',identity,phase,start+i,1 if i in (0,3) else 2)
+                     for i,phase in enumerate(('queued','entered','exited','returned'))]
+        cycle=[event('gc','1:0','start',11),event('gc','1:0','stop',12)]
+        invalid=(copy.deepcopy(cycle) if fault=='duplicate_complete_gc' else
+                 [event('gc','1:0','start',9),event('gc','1:0','stop',10)])
+&gt;       assert sum(i['kind']=='gc'for i in initial_validator()(base+cycle+invalid,'r'))==2
+
+.framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106225237/diagnosis/wait-runs/261107062530/independent-audit/review-findings/test_gc_counterexamples.py:33: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+.framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106225237/diagnosis/wait-runs/261107062530/independent-audit/review-findings/wait_observer-initial.py:146: in validate_request_intervals
+    intervals = validate_intervals(events, request_id)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+events = [{'at_ns': 1, 'context_owner': 'r', 'identity': 1, 'kind': 'sql', ...}, {'at_ns': 2, 'context_owner': 'r', 'identity':...': 'r', 'identity': 2, 'kind': 'sdk', ...}, {'at_ns': 6, 'context_owner': 'r', 'identity': 2, 'kind': 'sdk', ...}, ...]
+request_id = 'r'
+
+    def validate_intervals(events, request_id):
+        """Check correlation/order; retain intervals for clipping, never add overlaps."""
+        phases = {'sql': ('start', 'stop'), 'sdk': ('queued', 'entered', 'exited', 'returned'),
+                  'gc': ('start', 'stop')}
+        active, intervals, completed, gc_previous = {}, [], set(), {}
+        for event in events:
+            kind = event['kind']
+            if (kind not in phases or event['request_id'] != request_id
+                    or type(event['at_ns']) is not int or event['at_ns'] &lt; 0
+                    or type(event['thread']) is not int
+                    or (kind != 'gc' and event['context_owner'] != request_id)):
+                raise ValueError('Uncorrelated diagnostic interval')
+            key = kind, event['identity']
+            wanted = phases[kind]
+            if event['phase'] == wanted[0]:
+                if key in active or (kind != 'gc' and key in completed):
+                    raise ValueError('Duplicated interval start')
+                if kind == 'gc' and key in gc_previous:
+                    start, stop = gc_previous[key]
+                    if event['at_ns'] &lt; stop or event['at_ns'] &lt;= start:
+&gt;                       raise ValueError('Duplicated or backwards GC cycle')
+E                       ValueError: Duplicated or backwards GC cycle
+
+.framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106225237/diagnosis/wait-runs/261107062530/independent-audit/review-findings/wait_observer-initial.py:119: ValueError</failure></testcase></testsuite></testsuites>

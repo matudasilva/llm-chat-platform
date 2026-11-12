@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.276" timestamp="2026-11-10T12:43:01.369595+00:00" hostname="493ac380b60e"><testcase classname="tests.core.test_pgvector_query_equivalence" name="test_reference_computational_error_fixture" time="0.220"><failure message="AssertionError: ('ok', [(UUID('6022f741-c9ba-46a3-aa65-d9100000000a'), UUID('20be400d-82aa-46c4-8deb-c66fc1519157'), 'zeta zeta', {'ne...-46c4-8deb-c66fc1519157'), 'alpha beta', {'nested': [1, None], 'offset': 90}, Decimal('0.01515151515151515152')), ...])&#10;assert ('ok' == 'error'&#10;  &#10;  - error&#10;  + ok)">corpus = {'a': 'lex-a-1b02ec9163b74c13ae9321596208bef2', 'b': 'lex-b-130746c797654d9ba7e927eafccc29ea', 'ids': {'lex-a-1b02ec91...46a3-aa65-d910000003f2'), UUID('6022f741-c9ba-46a3-aa65-d910000003fc'), UUID('6022f741-c9ba-46a3-aa65-d91000000406')}}}
+
+    @pytest.mark.asyncio
+    async def test_reference_computational_error_fixture(corpus):
+        result = await _run("original", corpus["a"], "force_generic_plan", query=_DEEP_TEXT)
+&gt;       assert result[0] == "error" and result[1].startswith("54"), result[:3]
+E       AssertionError: ('ok', [(UUID('6022f741-c9ba-46a3-aa65-d9100000000a'), UUID('20be400d-82aa-46c4-8deb-c66fc1519157'), 'zeta zeta', {'ne...-46c4-8deb-c66fc1519157'), 'alpha beta', {'nested': [1, None], 'offset': 90}, Decimal('0.01515151515151515152')), ...])
+E       assert ('ok' == 'error'
+E         
+E         - error
+E         + ok)
+
+tests/core/test_pgvector_query_equivalence.py:193: AssertionError</failure></testcase></testsuite></testsuites>

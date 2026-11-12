@@ -1,0 +1,28 @@
+{
+  "status": "OFFLINE_FOCUSED_REVALIDATION_PASS",
+  "date": "2026-11-12",
+  "command": "unshare -rn env -i PATH=/usr/bin:/bin HOME=/tmp LANG=C.UTF-8 APP_SETTINGS_ENV_FILE= AWS_CONFIG_FILE=/nonexistent AWS_SHARED_CREDENTIALS_FILE=/nonexistent AWS_EC2_METADATA_DISABLED=true PYTHONDONTWRITEBYTECODE=1 PYTHONHASHSEED=41 PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONPATH=/home/matias/Cursor/llm-chat-platform/.framework/orqs/ORQ-41-production-retrieval-graduation/campaign-redesign/p2_netguard:/home/matias/Cursor/llm-chat-platform P2_NET_AUDIT_LOG=/tmp/orq41-synthetic-packet-network.log .venv/bin/python -m pytest -q -c /dev/null -p no:cacheprovider tests/experiments/test_orq41_synthetic_packet.py tests/experiments/test_orq41_synthetic_bootstrap.py --junitxml=/tmp/orq41-synthetic-current-p2.xml",
+  "baseline": "24 passed in 0.12s",
+  "final": "26 passed in 0.18s",
+  "junit": "revalidation-p2.xml",
+  "junit_sha256": "27fa01b1807ee8ec04b2414d1d506b584f5e016aa61b09a330947d116772bd5e",
+  "source_sha256": {
+    ".framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106225237/diagnosis/dedicated-environment/amendment/workload-lifecycle/no-benchmark-packet/synthetic_packet.py": "078de660840bf438e4eaf25ec8e007e863cdcbd2c087178c21835491cd2c3c71",
+    ".framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106225237/diagnosis/dedicated-environment/amendment/workload-lifecycle/no-benchmark-packet/synthetic_bootstrap.py": "6205f0fb191527036c8e995219f05815981764bd53bc5deeca9c741b336d552d",
+    ".framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106225237/diagnosis/dedicated-environment/amendment/workload-lifecycle/no-benchmark-packet/synthetic_worker.py": "0cf4030f75803fcb7c8490d4c4e0ff1c73a19816042d0c67a550a503cc582756",
+    ".framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106225237/diagnosis/dedicated-environment/amendment/workload-lifecycle/no-benchmark-packet/synthetic_controller.py": "08982aa66a4f0e0ba75793850fc5423342aa80369f6b0a4a8e31fea1a128d79f",
+    "tests/experiments/test_orq41_synthetic_packet.py": "5152802d5b3736e8ed2735fa57bbbb649e1dfe65017f2885abb79e69a2401b07",
+    "tests/experiments/test_orq41_synthetic_bootstrap.py": "ccd44e78e56c435ad3057e53e765bc00db1016c86e882becbc5fc84e9eb7e6f9"
+  },
+  "p2_audit_log_exists": false,
+  "independent_review": {
+    "agent": "/root/synthetic_review",
+    "model": "gpt-6-luna",
+    "scope": "Four synthetic adapter modules and two focused test files; read-only review, no test execution",
+    "findings": [],
+    "conclusion": "No actionable findings within preparation-only claims; isolated bootstrap test does not establish live integration."
+  },
+  "g6": "FAIL",
+  "paid_execution": "BLOCKED",
+  "staging_authorized": false
+}

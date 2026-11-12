@@ -1,0 +1,64 @@
+{
+  "rows": [
+    {
+      "path": "/sys/fs/cgroup",
+      "exists": true,
+      "readable_files": {
+        "cgroup.controllers": "cpuset cpu io memory hugetlb pids rdma misc dmem",
+        "cgroup.subtree_control": "cpuset cpu io memory hugetlb pids rdma misc dmem",
+        "cpuset.cpus.effective": "0-31"
+      },
+      "directory_writable": false
+    },
+    {
+      "path": "/sys/fs/cgroup/user.slice",
+      "exists": true,
+      "readable_files": {
+        "cgroup.controllers": "cpuset cpu io memory hugetlb pids rdma misc dmem",
+        "cgroup.subtree_control": "cpu memory pids",
+        "cpuset.cpus.effective": "0-31",
+        "cpuset.cpus.partition": "member",
+        "cpuset.cpus.exclusive.effective": ""
+      },
+      "directory_writable": false
+    },
+    {
+      "path": "/sys/fs/cgroup/user.slice/user-1000.slice",
+      "exists": true,
+      "readable_files": {
+        "cgroup.controllers": "cpu memory pids",
+        "cgroup.subtree_control": "cpu memory pids"
+      },
+      "directory_writable": false
+    },
+    {
+      "path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service",
+      "exists": true,
+      "readable_files": {
+        "cgroup.controllers": "cpu memory pids",
+        "cgroup.subtree_control": "cpu memory pids"
+      },
+      "directory_writable": false
+    },
+    {
+      "path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice",
+      "exists": true,
+      "readable_files": {
+        "cgroup.controllers": "cpu memory pids",
+        "cgroup.subtree_control": "memory pids"
+      },
+      "directory_writable": false
+    },
+    {
+      "path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/app-code-8619.scope",
+      "exists": true,
+      "readable_files": {
+        "cgroup.controllers": "memory pids",
+        "cgroup.subtree_control": ""
+      },
+      "directory_writable": false
+    }
+  ],
+  "host_writes": 0,
+  "interpretation": "Read-only inventory only; no exclusive reservation proven or permissions escalated."
+}

@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="2" time="2.799" timestamp="2026-11-09T16:14:41.105793+00:00" hostname="ed30e24efd48"><testcase classname="tests.experiments.test_orq41_blocked_latency" name="test_worker_main_startup_uses_real_install_before_io[entry0-orq41:g123:261109010101b00:c0:]" time="1.272"><failure message="subprocess.CalledProcessError: Command '['/usr/local/bin/python', '-c', &quot;\nimport asyncio,json,os\nfrom contextlib import asynccontextmanager\nfrom pathlib import Path\nfrom app.main import app\nfrom app.core.settings import settings\nfrom app.services import chat_response_cache\nfrom experiments.production_graduation.gate_validation import blocked_latency as d\nfrom experiments.production_graduation.gate_validation import blocked_latency_worker as w\nfrom experiments.production_graduation.gate_validation.local_api import NamespacedRedis\nfrom experiments.production_graduation.gate_validation.validate_g123 import config_identity\n\nout=Path(os.environ['G6_RUN_DIR']);plan=json.loads((out/'plan.json').read_text())\nplan['seed_probe']=d.seed_probe();plan['config_sha256'][os.environ['G6_ARM']]=config_identity(settings)\n(out/'plan.json').write_text(json.dumps(plan))\nd.write_json(out/'execution-started.json',dict(plan_sha256=d.sha_file(out/'plan.json')))\nclass StartupReached(Exception):pass\n@asynccontextmanager\nasync def no_io_lifespan(application):\n assert application.state.g123_installed is True\n assert isinstance(chat_response_cache.redis_client,NamespacedRedis)\n assert chat_response_cache.redis_client.namespace==os.environ['EXPECTED_NAMESPACE']\n raise StartupReached('actual install passed; stop before actual app startup I/O')\n yield\napp.router.lifespan_context=no_io_lifespan\nasync def forbidden_block(*args,**kwargs):raise AssertionError('Unit startup probe cannot admit requests')\nw.run_block=forbidden_block\ntry:asyncio.run(w.main())\nexcept StartupReached:print(json.dumps(dict(actual_install_passed=True,requests=0,postgres_calls=0,redis_calls=0)))\nelse:raise AssertionError('Expected startup boundary sentinel')\n&quot;]' returned non-zero exit status 1.">packet = ({'amendment_sha256': '12f9032a4361170238bb710b5903c43160797c86d9b7be0c6b382d685fef670d', 'arm_cell_order': [{'arm': '...se_id': 'EN-history-02', 'category': 'history', 'conversation_id': 'f143866c-c533-5c69-97a0-88cf4efdfc07', ...}}, ...])
+tmp_path = PosixPath('/tmp/pytest-of-unknown/pytest-0/test_worker_main_startup_uses_0')
+entry = {'arm': 'c0', 'block': 0, 'cell': 'EN-json'}
+expected = 'orq41:g123:261109010101b00:c0:'
+
+    @pytest.mark.parametrize("entry,expected", [
+        (dict(arm="c0", cell="EN-json", block=0), "orq41:g123:261109010101b00:c0:"),
+        (dict(arm="c1", cell="ES-sse", block=3), "orq41:g123:261109010101b33:c1:")])
+    def test_worker_main_startup_uses_real_install_before_io(packet, tmp_path, entry, expected):
+        """Exercise the missed main/install handoff; stop before the real lifespan's I/O."""
+        plan, _ = packet
+        driver.write_json(tmp_path / "plan.json", plan)
+        code = r'''
+    import asyncio,json,os
+    from contextlib import asynccontextmanager
+    from pathlib import Path
+    from app.main import app
+    from app.core.settings import settings
+    from app.services import chat_response_cache
+    from experiments.production_graduation.gate_validation import blocked_latency as d
+    from experiments.production_graduation.gate_validation import blocked_latency_worker as w
+    from experiments.production_graduation.gate_validation.local_api import NamespacedRedis
+    from experiments.production_graduation.gate_validation.validate_g123 import config_identity
+    
+    out=Path(os.environ['G6_RUN_DIR']);plan=json.loads((out/'plan.json').read_text())
+    plan['seed_probe']=d.seed_probe();plan['config_sha256'][os.environ['G6_ARM']]=config_identity(settings)
+    (out/'plan.json').write_text(json.dumps(plan))
+    d.write_json(out/'execution-started.json',dict(plan_sha256=d.sha_file(out/'plan.json')))
+    class StartupReached(Exception):pass
+    @asynccontextmanager
+    async def no_io_lifespan(application):
+     assert application.state.g123_installed is True
+     assert isinstance(chat_response_cache.redis_client,NamespacedRedis)
+     assert chat_response_cache.redis_client.namespace==os.environ['EXPECTED_NAMESPACE']
+     raise StartupReached('actual install passed; stop before actual app startup I/O')
+     yield
+    app.router.lifespan_context=no_io_lifespan
+    async def forbidden_block(*args,**kwargs):raise AssertionError('Unit startup probe cannot admit requests')
+    w.run_block=forbidden_block
+    try:asyncio.run(w.main())
+    except StartupReached:print(json.dumps(dict(actual_install_passed=True,requests=0,postgres_calls=0,redis_calls=0)))
+    else:raise AssertionError('Expected startup boundary sentinel')
+    '''
+        env = {**os.environ, **driver.worker_environment(plan, PASSWORDS, entry)}
+        env.update(PYTHONPATH=os.environ["PYTHONPATH"], G6_RUN_DIR=str(tmp_path), EXPECTED_NAMESPACE=expected)
+&gt;       result = subprocess.run([sys.executable, "-c", code], check=True, capture_output=True,
+                                text=True, env=env, timeout=20)
+
+tests/experiments/test_orq41_blocked_latency.py:505: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+input = None, capture_output = True, timeout = 20, check = True
+popenargs = (['/usr/local/bin/python', '-c', "\nimport asyncio,json,os\nfrom contextlib import asynccontextmanager\nfrom pathlib i...rue,requests=0,postgres_calls=0,redis_calls=0)))\nelse:raise AssertionError('Expected startup boundary sentinel')\n"],)
+kwargs = {'env': {'APP_SETTINGS_ENV_FILE': '', 'AWS_CONFIG_FILE': '/nonexistent', 'AWS_EC2_METADATA_DISABLED': 'true', 'AWS_SHARED_CREDENTIALS_FILE': '/nonexistent', ...}, 'stderr': -1, 'stdout': -1, 'text': True}
+process = &lt;Popen: returncode: 1 args: ['/usr/local/bin/python', '-c', "\nimport asynci...&gt;
+stdout = '2026-11-09T16:14:42+0000 INFO root logging configured tenant_id=default\n'
+stderr = 'Traceback (most recent call last):\n  File "&lt;string&gt;", line 28, in &lt;module&gt;\n    try:asyncio.run(w.main())\n        ~...he namespace")\nexperiments.production_graduation.gate_validation.fixtures.HarnessError: invalid run cache namespace\n'
+retcode = 1
+
+    def run(*popenargs,
+            input=None, capture_output=False, timeout=None, check=False, **kwargs):
+        """Run command with arguments and return a CompletedProcess instance.
+    
+        The returned instance will have attributes args, returncode, stdout and
+        stderr. By default, stdout and stderr are not captured, and those attributes
+        will be None. Pass stdout=PIPE and/or stderr=PIPE in order to capture them,
+        or pass capture_output=True to capture both.
+    
+        If check is True and the exit code was non-zero, it raises a
+        CalledProcessError. The CalledProcessError object will have the return code
+        in the returncode attribute, and output &amp; stderr attributes if those streams
+        were captured.
+    
+        If timeout (seconds) is given and the process takes too long,
+         a TimeoutExpired exception will be raised.
+    
+        There is an optional argument "input", allowing you to
+        pass bytes or a string to the subprocess's stdin.  If you use this argument
+        you may not also use the Popen constructor's "stdin" argument, as
+        it will be used internally.
+    
+        By default, all communication is in bytes, and therefore any "input" should
+        be bytes, and the stdout and stderr will be bytes. If in text mode, any
+        "input" should be a string, and stdout and stderr will be strings decoded
+        according to locale encoding, or by "encoding" if set. Text mode is
+        triggered by setting any of text, encoding, errors or universal_newlines.
+    
+        The other arguments are the same as for the Popen constructor.
+        """
+        if input is not None:
+            if kwargs.get('stdin') is not None:
+                raise ValueError('stdin and input arguments may not both be used.')
+            kwargs['stdin'] = PIPE
+    
+        if capture_output:
+            if kwargs.get('stdout') is not None or kwargs.get('stderr') is not None:
+                raise ValueError('stdout and stderr arguments may not be used '
+                                 'with capture_output.')
+            kwargs['stdout'] = PIPE
+            kwargs['stderr'] = PIPE
+    
+        with Popen(*popenargs, **kwargs) as process:
+            try:
+                stdout, stderr = process.communicate(input, timeout=timeout)
+            except TimeoutExpired as exc:
+                process.kill()
+                if _mswindows:
+                    # Windows accumulates the output in a single blocking
+                    # read() call run on child threads, with the timeout
+                    # being done in a join() on those threads.  communicate()
+                    # _after_ kill() is required to collect that and add it
+                    # to the exception.
+                    exc.stdout, exc.stderr = process.communicate()
+                else:
+                    # POSIX _communicate already populated the output so
+                    # far into the TimeoutExpired exception.
+                    process.wait()
+                raise
+            except:  # Including KeyboardInterrupt, communicate handled that.
+                process.kill()
+                # We don't call process.wait() as .__exit__ does that for us.
+                raise
+            retcode = process.poll()
+            if check and retcode:
+&gt;               raise CalledProcessError(retcode, process.args,
+                                         output=stdout, stderr=stderr)
+E               subprocess.CalledProcessError: Command '['/usr/local/bin/python', '-c', "\nimport asyncio,json,os\nfrom contextlib import asynccontextmanager\nfrom pathlib import Path\nfrom app.main import app\nfrom app.core.settings import settings\nfrom app.services import chat_response_cache\nfrom experiments.production_graduation.gate_validation import blocked_latency as d\nfrom experiments.production_graduation.gate_validation import blocked_latency_worker as w\nfrom experiments.production_graduation.gate_validation.local_api import NamespacedRedis\nfrom experiments.production_graduation.gate_validation.validate_g123 import config_identity\n\nout=Path(os.environ['G6_RUN_DIR']);plan=json.loads((out/'plan.json').read_text())\nplan['seed_probe']=d.seed_probe();plan['config_sha256'][os.environ['G6_ARM']]=config_identity(settings)\n(out/'plan.json').write_text(json.dumps(plan))\nd.write_json(out/'execution-started.json',dict(plan_sha256=d.sha_file(out/'plan.json')))\nclass StartupReached(Exception):pass\n@asynccontextmanager\nasync def no_io_lifespan(application):\n assert application.state.g123_installed is True\n assert isinstance(chat_response_cache.redis_client,NamespacedRedis)\n assert chat_response_cache.redis_client.namespace==os.environ['EXPECTED_NAMESPACE']\n raise StartupReached('actual install passed; stop before actual app startup I/O')\n yield\napp.router.lifespan_context=no_io_lifespan\nasync def forbidden_block(*args,**kwargs):raise AssertionError('Unit startup probe cannot admit requests')\nw.run_block=forbidden_block\ntry:asyncio.run(w.main())\nexcept StartupReached:print(json.dumps(dict(actual_install_passed=True,requests=0,postgres_calls=0,redis_calls=0)))\nelse:raise AssertionError('Expected startup boundary sentinel')\n"]' returned non-zero exit status 1.
+
+/usr/local/lib/python3.13/subprocess.py:577: CalledProcessError</failure></testcase><testcase classname="tests.experiments.test_orq41_blocked_latency" name="test_worker_main_startup_uses_real_install_before_io[entry1-orq41:g123:261109010101b33:c1:]" time="1.262"><failure message="subprocess.CalledProcessError: Command '['/usr/local/bin/python', '-c', &quot;\nimport asyncio,json,os\nfrom contextlib import asynccontextmanager\nfrom pathlib import Path\nfrom app.main import app\nfrom app.core.settings import settings\nfrom app.services import chat_response_cache\nfrom experiments.production_graduation.gate_validation import blocked_latency as d\nfrom experiments.production_graduation.gate_validation import blocked_latency_worker as w\nfrom experiments.production_graduation.gate_validation.local_api import NamespacedRedis\nfrom experiments.production_graduation.gate_validation.validate_g123 import config_identity\n\nout=Path(os.environ['G6_RUN_DIR']);plan=json.loads((out/'plan.json').read_text())\nplan['seed_probe']=d.seed_probe();plan['config_sha256'][os.environ['G6_ARM']]=config_identity(settings)\n(out/'plan.json').write_text(json.dumps(plan))\nd.write_json(out/'execution-started.json',dict(plan_sha256=d.sha_file(out/'plan.json')))\nclass StartupReached(Exception):pass\n@asynccontextmanager\nasync def no_io_lifespan(application):\n assert application.state.g123_installed is True\n assert isinstance(chat_response_cache.redis_client,NamespacedRedis)\n assert chat_response_cache.redis_client.namespace==os.environ['EXPECTED_NAMESPACE']\n raise StartupReached('actual install passed; stop before actual app startup I/O')\n yield\napp.router.lifespan_context=no_io_lifespan\nasync def forbidden_block(*args,**kwargs):raise AssertionError('Unit startup probe cannot admit requests')\nw.run_block=forbidden_block\ntry:asyncio.run(w.main())\nexcept StartupReached:print(json.dumps(dict(actual_install_passed=True,requests=0,postgres_calls=0,redis_calls=0)))\nelse:raise AssertionError('Expected startup boundary sentinel')\n&quot;]' returned non-zero exit status 1.">packet = ({'amendment_sha256': '12f9032a4361170238bb710b5903c43160797c86d9b7be0c6b382d685fef670d', 'arm_cell_order': [{'arm': '...se_id': 'EN-history-02', 'category': 'history', 'conversation_id': 'f143866c-c533-5c69-97a0-88cf4efdfc07', ...}}, ...])
+tmp_path = PosixPath('/tmp/pytest-of-unknown/pytest-0/test_worker_main_startup_uses_1')
+entry = {'arm': 'c1', 'block': 3, 'cell': 'ES-sse'}
+expected = 'orq41:g123:261109010101b33:c1:'
+
+    @pytest.mark.parametrize("entry,expected", [
+        (dict(arm="c0", cell="EN-json", block=0), "orq41:g123:261109010101b00:c0:"),
+        (dict(arm="c1", cell="ES-sse", block=3), "orq41:g123:261109010101b33:c1:")])
+    def test_worker_main_startup_uses_real_install_before_io(packet, tmp_path, entry, expected):
+        """Exercise the missed main/install handoff; stop before the real lifespan's I/O."""
+        plan, _ = packet
+        driver.write_json(tmp_path / "plan.json", plan)
+        code = r'''
+    import asyncio,json,os
+    from contextlib import asynccontextmanager
+    from pathlib import Path
+    from app.main import app
+    from app.core.settings import settings
+    from app.services import chat_response_cache
+    from experiments.production_graduation.gate_validation import blocked_latency as d
+    from experiments.production_graduation.gate_validation import blocked_latency_worker as w
+    from experiments.production_graduation.gate_validation.local_api import NamespacedRedis
+    from experiments.production_graduation.gate_validation.validate_g123 import config_identity
+    
+    out=Path(os.environ['G6_RUN_DIR']);plan=json.loads((out/'plan.json').read_text())
+    plan['seed_probe']=d.seed_probe();plan['config_sha256'][os.environ['G6_ARM']]=config_identity(settings)
+    (out/'plan.json').write_text(json.dumps(plan))
+    d.write_json(out/'execution-started.json',dict(plan_sha256=d.sha_file(out/'plan.json')))
+    class StartupReached(Exception):pass
+    @asynccontextmanager
+    async def no_io_lifespan(application):
+     assert application.state.g123_installed is True
+     assert isinstance(chat_response_cache.redis_client,NamespacedRedis)
+     assert chat_response_cache.redis_client.namespace==os.environ['EXPECTED_NAMESPACE']
+     raise StartupReached('actual install passed; stop before actual app startup I/O')
+     yield
+    app.router.lifespan_context=no_io_lifespan
+    async def forbidden_block(*args,**kwargs):raise AssertionError('Unit startup probe cannot admit requests')
+    w.run_block=forbidden_block
+    try:asyncio.run(w.main())
+    except StartupReached:print(json.dumps(dict(actual_install_passed=True,requests=0,postgres_calls=0,redis_calls=0)))
+    else:raise AssertionError('Expected startup boundary sentinel')
+    '''
+        env = {**os.environ, **driver.worker_environment(plan, PASSWORDS, entry)}
+        env.update(PYTHONPATH=os.environ["PYTHONPATH"], G6_RUN_DIR=str(tmp_path), EXPECTED_NAMESPACE=expected)
+&gt;       result = subprocess.run([sys.executable, "-c", code], check=True, capture_output=True,
+                                text=True, env=env, timeout=20)
+
+tests/experiments/test_orq41_blocked_latency.py:505: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+input = None, capture_output = True, timeout = 20, check = True
+popenargs = (['/usr/local/bin/python', '-c', "\nimport asyncio,json,os\nfrom contextlib import asynccontextmanager\nfrom pathlib i...rue,requests=0,postgres_calls=0,redis_calls=0)))\nelse:raise AssertionError('Expected startup boundary sentinel')\n"],)
+kwargs = {'env': {'APP_SETTINGS_ENV_FILE': '', 'AWS_CONFIG_FILE': '/nonexistent', 'AWS_EC2_METADATA_DISABLED': 'true', 'AWS_SHARED_CREDENTIALS_FILE': '/nonexistent', ...}, 'stderr': -1, 'stdout': -1, 'text': True}
+process = &lt;Popen: returncode: 1 args: ['/usr/local/bin/python', '-c', "\nimport asynci...&gt;
+stdout = '2026-11-09T16:14:43+0000 INFO root logging configured tenant_id=default\n'
+stderr = 'Traceback (most recent call last):\n  File "&lt;string&gt;", line 28, in &lt;module&gt;\n    try:asyncio.run(w.main())\n        ~...he namespace")\nexperiments.production_graduation.gate_validation.fixtures.HarnessError: invalid run cache namespace\n'
+retcode = 1
+
+    def run(*popenargs,
+            input=None, capture_output=False, timeout=None, check=False, **kwargs):
+        """Run command with arguments and return a CompletedProcess instance.
+    
+        The returned instance will have attributes args, returncode, stdout and
+        stderr. By default, stdout and stderr are not captured, and those attributes
+        will be None. Pass stdout=PIPE and/or stderr=PIPE in order to capture them,
+        or pass capture_output=True to capture both.
+    
+        If check is True and the exit code was non-zero, it raises a
+        CalledProcessError. The CalledProcessError object will have the return code
+        in the returncode attribute, and output &amp; stderr attributes if those streams
+        were captured.
+    
+        If timeout (seconds) is given and the process takes too long,
+         a TimeoutExpired exception will be raised.
+    
+        There is an optional argument "input", allowing you to
+        pass bytes or a string to the subprocess's stdin.  If you use this argument
+        you may not also use the Popen constructor's "stdin" argument, as
+        it will be used internally.
+    
+        By default, all communication is in bytes, and therefore any "input" should
+        be bytes, and the stdout and stderr will be bytes. If in text mode, any
+        "input" should be a string, and stdout and stderr will be strings decoded
+        according to locale encoding, or by "encoding" if set. Text mode is
+        triggered by setting any of text, encoding, errors or universal_newlines.
+    
+        The other arguments are the same as for the Popen constructor.
+        """
+        if input is not None:
+            if kwargs.get('stdin') is not None:
+                raise ValueError('stdin and input arguments may not both be used.')
+            kwargs['stdin'] = PIPE
+    
+        if capture_output:
+            if kwargs.get('stdout') is not None or kwargs.get('stderr') is not None:
+                raise ValueError('stdout and stderr arguments may not be used '
+                                 'with capture_output.')
+            kwargs['stdout'] = PIPE
+            kwargs['stderr'] = PIPE
+    
+        with Popen(*popenargs, **kwargs) as process:
+            try:
+                stdout, stderr = process.communicate(input, timeout=timeout)
+            except TimeoutExpired as exc:
+                process.kill()
+                if _mswindows:
+                    # Windows accumulates the output in a single blocking
+                    # read() call run on child threads, with the timeout
+                    # being done in a join() on those threads.  communicate()
+                    # _after_ kill() is required to collect that and add it
+                    # to the exception.
+                    exc.stdout, exc.stderr = process.communicate()
+                else:
+                    # POSIX _communicate already populated the output so
+                    # far into the TimeoutExpired exception.
+                    process.wait()
+                raise
+            except:  # Including KeyboardInterrupt, communicate handled that.
+                process.kill()
+                # We don't call process.wait() as .__exit__ does that for us.
+                raise
+            retcode = process.poll()
+            if check and retcode:
+&gt;               raise CalledProcessError(retcode, process.args,
+                                         output=stdout, stderr=stderr)
+E               subprocess.CalledProcessError: Command '['/usr/local/bin/python', '-c', "\nimport asyncio,json,os\nfrom contextlib import asynccontextmanager\nfrom pathlib import Path\nfrom app.main import app\nfrom app.core.settings import settings\nfrom app.services import chat_response_cache\nfrom experiments.production_graduation.gate_validation import blocked_latency as d\nfrom experiments.production_graduation.gate_validation import blocked_latency_worker as w\nfrom experiments.production_graduation.gate_validation.local_api import NamespacedRedis\nfrom experiments.production_graduation.gate_validation.validate_g123 import config_identity\n\nout=Path(os.environ['G6_RUN_DIR']);plan=json.loads((out/'plan.json').read_text())\nplan['seed_probe']=d.seed_probe();plan['config_sha256'][os.environ['G6_ARM']]=config_identity(settings)\n(out/'plan.json').write_text(json.dumps(plan))\nd.write_json(out/'execution-started.json',dict(plan_sha256=d.sha_file(out/'plan.json')))\nclass StartupReached(Exception):pass\n@asynccontextmanager\nasync def no_io_lifespan(application):\n assert application.state.g123_installed is True\n assert isinstance(chat_response_cache.redis_client,NamespacedRedis)\n assert chat_response_cache.redis_client.namespace==os.environ['EXPECTED_NAMESPACE']\n raise StartupReached('actual install passed; stop before actual app startup I/O')\n yield\napp.router.lifespan_context=no_io_lifespan\nasync def forbidden_block(*args,**kwargs):raise AssertionError('Unit startup probe cannot admit requests')\nw.run_block=forbidden_block\ntry:asyncio.run(w.main())\nexcept StartupReached:print(json.dumps(dict(actual_install_passed=True,requests=0,postgres_calls=0,redis_calls=0)))\nelse:raise AssertionError('Expected startup boundary sentinel')\n"]' returned non-zero exit status 1.
+
+/usr/local/lib/python3.13/subprocess.py:577: CalledProcessError</failure></testcase></testsuite></testsuites>

@@ -1,0 +1,65 @@
+{
+  "index": 1,
+  "slot_id": "cc4f8ff3-4d74-5c3f-912c-9ef7e783ad2a",
+  "phase": "warmup",
+  "case_id": "ES-history-01",
+  "category": "history",
+  "tenant_id": "orq41-6b2ab547-es-history",
+  "query_text": "\u00bfQu\u00e9 contacto de recuperaci\u00f3n se aprob\u00f3 para ORQ41PROJECTES01?",
+  "expected_rows": 0,
+  "status": "PASS",
+  "error": null,
+  "adapter_call_begun": true,
+  "checkout_wall_ns": 1241242,
+  "checkout_cpu_ns": 590480,
+  "before": {
+    "pid": 258,
+    "current_user": "rag_app",
+    "session_user": "rag_app",
+    "read_only": "on",
+    "row_security": "on",
+    "tenant": "orq41-6b2ab547-es-history",
+    "plan_cache_mode": "auto",
+    "superuser": false,
+    "bypass_rls": false,
+    "hybrid_cached": [
+      {
+        "name": "__asyncpg_stmt_9__",
+        "statement": "\n                WITH semantic AS (\n                    SELECT id, document_id, text, metadata,\n                           row_number() OVER (ORDER BY embedding <=> CAST($1 AS vector), id) AS rank\n                    FROM chunks\n                    ORDER BY embedding <=> CAST($1 AS vector), id\n                    LIMIT $2\n                ),\n                keyword AS (\n                    SELECT id, document_id, text, metadata,\n                           row_number() OVER (ORDER BY ts_rank(search_vector, plainto_tsquery('english', $3)) DESC, id) AS rank\n                    FROM chunks\n                    WHERE search_vector @@ plainto_tsquery('english', $3)\n                    ORDER BY ts_rank(search_vector, plainto_tsquery('english', $3)) DESC, id\n                    LIMIT $2\n                ),\n                fused AS (\n                    SELECT\n                        COALESCE(semantic.id, keyword.id) AS id,\n                        COALESCE(semantic.document_id, keyword.document_id) AS document_id,\n                        COALESCE(semantic.text, keyword.text) AS text,\n                        COALESCE(semantic.metadata, keyword.metadata) AS metadata,\n                        COALESCE(1.0 / ($4 + semantic.rank), 0.0)\n                            + COALESCE(1.0 / ($4 + keyword.rank), 0.0) AS score\n                    FROM semantic\n                    FULL OUTER JOIN keyword ON semantic.id = keyword.id\n                )\n                SELECT id, document_id, text, metadata, score\n                FROM fused\n                ORDER BY score DESC, id\n                LIMIT $2\n                ",
+        "parameter_types": "{vector,bigint,text,bigint}",
+        "custom_plans": 1,
+        "generic_plans": 0,
+        "from_sql": false
+      }
+    ]
+  },
+  "adapter_wall_ns": 588588,
+  "adapter_cpu_ns": 324049,
+  "after": {
+    "pid": 258,
+    "current_user": "rag_app",
+    "session_user": "rag_app",
+    "read_only": "on",
+    "row_security": "on",
+    "tenant": "orq41-6b2ab547-es-history",
+    "plan_cache_mode": "auto",
+    "superuser": false,
+    "bypass_rls": false,
+    "hybrid_cached": [
+      {
+        "name": "__asyncpg_stmt_9__",
+        "statement": "\n                WITH semantic AS (\n                    SELECT id, document_id, text, metadata,\n                           row_number() OVER (ORDER BY embedding <=> CAST($1 AS vector), id) AS rank\n                    FROM chunks\n                    ORDER BY embedding <=> CAST($1 AS vector), id\n                    LIMIT $2\n                ),\n                keyword AS (\n                    SELECT id, document_id, text, metadata,\n                           row_number() OVER (ORDER BY ts_rank(search_vector, plainto_tsquery('english', $3)) DESC, id) AS rank\n                    FROM chunks\n                    WHERE search_vector @@ plainto_tsquery('english', $3)\n                    ORDER BY ts_rank(search_vector, plainto_tsquery('english', $3)) DESC, id\n                    LIMIT $2\n                ),\n                fused AS (\n                    SELECT\n                        COALESCE(semantic.id, keyword.id) AS id,\n                        COALESCE(semantic.document_id, keyword.document_id) AS document_id,\n                        COALESCE(semantic.text, keyword.text) AS text,\n                        COALESCE(semantic.metadata, keyword.metadata) AS metadata,\n                        COALESCE(1.0 / ($4 + semantic.rank), 0.0)\n                            + COALESCE(1.0 / ($4 + keyword.rank), 0.0) AS score\n                    FROM semantic\n                    FULL OUTER JOIN keyword ON semantic.id = keyword.id\n                )\n                SELECT id, document_id, text, metadata, score\n                FROM fused\n                ORDER BY score DESC, id\n                LIMIT $2\n                ",
+        "parameter_types": "{vector,bigint,text,bigint}",
+        "custom_plans": 2,
+        "generic_plans": 0,
+        "from_sql": false
+      }
+    ]
+  },
+  "output_rows": 0,
+  "result_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "output_projection": [],
+  "chosen_mode": "custom",
+  "rollback_wall_ns": 333260,
+  "rollback_cpu_ns": 184578
+}

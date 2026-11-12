@@ -1,0 +1,16 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/matias/Cursor/llm-chat-platform/experiments/production_graduation/gate_validation/stage_latency.py", line 379, in <module>
+    prepare() if args.prepare else execute(args.execute)
+                                   ~~~~~~~^^^^^^^^^^^^^^
+  File "/home/matias/Cursor/llm-chat-platform/experiments/production_graduation/gate_validation/stage_latency.py", line 316, in execute
+    base.aa.inspect_environment(plan)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/home/matias/Cursor/llm-chat-platform/experiments/production_graduation/gate_validation/aa_calibration.py", line 56, in inspect_environment
+    pg=json.loads(docker('inspect',plan['containers']['postgres']))[0]
+                  ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/matias/Cursor/llm-chat-platform/experiments/production_graduation/gate_validation/controlled_latency_controller.py", line 23, in docker
+    if p.returncode: raise RuntimeError('Local controlled Docker failure: '+args[0])
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: Local controlled Docker failure: inspect

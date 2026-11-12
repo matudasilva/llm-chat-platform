@@ -1,0 +1,56 @@
+{
+  "status": "PLAN_COMPARISON_OWN_CLUSTER_STOPPED_HISTORY_RETAINED",
+  "containers": [
+    {
+      "name": "orq41-plans-261109225659-postgres",
+      "id": "c9eb71487b7892a257677c96b687d6d9337fab2412da54458aea37bd0c25d788",
+      "image": "sha256:8e5355e9ff399a002fa46148399a1ac22fb3e9b2d390f857296e6da6b5559ba1",
+      "running": false,
+      "network_mode": "none",
+      "port_bindings": {}
+    },
+    {
+      "name": "orq41-env-pg",
+      "id": "7ffc345f9c8efa3b1b0c63441db6d30821142ec7d5041cab40e77bfc266eba4f",
+      "image": "sha256:8e5355e9ff399a002fa46148399a1ac22fb3e9b2d390f857296e6da6b5559ba1",
+      "running": true,
+      "network_mode": "none",
+      "port_bindings": {}
+    },
+    {
+      "name": "orq41-driver-261109222205-postgres",
+      "id": "2f7842ed2322e135a7a671dce9598419e9e701ec9cfae684363d806a57094e21",
+      "image": "sha256:8e5355e9ff399a002fa46148399a1ac22fb3e9b2d390f857296e6da6b5559ba1",
+      "running": false,
+      "network_mode": "none",
+      "port_bindings": {}
+    },
+    {
+      "name": "orq41-driver-261109222205-adapter",
+      "id": "977bc5d0766b7e05cffabab81bae24aca82ac1acd703461e7d3ad36da9f19268",
+      "image": "sha256:4e68ccdca15b97f7fd573034c74575d88a156d21ca7f4ff2251affc5db55e707",
+      "running": false,
+      "network_mode": "container:2f7842ed2322e135a7a671dce9598419e9e701ec9cfae684363d806a57094e21",
+      "port_bindings": {}
+    },
+    {
+      "name": "orq41-sql-261109212354-postgres",
+      "id": "77d3ec98df44a3fb190fd5ffb85206359e7fea70b1933f1d13d2eacb7aa9ecc9",
+      "image": "sha256:8e5355e9ff399a002fa46148399a1ac22fb3e9b2d390f857296e6da6b5559ba1",
+      "running": false,
+      "network_mode": "none",
+      "port_bindings": {}
+    },
+    {
+      "name": "orq41-blocked-261109162430-postgres",
+      "id": "91b462f53423ad5a5de7b4e7ebb2d6d951dce2a28c4c3673cab9e261cd5f37a7",
+      "image": "sha256:8e5355e9ff399a002fa46148399a1ac22fb3e9b2d390f857296e6da6b5559ba1",
+      "running": false,
+      "network_mode": "none",
+      "port_bindings": {}
+    }
+  ],
+  "historical_state_preserved": true,
+  "new_api_requests": 0,
+  "provider_calls": 0
+}

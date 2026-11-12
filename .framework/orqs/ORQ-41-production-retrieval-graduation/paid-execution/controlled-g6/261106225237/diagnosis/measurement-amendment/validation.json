@@ -1,0 +1,311 @@
+{
+  "status": "MEASUREMENT_AMENDMENT_DESIGN_INTERNAL_CONSISTENCY_PASS",
+  "independent_review": false,
+  "implementation_validated": false,
+  "execution_authorized": false,
+  "checks": [
+    "design_only_authorization",
+    "credential_scrubbed_loopback_only_network_namespace",
+    "source_evidence_and_reviewed_helpers_unchanged",
+    "same_measured_business_multiset_in_all_four_cells",
+    "all20business_cases_warmed_in_every_worker",
+    "four_balanced_blocks_per_cell_category_first_order_difference_at_most_one",
+    "exact1440requests_800measured_640warmups_32workers",
+    "exact_prepared_final_database_projections_from_frozen_histories",
+    "unchanged_boundary_N100_5percent_R1_C1_deadlines",
+    "unchanged_images_cpu_memory_and_one_prospective_process_seed",
+    "exact7table_ANALYZE_design_allowlist_noSQL_execution",
+    "readonly_host_metric_availability_no_benchmark_or_sampler",
+    "all497protected_source_test_globalenv_files_unchanged",
+    "future_harness_files_not_implemented",
+    "empty_network_attempt_audit"
+  ],
+  "checks_passed": 15,
+  "contract_sha256": "12f9032a4361170238bb710b5903c43160797c86d9b7be0c6b382d685fef670d",
+  "proposal_sha256": "143bafe92cf8fd4b295a9213f9ddf7ae90f51d99dd5b12175dbd56e37ee3ff9b",
+  "validator_sha256": "9a101e2b3a0135b50c3b4437ecb320cd5203950822b0f8de194298fef88f3eb4",
+  "cell_projections": [
+    {
+      "cell": "EN-json",
+      "measured_per_arm": 100,
+      "warmups_per_arm": 80,
+      "seeded_history_per_arm": 4320,
+      "blocks": [
+        {
+          "block": 0,
+          "arm_order": [
+            "A",
+            "B"
+          ],
+          "measured": 25,
+          "warmups_per_arm": 20,
+          "category_measured": {
+            "document": 7,
+            "history": 6,
+            "combined": 6,
+            "empty": 6
+          }
+        },
+        {
+          "block": 1,
+          "arm_order": [
+            "B",
+            "A"
+          ],
+          "measured": 25,
+          "warmups_per_arm": 20,
+          "category_measured": {
+            "history": 7,
+            "combined": 6,
+            "empty": 6,
+            "document": 6
+          }
+        },
+        {
+          "block": 2,
+          "arm_order": [
+            "B",
+            "A"
+          ],
+          "measured": 25,
+          "warmups_per_arm": 20,
+          "category_measured": {
+            "combined": 7,
+            "empty": 6,
+            "document": 6,
+            "history": 6
+          }
+        },
+        {
+          "block": 3,
+          "arm_order": [
+            "A",
+            "B"
+          ],
+          "measured": 25,
+          "warmups_per_arm": 20,
+          "category_measured": {
+            "empty": 7,
+            "document": 6,
+            "history": 6,
+            "combined": 6
+          }
+        }
+      ]
+    },
+    {
+      "cell": "EN-sse",
+      "measured_per_arm": 100,
+      "warmups_per_arm": 80,
+      "seeded_history_per_arm": 4320,
+      "blocks": [
+        {
+          "block": 0,
+          "arm_order": [
+            "B",
+            "A"
+          ],
+          "measured": 25,
+          "warmups_per_arm": 20,
+          "category_measured": {
+            "document": 7,
+            "history": 6,
+            "combined": 6,
+            "empty": 6
+          }
+        },
+        {
+          "block": 1,
+          "arm_order": [
+            "A",
+            "B"
+          ],
+          "measured": 25,
+          "warmups_per_arm": 20,
+          "category_measured": {
+            "history": 7,
+            "combined": 6,
+            "empty": 6,
+            "document": 6
+          }
+        },
+        {
+          "block": 2,
+          "arm_order": [
+            "A",
+            "B"
+          ],
+          "measured": 25,
+          "warmups_per_arm": 20,
+          "category_measured": {
+            "combined": 7,
+            "empty": 6,
+            "document": 6,
+            "history": 6
+          }
+        },
+        {
+          "block": 3,
+          "arm_order": [
+            "B",
+            "A"
+          ],
+          "measured": 25,
+          "warmups_per_arm": 20,
+          "category_measured": {
+            "empty": 7,
+            "document": 6,
+            "history": 6,
+            "combined": 6
+          }
+        }
+      ]
+    },
+    {
+      "cell": "ES-json",
+      "measured_per_arm": 100,
+      "warmups_per_arm": 80,
+      "seeded_history_per_arm": 4320,
+      "blocks": [
+        {
+          "block": 0,
+          "arm_order": [
+            "A",
+            "B"
+          ],
+          "measured": 25,
+          "warmups_per_arm": 20,
+          "category_measured": {
+            "document": 7,
+            "history": 6,
+            "combined": 6,
+            "empty": 6
+          }
+        },
+        {
+          "block": 1,
+          "arm_order": [
+            "B",
+            "A"
+          ],
+          "measured": 25,
+          "warmups_per_arm": 20,
+          "category_measured": {
+            "history": 7,
+            "combined": 6,
+            "empty": 6,
+            "document": 6
+          }
+        },
+        {
+          "block": 2,
+          "arm_order": [
+            "B",
+            "A"
+          ],
+          "measured": 25,
+          "warmups_per_arm": 20,
+          "category_measured": {
+            "combined": 7,
+            "empty": 6,
+            "document": 6,
+            "history": 6
+          }
+        },
+        {
+          "block": 3,
+          "arm_order": [
+            "A",
+            "B"
+          ],
+          "measured": 25,
+          "warmups_per_arm": 20,
+          "category_measured": {
+            "empty": 7,
+            "document": 6,
+            "history": 6,
+            "combined": 6
+          }
+        }
+      ]
+    },
+    {
+      "cell": "ES-sse",
+      "measured_per_arm": 100,
+      "warmups_per_arm": 80,
+      "seeded_history_per_arm": 4320,
+      "blocks": [
+        {
+          "block": 0,
+          "arm_order": [
+            "B",
+            "A"
+          ],
+          "measured": 25,
+          "warmups_per_arm": 20,
+          "category_measured": {
+            "document": 7,
+            "history": 6,
+            "combined": 6,
+            "empty": 6
+          }
+        },
+        {
+          "block": 1,
+          "arm_order": [
+            "A",
+            "B"
+          ],
+          "measured": 25,
+          "warmups_per_arm": 20,
+          "category_measured": {
+            "history": 7,
+            "combined": 6,
+            "empty": 6,
+            "document": 6
+          }
+        },
+        {
+          "block": 2,
+          "arm_order": [
+            "A",
+            "B"
+          ],
+          "measured": 25,
+          "warmups_per_arm": 20,
+          "category_measured": {
+            "combined": 7,
+            "empty": 6,
+            "document": 6,
+            "history": 6
+          }
+        },
+        {
+          "block": 3,
+          "arm_order": [
+            "B",
+            "A"
+          ],
+          "measured": 25,
+          "warmups_per_arm": 20,
+          "category_measured": {
+            "empty": 7,
+            "document": 6,
+            "history": 6,
+            "combined": 6
+          }
+        }
+      ]
+    }
+  ],
+  "protected_files_unchanged": 497,
+  "source_inventory_sha256": "2584efbe399efc6ece8aaa853c235de12fd4b663a95756997698d2903f6e20dd",
+  "docker_operations": 0,
+  "postgres_operations": 0,
+  "application_requests": 0,
+  "external_provider_calls": 0,
+  "network_attempts": 0,
+  "spend_usd": "0",
+  "official_g6_status": "CONTROLLED_G6_FAIL",
+  "paid_admission": "BLOCKED_CONTROLLED_G6_FAIL"
+}

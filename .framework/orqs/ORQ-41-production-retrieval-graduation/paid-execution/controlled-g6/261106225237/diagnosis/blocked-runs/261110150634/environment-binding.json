@@ -1,0 +1,103 @@
+{
+  "status": "LEXICAL_AA_ISOLATED_ENVIRONMENT_PREPARED",
+  "services": {
+    "postgres": {
+      "name": "orq41-blocked-261110150634-postgres",
+      "id": "3b61b73c6ae30bc6443facb36d12829c676cece3427378e081b32c2586065f33",
+      "image": "sha256:8e5355e9ff399a002fa46148399a1ac22fb3e9b2d390f857296e6da6b5559ba1",
+      "network_mode": "none",
+      "published_ports": false
+    },
+    "redis": {
+      "name": "orq41-blocked-261110150634-redis",
+      "id": "d99e181e067759974bafbc06514d0504e7a7c552100e6446f0f6dd460b8cdd79",
+      "image": "sha256:13105d2858ded45aedf7b24f0870e6a4e7ce4964924bffce68e562ca72149f1e",
+      "network_mode": "container:3b61b73c6ae30bc6443facb36d12829c676cece3427378e081b32c2586065f33",
+      "published_ports": false
+    },
+    "collector": {
+      "name": "orq41-blocked-261110150634-collector",
+      "id": "d93648ac812f86a8c4c436f81d06c0022090d09cdae5ba081ba188c2d6301113",
+      "image": "sha256:50dccac76879873148242bb98c6472404f3af3388c318ef270a6912b855c2dbc",
+      "network_mode": "container:3b61b73c6ae30bc6443facb36d12829c676cece3427378e081b32c2586065f33",
+      "published_ports": false
+    }
+  },
+  "resources": {
+    "affinity": [
+      4,
+      6
+    ],
+    "effective_cpuset": [
+      4,
+      6
+    ],
+    "cpu_max": "200000 100000",
+    "cpu_stat": {
+      "usage_usec": 10360846,
+      "user_usec": 8966078,
+      "system_usec": 1394767,
+      "nice_usec": 0,
+      "core_sched.force_idle_usec": 0,
+      "nr_periods": 147,
+      "nr_throttled": 0,
+      "throttled_usec": 0,
+      "nr_bursts": 0,
+      "burst_usec": 0
+    },
+    "topology": [
+      {
+        "cpu": 0,
+        "core_id": 0,
+        "siblings": [
+          0,
+          1
+        ],
+        "max_khz": 5600000,
+        "governor": "powersave"
+      },
+      {
+        "cpu": 2,
+        "core_id": 4,
+        "siblings": [
+          2,
+          3
+        ],
+        "max_khz": 5600000,
+        "governor": "powersave"
+      },
+      {
+        "cpu": 4,
+        "core_id": 8,
+        "siblings": [
+          4,
+          5
+        ],
+        "max_khz": 5600000,
+        "governor": "powersave"
+      },
+      {
+        "cpu": 6,
+        "core_id": 12,
+        "siblings": [
+          6,
+          7
+        ],
+        "max_khz": 5600000,
+        "governor": "powersave"
+      }
+    ]
+  },
+  "original_source_environment": {
+    "schema_sha256": "851772d47b85ce52856ef0e313fadc4e8bdf9be0eec06fc75b51e67eae570ce2",
+    "business_projection_sha256": "07184f474a596432cdae44aea2f90fd5c22cd22b3d6c9a450f63b24ea5a0463e",
+    "counts": "4|8|124|2146"
+  },
+  "original_source_environment_unchanged": true,
+  "source_review_sha256": "2e8b7ca708e729a3ce8a2fa48e3590ba3a7b4d295f2eef0df2a7b9e045ba5298",
+  "image_amendment_approval_sha256": "1e367f6c279723ee8db757ac8a24cfa887835954f7ca9ad1d9fe45304fc306b8",
+  "api_requests": 0,
+  "provider_calls": 0,
+  "external_calls": 0,
+  "spend_usd": "0"
+}

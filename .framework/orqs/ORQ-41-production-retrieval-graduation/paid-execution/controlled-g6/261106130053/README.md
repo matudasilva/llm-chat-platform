@@ -1,0 +1,13 @@
+# Frozen controlled G6 experiment
+
+Status: CONTROLLED_G6_PREPARED_NOT_EXECUTED, pending independent harness review.
+
+Two immutable images and two separate databases reproduce equal P3, source fixtures, ordered message UUIDs and settings except source/database identity. N=100 measured per source/language/path, W=5 separate document warmups per source/cell; four cells, 800 measured/40 warmups overall. Twenty approved cases per language repeat five times on fresh conversations. Source order per cell is prospectively balanced, R=1, no selection/retry of measured attempts. Every sample and initial SQL snapshot is fixed in plan/preparation receipts before execution.
+
+Boundary: outer ASGI ingress to entry of the memory-only native Bedrock SDK HTTP-send callback for the primary generation; body is already serialized there. This excludes primary capture bookkeeping after send but includes earlier preparation, native rewrite serialization/stub invocation and C1 stage accounting before primary dispatch. Real PostgreSQL/history/retrieval/window/packing are exercised; embedding/reranking and native generation response transports are deterministic stubs. The real configured Bedrock model/region/timeouts/retry limits remain fixed; dummy SDK signing credentials authorize nothing. No actual provider call or token usage occurs.
+
+C0 uses baseline Tape; C1 uses existing reviewed Capture/ScopedProvider accounting, matching the accepted C1 harness. Both sources get the same shared fault-free harness and resource limits. Harness-owned retention is released only after request quiescence, never during the timed region. Raw ingress/dispatch timestamps, native body hashes/call order, config identity, outcomes and warmup flags are retained. Failed/missing samples cannot produce PASS. Warmup timestamps are retained but excluded from percentiles. Compare paired serialized payloads and logical native dispatches before claiming zero C1/C0 cost increment. No live absolute latency or paid-cost result is inferred.
+
+Gate: nearest-rank p95(C1)*100 <= p95(C0)*105 in each language/path; zero baseline requires zero candidate. p50/p95/p99/max are reported for N=100. Host jitter/source scheduling and the single repetition remain limitations. A FAIL is preserved, not tuned away or replaced with a faster run.
+
+Eleven no-I/O controls pass under P2. The controller refuses execution without independent-review.json PASS bound to exact plan bytes, and verifies harness/support hashes, seeded business/schema snapshots and effective image settings before timing. No runtime/app/P5 change. Paid campaign admission remains blocked separately.

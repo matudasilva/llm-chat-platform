@@ -1,0 +1,57 @@
+{
+  "status": "CROSSOVER_PREPARED_DATABASES_READONLY_VERIFIER_PASS",
+  "verifier_author": "adapted prior independent read-only verifier; current-agent execution, not a distinct-agent attestation",
+  "executor": "parent approved P2 Docker access",
+  "plan_sha256": "bcd882d10e1bf57b359135dc7b2eb408c55eed8412dbf717aa6f097f016c4f4b",
+  "verifier_sha256": "a20ff7760bb1e771acc79182f3064ec2e1b6fceb3c9b56c125482046b45f2bf5",
+  "arms": [
+    {
+      "arm": "c0",
+      "database": "orq41_cross_261107133140_c0",
+      "conversations": 32,
+      "messages": 768,
+      "business_projection_sha256": "37e8e03e922c0f11560ff8a077cf28ab1849e54022733f1dc32052d533832df6",
+      "normalized_schema_sha256": "851772d47b85ce52856ef0e313fadc4e8bdf9be0eec06fc75b51e67eae570ce2",
+      "corpus_content_sha256": "9fa959aeeb5d332882d61f60528eaa72468f110705c51ce05b70e213dd168506",
+      "rls": {
+        "orq37-t23": 2146,
+        "orq41-6b2ab547-en-empty": 0,
+        "orq41-6b2ab547-es-empty": 0,
+        "": 0,
+        "independent-unknown": 0
+      }
+    },
+    {
+      "arm": "c1",
+      "database": "orq41_cross_261107133140_c1",
+      "conversations": 32,
+      "messages": 768,
+      "business_projection_sha256": "37e8e03e922c0f11560ff8a077cf28ab1849e54022733f1dc32052d533832df6",
+      "normalized_schema_sha256": "851772d47b85ce52856ef0e313fadc4e8bdf9be0eec06fc75b51e67eae570ce2",
+      "corpus_content_sha256": "9fa959aeeb5d332882d61f60528eaa72468f110705c51ce05b70e213dd168506",
+      "rls": {
+        "orq37-t23": 2146,
+        "orq41-6b2ab547-en-empty": 0,
+        "orq41-6b2ab547-es-empty": 0,
+        "": 0,
+        "independent-unknown": 0
+      }
+    }
+  ],
+  "configuration": {
+    "c0": {
+      "full": "d37bfe3e7ef24c30ed0a757fc9eed0b70fff88c7df07afc96af24eaa848f290e",
+      "normalized": "ba8d318986a6c9b73d097e841916161f20bfae60f1d15f8bf1754567390ae4b0"
+    },
+    "c1": {
+      "full": "cfa2e9b793093bb0d89e37d265d0bc772b5c39f14416c1a7ecfc310fbf5a8d1d",
+      "normalized": "ba8d318986a6c9b73d097e841916161f20bfae60f1d15f8bf1754567390ae4b0"
+    }
+  },
+  "normalized_effective_configuration_equal": true,
+  "platform_api_calls": 0,
+  "gate_executed": false,
+  "database_writes": 0,
+  "external_calls": 0,
+  "spend_usd": "0"
+}

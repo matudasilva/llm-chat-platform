@@ -1,0 +1,43 @@
+{
+  "status": "DIAGNOSTIC_AGGREGATE_HARNESS_REVIEW_PASS",
+  "reviewer": "/root/packet_review",
+  "plan_sha256": "c2c19931906ba8964320d436cef554ffb4f13eb03dae84f53bd3801e96cba7f6",
+  "harness_sha256": {
+    "experiments/production_graduation/gate_validation/controlled_latency.py": "a711e6161564e4f5fbf4f542c84bd6a3f1afb71df16760e4480cdae9073837f9",
+    "experiments/production_graduation/gate_validation/controlled_latency_worker.py": "a9f1996aadfe87406addbc9ba890ae291c186de76341b0f322aa2732b03804e8",
+    "experiments/production_graduation/gate_validation/controlled_latency_controller.py": "b77ab8466734b84f93d7ccf3476819054b674d0d6f98ae0402c7147d7b2656cd",
+    "experiments/production_graduation/gate_validation/local_api.py": "e9b8a886018ca60a7b77b2885b89fa813368373435464e455bd449589ea034eb",
+    "experiments/production_graduation/gate_validation/transports.py": "3c0f15acf79a08684fad8d89bfa7242d3779a980f89988a7f252e74cb7aef6e0",
+    "experiments/production_graduation/gate_validation/capture.py": "373dab408e467093a764720d6b9b6e5cd1617b7079e877c710b44cd3d24c68bf",
+    "experiments/production_graduation/gate_validation/fixtures.py": "ce7a3bc48939da71b4c3ac49829e9e21d9c686b5bdda7f72697c3ccbd14f1f0c",
+    "experiments/production_graduation/gate_validation/validate_g123.py": "d18aefea58b169264095466eafb81f5d1f0c259ae9e3ccb516c9534f228420c3",
+    "experiments/production_graduation/gate_validation/g9_controller.py": "4b3697b3d3eccf4eccb239060a50571bb91abe9bdd121143c6042b1ea91131ce",
+    "experiments/production_graduation/gate_validation/controlled_latency_aggregate.py": "06a6181c3461587c2ccf46f2af04dbbd2b462e19f90dd4a568c664a518ce831a",
+    "experiments/production_graduation/gate_validation/controlled_latency_aggregate_worker.py": "8fd5c6db976c1b30df127948c51f46f64ccd0a45c5e4823cbd384909f7df1f6b"
+  },
+  "support_files_sha256": {
+    ".framework/orqs/ORQ-41-production-retrieval-graduation/environment/g123/execution-freeze/settings/inspect.py": "501ea364ae3bfc21de353a0b6b0c6667dea5d44f682b7c456e4b01a6f1fbeb45",
+    ".framework/orqs/ORQ-41-production-retrieval-graduation/campaign-redesign/p2_netguard/sitecustomize.py": "2810dd72b69aa1c383c512a2ed6fb2444248c438b9a4b947330042020288a2f5"
+  },
+  "test_sha256": "2e0cb33370ce4d9d1e895e2a0bb702da3413fcc44fb57d1f275373b67493ec0a",
+  "fixtures_sha256": "fa8dc4dae9fa25caca56f0cf6679359f6852b9ad0fb84619a542cd84c5768169",
+  "database_verifier_receipt_sha256": "be29a9ee5b20c04fb7c92ea5c96491819e7d6d018348ab276a722952396928ac",
+  "review_sha256": "1598fe57d7c9b57ffa617e3ddd457ef6a09281f4a6e768f271cc1a2228219555",
+  "independent_pure_tests_passed": 5,
+  "tests_xml_sha256": "40be5c75cd4ad4eea057e3ad4f0bce0304674627ccc3f2443eb4f1abb51c9957",
+  "open_blocker_high_medium_findings": [],
+  "execution_authorized": false,
+  "review_only": true,
+  "diagnostic_requests_executed": 0,
+  "reviewer_api_calls": 0,
+  "reviewer_database_calls": 0,
+  "reviewer_docker_calls": 0,
+  "external_calls": 0,
+  "spend_usd": "0",
+  "official_g6_status": "CONTROLLED_G6_FAIL",
+  "limits": [
+    "Process CPU covers all threads/background work, not per-function causal attribution",
+    "32 measured plus8 warmups are not an inferential gate",
+    "Parent executed prepared DB verifier; reviewer inspected source/receipt only"
+  ]
+}

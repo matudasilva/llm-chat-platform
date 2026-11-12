@@ -1,0 +1,97 @@
+{
+  "status": "COUNTERFACTUAL_RECEIPT_COPY_EVALUATED_NOT_IMPLEMENTED",
+  "source_sha256": "7d66fcbda6e6640033508f4bf0415b13ab91b1158fcae35c3b279da1d21e7c47",
+  "fixture_sha256": "fa8dc4dae9fa25caca56f0cf6679359f6852b9ad0fb84619a542cd84c5768169",
+  "checks": 57,
+  "trace_pairs": 48,
+  "measurements": {
+    "deepcopy": [
+      {
+        "cpu_ns": 239010488,
+        "wall_ns": 239076276,
+        "copy_operations": 2400
+      },
+      {
+        "cpu_ns": 242293654,
+        "wall_ns": 242299655,
+        "copy_operations": 2400
+      },
+      {
+        "cpu_ns": 242306241,
+        "wall_ns": 242323300,
+        "copy_operations": 2400
+      },
+      {
+        "cpu_ns": 242777894,
+        "wall_ns": 242805528,
+        "copy_operations": 2400
+      },
+      {
+        "cpu_ns": 242996708,
+        "wall_ns": 242993144,
+        "copy_operations": 2400
+      },
+      {
+        "cpu_ns": 243746586,
+        "wall_ns": 243754459,
+        "copy_operations": 2400
+      },
+      {
+        "cpu_ns": 243332109,
+        "wall_ns": 243331723,
+        "copy_operations": 2400
+      }
+    ],
+    "candidate": [
+      {
+        "cpu_ns": 65884439,
+        "wall_ns": 65891387,
+        "copy_operations": 2400
+      },
+      {
+        "cpu_ns": 65738384,
+        "wall_ns": 65740884,
+        "copy_operations": 2400
+      },
+      {
+        "cpu_ns": 66539365,
+        "wall_ns": 66537267,
+        "copy_operations": 2400
+      },
+      {
+        "cpu_ns": 66151446,
+        "wall_ns": 66174440,
+        "copy_operations": 2400
+      },
+      {
+        "cpu_ns": 66185569,
+        "wall_ns": 66183669,
+        "copy_operations": 2400
+      },
+      {
+        "cpu_ns": 66135652,
+        "wall_ns": 66133749,
+        "copy_operations": 2400
+      },
+      {
+        "cpu_ns": 66461979,
+        "wall_ns": 66459678,
+        "copy_operations": 2400
+      }
+    ]
+  },
+  "median_cpu_ns": {
+    "deepcopy": 242777894,
+    "candidate": 66151446
+  },
+  "limitations": [
+    "Only copy microbenchmark; not endpoint or G6 p95",
+    "Inputs from frozen history fixtures, not retained full historical evidence states",
+    "No claim that savings close +5% gate; request-level aggregate CPU contains other work"
+  ],
+  "app_modified": false,
+  "api_requests": 0,
+  "database_queries": 0,
+  "external_calls": 0,
+  "paid_spend_usd": "0"
+}

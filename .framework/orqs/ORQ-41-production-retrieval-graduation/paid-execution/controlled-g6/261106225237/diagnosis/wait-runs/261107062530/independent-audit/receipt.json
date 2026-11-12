@@ -1,0 +1,50 @@
+{
+  "status": "DIAGNOSTIC_WAITS_HARNESS_REVIEW_PASS",
+  "reviewer": "/root/packet_review",
+  "plan_sha256": "56e110e4dd374948106579c46dbc17fe70206cef5709120221d0217194174ec9",
+  "harness_sha256": {
+    "experiments/production_graduation/gate_validation/controlled_latency.py": "a711e6161564e4f5fbf4f542c84bd6a3f1afb71df16760e4480cdae9073837f9",
+    "experiments/production_graduation/gate_validation/controlled_latency_worker.py": "a9f1996aadfe87406addbc9ba890ae291c186de76341b0f322aa2732b03804e8",
+    "experiments/production_graduation/gate_validation/controlled_latency_controller.py": "914e48832b1848f72194a64251c5440651c8842808ad8482ebec1d17a6d6e0d6",
+    "experiments/production_graduation/gate_validation/local_api.py": "e9b8a886018ca60a7b77b2885b89fa813368373435464e455bd449589ea034eb",
+    "experiments/production_graduation/gate_validation/transports.py": "3c0f15acf79a08684fad8d89bfa7242d3779a980f89988a7f252e74cb7aef6e0",
+    "experiments/production_graduation/gate_validation/capture.py": "373dab408e467093a764720d6b9b6e5cd1617b7079e877c710b44cd3d24c68bf",
+    "experiments/production_graduation/gate_validation/fixtures.py": "ce7a3bc48939da71b4c3ac49829e9e21d9c686b5bdda7f72697c3ccbd14f1f0c",
+    "experiments/production_graduation/gate_validation/validate_g123.py": "d18aefea58b169264095466eafb81f5d1f0c259ae9e3ccb516c9534f228420c3",
+    "experiments/production_graduation/gate_validation/g9_controller.py": "4b3697b3d3eccf4eccb239060a50571bb91abe9bdd121143c6042b1ea91131ce",
+    "experiments/production_graduation/gate_validation/controlled_latency_waits.py": "e68f260b1e703b34845c1af6c3ec602ad3ab59dc7297e984b49072509b2c03c3",
+    "experiments/production_graduation/gate_validation/controlled_latency_waits_worker.py": "90b425f58c2de883e638c8a54ddc1f50a195d7d5578fa2c857aba5865112886a",
+    "experiments/production_graduation/gate_validation/wait_observer.py": "70cff7cf2f5013c3ea65318f3ca4f206a251eac169c21b45e224d2529959de7d"
+  },
+  "support_files_sha256": {
+    ".framework/orqs/ORQ-41-production-retrieval-graduation/environment/g123/execution-freeze/settings/inspect.py": "501ea364ae3bfc21de353a0b6b0c6667dea5d44f682b7c456e4b01a6f1fbeb45",
+    ".framework/orqs/ORQ-41-production-retrieval-graduation/campaign-redesign/p2_netguard/sitecustomize.py": "2810dd72b69aa1c383c512a2ed6fb2444248c438b9a4b947330042020288a2f5",
+    ".framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106130053-rev2/diagnosis/receipt-copy-proposal/implementation/image-pin/receipt.json": "15fbd41517ebd30ddc86a60aa95a30c976573fcc80d43ee8efb51739caae2a79"
+  },
+  "protocol_sha256": "a1157ccfb69ee6faf05d2f76ce0b1181de0d82a1565dc829e9a582525b48dc6e",
+  "test_sha256": "a1fbf05145aca8d76763ffd088259c8fb2359e27bc248d3b2f66be9c6147191d",
+  "fixtures_sha256": "2632eecd641e2422a203c7f9c6ca76cff626d0a28352f3c9ed1cd31185aad963",
+  "prepared_database_receipt_sha256": "d4a150dd6e2c9167b458a3cfa18f92a5e3938e79d370b4a3c7b39d767230eb36",
+  "review_sha256": "74b18123f7b76805a7af45a08a42982c841c42f64da12e1c797f4af5b87ad5d1",
+  "independent_safe_p2_controls_passed": 17,
+  "host_thread_controls_deselected": 2,
+  "initial_counterexamples_demonstrating_finding": 2,
+  "resolved_findings": [
+    "WAITS-R1 duplicate/backward completed GC evidence acceptance"
+  ],
+  "open_blocker_high_medium_findings": [],
+  "reviewer_api_calls": 0,
+  "reviewer_database_calls": 0,
+  "reviewer_docker_calls": 0,
+  "external_calls": 0,
+  "spend_usd": "0",
+  "operator_scope": "One40-request local wait/GC diagnostic only",
+  "not_a_gate": true,
+  "official_g6_status": "CONTROLLED_G6_FAIL",
+  "limits": [
+    "Parent ran47controls in pinned image; reviewer did not rerun host thread controls",
+    "Parent executed prepared DB/config verifier; reviewer inspected source/receipt",
+    "Bounded helper/GC observations do not establish complete scheduling causation",
+    "No p95 replacement, threshold relaxation or paid admission"
+  ]
+}

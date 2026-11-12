@@ -1,0 +1,26 @@
+{
+  "status": "ADMINISTRATIVE_PROCEDURE_DRAFT_REQUIRES_SHARED_SLICE_IMPACT_APPROVAL_AND_REVIEW",
+  "files_sha256": {
+    "administrative-procedure.md": "3b5be2fb07bb4f6d61981da872a82f437b44f638d6c5ef5ae81ddb69be58b8b5",
+    "cpu-observation.md": "147fcd910d21e09e4a9d1d3870aaf4860f1fcad86b25e59c363eb61a6c96aa60"
+  },
+  "host_changes": 0,
+  "benchmark_requests": 0,
+  "provider_calls": 0,
+  "spend_usd": "0",
+  "observed_docker_driver": "systemd",
+  "observed_cgroup_version": "2",
+  "observed_initial_allowed_cpus": {
+    "system.slice": "",
+    "user.slice": "",
+    "machine.slice": "",
+    "init.scope": ""
+  },
+  "protected_running_containers_affected_by_future_system_slice_restriction": [
+    "orq41-paid-pg",
+    "orq41-env-pg",
+    "orq41-env-redis",
+    "orq41-env-otel"
+  ],
+  "independently_reviewed": false
+}

@@ -1,0 +1,40 @@
+{
+  "status": "DEDICATED_BINDING_SOURCE_REVIEW_PASS",
+  "technical_files_sha256": {
+    "experiments/production_graduation/gate_validation/blocked_latency.py": "794aaae44bf643df769ed19f6a953854b99802b8d9a6135aee5b4b5dc330067c",
+    "experiments/production_graduation/gate_validation/dedicated_environment.py": "9383cb3e039811bd50887f09d765071fc6b45dc84add414bce0523dc3c3227ee",
+    "tests/experiments/test_orq41_dedicated_environment.py": "0b4902ae6fe0720294a32f29bffe6f16ada9b5b338c7a33eb3858b5fa6b1d608"
+  },
+  "author_focused_passed": 49,
+  "initial_regression": {
+    "passed": 199,
+    "failed": 11,
+    "cause": "Validation command omitted PYTHONPATH for existing P2 sitecustomize and subprocess tests; kernel network isolation and credential scrubbing were still active. No production/test assertions relaxed."
+  },
+  "corrected_regression_passed": 210,
+  "network_guard_log_empty": true,
+  "benchmark_requests": 0,
+  "provider_calls": 0,
+  "host_mutations": 0,
+  "provisioned_services": 0,
+  "spend_usd": "0",
+  "execution_ready": false,
+  "retained_helpers_unchanged": [
+    "aa_calibration.py",
+    "aa_calibration_resources.py",
+    "blocked_latency_worker.py"
+  ],
+  "remaining": [
+    "Workload-aware drain/recovery design and implementation approval",
+    "API pre-admission placement handshake and workload lifecycle integration; bound provisioning stays hard-gated",
+    "Fresh environment readiness and exact packet review",
+    "Separate trial execution approval"
+  ],
+  "author_final_regression_passed": 216,
+  "author_focused_cases_final": 55,
+  "resolved_findings": [
+    "BINDING-R1"
+  ],
+  "independent_focused_passed": 55,
+  "source_review_sha256": "01610cfd2f612ef2c3ffb71aa1cd829b8eb94b07c3b1aab5baafa8c0cc80a809"
+}

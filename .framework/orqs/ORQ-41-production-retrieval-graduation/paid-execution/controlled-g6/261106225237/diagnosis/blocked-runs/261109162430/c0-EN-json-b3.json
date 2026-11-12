@@ -1,0 +1,1510 @@
+{
+  "arm": "c0",
+  "cell": "EN-json",
+  "block": 3,
+  "full_c1": true,
+  "samples": [
+    {
+      "sample_id": "EN-json/b3/warm/0",
+      "language": "EN",
+      "protocol": "json",
+      "block": 3,
+      "ordinal": 0,
+      "warmup": true,
+      "category": "document",
+      "case_id": "EN-document-01",
+      "tenant_id": "orq37-t23",
+      "message": "Explain how provider abstraction separates adapters from domain services.",
+      "request_id": "d2b58b47-0243-5e7d-b1dd-f72eb44fc0e2",
+      "conversation_id": "6f3b57b1-a508-588c-9d2a-d55791ecc347",
+      "status": "PASS",
+      "error": null,
+      "accounting_instance_id": "6f81824a-2ee8-4df3-b5e8-eaa31f1c2e0d",
+      "start_ns": 596473382520064,
+      "primary_dispatch_ns": 596473445525680,
+      "preparation_ns": 63005616,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "c16660404117da33b39c95d1e4dc09d8ea74241ccb6470678ce74048020a4763"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "4a4717bee710db453501887645f43923c134fdf9d641d0cf381c717fccfdd1c9"
+        }
+      ]
+    },
+    {
+      "sample_id": "EN-json/b3/warm/1",
+      "language": "EN",
+      "protocol": "json",
+      "block": 3,
+      "ordinal": 1,
+      "warmup": true,
+      "category": "history",
+      "case_id": "EN-history-01",
+      "tenant_id": "orq41-6b2ab547-en-history",
+      "message": "What recovery contact was approved for ORQ41PROJECTEN01?",
+      "request_id": "5ded4542-39c4-5f72-94cc-089deeaf4cf8",
+      "conversation_id": "00b6e588-103b-5cbe-a9ad-fab4eac1b5a6",
+      "status": "PASS",
+      "error": null,
+      "accounting_instance_id": "315e8139-55fd-4f6b-9b47-7b8f56cf7adf",
+      "start_ns": 596473452649731,
+      "primary_dispatch_ns": 596473462582351,
+      "preparation_ns": 9932620,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "fa7e7006fbe27ae09a074e1a6872184c7d539e11d29319fc6088d1b9b30d6d25"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "adecf8a0af8fd3c233fa10098eb2c70d90cc9343b96a17cc0395ab6fbdba264d"
+        }
+      ]
+    },
+    {
+      "sample_id": "EN-json/b3/warm/2",
+      "language": "EN",
+      "protocol": "json",
+      "block": 3,
+      "ordinal": 2,
+      "warmup": true,
+      "category": "combined",
+      "case_id": "EN-combined-01",
+      "tenant_id": "orq37-t23",
+      "message": "Explain how provider abstraction separates adapters from domain services. Also recall the recovery contact approved for ORQ41PROJECTEN01.",
+      "request_id": "30fa7ba9-f913-596b-93f2-b55ac81dc645",
+      "conversation_id": "2c071c58-c9ea-5916-9f64-2c34ccca0ad7",
+      "status": "PASS",
+      "error": null,
+      "accounting_instance_id": "a364797c-cf92-4e6e-bd3a-669becabef8d",
+      "start_ns": 596473466798255,
+      "primary_dispatch_ns": 596473483408824,
+      "preparation_ns": 16610569,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "13687b189f2e1fe3ac84b99aa995262a59444a2c0270fa46add321a59a783129"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "6aebaefb1a73a774b8cceeb0693600c896651f06f9e8144848413a3c8c7c4bd8"
+        }
+      ]
+    },
+    {
+      "sample_id": "EN-json/b3/warm/3",
+      "language": "EN",
+      "protocol": "json",
+      "block": 3,
+      "ordinal": 3,
+      "warmup": true,
+      "category": "empty",
+      "case_id": "EN-empty-01",
+      "tenant_id": "orq41-6b2ab547-en-empty",
+      "message": "What evidence is available for unregistered project ORQ41UNKNOWN01?",
+      "request_id": "ab0ff22a-7f10-55ed-9387-8cfaaaaa0272",
+      "conversation_id": "fd21134e-8329-54c9-b21b-13059549d206",
+      "status": "PASS",
+      "error": null,
+      "accounting_instance_id": "7a562a9b-23e6-418e-9a9e-af9b1d0d085c",
+      "start_ns": 596473487556038,
+      "primary_dispatch_ns": 596473495676701,
+      "preparation_ns": 8120663,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "61321e695446fd0d86cdbb20da38f384c5965ee24baa073eda9eb8bf606105bb"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "9374bbf4a9edc0864aa5beaf0a8037c0b4cd7ff34b9e3288e46014fd9790d0d4"
+        }
+      ]
+    },
+    {
+      "sample_id": "EN-json/b3/warm/4",
+      "language": "EN",
+      "protocol": "json",
+      "block": 3,
+      "ordinal": 4,
+      "warmup": true,
+      "category": "document",
+      "case_id": "EN-document-02",
+      "tenant_id": "orq37-t23",
+      "message": "Explain how chat exchanges persist atomically.",
+      "request_id": "1151b4e7-d346-5e19-b87e-b65fd03b1119",
+      "conversation_id": "98fc196c-5318-5dda-a9cf-a87483c991cf",
+      "status": "PASS",
+      "error": null,
+      "accounting_instance_id": "cc6809fa-470b-47c3-ba28-820d1f35e751",
+      "start_ns": 596473498530130,
+      "primary_dispatch_ns": 596473514366045,
+      "preparation_ns": 15835915,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "7ac94cba19ca05bce0c540f27f2273a235ab8ae4ae680b62e3dbd982fd33492a"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "a55e8c0649134970872ebc771b8ea8774333ab70d7d6af9fe81fa606cce80c6b"
+        }
+      ]
+    },
+    {
+      "sample_id": "EN-json/b3/warm/5",
+      "language": "EN",
+      "protocol": "json",
+      "block": 3,
+      "ordinal": 5,
+      "warmup": true,
+      "category": "history",
+      "case_id": "EN-history-02",
+      "tenant_id": "orq41-6b2ab547-en-history",
+      "message": "What recovery contact was approved for ORQ41PROJECTEN02?",
+      "request_id": "9f01f9d4-713c-5d1c-8d7d-c2ae0774195c",
+      "conversation_id": "fe0fdb32-7311-5aeb-8580-d98adf5eb7ab",
+      "status": "PASS",
+      "error": null,
+      "accounting_instance_id": "cface567-486e-49ad-bdcf-e64129d48bf6",
+      "start_ns": 596473517771066,
+      "primary_dispatch_ns": 596473525441670,
+      "preparation_ns": 7670604,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "7c25fbf10458ab90b803d5795f09b494f40e72e2445c078e636e1884d8fe9732"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "06d8ddbeee5828d7836c92b8e66af28d2c9652979d577e8a14beb16624f7004b"
+        }
+      ]
+    },
+    {
+      "sample_id": "EN-json/b3/warm/6",
+      "language": "EN",
+      "protocol": "json",
+      "block": 3,
+      "ordinal": 6,
+      "warmup": true,
+      "category": "combined",
+      "case_id": "EN-combined-02",
+      "tenant_id": "orq37-t23",
+      "message": "Explain how chat exchanges persist atomically. Also recall the recovery contact approved for ORQ41PROJECTEN02.",
+      "request_id": "5a659363-a026-505f-ad26-af6c60d14e5c",
+      "conversation_id": "8e2ad9e1-181d-55df-9b8d-ea565facdd71",
+      "status": "PASS",
+      "error": null,
+      "accounting_instance_id": "eb2681bf-bced-475e-880e-dc60cf563c61",
+      "start_ns": 596473528843406,
+      "primary_dispatch_ns": 596473558961138,
+      "preparation_ns": 30117732,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "2684eebdee11e439de58433868854483628a7359dbc22cd006008c32eab6bcf0"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "4b09f261ac5eb1b0b18c76e9fd0d4860cc0439993ca6f2075217f471f52a37cb"
+        }
+      ]
+    },
+    {
+      "sample_id": "EN-json/b3/warm/7",
+      "language": "EN",
+      "protocol": "json",
+      "block": 3,
+      "ordinal": 7,
+      "warmup": true,
+      "category": "empty",
+      "case_id": "EN-empty-02",
+      "tenant_id": "orq41-6b2ab547-en-empty",
+      "message": "What evidence is available for unregistered project ORQ41UNKNOWN02?",
+      "request_id": "9f08fad0-6693-5a20-b3af-ba6e30415dfa",
+      "conversation_id": "52edbf0b-c23c-537e-b0a1-80fa62c03f67",
+      "status": "PASS",
+      "error": null,
+      "accounting_instance_id": "3a5611b0-1cfb-458c-a51e-5fc97ee2799a",
+      "start_ns": 596473564052314,
+      "primary_dispatch_ns": 596473571059161,
+      "preparation_ns": 7006847,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "0251323350171bf0307aab02e1cfae4ef11e9fa70f5123ccf08ccf086b2242b6"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "908db10d3d6ade3d8d8b3e360013bb38332c4635aea2bec010a110b7a2a352d6"
+        }
+      ]
+    },
+    {
+      "sample_id": "EN-json/b3/warm/8",
+      "language": "EN",
+      "protocol": "json",
+      "block": 3,
+      "ordinal": 8,
+      "warmup": true,
+      "category": "document",
+      "case_id": "EN-document-03",
+      "tenant_id": "orq37-t23",
+      "message": "Explain tenant isolation in retrieval.",
+      "request_id": "5bffd867-de49-58d3-86b7-4fc73eedf028",
+      "conversation_id": "21bbe059-caca-52fb-ac4d-2984ba70b72d",
+      "status": "PASS",
+      "error": null,
+      "accounting_instance_id": "50d67b2c-31ac-481d-8a44-7648fd8a7b7a",
+      "start_ns": 596473573824345,
+      "primary_dispatch_ns": 596473594157105,
+      "preparation_ns": 20332760,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "f8c8b3c9899e487dee815159da748d8ff732d3c572832ca612543615ac333fd2"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "31d62b793c134af3890bb1cf8990850f742a2217b5bf2612e6340dc9c22d9373"
+        }
+      ]
+    },
+    {
+      "sample_id": "EN-json/b3/warm/9",
+      "language": "EN",
+      "protocol": "json",
+      "block": 3,
+      "ordinal": 9,
+      "warmup": true,
+      "category": "history",
+      "case_id": "EN-history-03",
+      "tenant_id": "orq41-6b2ab547-en-history",
+      "message": "What recovery contact was approved for ORQ41PROJECTEN03?",
+      "request_id": "b99d1c97-0121-552e-915f-78dbc9f350d1",
+      "conversation_id": "611e3c93-27ad-5b75-bdb7-959eb6f89707",
+      "status": "PASS",
+      "error": null,
+      "accounting_instance_id": "c9d6d487-5869-4b10-aafa-405c6d6026c7",
+      "start_ns": 596473597753244,
+      "primary_dispatch_ns": 596473607718367,
+      "preparation_ns": 9965123,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "5dd796d063d3ee3c4cfc5175c48bf8974f4ce56484a8335bb1fa10e16d5ab383"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "cc65c996b1f24af148df05232f8d8e24ec9242cd52f34fca3659af7257cea33b"
+        }
+      ]
+    },
+    {
+      "sample_id": "EN-json/b3/warm/10",
+      "language": "EN",
+      "protocol": "json",
+      "block": 3,
+      "ordinal": 10,
+      "warmup": true,
+      "category": "combined",
+      "case_id": "EN-combined-03",
+      "tenant_id": "orq37-t23",
+      "message": "Explain tenant isolation in retrieval. Also recall the recovery contact approved for ORQ41PROJECTEN03.",
+      "request_id": "3f59213a-0751-5607-9699-b2fd33a6bfeb",
+      "conversation_id": "75c30089-4a16-5822-a849-5c42a687fbe9",
+      "status": "PASS",
+      "error": null,
+      "accounting_instance_id": "4781b1a4-90fb-4c54-8ba2-c2bee5da650a",
+      "start_ns": 596473614337973,
+      "primary_dispatch_ns": 596473648172341,
+      "preparation_ns": 33834368,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "670848497dbe56e8a21e26a2f2609f59887d587011b137141bd4a710f0fb3ddf"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "ac2a1192f33c23525425059c794420b6bce5a321fe4f9e70433cc67fa6af8234"
+        }
+      ]
+    },
+    {
+      "sample_id": "EN-json/b3/warm/11",
+      "language": "EN",
+      "protocol": "json",
+      "block": 3,
+      "ordinal": 11,
+      "warmup": true,
+      "category": "empty",
+      "case_id": "EN-empty-03",
+      "tenant_id": "orq41-6b2ab547-en-empty",
+      "message": "What evidence is available for unregistered project ORQ41UNKNOWN03?",
+      "request_id": "6e0d20fd-54bc-53d9-8a34-91c23e9ea320",
+      "conversation_id": "dad371d1-7345-56fc-b9c8-0eeed387e9b8",
+      "status": "PASS",
+      "error": null,
+      "accounting_instance_id": "6dbc929b-3da7-42e7-8197-1733d7963172",
+      "start_ns": 596473653013538,
+      "primary_dispatch_ns": 596473661635969,
+      "preparation_ns": 8622431,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "94b237d1f4b8c06748dcc4c187e5ffbfb74c85ef0e3fdac3b58976926a4fc02f"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "4bfb587244d3a7f099c3c0dbb2d59d2dfa85a3064f51f2b91bf0a0a8ee14b6ca"
+        }
+      ]
+    },
+    {
+      "sample_id": "EN-json/b3/warm/12",
+      "language": "EN",
+      "protocol": "json",
+      "block": 3,
+      "ordinal": 12,
+      "warmup": true,
+      "category": "document",
+      "case_id": "EN-document-04",
+      "tenant_id": "orq37-t23",
+      "message": "Explain how streaming errors and partial output are handled.",
+      "request_id": "667e3207-194c-5da9-88d7-ede31044ba21",
+      "conversation_id": "bafc7672-ce7b-558d-a8b5-65ed3afa6fe7",
+      "status": "PASS",
+      "error": null,
+      "accounting_instance_id": "b0060aea-698a-4280-a6ee-15f4f4cd39e0",
+      "start_ns": 596473664232196,
+      "primary_dispatch_ns": 596473689298883,
+      "preparation_ns": 25066687,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "bb0750edb54545381187794f9c3c43089452a8ed68f8f796c18f60e28c9c0003"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "473b404bf3ca0ff0db958da8c46a3090703f14c75cd4598e7890f10dbe385d2f"
+        }
+      ]
+    },
+    {
+      "sample_id": "EN-json/b3/warm/13",
+      "language": "EN",
+      "protocol": "json",
+      "block": 3,
+      "ordinal": 13,
+      "warmup": true,
+      "category": "history",
+      "case_id": "EN-history-04",
+      "tenant_id": "orq41-6b2ab547-en-history",
+      "message": "What recovery contact was approved for ORQ41PROJECTEN04?",
+      "request_id": "5d414781-3664-5186-81b0-b52ad2efa525",
+      "conversation_id": "9a07ad4d-bb7d-5b06-8c5a-cdf9d33dbbef",
+      "status": "PASS",
+      "error": null,
+      "accounting_instance_id": "ec4deff2-e73e-4657-8524-2389fcee9184",
+      "start_ns": 596473692231072,
+      "primary_dispatch_ns": 596473701435621,
+      "preparation_ns": 9204549,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "e89300dd17ce3ff1cbbc371ae8ddcb2b2a1d234ca5956667a5bcfdf508fc4229"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "e2909c6419f180e1f12f912bb51dc289d1517b1cf08d86d35da01300a0a5f675"
+        }
+      ]
+    },
+    {
+      "sample_id": "EN-json/b3/warm/14",
+      "language": "EN",
+      "protocol": "json",
+      "block": 3,
+      "ordinal": 14,
+      "warmup": true,
+      "category": "combined",
+      "case_id": "EN-combined-04",
+      "tenant_id": "orq37-t23",
+      "message": "Explain how streaming errors and partial output are handled. Also recall the recovery contact approved for ORQ41PROJECTEN04.",
+      "request_id": "96dd858a-fde9-561f-a02c-8c2bb6ff260a",
+      "conversation_id": "5c179781-7d98-55ee-96ff-41b1c6badbee",
+      "status": "PASS",
+      "error": null,
+      "accounting_instance_id": "7acd5ecd-0a89-42d0-9d91-121c14d08eec",
+      "start_ns": 596473704714162,
+      "primary_dispatch_ns": 596473738580597,
+      "preparation_ns": 33866435,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "070a4b871cec96a5fd9bcc7934fa5edf55b8a8584356013a51ca079f46898115"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "64718ba235d4fe772be60828af4e68e590db6d54d479e4014190a04a07d6d93a"
+        }
+      ]
+    },
+    {
+      "sample_id": "EN-json/b3/warm/15",
+      "language": "EN",
+      "protocol": "json",
+      "block": 3,
+      "ordinal": 15,
+      "warmup": true,
+      "category": "empty",
+      "case_id": "EN-empty-04",
+      "tenant_id": "orq41-6b2ab547-en-empty",
+      "message": "What evidence is available for unregistered project ORQ41UNKNOWN04?",
+      "request_id": "c2096360-b20c-59e0-a99d-657f744a022f",
+      "conversation_id": "dd6e97c4-acfd-53db-8cb6-9670c50d6040",
+      "status": "PASS",
+      "error": null,
+      "accounting_instance_id": "c89814c3-32f4-4a99-bb76-6d4cfb4d15a0",
+      "start_ns": 596473743720499,
+      "primary_dispatch_ns": 596473752333998,
+      "preparation_ns": 8613499,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "222658d4e6756dcb431c159cc5c1cf3cc97cc59a2575ddd6894a98c2f6861f5a"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "b3f7820f81ffe76fad16d50a432f04698eb52dabdec2b5dc91fb7133f3b72193"
+        }
+      ]
+    },
+    {
+      "sample_id": "EN-json/b3/warm/16",
+      "language": "EN",
+      "protocol": "json",
+      "block": 3,
+      "ordinal": 16,
+      "warmup": true,
+      "category": "document",
+      "case_id": "EN-document-05",
+      "tenant_id": "orq37-t23",
+      "message": "Explain why telemetry failures must remain best effort.",
+      "request_id": "48cba4fe-77f4-5e39-a55a-6e2ae2735a32",
+      "conversation_id": "7df40a12-21fb-5c95-9352-ed9504f627d9",
+      "status": "PASS",
+      "error": null,
+      "accounting_instance_id": "d64690b6-27ff-4615-be82-3a4518fa70b3",
+      "start_ns": 596473755335424,
+      "primary_dispatch_ns": 596473777077354,
+      "preparation_ns": 21741930,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "a71c1139be75714f9ee336725d69d11f0df530b07f0bf0762dc4f08f0377d57b"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "2164775f2dea2271da0b4b94a09096b0af01707aaa4fd17876147f6227a29f10"
+        }
+      ]
+    },
+    {
+      "sample_id": "EN-json/b3/warm/17",
+      "language": "EN",
+      "protocol": "json",
+      "block": 3,
+      "ordinal": 17,
+      "warmup": true,
+      "category": "history",
+      "case_id": "EN-history-05",
+      "tenant_id": "orq41-6b2ab547-en-history",
+      "message": "What recovery contact was approved for ORQ41PROJECTEN05?",
+      "request_id": "6c4258af-363a-53ff-8e22-d212287eaccf",
+      "conversation_id": "4850dafa-8ac5-51d7-ba8a-7b424b230fcc",
+      "status": "PASS",
+      "error": null,
+      "accounting_instance_id": "fdfd89c2-fab6-4c8e-8828-52d0b9c5918c",
+      "start_ns": 596473780817694,
+      "primary_dispatch_ns": 596473789901167,
+      "preparation_ns": 9083473,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "1898283eebb8f975eeb36ac8a08e0c76eb25e169e3907d99764c341442e5325b"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "bc02eede23634d842bd3fa2f5b315a8d24f0415b34d703405910c7f92a628bf7"
+        }
+      ]
+    },
+    {
+      "sample_id": "EN-json/b3/warm/18",
+      "language": "EN",
+      "protocol": "json",
+      "block": 3,
+      "ordinal": 18,
+      "warmup": true,
+      "category": "combined",
+      "case_id": "EN-combined-05",
+      "tenant_id": "orq37-t23",
+      "message": "Explain why telemetry failures must remain best effort. Also recall the recovery contact approved for ORQ41PROJECTEN05.",
+      "request_id": "18e28725-b643-5214-8884-5f3e953f939b",
+      "conversation_id": "c8d9247f-4658-500b-b85c-dcf139dc27cb",
+      "status": "PASS",
+      "error": null,
+      "accounting_instance_id": "34c4f91f-c680-493c-8e83-95ca5204f139",
+      "start_ns": 596473793705502,
+      "primary_dispatch_ns": 596473826444919,
+      "preparation_ns": 32739417,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "1516887e4ea2d729f5129fbbbf6af17f2ce92fe173ba77b099eea3b40cb0c589"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "3d4cabc94c21377f73843bf787b05bf062d51f2580c1bfd913a0c08c2353ff7b"
+        }
+      ]
+    },
+    {
+      "sample_id": "EN-json/b3/warm/19",
+      "language": "EN",
+      "protocol": "json",
+      "block": 3,
+      "ordinal": 19,
+      "warmup": true,
+      "category": "empty",
+      "case_id": "EN-empty-05",
+      "tenant_id": "orq41-6b2ab547-en-empty",
+      "message": "What evidence is available for unregistered project ORQ41UNKNOWN05?",
+      "request_id": "2fae8c94-1583-50f3-af03-39bab1644297",
+      "conversation_id": "591a9445-7583-598e-bb4f-25b06e9bbd98",
+      "status": "PASS",
+      "error": null,
+      "accounting_instance_id": "b3760d1a-a79b-4fdc-8d70-0fcd08d7e9b6",
+      "start_ns": 596473831100553,
+      "primary_dispatch_ns": 596473839856204,
+      "preparation_ns": 8755651,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "21bc7ce39cf08fcb486e7b6d17ba003fd020b360022c8b2aad592bdc75be719b"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "ed85e04d3eda0e803d03934c116447bf85b196c0f72d8547886e574963571517"
+        }
+      ]
+    },
+    {
+      "sample_id": "EN-json/b3/measured/0",
+      "language": "EN",
+      "protocol": "json",
+      "block": 3,
+      "ordinal": 0,
+      "warmup": false,
+      "category": "empty",
+      "case_id": "EN-empty-04",
+      "tenant_id": "orq41-6b2ab547-en-empty",
+      "message": "What evidence is available for unregistered project ORQ41UNKNOWN04?",
+      "request_id": "acdc227a-059b-54e4-a370-47d0d7d8924c",
+      "conversation_id": "3f3d034b-10b2-5e67-955f-261408ccba83",
+      "status": "PASS",
+      "error": null,
+      "accounting_instance_id": "e04b7e29-b38c-4a93-9fc7-3a6500280fab",
+      "start_ns": 596473842698916,
+      "primary_dispatch_ns": 596473849438152,
+      "preparation_ns": 6739236,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "222658d4e6756dcb431c159cc5c1cf3cc97cc59a2575ddd6894a98c2f6861f5a"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "b3f7820f81ffe76fad16d50a432f04698eb52dabdec2b5dc91fb7133f3b72193"
+        }
+      ]
+    },
+    {
+      "sample_id": "EN-json/b3/measured/1",
+      "language": "EN",
+      "protocol": "json",
+      "block": 3,
+      "ordinal": 1,
+      "warmup": false,
+      "category": "document",
+      "case_id": "EN-document-05",
+      "tenant_id": "orq37-t23",
+      "message": "Explain why telemetry failures must remain best effort.",
+      "request_id": "9d20665d-2bb2-5bf8-87d7-e57df31b89ab",
+      "conversation_id": "ae87bad1-7339-5ed8-8123-49db1998a345",
+      "status": "PASS",
+      "error": null,
+      "accounting_instance_id": "9b4ee9ee-17b8-42ec-9537-e181147a94fe",
+      "start_ns": 596473852092615,
+      "primary_dispatch_ns": 596473875180175,
+      "preparation_ns": 23087560,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "a71c1139be75714f9ee336725d69d11f0df530b07f0bf0762dc4f08f0377d57b"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "2164775f2dea2271da0b4b94a09096b0af01707aaa4fd17876147f6227a29f10"
+        }
+      ]
+    },
+    {
+      "sample_id": "EN-json/b3/measured/2",
+      "language": "EN",
+      "protocol": "json",
+      "block": 3,
+      "ordinal": 2,
+      "warmup": false,
+      "category": "history",
+      "case_id": "EN-history-05",
+      "tenant_id": "orq41-6b2ab547-en-history",
+      "message": "What recovery contact was approved for ORQ41PROJECTEN05?",
+      "request_id": "f73c02ab-1cec-5d1d-bc05-42c69883fc8b",
+      "conversation_id": "e7723373-63c6-57df-b5cc-b4d2ec20afed",
+      "status": "PASS",
+      "error": null,
+      "accounting_instance_id": "1155af52-6479-4735-ad9e-e0087294f2f8",
+      "start_ns": 596473878223142,
+      "primary_dispatch_ns": 596473888216585,
+      "preparation_ns": 9993443,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "1898283eebb8f975eeb36ac8a08e0c76eb25e169e3907d99764c341442e5325b"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "bc02eede23634d842bd3fa2f5b315a8d24f0415b34d703405910c7f92a628bf7"
+        }
+      ]
+    },
+    {
+      "sample_id": "EN-json/b3/measured/3",
+      "language": "EN",
+      "protocol": "json",
+      "block": 3,
+      "ordinal": 3,
+      "warmup": false,
+      "category": "combined",
+      "case_id": "EN-combined-05",
+      "tenant_id": "orq37-t23",
+      "message": "Explain why telemetry failures must remain best effort. Also recall the recovery contact approved for ORQ41PROJECTEN05.",
+      "request_id": "d89eb14c-88d8-58e7-af71-6d3bd1f08d14",
+      "conversation_id": "2b2ea9dd-40ee-5da4-823e-8c438756281c",
+      "status": "PASS",
+      "error": null,
+      "accounting_instance_id": "3d3f97f1-415d-4d72-a0f0-09d0e5a01a79",
+      "start_ns": 596473891900959,
+      "primary_dispatch_ns": 596473926403253,
+      "preparation_ns": 34502294,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "1516887e4ea2d729f5129fbbbf6af17f2ce92fe173ba77b099eea3b40cb0c589"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "3d4cabc94c21377f73843bf787b05bf062d51f2580c1bfd913a0c08c2353ff7b"
+        }
+      ]
+    },
+    {
+      "sample_id": "EN-json/b3/measured/4",
+      "language": "EN",
+      "protocol": "json",
+      "block": 3,
+      "ordinal": 4,
+      "warmup": false,
+      "category": "empty",
+      "case_id": "EN-empty-05",
+      "tenant_id": "orq41-6b2ab547-en-empty",
+      "message": "What evidence is available for unregistered project ORQ41UNKNOWN05?",
+      "request_id": "2d6d9149-8646-51b0-8517-c3787602ca90",
+      "conversation_id": "e43d8b1b-28ad-5e47-a042-bb493eb83831",
+      "status": "PASS",
+      "error": null,
+      "accounting_instance_id": "4ed17ad7-b005-4f84-b1dd-e6bbf4de0c6d",
+      "start_ns": 596473932312098,
+      "primary_dispatch_ns": 596473942294205,
+      "preparation_ns": 9982107,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "21bc7ce39cf08fcb486e7b6d17ba003fd020b360022c8b2aad592bdc75be719b"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "ed85e04d3eda0e803d03934c116447bf85b196c0f72d8547886e574963571517"
+        }
+      ]
+    },
+    {
+      "sample_id": "EN-json/b3/measured/5",
+      "language": "EN",
+      "protocol": "json",
+      "block": 3,
+      "ordinal": 5,
+      "warmup": false,
+      "category": "document",
+      "case_id": "EN-document-01",
+      "tenant_id": "orq37-t23",
+      "message": "Explain how provider abstraction separates adapters from domain services.",
+      "request_id": "d2a86afc-64d9-59fd-9580-dd9b10fc8711",
+      "conversation_id": "61fce5e2-4a0b-5444-97ab-272c6b606854",
+      "status": "PASS",
+      "error": null,
+      "accounting_instance_id": "6b027a86-c524-4a17-be22-c5fd305ce50d",
+      "start_ns": 596473945795122,
+      "primary_dispatch_ns": 596473970367727,
+      "preparation_ns": 24572605,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "c16660404117da33b39c95d1e4dc09d8ea74241ccb6470678ce74048020a4763"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "4a4717bee710db453501887645f43923c134fdf9d641d0cf381c717fccfdd1c9"
+        }
+      ]
+    },
+    {
+      "sample_id": "EN-json/b3/measured/6",
+      "language": "EN",
+      "protocol": "json",
+      "block": 3,
+      "ordinal": 6,
+      "warmup": false,
+      "category": "history",
+      "case_id": "EN-history-01",
+      "tenant_id": "orq41-6b2ab547-en-history",
+      "message": "What recovery contact was approved for ORQ41PROJECTEN01?",
+      "request_id": "d5890c09-8562-5ace-bb35-743f786a83ca",
+      "conversation_id": "22f78377-c53f-5350-997b-d6080417ce62",
+      "status": "PASS",
+      "error": null,
+      "accounting_instance_id": "e6780e85-721a-465b-b71b-d52c45201f4d",
+      "start_ns": 596473973677766,
+      "primary_dispatch_ns": 596473984327203,
+      "preparation_ns": 10649437,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "fa7e7006fbe27ae09a074e1a6872184c7d539e11d29319fc6088d1b9b30d6d25"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "adecf8a0af8fd3c233fa10098eb2c70d90cc9343b96a17cc0395ab6fbdba264d"
+        }
+      ]
+    },
+    {
+      "sample_id": "EN-json/b3/measured/7",
+      "language": "EN",
+      "protocol": "json",
+      "block": 3,
+      "ordinal": 7,
+      "warmup": false,
+      "category": "combined",
+      "case_id": "EN-combined-01",
+      "tenant_id": "orq37-t23",
+      "message": "Explain how provider abstraction separates adapters from domain services. Also recall the recovery contact approved for ORQ41PROJECTEN01.",
+      "request_id": "1c5c1223-8574-5697-9d61-38faa7a5ab84",
+      "conversation_id": "d0404f15-8ea8-514a-b6ec-50a80f9bca1b",
+      "status": "PASS",
+      "error": null,
+      "accounting_instance_id": "623e2f3e-3149-4a13-9fe3-12a841800673",
+      "start_ns": 596473988532011,
+      "primary_dispatch_ns": 596474023328707,
+      "preparation_ns": 34796696,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "13687b189f2e1fe3ac84b99aa995262a59444a2c0270fa46add321a59a783129"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "6aebaefb1a73a774b8cceeb0693600c896651f06f9e8144848413a3c8c7c4bd8"
+        }
+      ]
+    },
+    {
+      "sample_id": "EN-json/b3/measured/8",
+      "language": "EN",
+      "protocol": "json",
+      "block": 3,
+      "ordinal": 8,
+      "warmup": false,
+      "category": "empty",
+      "case_id": "EN-empty-01",
+      "tenant_id": "orq41-6b2ab547-en-empty",
+      "message": "What evidence is available for unregistered project ORQ41UNKNOWN01?",
+      "request_id": "7e33ff33-cc5d-533d-a189-09d1a18bdf00",
+      "conversation_id": "ed0144f6-aa02-53fb-be40-aca2c4dbd493",
+      "status": "PASS",
+      "error": null,
+      "accounting_instance_id": "f69aca44-3c97-4556-a395-5e4c03c155d6",
+      "start_ns": 596474027864084,
+      "primary_dispatch_ns": 596474035284392,
+      "preparation_ns": 7420308,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "61321e695446fd0d86cdbb20da38f384c5965ee24baa073eda9eb8bf606105bb"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "9374bbf4a9edc0864aa5beaf0a8037c0b4cd7ff34b9e3288e46014fd9790d0d4"
+        }
+      ]
+    },
+    {
+      "sample_id": "EN-json/b3/measured/9",
+      "language": "EN",
+      "protocol": "json",
+      "block": 3,
+      "ordinal": 9,
+      "warmup": false,
+      "category": "document",
+      "case_id": "EN-document-02",
+      "tenant_id": "orq37-t23",
+      "message": "Explain how chat exchanges persist atomically.",
+      "request_id": "7a9f15cd-2164-5c62-b2d7-7a7886d42839",
+      "conversation_id": "724d3b8e-1c4a-547f-b73a-1466cc83b1e5",
+      "status": "PASS",
+      "error": null,
+      "accounting_instance_id": "77723d8e-66f9-462f-85c2-291c27bbe2c1",
+      "start_ns": 596474038077911,
+      "primary_dispatch_ns": 596474059299571,
+      "preparation_ns": 21221660,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "7ac94cba19ca05bce0c540f27f2273a235ab8ae4ae680b62e3dbd982fd33492a"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "a55e8c0649134970872ebc771b8ea8774333ab70d7d6af9fe81fa606cce80c6b"
+        }
+      ]
+    },
+    {
+      "sample_id": "EN-json/b3/measured/10",
+      "language": "EN",
+      "protocol": "json",
+      "block": 3,
+      "ordinal": 10,
+      "warmup": false,
+      "category": "history",
+      "case_id": "EN-history-02",
+      "tenant_id": "orq41-6b2ab547-en-history",
+      "message": "What recovery contact was approved for ORQ41PROJECTEN02?",
+      "request_id": "31fb2709-fe4c-5b8e-a09f-a559bf2df3d6",
+      "conversation_id": "e1957d62-3c75-593d-a588-b0774e4ecf75",
+      "status": "PASS",
+      "error": null,
+      "accounting_instance_id": "8bccb05b-c79a-4d29-82f7-8fe3fc003976",
+      "start_ns": 596474062529902,
+      "primary_dispatch_ns": 596474071290121,
+      "preparation_ns": 8760219,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "7c25fbf10458ab90b803d5795f09b494f40e72e2445c078e636e1884d8fe9732"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "06d8ddbeee5828d7836c92b8e66af28d2c9652979d577e8a14beb16624f7004b"
+        }
+      ]
+    },
+    {
+      "sample_id": "EN-json/b3/measured/11",
+      "language": "EN",
+      "protocol": "json",
+      "block": 3,
+      "ordinal": 11,
+      "warmup": false,
+      "category": "combined",
+      "case_id": "EN-combined-02",
+      "tenant_id": "orq37-t23",
+      "message": "Explain how chat exchanges persist atomically. Also recall the recovery contact approved for ORQ41PROJECTEN02.",
+      "request_id": "41aa8777-6cb6-5722-aec7-f23cdef8a125",
+      "conversation_id": "1e20bc4f-dc29-57dc-905e-e94e73a99f14",
+      "status": "PASS",
+      "error": null,
+      "accounting_instance_id": "4c54ab79-4373-4437-a95e-a6f35013ae97",
+      "start_ns": 596474074866169,
+      "primary_dispatch_ns": 596474105627781,
+      "preparation_ns": 30761612,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "2684eebdee11e439de58433868854483628a7359dbc22cd006008c32eab6bcf0"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "4b09f261ac5eb1b0b18c76e9fd0d4860cc0439993ca6f2075217f471f52a37cb"
+        }
+      ]
+    },
+    {
+      "sample_id": "EN-json/b3/measured/12",
+      "language": "EN",
+      "protocol": "json",
+      "block": 3,
+      "ordinal": 12,
+      "warmup": false,
+      "category": "empty",
+      "case_id": "EN-empty-02",
+      "tenant_id": "orq41-6b2ab547-en-empty",
+      "message": "What evidence is available for unregistered project ORQ41UNKNOWN02?",
+      "request_id": "e8a6645f-fb2e-5961-ac3b-29c152c6de8c",
+      "conversation_id": "bb06804e-e064-543f-98e2-3bf7b273f23f",
+      "status": "PASS",
+      "error": null,
+      "accounting_instance_id": "22a35bf6-011a-436a-8b1c-82d519f7a339",
+      "start_ns": 596474110347392,
+      "primary_dispatch_ns": 596474119533449,
+      "preparation_ns": 9186057,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "0251323350171bf0307aab02e1cfae4ef11e9fa70f5123ccf08ccf086b2242b6"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "908db10d3d6ade3d8d8b3e360013bb38332c4635aea2bec010a110b7a2a352d6"
+        }
+      ]
+    },
+    {
+      "sample_id": "EN-json/b3/measured/13",
+      "language": "EN",
+      "protocol": "json",
+      "block": 3,
+      "ordinal": 13,
+      "warmup": false,
+      "category": "document",
+      "case_id": "EN-document-03",
+      "tenant_id": "orq37-t23",
+      "message": "Explain tenant isolation in retrieval.",
+      "request_id": "a01feca8-7279-5fb0-9be6-25acb4eff722",
+      "conversation_id": "bea86e65-388d-535c-9964-05a0188fe144",
+      "status": "PASS",
+      "error": null,
+      "accounting_instance_id": "d5e208e5-c841-41cc-972e-75cb2392588a",
+      "start_ns": 596474122588155,
+      "primary_dispatch_ns": 596474142640488,
+      "preparation_ns": 20052333,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "f8c8b3c9899e487dee815159da748d8ff732d3c572832ca612543615ac333fd2"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "31d62b793c134af3890bb1cf8990850f742a2217b5bf2612e6340dc9c22d9373"
+        }
+      ]
+    },
+    {
+      "sample_id": "EN-json/b3/measured/14",
+      "language": "EN",
+      "protocol": "json",
+      "block": 3,
+      "ordinal": 14,
+      "warmup": false,
+      "category": "history",
+      "case_id": "EN-history-03",
+      "tenant_id": "orq41-6b2ab547-en-history",
+      "message": "What recovery contact was approved for ORQ41PROJECTEN03?",
+      "request_id": "e64cd480-d56e-51ef-a88d-e0c399e9c0f1",
+      "conversation_id": "51a2549e-507c-5684-a4d8-0c929a0e0e3d",
+      "status": "PASS",
+      "error": null,
+      "accounting_instance_id": "f016d7d0-f73f-45fd-853a-723fd10f8f2b",
+      "start_ns": 596474145948679,
+      "primary_dispatch_ns": 596474155432385,
+      "preparation_ns": 9483706,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "5dd796d063d3ee3c4cfc5175c48bf8974f4ce56484a8335bb1fa10e16d5ab383"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "cc65c996b1f24af148df05232f8d8e24ec9242cd52f34fca3659af7257cea33b"
+        }
+      ]
+    },
+    {
+      "sample_id": "EN-json/b3/measured/15",
+      "language": "EN",
+      "protocol": "json",
+      "block": 3,
+      "ordinal": 15,
+      "warmup": false,
+      "category": "combined",
+      "case_id": "EN-combined-03",
+      "tenant_id": "orq37-t23",
+      "message": "Explain tenant isolation in retrieval. Also recall the recovery contact approved for ORQ41PROJECTEN03.",
+      "request_id": "9f4f79af-22a3-5e2d-b16c-49eeaca5ef29",
+      "conversation_id": "81fcdc5b-f972-5b32-9241-8db4016c2770",
+      "status": "PASS",
+      "error": null,
+      "accounting_instance_id": "29f2c5af-fb05-4360-bbbc-142b7ec7745f",
+      "start_ns": 596474158984705,
+      "primary_dispatch_ns": 596474187439112,
+      "preparation_ns": 28454407,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "670848497dbe56e8a21e26a2f2609f59887d587011b137141bd4a710f0fb3ddf"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "ac2a1192f33c23525425059c794420b6bce5a321fe4f9e70433cc67fa6af8234"
+        }
+      ]
+    },
+    {
+      "sample_id": "EN-json/b3/measured/16",
+      "language": "EN",
+      "protocol": "json",
+      "block": 3,
+      "ordinal": 16,
+      "warmup": false,
+      "category": "empty",
+      "case_id": "EN-empty-03",
+      "tenant_id": "orq41-6b2ab547-en-empty",
+      "message": "What evidence is available for unregistered project ORQ41UNKNOWN03?",
+      "request_id": "a2b6c727-8b86-5330-817b-f0dd9575f30f",
+      "conversation_id": "64db020e-7c28-5714-9fe5-f13610899c1a",
+      "status": "PASS",
+      "error": null,
+      "accounting_instance_id": "4d1aa18b-f45e-431a-b4d1-03f5f0620abb",
+      "start_ns": 596474192126605,
+      "primary_dispatch_ns": 596474200114789,
+      "preparation_ns": 7988184,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "94b237d1f4b8c06748dcc4c187e5ffbfb74c85ef0e3fdac3b58976926a4fc02f"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "4bfb587244d3a7f099c3c0dbb2d59d2dfa85a3064f51f2b91bf0a0a8ee14b6ca"
+        }
+      ]
+    },
+    {
+      "sample_id": "EN-json/b3/measured/17",
+      "language": "EN",
+      "protocol": "json",
+      "block": 3,
+      "ordinal": 17,
+      "warmup": false,
+      "category": "document",
+      "case_id": "EN-document-04",
+      "tenant_id": "orq37-t23",
+      "message": "Explain how streaming errors and partial output are handled.",
+      "request_id": "29e6a5aa-9b42-5b6b-978d-e8bc90eda1b1",
+      "conversation_id": "f799f69a-3205-58ff-bbc9-27831aa3913d",
+      "status": "PASS",
+      "error": null,
+      "accounting_instance_id": "daa5c97a-172b-47ce-9bb3-19a2985d4d0f",
+      "start_ns": 596474202487347,
+      "primary_dispatch_ns": 596474227057292,
+      "preparation_ns": 24569945,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "bb0750edb54545381187794f9c3c43089452a8ed68f8f796c18f60e28c9c0003"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "473b404bf3ca0ff0db958da8c46a3090703f14c75cd4598e7890f10dbe385d2f"
+        }
+      ]
+    },
+    {
+      "sample_id": "EN-json/b3/measured/18",
+      "language": "EN",
+      "protocol": "json",
+      "block": 3,
+      "ordinal": 18,
+      "warmup": false,
+      "category": "history",
+      "case_id": "EN-history-04",
+      "tenant_id": "orq41-6b2ab547-en-history",
+      "message": "What recovery contact was approved for ORQ41PROJECTEN04?",
+      "request_id": "e1418302-f628-56da-9f9b-2ff69171ff77",
+      "conversation_id": "f987ad4d-f49c-5003-bf8c-f17f574d0a98",
+      "status": "PASS",
+      "error": null,
+      "accounting_instance_id": "a60f16bd-bc8b-48ac-8ec9-5f93836d1c10",
+      "start_ns": 596474230133169,
+      "primary_dispatch_ns": 596474237672389,
+      "preparation_ns": 7539220,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "e89300dd17ce3ff1cbbc371ae8ddcb2b2a1d234ca5956667a5bcfdf508fc4229"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "e2909c6419f180e1f12f912bb51dc289d1517b1cf08d86d35da01300a0a5f675"
+        }
+      ]
+    },
+    {
+      "sample_id": "EN-json/b3/measured/19",
+      "language": "EN",
+      "protocol": "json",
+      "block": 3,
+      "ordinal": 19,
+      "warmup": false,
+      "category": "combined",
+      "case_id": "EN-combined-04",
+      "tenant_id": "orq37-t23",
+      "message": "Explain how streaming errors and partial output are handled. Also recall the recovery contact approved for ORQ41PROJECTEN04.",
+      "request_id": "aa5714da-784a-51f3-9de4-70834b4cc118",
+      "conversation_id": "0c86e4e7-5937-58f1-8556-8bede63e61c7",
+      "status": "PASS",
+      "error": null,
+      "accounting_instance_id": "94cdd0e5-5368-4aff-8d7e-19eae6be0638",
+      "start_ns": 596474241165219,
+      "primary_dispatch_ns": 596474274864209,
+      "preparation_ns": 33698990,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "070a4b871cec96a5fd9bcc7934fa5edf55b8a8584356013a51ca079f46898115"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "64718ba235d4fe772be60828af4e68e590db6d54d479e4014190a04a07d6d93a"
+        }
+      ]
+    },
+    {
+      "sample_id": "EN-json/b3/measured/20",
+      "language": "EN",
+      "protocol": "json",
+      "block": 3,
+      "ordinal": 20,
+      "warmup": false,
+      "category": "empty",
+      "case_id": "EN-empty-04",
+      "tenant_id": "orq41-6b2ab547-en-empty",
+      "message": "What evidence is available for unregistered project ORQ41UNKNOWN04?",
+      "request_id": "dc73d1a6-d257-54c4-827b-fd209e98527f",
+      "conversation_id": "9e506b71-9429-56bf-9cb9-c890ef0b71ad",
+      "status": "PASS",
+      "error": null,
+      "accounting_instance_id": "f73f9f31-799c-45a8-9e11-b98a5cae7054",
+      "start_ns": 596474279854753,
+      "primary_dispatch_ns": 596474288398955,
+      "preparation_ns": 8544202,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "222658d4e6756dcb431c159cc5c1cf3cc97cc59a2575ddd6894a98c2f6861f5a"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "b3f7820f81ffe76fad16d50a432f04698eb52dabdec2b5dc91fb7133f3b72193"
+        }
+      ]
+    },
+    {
+      "sample_id": "EN-json/b3/measured/21",
+      "language": "EN",
+      "protocol": "json",
+      "block": 3,
+      "ordinal": 21,
+      "warmup": false,
+      "category": "document",
+      "case_id": "EN-document-05",
+      "tenant_id": "orq37-t23",
+      "message": "Explain why telemetry failures must remain best effort.",
+      "request_id": "73c0185e-bfb8-55ca-a545-6a9daae7fbb1",
+      "conversation_id": "27d330eb-35d4-5057-b7cb-d8390580cda8",
+      "status": "PASS",
+      "error": null,
+      "accounting_instance_id": "f77bf1b7-7347-47a0-8d37-149a5aefc7cf",
+      "start_ns": 596474291770045,
+      "primary_dispatch_ns": 596474314931192,
+      "preparation_ns": 23161147,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "a71c1139be75714f9ee336725d69d11f0df530b07f0bf0762dc4f08f0377d57b"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "2164775f2dea2271da0b4b94a09096b0af01707aaa4fd17876147f6227a29f10"
+        }
+      ]
+    },
+    {
+      "sample_id": "EN-json/b3/measured/22",
+      "language": "EN",
+      "protocol": "json",
+      "block": 3,
+      "ordinal": 22,
+      "warmup": false,
+      "category": "history",
+      "case_id": "EN-history-05",
+      "tenant_id": "orq41-6b2ab547-en-history",
+      "message": "What recovery contact was approved for ORQ41PROJECTEN05?",
+      "request_id": "7658a99a-a8d1-54f6-bfb2-529f1b21f6ee",
+      "conversation_id": "eef466f0-0606-5b90-a4f4-1acfcc2d8ec9",
+      "status": "PASS",
+      "error": null,
+      "accounting_instance_id": "dae9e383-4fd4-43d0-bfb4-c3be3423326a",
+      "start_ns": 596474318588179,
+      "primary_dispatch_ns": 596474328242618,
+      "preparation_ns": 9654439,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "1898283eebb8f975eeb36ac8a08e0c76eb25e169e3907d99764c341442e5325b"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "bc02eede23634d842bd3fa2f5b315a8d24f0415b34d703405910c7f92a628bf7"
+        }
+      ]
+    },
+    {
+      "sample_id": "EN-json/b3/measured/23",
+      "language": "EN",
+      "protocol": "json",
+      "block": 3,
+      "ordinal": 23,
+      "warmup": false,
+      "category": "combined",
+      "case_id": "EN-combined-05",
+      "tenant_id": "orq37-t23",
+      "message": "Explain why telemetry failures must remain best effort. Also recall the recovery contact approved for ORQ41PROJECTEN05.",
+      "request_id": "91784bf7-fa0e-50fb-a442-ba4928642078",
+      "conversation_id": "852aafa2-55c4-59f5-b207-f89be88b0fc3",
+      "status": "PASS",
+      "error": null,
+      "accounting_instance_id": "cb149831-3f17-4d78-a6bf-72f5249bed0e",
+      "start_ns": 596474332357835,
+      "primary_dispatch_ns": 596474365529009,
+      "preparation_ns": 33171174,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "1516887e4ea2d729f5129fbbbf6af17f2ce92fe173ba77b099eea3b40cb0c589"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "3d4cabc94c21377f73843bf787b05bf062d51f2580c1bfd913a0c08c2353ff7b"
+        }
+      ]
+    },
+    {
+      "sample_id": "EN-json/b3/measured/24",
+      "language": "EN",
+      "protocol": "json",
+      "block": 3,
+      "ordinal": 24,
+      "warmup": false,
+      "category": "empty",
+      "case_id": "EN-empty-05",
+      "tenant_id": "orq41-6b2ab547-en-empty",
+      "message": "What evidence is available for unregistered project ORQ41UNKNOWN05?",
+      "request_id": "aa6a7d33-9bed-5e6c-8a18-2083b9ad143e",
+      "conversation_id": "05852f47-da04-55d7-86c6-2d26842c8729",
+      "status": "PASS",
+      "error": null,
+      "accounting_instance_id": "150261ad-669d-4cdb-87d5-ce169ee51340",
+      "start_ns": 596474370104250,
+      "primary_dispatch_ns": 596474377663274,
+      "preparation_ns": 7559024,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "21bc7ce39cf08fcb486e7b6d17ba003fd020b360022c8b2aad592bdc75be719b"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "ed85e04d3eda0e803d03934c116447bf85b196c0f72d8547886e574963571517"
+        }
+      ]
+    }
+  ],
+  "resources_before": {
+    "affinity": [
+      0,
+      2
+    ],
+    "effective_cpuset": [
+      0,
+      2
+    ],
+    "cpu_max": "200000 100000",
+    "cpu_stat": {
+      "usage_usec": 1202682,
+      "user_usec": 1125574,
+      "system_usec": 77107,
+      "nice_usec": 0,
+      "core_sched.force_idle_usec": 0,
+      "nr_periods": 12,
+      "nr_throttled": 0,
+      "throttled_usec": 0,
+      "nr_bursts": 0,
+      "burst_usec": 0
+    },
+    "topology": [
+      {
+        "cpu": 0,
+        "core_id": 0,
+        "siblings": [
+          0,
+          1
+        ],
+        "max_khz": 5600000,
+        "governor": "powersave"
+      },
+      {
+        "cpu": 2,
+        "core_id": 4,
+        "siblings": [
+          2,
+          3
+        ],
+        "max_khz": 5600000,
+        "governor": "powersave"
+      },
+      {
+        "cpu": 4,
+        "core_id": 8,
+        "siblings": [
+          4,
+          5
+        ],
+        "max_khz": 5600000,
+        "governor": "powersave"
+      },
+      {
+        "cpu": 6,
+        "core_id": 12,
+        "siblings": [
+          6,
+          7
+        ],
+        "max_khz": 5600000,
+        "governor": "powersave"
+      }
+    ]
+  },
+  "resources_after": {
+    "affinity": [
+      0,
+      2
+    ],
+    "effective_cpuset": [
+      0,
+      2
+    ],
+    "cpu_max": "200000 100000",
+    "cpu_stat": {
+      "usage_usec": 1672124,
+      "user_usec": 1567929,
+      "system_usec": 104194,
+      "nice_usec": 0,
+      "core_sched.force_idle_usec": 0,
+      "nr_periods": 22,
+      "nr_throttled": 0,
+      "throttled_usec": 0,
+      "nr_bursts": 0,
+      "burst_usec": 0
+    },
+    "topology": [
+      {
+        "cpu": 0,
+        "core_id": 0,
+        "siblings": [
+          0,
+          1
+        ],
+        "max_khz": 5600000,
+        "governor": "powersave"
+      },
+      {
+        "cpu": 2,
+        "core_id": 4,
+        "siblings": [
+          2,
+          3
+        ],
+        "max_khz": 5600000,
+        "governor": "powersave"
+      },
+      {
+        "cpu": 4,
+        "core_id": 8,
+        "siblings": [
+          4,
+          5
+        ],
+        "max_khz": 5600000,
+        "governor": "powersave"
+      },
+      {
+        "cpu": 6,
+        "core_id": 12,
+        "siblings": [
+          6,
+          7
+        ],
+        "max_khz": 5600000,
+        "governor": "powersave"
+      }
+    ]
+  },
+  "cpu_stat_delta": {
+    "usage_usec": 469442,
+    "user_usec": 442355,
+    "system_usec": 27087,
+    "nice_usec": 0,
+    "core_sched.force_idle_usec": 0,
+    "nr_periods": 10,
+    "nr_throttled": 0,
+    "throttled_usec": 0,
+    "nr_bursts": 0,
+    "burst_usec": 0
+  },
+  "config_identity": "bb92a739790630b0d40cb93136e60188b789444a54b051a8fa4b2c415b31ee0d",
+  "seed_probe": {
+    "seed": "41",
+    "string_hash": 928176814434627218,
+    "python": "3.13.15 (main, Sep  1 2026, 00:07:39) [GCC 14.2.0]",
+    "hash_algorithm": "siphash13",
+    "hash_width": 64
+  },
+  "provider_calls": 0,
+  "external_calls": 0
+}

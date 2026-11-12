@@ -1,0 +1,2776 @@
+{
+  "arm": "c0",
+  "full_c1": true,
+  "resources_before": {
+    "affinity": [
+      0,
+      2
+    ],
+    "effective_cpuset": [
+      0,
+      2
+    ],
+    "cpu_max": "200000 100000",
+    "cpu_stat": {
+      "usage_usec": 1180286,
+      "user_usec": 1101334,
+      "system_usec": 78952,
+      "nice_usec": 0,
+      "core_sched.force_idle_usec": 0,
+      "nr_periods": 12,
+      "nr_throttled": 0,
+      "throttled_usec": 0,
+      "nr_bursts": 0,
+      "burst_usec": 0
+    },
+    "topology": [
+      {
+        "cpu": 0,
+        "core_id": 0,
+        "siblings": [
+          0,
+          1
+        ],
+        "max_khz": 5600000,
+        "governor": "powersave"
+      },
+      {
+        "cpu": 2,
+        "core_id": 4,
+        "siblings": [
+          2,
+          3
+        ],
+        "max_khz": 5600000,
+        "governor": "powersave"
+      },
+      {
+        "cpu": 4,
+        "core_id": 8,
+        "siblings": [
+          4,
+          5
+        ],
+        "max_khz": 5600000,
+        "governor": "powersave"
+      },
+      {
+        "cpu": 6,
+        "core_id": 12,
+        "siblings": [
+          6,
+          7
+        ],
+        "max_khz": 5600000,
+        "governor": "powersave"
+      }
+    ]
+  },
+  "resources_after": {
+    "affinity": [
+      0,
+      2
+    ],
+    "effective_cpuset": [
+      0,
+      2
+    ],
+    "cpu_max": "200000 100000",
+    "cpu_stat": {
+      "usage_usec": 2157312,
+      "user_usec": 2034465,
+      "system_usec": 122846,
+      "nice_usec": 0,
+      "core_sched.force_idle_usec": 0,
+      "nr_periods": 27,
+      "nr_throttled": 0,
+      "throttled_usec": 0,
+      "nr_bursts": 0,
+      "burst_usec": 0
+    },
+    "topology": [
+      {
+        "cpu": 0,
+        "core_id": 0,
+        "siblings": [
+          0,
+          1
+        ],
+        "max_khz": 5600000,
+        "governor": "powersave"
+      },
+      {
+        "cpu": 2,
+        "core_id": 4,
+        "siblings": [
+          2,
+          3
+        ],
+        "max_khz": 5600000,
+        "governor": "powersave"
+      },
+      {
+        "cpu": 4,
+        "core_id": 8,
+        "siblings": [
+          4,
+          5
+        ],
+        "max_khz": 5600000,
+        "governor": "powersave"
+      },
+      {
+        "cpu": 6,
+        "core_id": 12,
+        "siblings": [
+          6,
+          7
+        ],
+        "max_khz": 5600000,
+        "governor": "powersave"
+      }
+    ]
+  },
+  "cpu_stat_delta": {
+    "usage_usec": 977026,
+    "user_usec": 933131,
+    "system_usec": 43894,
+    "nice_usec": 0,
+    "core_sched.force_idle_usec": 0,
+    "nr_periods": 15,
+    "nr_throttled": 0,
+    "throttled_usec": 0,
+    "nr_bursts": 0,
+    "burst_usec": 0
+  },
+  "samples": [
+    {
+      "sample_id": "ES/json/0",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": true,
+      "category": "document",
+      "request_id": "d65a934e-45e6-53f0-a7c3-b219ca8af1c5",
+      "conversation_id": "064ca812-7557-5c20-9804-222ab71d9199",
+      "accounting_instance_id": "be653f47-e192-485b-9b70-89e8ec48ce2b",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490304377140467,
+      "primary_dispatch_ns": 490304431561429,
+      "preparation_ns": 54420962,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "fb55d7c9fe388cbd576ebfdf7d577b9304a80ade5eaabdbd13036f168142bc3a"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "ab9a1c9d227c099aa1a6233b35986c632eb9241fb65085535d0172e5a93baa0b"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/1",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": true,
+      "category": "document",
+      "request_id": "b137a847-47b7-50fc-848f-482b796d70f1",
+      "conversation_id": "31fe1b56-5086-57ff-b773-0c2287843cfe",
+      "accounting_instance_id": "46ba96ae-dad7-488e-ba44-530de9be88a0",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490304438458987,
+      "primary_dispatch_ns": 490304459385123,
+      "preparation_ns": 20926136,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "2d21403ba349ab2c3dd52e55b2d2e420e2a9e67506ef43ce09d955be5403e6bb"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "77d98e340aedfc6d360ad7c135ca36e2c220a23105c1055824cf651763bac463"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/2",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": true,
+      "category": "document",
+      "request_id": "c5afbe31-9df5-5f70-a0db-3b8f3e143fc3",
+      "conversation_id": "a2aaf29e-44cb-5fa1-ba2b-2f7a7eb2122e",
+      "accounting_instance_id": "affb469c-4272-4505-b684-dca39a7cee59",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490304464303841,
+      "primary_dispatch_ns": 490304481863377,
+      "preparation_ns": 17559536,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "d2380cb8115ffa1a6e6ace554effb7639bc3092786d1ee9e22d95b8a3c173ad6"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "301e32012720e924c4bada3592f718b0ae584cf6385c4b4cf65edcc33c5d8db0"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/3",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": true,
+      "category": "document",
+      "request_id": "d6549236-c43f-546b-b2ef-61d4069aecac",
+      "conversation_id": "91eeb64c-1fc1-5fe8-8edf-e89a292caebd",
+      "accounting_instance_id": "cb33d908-b312-4205-b1ac-6a49777752c9",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490304485466994,
+      "primary_dispatch_ns": 490304501926016,
+      "preparation_ns": 16459022,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "67e00db2ce2c57c7d513e4596de9505d0681665b777dfead18be0e74ab0a55a3"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "0ccbe84f830a84a423ac4abd39769c59b623ae795f165649111ed684604ecdea"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/4",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": true,
+      "category": "document",
+      "request_id": "735d2cbf-0263-59b9-892c-634557a14c1a",
+      "conversation_id": "c3483635-1536-55c6-b1bb-7c8bc20a230c",
+      "accounting_instance_id": "049e448c-f163-46c9-9aab-4be1e1768d65",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490304505331606,
+      "primary_dispatch_ns": 490304520265939,
+      "preparation_ns": 14934333,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "74c054403ee7759ab996bae7776aaa74e6d0d7713bef509f14e6eba4fb2e7d6f"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "2af2a627275c57ed7e737e1d907c5e575467e1523c17340a56a946ccb52858c7"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/5",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "document",
+      "request_id": "f4437fb5-e811-5db5-8287-e79385a13f18",
+      "conversation_id": "60ef7125-4baa-549f-a4e6-b4628ca44f17",
+      "accounting_instance_id": "db7588c6-25f0-4ece-9802-93c0458077b3",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490304523809321,
+      "primary_dispatch_ns": 490304538639949,
+      "preparation_ns": 14830628,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "fb55d7c9fe388cbd576ebfdf7d577b9304a80ade5eaabdbd13036f168142bc3a"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "ab9a1c9d227c099aa1a6233b35986c632eb9241fb65085535d0172e5a93baa0b"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/6",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "document",
+      "request_id": "6d8f16f9-20d6-542a-b108-bf809d0ff274",
+      "conversation_id": "e21876a6-f636-5e5f-b7d3-0418d507c78c",
+      "accounting_instance_id": "258e6320-96b7-4646-b8dd-c73247993b81",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490304541828332,
+      "primary_dispatch_ns": 490304555120077,
+      "preparation_ns": 13291745,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "2d21403ba349ab2c3dd52e55b2d2e420e2a9e67506ef43ce09d955be5403e6bb"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "77d98e340aedfc6d360ad7c135ca36e2c220a23105c1055824cf651763bac463"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/7",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "document",
+      "request_id": "011c49b7-229f-52e2-831e-a72456077905",
+      "conversation_id": "34a951f2-945c-5d02-ac00-b8775a074317",
+      "accounting_instance_id": "8503bdd7-c447-4bfa-8c67-1b43c80e55ca",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490304558015387,
+      "primary_dispatch_ns": 490304570750080,
+      "preparation_ns": 12734693,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "d2380cb8115ffa1a6e6ace554effb7639bc3092786d1ee9e22d95b8a3c173ad6"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "301e32012720e924c4bada3592f718b0ae584cf6385c4b4cf65edcc33c5d8db0"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/8",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "document",
+      "request_id": "6369c592-3a37-534c-8e01-42f73419f020",
+      "conversation_id": "b25eb725-0558-5e91-9a7c-ee517d9a78af",
+      "accounting_instance_id": "d1e6c46a-6f8b-4f69-8f9f-7a45ea468c3b",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490304573378032,
+      "primary_dispatch_ns": 490304586407958,
+      "preparation_ns": 13029926,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "67e00db2ce2c57c7d513e4596de9505d0681665b777dfead18be0e74ab0a55a3"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "0ccbe84f830a84a423ac4abd39769c59b623ae795f165649111ed684604ecdea"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/9",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "document",
+      "request_id": "55d582f3-6964-5339-9033-2bf8ce19b224",
+      "conversation_id": "b04fd2dd-4a68-5e7f-a66a-07aee2205e20",
+      "accounting_instance_id": "1bd005cc-3ef1-43f6-a2c0-82e13d258a97",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490304589610627,
+      "primary_dispatch_ns": 490304603245264,
+      "preparation_ns": 13634637,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "74c054403ee7759ab996bae7776aaa74e6d0d7713bef509f14e6eba4fb2e7d6f"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "2af2a627275c57ed7e737e1d907c5e575467e1523c17340a56a946ccb52858c7"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/10",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "history",
+      "request_id": "231f0466-291f-571b-a8ae-2187e7d07cd1",
+      "conversation_id": "38f68ac6-329a-59b1-bc8d-4f95da8fdf72",
+      "accounting_instance_id": "417daee6-583d-43f1-bbd1-a33f24bcd4bf",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490304606402273,
+      "primary_dispatch_ns": 490304614256767,
+      "preparation_ns": 7854494,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "6c53deb9a2f2ce365b9e77c70cd7c0b5c947cec3755744300eb9b7fb4c4c4c7d"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "84a8ffe1b98857343183d403fd4a442baa2e5dff1437593833d817536a718235"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/11",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "history",
+      "request_id": "d748c2b3-0030-5567-8d03-912812313526",
+      "conversation_id": "342fe970-0c25-51ea-9c8e-e9a6f83a47ee",
+      "accounting_instance_id": "8d7c070e-26b4-4c1c-91ed-1b6f390f2222",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490304617388992,
+      "primary_dispatch_ns": 490304623743950,
+      "preparation_ns": 6354958,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "90e04ebd7164b423d019a64ffc1ff94869d38566a758a397c94124878a0b7d49"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "52b056804c67c391a8c031fd3c612c010839f93835dfabc669371e1a6968f4c5"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/12",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "history",
+      "request_id": "d46c5414-33cd-5258-a3b3-0bb72e56f1ed",
+      "conversation_id": "de6f478c-41da-5a59-971e-8154767c528a",
+      "accounting_instance_id": "1511f162-6e40-4387-b626-c94661d5cd09",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490304626943912,
+      "primary_dispatch_ns": 490304633283694,
+      "preparation_ns": 6339782,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "eb165e2d4ee0446c064cfba69169b26d5952f5c5e84953d6cedd137223a1bed2"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "5e4a16ca964abd4917d2644873a74a7aab0126a885d99761a041de50fc041011"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/13",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "history",
+      "request_id": "5aa99dba-0b26-5547-94e6-1d813ff7a818",
+      "conversation_id": "1b19ce88-d1df-52f7-a617-036147e312df",
+      "accounting_instance_id": "2a3ca921-ec63-4d72-8328-8bd9262ef4a9",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490304636360304,
+      "primary_dispatch_ns": 490304643039417,
+      "preparation_ns": 6679113,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "f8a4755926a3a93569db4bfeddcfeefade4d60f6e52075cfcc1aa16d3f49024c"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "5c7ac4ede9dff91c97b9fc852445ffb4de71719e1fcb76753dc3aeea69a03bfc"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/14",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "history",
+      "request_id": "fdd52f13-6db8-574a-8314-4b3487aa9c71",
+      "conversation_id": "28614844-8d07-5de3-b882-2e0ecd00bfb4",
+      "accounting_instance_id": "84af02ff-cc4c-469e-97e5-9c4627a6ba17",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490304646184142,
+      "primary_dispatch_ns": 490304652526327,
+      "preparation_ns": 6342185,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "86f5166fcb448fd5aa83a9e324881d659b96244285e0c54dae435c5dddde79e4"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "fae5f4409aed1be0120e718ea2e0e8bc4df49a7d3dddbd8052f07f3ebaaf04d4"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/15",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "combined",
+      "request_id": "56a78071-214d-5e25-b6dd-ec72aa8dbb95",
+      "conversation_id": "069c9699-27f9-54e6-8d37-63580c0f716f",
+      "accounting_instance_id": "386d2059-34f7-4a04-9142-ece68afa1fa8",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490304655699623,
+      "primary_dispatch_ns": 490304668885122,
+      "preparation_ns": 13185499,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "6d119127bdf4dcd82e4c71be5b8b833dd779cb993b32e26e534641c3298d34e0"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "d1e244f8c609c1fbf979a9178a83ad4cbc5192f437c90305517fa83005b1e888"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/16",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "combined",
+      "request_id": "146f1c52-5a02-5de0-b487-7e5ab0984565",
+      "conversation_id": "570b98e5-ce59-537c-916f-e23b349922fd",
+      "accounting_instance_id": "ec8086b0-7e99-41c8-9b2c-36bc1b57b9c2",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490304672380164,
+      "primary_dispatch_ns": 490304685367580,
+      "preparation_ns": 12987416,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "d46226bfe7ff339135d73c7b3f9ff3642a8e13d34a0fbd21d94ea895c2b8e83d"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "6592c5a9bb02c1d79536e33051ebeec98edf507ad2676f99f4a744accffc5ea6"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/17",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "combined",
+      "request_id": "db5e7dac-5c11-53d6-8067-8f4cce7485da",
+      "conversation_id": "16bfd026-ac9c-5b2e-984d-62bb2ed1d3a6",
+      "accounting_instance_id": "4b80059c-bcea-485f-ace6-02472a64c8b4",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490304688842878,
+      "primary_dispatch_ns": 490304701918381,
+      "preparation_ns": 13075503,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "b9e322097bf763e990da310f29e47ff6ca320de18b72a4cf144b96dd64a3c3d5"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "d14df9243612c9ab945f763418873a14639b3b6f6eb4d2129d3f1a98e8fb4c02"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/18",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "combined",
+      "request_id": "9b0cc3b8-6799-5f2e-8073-7487143ca9e0",
+      "conversation_id": "ed2e1dc0-5bea-579e-8474-fc831f947710",
+      "accounting_instance_id": "406a7cf2-5faa-4a1a-8520-3760fb5391e0",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490304705315589,
+      "primary_dispatch_ns": 490304718414912,
+      "preparation_ns": 13099323,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "37baf489dd4df5bc582305c01b35d7375f73238fc1f7edefe126c4eb185f2b8c"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "3cc8e65a04f07d5bfb134e9de72dcc5cb73c951b223492b98867f1f67d328489"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/19",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "combined",
+      "request_id": "ecf9a297-5fa0-50b7-8c4a-b0c5ec2ddd02",
+      "conversation_id": "b85b311b-801e-5796-b38b-57e07923302b",
+      "accounting_instance_id": "c3545b56-5968-4848-81e7-3b394cc10383",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490304721902215,
+      "primary_dispatch_ns": 490304735274946,
+      "preparation_ns": 13372731,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "30528bf04071471916e12073eff0f69ee409b70f38698a126d09e2af4e7cae43"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "5ec5bc193cc9cdb0d29095b3a71913be1f49aad326fdd8f252946af9cefb3c5f"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/20",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "empty",
+      "request_id": "9fafe0ed-54ff-5cee-a901-4a3be31e847a",
+      "conversation_id": "d21580e1-b64e-525f-8c3c-2d27cae4e890",
+      "accounting_instance_id": "ede64c1b-d009-440b-b747-af117fa9be9b",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490304738729299,
+      "primary_dispatch_ns": 490304744118067,
+      "preparation_ns": 5388768,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "868d22d89b67c12837a99641761a613f60504f36e67e5af8828d9fbbfb882731"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "a33fc5e6b1cacf1ad6eb8f1c4566288828c08af5ebb408fefc5374325f2a4ee5"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/21",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "empty",
+      "request_id": "b03cbf3d-65ab-5ec9-ac36-6bcc7c0c5c9e",
+      "conversation_id": "ca25cd6a-2c3a-56be-be39-e6c8cfcc8c27",
+      "accounting_instance_id": "6051cb92-0dcb-4cf9-b41e-bb072e074844",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490304746306384,
+      "primary_dispatch_ns": 490304751422160,
+      "preparation_ns": 5115776,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "7ec529c2e9a29fbe90815f78161680d91ce7a583801308c5c2a1fe55f3f30f13"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "75a0c6be848fac135c760bbb20bd6b54b7290db25bbf82dd4ef825dad84862c9"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/22",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "empty",
+      "request_id": "5e9e2891-4921-5068-ad8e-dbf2e1324135",
+      "conversation_id": "98c15f63-e212-596d-b3fe-a641fff6708a",
+      "accounting_instance_id": "f72c56c0-d550-4354-b7bf-be1d659e44e5",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490304753616896,
+      "primary_dispatch_ns": 490304758956593,
+      "preparation_ns": 5339697,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "0e0b7e4e2efbf34df8569518f70f12f10641dbbd6e1d80e93ccc042588f15ea3"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "418b5c961e8594384ad750b60e67173c8df7f57734275c4b3f9244c26b2b53ba"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/23",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "empty",
+      "request_id": "48ffc414-9056-56ad-9801-0c14b65e4b26",
+      "conversation_id": "1224afc8-ce55-5d31-925c-b22b099c1108",
+      "accounting_instance_id": "691002db-0256-4de1-92aa-8bf1bd3dcba7",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490304761089096,
+      "primary_dispatch_ns": 490304766530956,
+      "preparation_ns": 5441860,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "1ed1181ba4dcd3d39c28ac6a1041bd74fd0b07858fd11d1111d72554402f12f3"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "1e434740a91b7f3ebdd22c64dbafc89841e762590104252c060f17caa0ac8ed6"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/24",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "empty",
+      "request_id": "146ad34e-62e4-5127-8c3e-25a910e53c54",
+      "conversation_id": "7daa36ea-f7b2-5161-8456-0ed1dddfcfec",
+      "accounting_instance_id": "c9d7ec7c-10bc-43a2-981d-8b4167ea59af",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490304768789962,
+      "primary_dispatch_ns": 490304773913241,
+      "preparation_ns": 5123279,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "f5c723f33afb59cf8ac8fcaf64cfd934436796e387594b48e692acab4856675b"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "1468d794471ac80012e79c2c4c1b5cce7da66fa06d346be72a00614f5761c030"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/25",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "document",
+      "request_id": "6d8768d9-f0dd-5505-a8cb-f00e87f7a1bd",
+      "conversation_id": "02ad2115-1b95-524f-8117-c547521bc8b0",
+      "accounting_instance_id": "f31e04c4-d57e-427a-a3d8-affdf8dacd9b",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490304775926699,
+      "primary_dispatch_ns": 490304787573444,
+      "preparation_ns": 11646745,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "fb55d7c9fe388cbd576ebfdf7d577b9304a80ade5eaabdbd13036f168142bc3a"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "ab9a1c9d227c099aa1a6233b35986c632eb9241fb65085535d0172e5a93baa0b"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/26",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "document",
+      "request_id": "492b20b2-68f4-5c10-b24c-d8ab70d1d677",
+      "conversation_id": "713516c6-cb0c-56c9-8200-608ba490c36c",
+      "accounting_instance_id": "fa4782d0-43d4-4224-8adf-96272fe7764d",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490304790122749,
+      "primary_dispatch_ns": 490304801664692,
+      "preparation_ns": 11541943,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "2d21403ba349ab2c3dd52e55b2d2e420e2a9e67506ef43ce09d955be5403e6bb"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "77d98e340aedfc6d360ad7c135ca36e2c220a23105c1055824cf651763bac463"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/27",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "document",
+      "request_id": "9f4ae78f-aafe-5712-8c78-53d0c3889ed7",
+      "conversation_id": "78c21a08-7b2a-52bc-b62d-a39525423083",
+      "accounting_instance_id": "b36558e5-8e68-4d8b-a852-858a8921c43d",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490304805294052,
+      "primary_dispatch_ns": 490304817301569,
+      "preparation_ns": 12007517,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "d2380cb8115ffa1a6e6ace554effb7639bc3092786d1ee9e22d95b8a3c173ad6"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "301e32012720e924c4bada3592f718b0ae584cf6385c4b4cf65edcc33c5d8db0"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/28",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "document",
+      "request_id": "7aecc943-b872-5db1-9821-bada58e9928f",
+      "conversation_id": "9d4dfede-6cab-5d01-bf0e-92b40c59e474",
+      "accounting_instance_id": "442ec682-f9fb-479f-be3c-f4c2b9a51280",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490304819951106,
+      "primary_dispatch_ns": 490304832370601,
+      "preparation_ns": 12419495,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "67e00db2ce2c57c7d513e4596de9505d0681665b777dfead18be0e74ab0a55a3"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "0ccbe84f830a84a423ac4abd39769c59b623ae795f165649111ed684604ecdea"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/29",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "document",
+      "request_id": "80132a90-1d64-533d-a10b-3595fc768627",
+      "conversation_id": "058483e2-5d76-573a-84bb-bf02d4ff62b1",
+      "accounting_instance_id": "8abc3335-d3cf-4f54-844c-a6785589e1f2",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490304835131372,
+      "primary_dispatch_ns": 490304847244842,
+      "preparation_ns": 12113470,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "74c054403ee7759ab996bae7776aaa74e6d0d7713bef509f14e6eba4fb2e7d6f"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "2af2a627275c57ed7e737e1d907c5e575467e1523c17340a56a946ccb52858c7"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/30",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "history",
+      "request_id": "4a3bac11-e9ca-5ea4-8c56-9d980b852c54",
+      "conversation_id": "36308233-ac27-5628-a57e-22d97b674bfe",
+      "accounting_instance_id": "e0c1dbdc-c007-4442-b80e-69038dea9108",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490304850044074,
+      "primary_dispatch_ns": 490304856922607,
+      "preparation_ns": 6878533,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "6c53deb9a2f2ce365b9e77c70cd7c0b5c947cec3755744300eb9b7fb4c4c4c7d"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "84a8ffe1b98857343183d403fd4a442baa2e5dff1437593833d817536a718235"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/31",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "history",
+      "request_id": "51dc12cb-56e2-5f49-9013-8469810a1011",
+      "conversation_id": "cdb9f81c-657a-56f3-bdff-9e385eca571b",
+      "accounting_instance_id": "5130cc48-318d-4095-ab54-8e64938057eb",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490304860240946,
+      "primary_dispatch_ns": 490304867152687,
+      "preparation_ns": 6911741,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "90e04ebd7164b423d019a64ffc1ff94869d38566a758a397c94124878a0b7d49"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "52b056804c67c391a8c031fd3c612c010839f93835dfabc669371e1a6968f4c5"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/32",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "history",
+      "request_id": "e8fd5cb3-4dc7-5504-84e0-97012e824f35",
+      "conversation_id": "b4feabe6-65ff-54be-aece-8ac5781053be",
+      "accounting_instance_id": "04b88194-b39f-410b-8cf2-3679b1cf4be5",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490304870233892,
+      "primary_dispatch_ns": 490304876844780,
+      "preparation_ns": 6610888,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "eb165e2d4ee0446c064cfba69169b26d5952f5c5e84953d6cedd137223a1bed2"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "5e4a16ca964abd4917d2644873a74a7aab0126a885d99761a041de50fc041011"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/33",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "history",
+      "request_id": "43a7a59c-6034-5c74-9e8f-2e9ca170b5fd",
+      "conversation_id": "5f7feae3-055e-5623-bd3f-c1988b603b68",
+      "accounting_instance_id": "a01cc278-1270-49f2-b9ce-78320f182136",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490304879984988,
+      "primary_dispatch_ns": 490304886513654,
+      "preparation_ns": 6528666,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "f8a4755926a3a93569db4bfeddcfeefade4d60f6e52075cfcc1aa16d3f49024c"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "5c7ac4ede9dff91c97b9fc852445ffb4de71719e1fcb76753dc3aeea69a03bfc"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/34",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "history",
+      "request_id": "b43beee5-f783-5455-94dd-4fd86f37f038",
+      "conversation_id": "f526ab5c-4279-514b-a60d-14c2605e1054",
+      "accounting_instance_id": "9135feab-185f-48d3-b006-a39ece2cd4fc",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490304889900108,
+      "primary_dispatch_ns": 490304896610758,
+      "preparation_ns": 6710650,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "86f5166fcb448fd5aa83a9e324881d659b96244285e0c54dae435c5dddde79e4"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "fae5f4409aed1be0120e718ea2e0e8bc4df49a7d3dddbd8052f07f3ebaaf04d4"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/35",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "combined",
+      "request_id": "97fc52c8-26fd-58f1-90f8-0a6e34f03798",
+      "conversation_id": "0a329d70-55a2-5d05-881b-b75d98a147e9",
+      "accounting_instance_id": "307d3c78-30f7-47ca-b748-ec232a7b8261",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490304899857346,
+      "primary_dispatch_ns": 490304913148784,
+      "preparation_ns": 13291438,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "6d119127bdf4dcd82e4c71be5b8b833dd779cb993b32e26e534641c3298d34e0"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "d1e244f8c609c1fbf979a9178a83ad4cbc5192f437c90305517fa83005b1e888"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/36",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "combined",
+      "request_id": "e42f8233-704c-5649-b0af-1701a77cd294",
+      "conversation_id": "3fb1439c-2fbc-5007-93bc-a2723ea8be0e",
+      "accounting_instance_id": "79549e75-ffe5-427f-94e6-1abc0e27f9f7",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490304916757744,
+      "primary_dispatch_ns": 490304931379561,
+      "preparation_ns": 14621817,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "d46226bfe7ff339135d73c7b3f9ff3642a8e13d34a0fbd21d94ea895c2b8e83d"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "6592c5a9bb02c1d79536e33051ebeec98edf507ad2676f99f4a744accffc5ea6"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/37",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "combined",
+      "request_id": "8ada30a7-6794-5b00-87e8-7855f2fd54d8",
+      "conversation_id": "cc8420f8-05cf-552d-aa68-3673dcfd1178",
+      "accounting_instance_id": "1711832f-5b81-441b-8461-f0f49045746a",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490304934996637,
+      "primary_dispatch_ns": 490304949966670,
+      "preparation_ns": 14970033,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "b9e322097bf763e990da310f29e47ff6ca320de18b72a4cf144b96dd64a3c3d5"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "d14df9243612c9ab945f763418873a14639b3b6f6eb4d2129d3f1a98e8fb4c02"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/38",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "combined",
+      "request_id": "19e3e49b-6eb1-5f25-9038-eeead0472a92",
+      "conversation_id": "cb1b1dd9-f14b-51d3-8324-9427beb46376",
+      "accounting_instance_id": "997921f8-b3ae-45a6-9af4-43c5b9f07f89",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490304953941721,
+      "primary_dispatch_ns": 490304969547274,
+      "preparation_ns": 15605553,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "37baf489dd4df5bc582305c01b35d7375f73238fc1f7edefe126c4eb185f2b8c"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "3cc8e65a04f07d5bfb134e9de72dcc5cb73c951b223492b98867f1f67d328489"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/39",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "combined",
+      "request_id": "869c14a4-3ca9-50f9-8f69-4f1fc174942f",
+      "conversation_id": "96775280-10c2-55e2-ae98-30e4a5450b20",
+      "accounting_instance_id": "f3ede550-b873-456b-8a79-a7cfa2a45915",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490304973375585,
+      "primary_dispatch_ns": 490304989014154,
+      "preparation_ns": 15638569,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "30528bf04071471916e12073eff0f69ee409b70f38698a126d09e2af4e7cae43"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "5ec5bc193cc9cdb0d29095b3a71913be1f49aad326fdd8f252946af9cefb3c5f"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/40",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "empty",
+      "request_id": "99fbcf50-2b1b-5f0c-9b85-4c37051cf3b9",
+      "conversation_id": "b2013c2b-3b50-513c-9093-d58b9281d78b",
+      "accounting_instance_id": "622b0d0d-057f-4d7d-9088-7a592d58a212",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490304992678662,
+      "primary_dispatch_ns": 490304999083196,
+      "preparation_ns": 6404534,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "868d22d89b67c12837a99641761a613f60504f36e67e5af8828d9fbbfb882731"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "a33fc5e6b1cacf1ad6eb8f1c4566288828c08af5ebb408fefc5374325f2a4ee5"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/41",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "empty",
+      "request_id": "51d4f7e0-93e3-5331-a85f-577f045a603f",
+      "conversation_id": "8e382a4c-6037-5896-8013-5db781930118",
+      "accounting_instance_id": "f6b69782-5794-4418-b88e-389e36a02ee5",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305001483328,
+      "primary_dispatch_ns": 490305007526799,
+      "preparation_ns": 6043471,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "7ec529c2e9a29fbe90815f78161680d91ce7a583801308c5c2a1fe55f3f30f13"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "75a0c6be848fac135c760bbb20bd6b54b7290db25bbf82dd4ef825dad84862c9"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/42",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "empty",
+      "request_id": "2b2976cd-319f-5fa2-8a5c-937f1520d8e5",
+      "conversation_id": "4f566e4b-6367-5666-b2bf-177b056eac84",
+      "accounting_instance_id": "34032403-592f-44c1-b618-c4e3d553cf48",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305009801997,
+      "primary_dispatch_ns": 490305016082161,
+      "preparation_ns": 6280164,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "0e0b7e4e2efbf34df8569518f70f12f10641dbbd6e1d80e93ccc042588f15ea3"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "418b5c961e8594384ad750b60e67173c8df7f57734275c4b3f9244c26b2b53ba"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/43",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "empty",
+      "request_id": "b468ec03-21e8-5fe5-830c-e3eb826b5300",
+      "conversation_id": "6bb2f06f-b9bb-565a-a079-2f6cef26824f",
+      "accounting_instance_id": "fc7a42e0-b675-4c77-967a-1f25c6c64c66",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305018604647,
+      "primary_dispatch_ns": 490305025810766,
+      "preparation_ns": 7206119,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "1ed1181ba4dcd3d39c28ac6a1041bd74fd0b07858fd11d1111d72554402f12f3"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "1e434740a91b7f3ebdd22c64dbafc89841e762590104252c060f17caa0ac8ed6"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/44",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "empty",
+      "request_id": "d3bc2e98-6781-5d40-b766-ac050ef5d1a8",
+      "conversation_id": "79969daf-0442-5466-976c-0186538abc7f",
+      "accounting_instance_id": "25fa331a-ae7a-4b48-97a2-0df5b5d6b328",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305028568053,
+      "primary_dispatch_ns": 490305035155742,
+      "preparation_ns": 6587689,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "f5c723f33afb59cf8ac8fcaf64cfd934436796e387594b48e692acab4856675b"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "1468d794471ac80012e79c2c4c1b5cce7da66fa06d346be72a00614f5761c030"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/45",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "document",
+      "request_id": "309b7dc7-80fe-55f2-8605-b4e30bbe5813",
+      "conversation_id": "a299dbd4-e7c8-5735-b8a5-8e4323538ac8",
+      "accounting_instance_id": "32a06674-dc8e-4d36-ad58-4163c95bbba0",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305037445028,
+      "primary_dispatch_ns": 490305050105099,
+      "preparation_ns": 12660071,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "fb55d7c9fe388cbd576ebfdf7d577b9304a80ade5eaabdbd13036f168142bc3a"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "ab9a1c9d227c099aa1a6233b35986c632eb9241fb65085535d0172e5a93baa0b"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/46",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "document",
+      "request_id": "83c98f15-64b6-5d2e-8185-28b9328d64ed",
+      "conversation_id": "215c23b6-5e32-5ce4-b076-d6977513886d",
+      "accounting_instance_id": "33817c6a-9f1d-447c-a380-48f5cab2098a",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305052759884,
+      "primary_dispatch_ns": 490305064976562,
+      "preparation_ns": 12216678,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "2d21403ba349ab2c3dd52e55b2d2e420e2a9e67506ef43ce09d955be5403e6bb"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "77d98e340aedfc6d360ad7c135ca36e2c220a23105c1055824cf651763bac463"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/47",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "document",
+      "request_id": "67f9c4e0-6363-5601-91c2-a3938fdb6fe8",
+      "conversation_id": "61656683-091b-5af1-9055-e31e3ef428c4",
+      "accounting_instance_id": "4e3a8fe6-a660-486e-a761-f3663a002d67",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305067839916,
+      "primary_dispatch_ns": 490305079997334,
+      "preparation_ns": 12157418,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "d2380cb8115ffa1a6e6ace554effb7639bc3092786d1ee9e22d95b8a3c173ad6"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "301e32012720e924c4bada3592f718b0ae584cf6385c4b4cf65edcc33c5d8db0"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/48",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "document",
+      "request_id": "933477e4-90fb-57d2-9dc8-e111a1b8f789",
+      "conversation_id": "960507aa-05bd-5137-9c9e-ce613677b4e1",
+      "accounting_instance_id": "77945c12-63de-48e7-8367-7f662427139a",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305082627613,
+      "primary_dispatch_ns": 490305094413389,
+      "preparation_ns": 11785776,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "67e00db2ce2c57c7d513e4596de9505d0681665b777dfead18be0e74ab0a55a3"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "0ccbe84f830a84a423ac4abd39769c59b623ae795f165649111ed684604ecdea"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/49",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "document",
+      "request_id": "f7f939c9-cdb0-5e3b-9fc5-07a5df11818c",
+      "conversation_id": "b3cabdef-167b-57d3-a154-8238ae100a4e",
+      "accounting_instance_id": "b7dcd414-ed50-4c00-be40-9235a1dce4ec",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305097222108,
+      "primary_dispatch_ns": 490305109442897,
+      "preparation_ns": 12220789,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "74c054403ee7759ab996bae7776aaa74e6d0d7713bef509f14e6eba4fb2e7d6f"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "2af2a627275c57ed7e737e1d907c5e575467e1523c17340a56a946ccb52858c7"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/50",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "history",
+      "request_id": "48940156-1f16-57c1-9150-92925e93b7ea",
+      "conversation_id": "0c4fd309-8895-546f-b5ea-86355e9da589",
+      "accounting_instance_id": "d8209050-c5d3-4ad9-9376-c1f86eec0839",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305112165936,
+      "primary_dispatch_ns": 490305119198130,
+      "preparation_ns": 7032194,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "6c53deb9a2f2ce365b9e77c70cd7c0b5c947cec3755744300eb9b7fb4c4c4c7d"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "84a8ffe1b98857343183d403fd4a442baa2e5dff1437593833d817536a718235"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/51",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "history",
+      "request_id": "28f443a3-3136-53e1-ac1e-335824ca016a",
+      "conversation_id": "3cb4947b-476e-5e3f-8ddf-38d37667357c",
+      "accounting_instance_id": "1ffc971e-8c11-4b43-913c-63511f305c1a",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305122441023,
+      "primary_dispatch_ns": 490305129315933,
+      "preparation_ns": 6874910,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "90e04ebd7164b423d019a64ffc1ff94869d38566a758a397c94124878a0b7d49"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "52b056804c67c391a8c031fd3c612c010839f93835dfabc669371e1a6968f4c5"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/52",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "history",
+      "request_id": "ef78232b-7825-5f95-91c4-28220fbe2ec7",
+      "conversation_id": "ce47dfa0-0883-5c78-8a4b-6a94543f5ca5",
+      "accounting_instance_id": "660c8a3e-59f6-49f3-b111-516b6f5fce2a",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305132636358,
+      "primary_dispatch_ns": 490305139509673,
+      "preparation_ns": 6873315,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "eb165e2d4ee0446c064cfba69169b26d5952f5c5e84953d6cedd137223a1bed2"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "5e4a16ca964abd4917d2644873a74a7aab0126a885d99761a041de50fc041011"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/53",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "history",
+      "request_id": "08eb74a9-8aae-5210-b1d5-00b180ab9032",
+      "conversation_id": "c0667f61-b881-5afe-bf1e-698676bfca4e",
+      "accounting_instance_id": "e682cf1f-01e1-4a9b-ad0d-8793b035a8ec",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305142646917,
+      "primary_dispatch_ns": 490305149583496,
+      "preparation_ns": 6936579,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "f8a4755926a3a93569db4bfeddcfeefade4d60f6e52075cfcc1aa16d3f49024c"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "5c7ac4ede9dff91c97b9fc852445ffb4de71719e1fcb76753dc3aeea69a03bfc"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/54",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "history",
+      "request_id": "692e378f-baea-5773-be51-8b3bf16f8eec",
+      "conversation_id": "e074f208-e9b9-5dd4-a9db-78b3c0c7bb74",
+      "accounting_instance_id": "aa3aa34f-487e-4252-9f06-f61da98222ac",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305152656015,
+      "primary_dispatch_ns": 490305159290400,
+      "preparation_ns": 6634385,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "86f5166fcb448fd5aa83a9e324881d659b96244285e0c54dae435c5dddde79e4"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "fae5f4409aed1be0120e718ea2e0e8bc4df49a7d3dddbd8052f07f3ebaaf04d4"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/55",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "combined",
+      "request_id": "ab2c5c79-b583-5f97-bec4-22cc5d5fd6d2",
+      "conversation_id": "7594bc13-2b68-5562-9611-66c79a6ebf64",
+      "accounting_instance_id": "7e09c93f-805c-4b59-810b-ef722416962b",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305162545409,
+      "primary_dispatch_ns": 490305176519769,
+      "preparation_ns": 13974360,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "6d119127bdf4dcd82e4c71be5b8b833dd779cb993b32e26e534641c3298d34e0"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "d1e244f8c609c1fbf979a9178a83ad4cbc5192f437c90305517fa83005b1e888"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/56",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "combined",
+      "request_id": "79c52e95-0cf9-54fe-882e-226661e5f66b",
+      "conversation_id": "7068c663-38e6-5bec-9665-d9b3e05c760d",
+      "accounting_instance_id": "4f810d8a-8a17-4e77-8cf1-cf36ee7187b4",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305179964455,
+      "primary_dispatch_ns": 490305192922499,
+      "preparation_ns": 12958044,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "d46226bfe7ff339135d73c7b3f9ff3642a8e13d34a0fbd21d94ea895c2b8e83d"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "6592c5a9bb02c1d79536e33051ebeec98edf507ad2676f99f4a744accffc5ea6"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/57",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "combined",
+      "request_id": "c85d62f2-0b57-5816-b952-1a74e42ccaee",
+      "conversation_id": "bfd928d5-19ea-5735-8cd5-729d120ab8ce",
+      "accounting_instance_id": "80445450-07e6-4bda-9e26-8f2a57a995a6",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305196391568,
+      "primary_dispatch_ns": 490305209960326,
+      "preparation_ns": 13568758,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "b9e322097bf763e990da310f29e47ff6ca320de18b72a4cf144b96dd64a3c3d5"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "d14df9243612c9ab945f763418873a14639b3b6f6eb4d2129d3f1a98e8fb4c02"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/58",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "combined",
+      "request_id": "ad8841b7-0c7b-5165-bc53-ba7b5f6823e1",
+      "conversation_id": "0f4f78d3-978f-5ab9-b5d7-f2eebc78cfb6",
+      "accounting_instance_id": "81f19e68-cff2-46e1-a4cd-a71640d440bf",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305213629663,
+      "primary_dispatch_ns": 490305228016545,
+      "preparation_ns": 14386882,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "37baf489dd4df5bc582305c01b35d7375f73238fc1f7edefe126c4eb185f2b8c"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "3cc8e65a04f07d5bfb134e9de72dcc5cb73c951b223492b98867f1f67d328489"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/59",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "combined",
+      "request_id": "69bf2af7-4cae-55fd-9f7f-6684aaa1ea1b",
+      "conversation_id": "9ea006de-a503-549c-a0c7-6ec3f257d495",
+      "accounting_instance_id": "3a5970dc-38d3-4073-bad0-0edd81c8953e",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305232065351,
+      "primary_dispatch_ns": 490305246249524,
+      "preparation_ns": 14184173,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "30528bf04071471916e12073eff0f69ee409b70f38698a126d09e2af4e7cae43"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "5ec5bc193cc9cdb0d29095b3a71913be1f49aad326fdd8f252946af9cefb3c5f"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/60",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "empty",
+      "request_id": "92a754cf-cdab-5cdf-bad5-2d30ac0b4d4a",
+      "conversation_id": "9b19959d-0ff5-5ad0-924b-352e383b69a8",
+      "accounting_instance_id": "ea21f910-a914-4a27-b013-27131bd1a710",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305249877482,
+      "primary_dispatch_ns": 490305255845099,
+      "preparation_ns": 5967617,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "868d22d89b67c12837a99641761a613f60504f36e67e5af8828d9fbbfb882731"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "a33fc5e6b1cacf1ad6eb8f1c4566288828c08af5ebb408fefc5374325f2a4ee5"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/61",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "empty",
+      "request_id": "f17adaaf-4347-53a9-9b76-7ca2b8d9eab9",
+      "conversation_id": "591ba3a5-dcee-54b5-861f-56cee6181ca5",
+      "accounting_instance_id": "0067047c-5755-4e5e-a54a-e5c5ed8cc0b5",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305258094861,
+      "primary_dispatch_ns": 490305263733425,
+      "preparation_ns": 5638564,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "7ec529c2e9a29fbe90815f78161680d91ce7a583801308c5c2a1fe55f3f30f13"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "75a0c6be848fac135c760bbb20bd6b54b7290db25bbf82dd4ef825dad84862c9"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/62",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "empty",
+      "request_id": "86f252f2-70a0-5c46-b6a3-15719608c947",
+      "conversation_id": "8290326c-0d81-5bed-9735-de4f44cb8f42",
+      "accounting_instance_id": "7852e14a-2afc-4393-b51b-2e10c4c3a8b3",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305265940595,
+      "primary_dispatch_ns": 490305271632375,
+      "preparation_ns": 5691780,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "0e0b7e4e2efbf34df8569518f70f12f10641dbbd6e1d80e93ccc042588f15ea3"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "418b5c961e8594384ad750b60e67173c8df7f57734275c4b3f9244c26b2b53ba"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/63",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "empty",
+      "request_id": "3789c22d-33a3-5af7-acba-f6e27b5719e5",
+      "conversation_id": "468b1c8f-0dcd-5a39-8ae7-71304bf80d9a",
+      "accounting_instance_id": "5291290a-a4c5-45b5-8868-e2e6b4edda83",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305273936441,
+      "primary_dispatch_ns": 490305279984158,
+      "preparation_ns": 6047717,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "1ed1181ba4dcd3d39c28ac6a1041bd74fd0b07858fd11d1111d72554402f12f3"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "1e434740a91b7f3ebdd22c64dbafc89841e762590104252c060f17caa0ac8ed6"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/64",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "empty",
+      "request_id": "7941973d-af0c-5b8f-8115-71e81027596d",
+      "conversation_id": "d97a8b2a-26bd-5d08-9022-5b14d2067dc1",
+      "accounting_instance_id": "5023f463-eeec-494d-aaa8-6896716ce0a4",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305282350057,
+      "primary_dispatch_ns": 490305288144333,
+      "preparation_ns": 5794276,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "f5c723f33afb59cf8ac8fcaf64cfd934436796e387594b48e692acab4856675b"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "1468d794471ac80012e79c2c4c1b5cce7da66fa06d346be72a00614f5761c030"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/65",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "document",
+      "request_id": "f1fe66e2-e07d-5798-9d5d-ba57f783b727",
+      "conversation_id": "a13bc5c3-869b-5979-a23f-4a882042241b",
+      "accounting_instance_id": "fbab6195-bede-47c8-a68a-d7ab32f9066c",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305290276587,
+      "primary_dispatch_ns": 490305303901110,
+      "preparation_ns": 13624523,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "fb55d7c9fe388cbd576ebfdf7d577b9304a80ade5eaabdbd13036f168142bc3a"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "ab9a1c9d227c099aa1a6233b35986c632eb9241fb65085535d0172e5a93baa0b"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/66",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "document",
+      "request_id": "ea2680f0-724d-5dd2-8d6b-3cb7180436a6",
+      "conversation_id": "b09ba516-2fcb-54b6-8811-c8270f1f23de",
+      "accounting_instance_id": "2c27f221-750b-4d3e-8720-f046788baa19",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305307580027,
+      "primary_dispatch_ns": 490305323007460,
+      "preparation_ns": 15427433,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "2d21403ba349ab2c3dd52e55b2d2e420e2a9e67506ef43ce09d955be5403e6bb"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "77d98e340aedfc6d360ad7c135ca36e2c220a23105c1055824cf651763bac463"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/67",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "document",
+      "request_id": "414aa98b-9ea8-5644-80f9-72e4f46ef177",
+      "conversation_id": "0677f4cc-1dc1-5b3b-9679-37e92c4bd633",
+      "accounting_instance_id": "72e17b36-77e3-4896-8745-e89a0512418a",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305326153219,
+      "primary_dispatch_ns": 490305340108210,
+      "preparation_ns": 13954991,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "d2380cb8115ffa1a6e6ace554effb7639bc3092786d1ee9e22d95b8a3c173ad6"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "301e32012720e924c4bada3592f718b0ae584cf6385c4b4cf65edcc33c5d8db0"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/68",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "document",
+      "request_id": "9cdf4289-8d72-529b-8cd4-9e53ca71cba1",
+      "conversation_id": "55896315-d97d-5a89-b1d5-cc805244f1da",
+      "accounting_instance_id": "53eb0e6f-0117-4aa3-8fec-388ac6c74f60",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305343093533,
+      "primary_dispatch_ns": 490305355480396,
+      "preparation_ns": 12386863,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "67e00db2ce2c57c7d513e4596de9505d0681665b777dfead18be0e74ab0a55a3"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "0ccbe84f830a84a423ac4abd39769c59b623ae795f165649111ed684604ecdea"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/69",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "document",
+      "request_id": "5b1089d6-4dbd-5866-90b1-057220ff9125",
+      "conversation_id": "5ca1a1f0-f4df-5f21-826a-138a089c423f",
+      "accounting_instance_id": "7b646526-9b80-4e49-a1e2-525b8795417f",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305358182879,
+      "primary_dispatch_ns": 490305369844202,
+      "preparation_ns": 11661323,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "74c054403ee7759ab996bae7776aaa74e6d0d7713bef509f14e6eba4fb2e7d6f"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "2af2a627275c57ed7e737e1d907c5e575467e1523c17340a56a946ccb52858c7"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/70",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "history",
+      "request_id": "d01756f7-1276-5ac2-86d9-f985d3b1dc14",
+      "conversation_id": "58b0c7ee-8192-5555-97c2-7794af5f9441",
+      "accounting_instance_id": "6d09f9d6-1305-443b-b14b-89bf936a0117",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305372757495,
+      "primary_dispatch_ns": 490305379596147,
+      "preparation_ns": 6838652,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "6c53deb9a2f2ce365b9e77c70cd7c0b5c947cec3755744300eb9b7fb4c4c4c7d"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "84a8ffe1b98857343183d403fd4a442baa2e5dff1437593833d817536a718235"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/71",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "history",
+      "request_id": "a3b5c6e5-e7aa-50e4-b155-5af3266339a2",
+      "conversation_id": "2f16cd18-2a37-5d3d-8321-8a019ecc623b",
+      "accounting_instance_id": "0595ba86-686b-4e88-9a5b-46a6b5bdbac3",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305382716056,
+      "primary_dispatch_ns": 490305389055046,
+      "preparation_ns": 6338990,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "90e04ebd7164b423d019a64ffc1ff94869d38566a758a397c94124878a0b7d49"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "52b056804c67c391a8c031fd3c612c010839f93835dfabc669371e1a6968f4c5"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/72",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "history",
+      "request_id": "8f4df052-0440-5d4e-b820-0585e96290af",
+      "conversation_id": "d0e7718f-9649-51c1-9f86-e6352e8b25c3",
+      "accounting_instance_id": "e8b531e5-1e4c-42e4-8dd5-e88b0582b51c",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305392142104,
+      "primary_dispatch_ns": 490305398281229,
+      "preparation_ns": 6139125,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "eb165e2d4ee0446c064cfba69169b26d5952f5c5e84953d6cedd137223a1bed2"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "5e4a16ca964abd4917d2644873a74a7aab0126a885d99761a041de50fc041011"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/73",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "history",
+      "request_id": "c6f3674a-536c-5c6f-bad6-02ac3492fc86",
+      "conversation_id": "ff4d8328-9c59-52f2-bdee-804b0fc2dae5",
+      "accounting_instance_id": "fd5f1b1b-b121-4be2-8b42-a5bc557437b5",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305401297245,
+      "primary_dispatch_ns": 490305408301096,
+      "preparation_ns": 7003851,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "f8a4755926a3a93569db4bfeddcfeefade4d60f6e52075cfcc1aa16d3f49024c"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "5c7ac4ede9dff91c97b9fc852445ffb4de71719e1fcb76753dc3aeea69a03bfc"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/74",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "history",
+      "request_id": "e3f74935-fc86-5f08-a563-bf4187034bfe",
+      "conversation_id": "1e228660-23e3-59a3-9c47-17bf7e7d759f",
+      "accounting_instance_id": "7c9390f7-6a68-4fea-ac8d-b21b9062cdf5",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305411710100,
+      "primary_dispatch_ns": 490305418238531,
+      "preparation_ns": 6528431,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "86f5166fcb448fd5aa83a9e324881d659b96244285e0c54dae435c5dddde79e4"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "fae5f4409aed1be0120e718ea2e0e8bc4df49a7d3dddbd8052f07f3ebaaf04d4"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/75",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "combined",
+      "request_id": "9be055d0-569b-54ee-8440-835563743713",
+      "conversation_id": "13adffae-52e3-5ba0-8086-d740e0ac6147",
+      "accounting_instance_id": "1346dc3f-97a1-45da-8b9a-6aae78b44693",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305421392304,
+      "primary_dispatch_ns": 490305434499785,
+      "preparation_ns": 13107481,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "6d119127bdf4dcd82e4c71be5b8b833dd779cb993b32e26e534641c3298d34e0"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "d1e244f8c609c1fbf979a9178a83ad4cbc5192f437c90305517fa83005b1e888"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/76",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "combined",
+      "request_id": "df799cf3-cba8-59d4-a66f-0a424c56c183",
+      "conversation_id": "0560371e-7a41-5cf0-96a2-6c5fb8ede677",
+      "accounting_instance_id": "585deb75-9968-40f6-bc2a-317fcab1d1d9",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305437938136,
+      "primary_dispatch_ns": 490305450624941,
+      "preparation_ns": 12686805,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "d46226bfe7ff339135d73c7b3f9ff3642a8e13d34a0fbd21d94ea895c2b8e83d"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "6592c5a9bb02c1d79536e33051ebeec98edf507ad2676f99f4a744accffc5ea6"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/77",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "combined",
+      "request_id": "f93df576-0116-5298-8427-ff46bcd9d28d",
+      "conversation_id": "4ad977bb-223f-5c74-9ce1-f7d78122053a",
+      "accounting_instance_id": "ef4ee585-7478-4cb6-8166-f1cc3de1d6fd",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305454169759,
+      "primary_dispatch_ns": 490305466489831,
+      "preparation_ns": 12320072,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "b9e322097bf763e990da310f29e47ff6ca320de18b72a4cf144b96dd64a3c3d5"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "d14df9243612c9ab945f763418873a14639b3b6f6eb4d2129d3f1a98e8fb4c02"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/78",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "combined",
+      "request_id": "77c52693-4585-5269-9ce2-00dc60b0f784",
+      "conversation_id": "372878bc-ae53-56c0-9755-1129ea55da57",
+      "accounting_instance_id": "7097416c-d25b-4ea1-9b5d-57fec543dd14",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305469926099,
+      "primary_dispatch_ns": 490305482729545,
+      "preparation_ns": 12803446,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "37baf489dd4df5bc582305c01b35d7375f73238fc1f7edefe126c4eb185f2b8c"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "3cc8e65a04f07d5bfb134e9de72dcc5cb73c951b223492b98867f1f67d328489"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/79",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "combined",
+      "request_id": "63950fdd-87c8-5880-b5d3-0841cc6468e7",
+      "conversation_id": "5c7b77f7-8e07-5fcf-a654-90d333fb1d11",
+      "accounting_instance_id": "397a8211-3848-41c1-93fc-867435270017",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305486276426,
+      "primary_dispatch_ns": 490305499460552,
+      "preparation_ns": 13184126,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "30528bf04071471916e12073eff0f69ee409b70f38698a126d09e2af4e7cae43"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "5ec5bc193cc9cdb0d29095b3a71913be1f49aad326fdd8f252946af9cefb3c5f"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/80",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "empty",
+      "request_id": "8ddb04ec-f79f-5cba-a2bf-633918d6b353",
+      "conversation_id": "34050dd0-eb1b-5adc-8606-997de8d86003",
+      "accounting_instance_id": "b4bbf96b-ca7a-443a-9f11-432ebc115561",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305502998896,
+      "primary_dispatch_ns": 490305509181858,
+      "preparation_ns": 6182962,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "868d22d89b67c12837a99641761a613f60504f36e67e5af8828d9fbbfb882731"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "a33fc5e6b1cacf1ad6eb8f1c4566288828c08af5ebb408fefc5374325f2a4ee5"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/81",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "empty",
+      "request_id": "8442d054-a389-51a9-b09d-264bc36a8a18",
+      "conversation_id": "fa05ee95-78b3-53d7-8530-ceef440f6bdb",
+      "accounting_instance_id": "869992f3-5abf-4cfc-ae99-6ce70f46db03",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305511911114,
+      "primary_dispatch_ns": 490305517710352,
+      "preparation_ns": 5799238,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "7ec529c2e9a29fbe90815f78161680d91ce7a583801308c5c2a1fe55f3f30f13"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "75a0c6be848fac135c760bbb20bd6b54b7290db25bbf82dd4ef825dad84862c9"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/82",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "empty",
+      "request_id": "4f485cf7-2ae9-557e-ab3e-82bfa2c2a9ba",
+      "conversation_id": "1a04fd95-aca5-5ea2-b55c-1f978e083143",
+      "accounting_instance_id": "68ee2751-8085-437f-93ea-d4e76ff7bfdc",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305520043151,
+      "primary_dispatch_ns": 490305527569203,
+      "preparation_ns": 7526052,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "0e0b7e4e2efbf34df8569518f70f12f10641dbbd6e1d80e93ccc042588f15ea3"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "418b5c961e8594384ad750b60e67173c8df7f57734275c4b3f9244c26b2b53ba"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/83",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "empty",
+      "request_id": "f71cfe43-e10e-5c04-8f50-0431f759b828",
+      "conversation_id": "1968aacb-448d-5245-847d-b6d0ef16187b",
+      "accounting_instance_id": "289a03d7-47f7-4569-99ff-28b12826ed73",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305530052829,
+      "primary_dispatch_ns": 490305536224948,
+      "preparation_ns": 6172119,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "1ed1181ba4dcd3d39c28ac6a1041bd74fd0b07858fd11d1111d72554402f12f3"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "1e434740a91b7f3ebdd22c64dbafc89841e762590104252c060f17caa0ac8ed6"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/84",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "empty",
+      "request_id": "339b9e5b-116c-5f9f-95c0-5eae26844b92",
+      "conversation_id": "2ef285aa-56d7-55fb-b988-c63039fb9b92",
+      "accounting_instance_id": "e4871097-ec78-424f-95ee-0ec617b4029e",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305538691842,
+      "primary_dispatch_ns": 490305544177547,
+      "preparation_ns": 5485705,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "f5c723f33afb59cf8ac8fcaf64cfd934436796e387594b48e692acab4856675b"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "1468d794471ac80012e79c2c4c1b5cce7da66fa06d346be72a00614f5761c030"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/85",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "document",
+      "request_id": "326e62b5-262b-5118-933b-5372b4b97652",
+      "conversation_id": "f7592687-4c7e-5b46-a5c0-ae62b9e33856",
+      "accounting_instance_id": "1a04d41a-6460-4493-9fee-e26013654cf2",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305546508599,
+      "primary_dispatch_ns": 490305558274436,
+      "preparation_ns": 11765837,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "fb55d7c9fe388cbd576ebfdf7d577b9304a80ade5eaabdbd13036f168142bc3a"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "ab9a1c9d227c099aa1a6233b35986c632eb9241fb65085535d0172e5a93baa0b"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/86",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "document",
+      "request_id": "cbbd6cb1-628f-5857-8348-fa936d337c00",
+      "conversation_id": "7ee0f004-9079-5c9e-835b-2e5134e0017d",
+      "accounting_instance_id": "be3cf3e5-a8a6-4ea4-9a15-5c794818d7bb",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305560818842,
+      "primary_dispatch_ns": 490305572829400,
+      "preparation_ns": 12010558,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "2d21403ba349ab2c3dd52e55b2d2e420e2a9e67506ef43ce09d955be5403e6bb"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "77d98e340aedfc6d360ad7c135ca36e2c220a23105c1055824cf651763bac463"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/87",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "document",
+      "request_id": "c4fda8c9-4b15-5936-928f-9ca91761c25c",
+      "conversation_id": "d78c8230-cb85-517e-a64f-fbe42ebc683a",
+      "accounting_instance_id": "28fc03c2-65aa-421b-b6ae-6c175505c850",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305575610384,
+      "primary_dispatch_ns": 490305588554453,
+      "preparation_ns": 12944069,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "d2380cb8115ffa1a6e6ace554effb7639bc3092786d1ee9e22d95b8a3c173ad6"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "301e32012720e924c4bada3592f718b0ae584cf6385c4b4cf65edcc33c5d8db0"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/88",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "document",
+      "request_id": "4f104695-7c9f-590c-8f43-c166bede745a",
+      "conversation_id": "33d3f18c-4508-597b-996e-b52e36605156",
+      "accounting_instance_id": "3184f215-9934-4ccc-8a98-ea2ca0c67cc7",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305591237456,
+      "primary_dispatch_ns": 490305604783088,
+      "preparation_ns": 13545632,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "67e00db2ce2c57c7d513e4596de9505d0681665b777dfead18be0e74ab0a55a3"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "0ccbe84f830a84a423ac4abd39769c59b623ae795f165649111ed684604ecdea"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/89",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "document",
+      "request_id": "774bb152-a86f-5627-b2cb-c45a185bee0b",
+      "conversation_id": "1d8b24ac-92b6-533b-bbdb-a80b4272a1ae",
+      "accounting_instance_id": "b3df416d-95e5-485c-9310-cf1e9995cb84",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305607493228,
+      "primary_dispatch_ns": 490305622280831,
+      "preparation_ns": 14787603,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "74c054403ee7759ab996bae7776aaa74e6d0d7713bef509f14e6eba4fb2e7d6f"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "2af2a627275c57ed7e737e1d907c5e575467e1523c17340a56a946ccb52858c7"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/90",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "history",
+      "request_id": "6e5231ba-767b-53ac-8c7c-f0128987924f",
+      "conversation_id": "5c0d3c82-c6b9-5687-966b-3fd83508ac12",
+      "accounting_instance_id": "26b8730f-da88-49bb-ad23-46b46510c92a",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305624974677,
+      "primary_dispatch_ns": 490305632766012,
+      "preparation_ns": 7791335,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "6c53deb9a2f2ce365b9e77c70cd7c0b5c947cec3755744300eb9b7fb4c4c4c7d"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "84a8ffe1b98857343183d403fd4a442baa2e5dff1437593833d817536a718235"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/91",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "history",
+      "request_id": "8162d242-45cf-58b2-911a-7d3c157b99c3",
+      "conversation_id": "ed0d809c-a65b-55a0-9f99-6ca26691af34",
+      "accounting_instance_id": "def6c332-827e-40b5-9d19-2f3a64dd05d9",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305635882317,
+      "primary_dispatch_ns": 490305643152223,
+      "preparation_ns": 7269906,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "90e04ebd7164b423d019a64ffc1ff94869d38566a758a397c94124878a0b7d49"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "52b056804c67c391a8c031fd3c612c010839f93835dfabc669371e1a6968f4c5"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/92",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "history",
+      "request_id": "f2bba9f0-6633-5752-9fb5-6c2b8d9d0afb",
+      "conversation_id": "b2da6a89-134e-5605-9db2-a1eb2811d455",
+      "accounting_instance_id": "ee21f442-d05b-4326-ab09-13d0d10cd934",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305646436943,
+      "primary_dispatch_ns": 490305662299413,
+      "preparation_ns": 15862470,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "eb165e2d4ee0446c064cfba69169b26d5952f5c5e84953d6cedd137223a1bed2"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "5e4a16ca964abd4917d2644873a74a7aab0126a885d99761a041de50fc041011"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/93",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "history",
+      "request_id": "78345005-d695-5cc5-999f-136859ec47cf",
+      "conversation_id": "c8450254-6082-559e-9672-573c2c3fb253",
+      "accounting_instance_id": "5625a204-0ae7-4d5c-8ef5-dbb9b58051f2",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305665965139,
+      "primary_dispatch_ns": 490305672429356,
+      "preparation_ns": 6464217,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "f8a4755926a3a93569db4bfeddcfeefade4d60f6e52075cfcc1aa16d3f49024c"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "5c7ac4ede9dff91c97b9fc852445ffb4de71719e1fcb76753dc3aeea69a03bfc"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/94",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "history",
+      "request_id": "17d6f695-feb2-5d9a-af59-fd8a1358a471",
+      "conversation_id": "a8d97ba1-a499-5151-b218-3c480b2bf3b6",
+      "accounting_instance_id": "923918fc-c080-4d9d-9c86-92f55ed8fe38",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305675974073,
+      "primary_dispatch_ns": 490305683215524,
+      "preparation_ns": 7241451,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "86f5166fcb448fd5aa83a9e324881d659b96244285e0c54dae435c5dddde79e4"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "fae5f4409aed1be0120e718ea2e0e8bc4df49a7d3dddbd8052f07f3ebaaf04d4"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/95",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "combined",
+      "request_id": "418a1edd-b4da-504f-942d-ff5300fcef36",
+      "conversation_id": "22bbc331-de85-5866-950c-6b918720e931",
+      "accounting_instance_id": "da08c3c8-e47d-42bf-8d33-3f012056b8ba",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305686630415,
+      "primary_dispatch_ns": 490305700055706,
+      "preparation_ns": 13425291,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "6d119127bdf4dcd82e4c71be5b8b833dd779cb993b32e26e534641c3298d34e0"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "d1e244f8c609c1fbf979a9178a83ad4cbc5192f437c90305517fa83005b1e888"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/96",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "combined",
+      "request_id": "377600ed-0a13-5579-aebd-81ecad9f59f8",
+      "conversation_id": "209caf51-3293-59b7-97a7-dcd9c58045a8",
+      "accounting_instance_id": "81e3c2a3-d17c-4772-8a09-737297bba16a",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305703518822,
+      "primary_dispatch_ns": 490305717159205,
+      "preparation_ns": 13640383,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "d46226bfe7ff339135d73c7b3f9ff3642a8e13d34a0fbd21d94ea895c2b8e83d"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "6592c5a9bb02c1d79536e33051ebeec98edf507ad2676f99f4a744accffc5ea6"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/97",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "combined",
+      "request_id": "797b86a7-7a2c-58c7-b8a6-67ec3ba43351",
+      "conversation_id": "99a630c6-7908-59ea-999d-4a932eb893d5",
+      "accounting_instance_id": "742c4651-9a71-4b61-b6ab-430668807158",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305720735051,
+      "primary_dispatch_ns": 490305733758236,
+      "preparation_ns": 13023185,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "b9e322097bf763e990da310f29e47ff6ca320de18b72a4cf144b96dd64a3c3d5"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "d14df9243612c9ab945f763418873a14639b3b6f6eb4d2129d3f1a98e8fb4c02"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/98",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "combined",
+      "request_id": "fdb16467-9564-5aab-ae25-516a540bd4f2",
+      "conversation_id": "3b900c12-7b13-5f38-82a7-8449433e61e8",
+      "accounting_instance_id": "1d6f6e8a-3591-4be4-a565-18db8e82d87e",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305737265386,
+      "primary_dispatch_ns": 490305751870078,
+      "preparation_ns": 14604692,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "37baf489dd4df5bc582305c01b35d7375f73238fc1f7edefe126c4eb185f2b8c"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "3cc8e65a04f07d5bfb134e9de72dcc5cb73c951b223492b98867f1f67d328489"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/99",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "combined",
+      "request_id": "08e64f93-bbc3-5be6-b2ed-83d3ee1c4e70",
+      "conversation_id": "508864f7-fb4b-5ea0-90ca-18d46c161536",
+      "accounting_instance_id": "51649d84-94f8-4ced-b932-b96b7bd642e6",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305756934270,
+      "primary_dispatch_ns": 490305775247280,
+      "preparation_ns": 18313010,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "30528bf04071471916e12073eff0f69ee409b70f38698a126d09e2af4e7cae43"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "5ec5bc193cc9cdb0d29095b3a71913be1f49aad326fdd8f252946af9cefb3c5f"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/100",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "empty",
+      "request_id": "776a49f4-4506-5db4-8c46-b5bb37e9d120",
+      "conversation_id": "eee4ea6e-2f57-51a9-b874-2f9d9c81f11f",
+      "accounting_instance_id": "fa0387d6-e297-4598-bf8f-36e88f9d3916",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305779808448,
+      "primary_dispatch_ns": 490305788793660,
+      "preparation_ns": 8985212,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "868d22d89b67c12837a99641761a613f60504f36e67e5af8828d9fbbfb882731"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "a33fc5e6b1cacf1ad6eb8f1c4566288828c08af5ebb408fefc5374325f2a4ee5"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/101",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "empty",
+      "request_id": "ea858323-0425-5f9a-aa9c-8c454efe8bca",
+      "conversation_id": "bdd02463-cf1a-5752-a98a-b9f35734118f",
+      "accounting_instance_id": "093570fa-2c39-4ab3-bdaf-f1fcfaddda53",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305791579822,
+      "primary_dispatch_ns": 490305797314201,
+      "preparation_ns": 5734379,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "7ec529c2e9a29fbe90815f78161680d91ce7a583801308c5c2a1fe55f3f30f13"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "75a0c6be848fac135c760bbb20bd6b54b7290db25bbf82dd4ef825dad84862c9"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/102",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "empty",
+      "request_id": "4934e131-a7fd-586f-8901-c1700cb59d55",
+      "conversation_id": "013a37b2-2993-5356-86db-8fb49eec19b0",
+      "accounting_instance_id": "6a7394e0-3206-44b4-9236-04167e052096",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305799620764,
+      "primary_dispatch_ns": 490305805180700,
+      "preparation_ns": 5559936,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "0e0b7e4e2efbf34df8569518f70f12f10641dbbd6e1d80e93ccc042588f15ea3"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "418b5c961e8594384ad750b60e67173c8df7f57734275c4b3f9244c26b2b53ba"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/103",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "empty",
+      "request_id": "47382fd8-e45a-57f3-b337-e49ed551cb72",
+      "conversation_id": "bfe76b1f-f668-545a-a593-4113b6853427",
+      "accounting_instance_id": "cbbc8430-fb82-4b83-ba5d-884574143b04",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305807686723,
+      "primary_dispatch_ns": 490305814007393,
+      "preparation_ns": 6320670,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "1ed1181ba4dcd3d39c28ac6a1041bd74fd0b07858fd11d1111d72554402f12f3"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "1e434740a91b7f3ebdd22c64dbafc89841e762590104252c060f17caa0ac8ed6"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/104",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "empty",
+      "request_id": "8ec905b4-29c8-5100-9281-829b4b734dd7",
+      "conversation_id": "4a3d3857-b324-51a7-a422-566526a2b015",
+      "accounting_instance_id": "d4a8b133-c8a7-470c-9163-1ebcd230da96",
+      "status": "PASS",
+      "error": null,
+      "start_ns": 490305816363016,
+      "primary_dispatch_ns": 490305821860790,
+      "preparation_ns": 5497774,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "f5c723f33afb59cf8ac8fcaf64cfd934436796e387594b48e692acab4856675b"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "1468d794471ac80012e79c2c4c1b5cce7da66fa06d346be72a00614f5761c030"
+        }
+      ]
+    }
+  ],
+  "config_identity": "1074d4173cf65e92d4a0bba1a553ef0a4c728121add8053159624646a366512c",
+  "provider_calls": 0,
+  "external_calls": 0
+}

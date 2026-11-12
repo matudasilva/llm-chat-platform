@@ -1,0 +1,68 @@
+{
+  "status": "READ_ONLY_IMAGE_METADATA_PASS",
+  "argv": [
+    "docker",
+    "image",
+    "inspect",
+    "--format",
+    "{\"Id\":{{json .Id}},\"RepoDigests\":{{json .RepoDigests}},\"Architecture\":{{json .Architecture}},\"Os\":{{json .Os}},\"Size\":{{json .Size}},\"User\":{{json (index .Config \"User\")}},\"WorkingDir\":{{json (index .Config \"WorkingDir\")}},\"Volumes\":{{json (index .Config \"Volumes\")}}}",
+    "sha256:775d925078229f173fc48a4b95d5ca1620cb518b46433ead60cec3440029b852",
+    "sha256:8e5355e9ff399a002fa46148399a1ac22fb3e9b2d390f857296e6da6b5559ba1",
+    "sha256:13105d2858ded45aedf7b24f0870e6a4e7ce4964924bffce68e562ca72149f1e",
+    "sha256:50dccac76879873148242bb98c6472404f3af3388c318ef270a6912b855c2dbc"
+  ],
+  "returncode": 0,
+  "images": {
+    "worker": {
+      "Id": "sha256:775d925078229f173fc48a4b95d5ca1620cb518b46433ead60cec3440029b852",
+      "RepoDigests": [],
+      "Architecture": "amd64",
+      "Os": "linux",
+      "Size": 384960853,
+      "User": null,
+      "WorkingDir": "/app",
+      "Volumes": null
+    },
+    "postgres": {
+      "Id": "sha256:8e5355e9ff399a002fa46148399a1ac22fb3e9b2d390f857296e6da6b5559ba1",
+      "RepoDigests": [
+        "pgvector/pgvector@sha256:a36250871de0833b8757561c72f2477ef1ddd1101afa4e617fb552e0de514c6b"
+      ],
+      "Architecture": "amd64",
+      "Os": "linux",
+      "Size": 438308193,
+      "User": null,
+      "WorkingDir": null,
+      "Volumes": {
+        "/var/lib/postgresql/data": {}
+      }
+    },
+    "redis": {
+      "Id": "sha256:13105d2858ded45aedf7b24f0870e6a4e7ce4964924bffce68e562ca72149f1e",
+      "RepoDigests": [
+        "redis@sha256:ee64a64eaab618d88051c3ade8f6352d11531fcf79d9a4818b9b183d8c1d18ba"
+      ],
+      "Architecture": "amd64",
+      "Os": "linux",
+      "Size": 41408712,
+      "User": null,
+      "WorkingDir": "/data",
+      "Volumes": {
+        "/data": {}
+      }
+    },
+    "collector": {
+      "Id": "sha256:50dccac76879873148242bb98c6472404f3af3388c318ef270a6912b855c2dbc",
+      "RepoDigests": [
+        "otel/opentelemetry-collector@sha256:1daa4312b48312dbae2d543e67b77e897dd5d9c48e7651d1416cdb417026ad06"
+      ],
+      "Architecture": "amd64",
+      "Os": "linux",
+      "Size": 121273330,
+      "User": "10001",
+      "WorkingDir": "/",
+      "Volumes": null
+    }
+  },
+  "note": "Transcribed from the successful explicit-field tool result. Null denotes omitted image metadata; earlier template failures remain in inventory.json. No image execution or interpreter validation."
+}

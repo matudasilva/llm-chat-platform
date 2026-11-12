@@ -1,0 +1,324 @@
+{
+  "schema": "orq41-diagnostic-aggregate-v1",
+  "not_a_gate": true,
+  "run_id": "261106213253",
+  "namespace": "7c8772d3-ee7c-4289-b339-c4d003a9c607",
+  "warmups_per_cell_arm": 1,
+  "n_per_cell_arm": 4,
+  "request_deadline_s": 300,
+  "boundary": "ASGI request ingress to entry of memory-only native SDK HTTP send for primary serialized payload; before capture.sent bookkeeping",
+  "sample_attempts": 1,
+  "clocks": [
+    "time.monotonic_ns",
+    "time.process_time_ns"
+  ],
+  "instrumentation": "aggregate wall/process-CPU timestamp reads at ingress and each send entry; rewrite send readings discarded; no per-function, SQL, logger or SDK profiling wrappers",
+  "arm_cell_order": [
+    {
+      "arm": "c0",
+      "cell": "EN-json"
+    },
+    {
+      "arm": "c1",
+      "cell": "EN-json"
+    },
+    {
+      "arm": "c1",
+      "cell": "EN-sse"
+    },
+    {
+      "arm": "c0",
+      "cell": "EN-sse"
+    },
+    {
+      "arm": "c0",
+      "cell": "ES-json"
+    },
+    {
+      "arm": "c1",
+      "cell": "ES-json"
+    },
+    {
+      "arm": "c1",
+      "cell": "ES-sse"
+    },
+    {
+      "arm": "c0",
+      "cell": "ES-sse"
+    }
+  ],
+  "samples": [
+    {
+      "sample_id": "EN/json/0",
+      "language": "EN",
+      "protocol": "json",
+      "warmup": true,
+      "category": "document",
+      "conversation_id": "41bc7d36-143a-5fb4-a8b2-9fc948f6fc8b",
+      "request_id": "0b64b411-f3c8-5741-bb61-b10f2f223b44",
+      "tenant_id": "orq37-t23",
+      "message": "Explain how provider abstraction separates adapters from domain services."
+    },
+    {
+      "sample_id": "EN/json/5",
+      "language": "EN",
+      "protocol": "json",
+      "warmup": false,
+      "category": "document",
+      "conversation_id": "1d367abc-417e-5e4b-a3bd-9fc44d5212ee",
+      "request_id": "71577fcf-f2e0-588a-8006-505d60934a89",
+      "tenant_id": "orq37-t23",
+      "message": "Explain how provider abstraction separates adapters from domain services."
+    },
+    {
+      "sample_id": "EN/json/10",
+      "language": "EN",
+      "protocol": "json",
+      "warmup": false,
+      "category": "history",
+      "conversation_id": "de598268-d14c-520f-9ad8-38ca8942258f",
+      "request_id": "c191a61a-ac8c-54eb-9f39-85d8fc1bf78f",
+      "tenant_id": "orq41-6b2ab547-en-history",
+      "message": "What recovery contact was approved for ORQ41PROJECTEN01?"
+    },
+    {
+      "sample_id": "EN/json/15",
+      "language": "EN",
+      "protocol": "json",
+      "warmup": false,
+      "category": "combined",
+      "conversation_id": "18c36205-6349-5d02-aa69-5e3320e7e9a4",
+      "request_id": "b99e90a4-7e9e-595f-b3fb-6f74df19548f",
+      "tenant_id": "orq37-t23",
+      "message": "Explain how provider abstraction separates adapters from domain services. Also recall the recovery contact approved for ORQ41PROJECTEN01."
+    },
+    {
+      "sample_id": "EN/json/20",
+      "language": "EN",
+      "protocol": "json",
+      "warmup": false,
+      "category": "empty",
+      "conversation_id": "0250337a-25fe-58e3-8a5d-e296c70392db",
+      "request_id": "85160bf7-4daf-544f-8ef2-52ac78cbc3f5",
+      "tenant_id": "orq41-6b2ab547-en-empty",
+      "message": "What evidence is available for unregistered project ORQ41UNKNOWN01?"
+    },
+    {
+      "sample_id": "EN/sse/0",
+      "language": "EN",
+      "protocol": "sse",
+      "warmup": true,
+      "category": "document",
+      "conversation_id": "f752f086-1762-5998-b8d1-03d37f37238a",
+      "request_id": "23fb1802-b8cb-570f-aa5f-0e947f8e8291",
+      "tenant_id": "orq37-t23",
+      "message": "Explain how provider abstraction separates adapters from domain services."
+    },
+    {
+      "sample_id": "EN/sse/5",
+      "language": "EN",
+      "protocol": "sse",
+      "warmup": false,
+      "category": "document",
+      "conversation_id": "4d76cef1-9dfc-55de-bef8-548d89f88e71",
+      "request_id": "00e52b8e-6706-5139-8daf-c4005e20f44c",
+      "tenant_id": "orq37-t23",
+      "message": "Explain how provider abstraction separates adapters from domain services."
+    },
+    {
+      "sample_id": "EN/sse/10",
+      "language": "EN",
+      "protocol": "sse",
+      "warmup": false,
+      "category": "history",
+      "conversation_id": "9e88bc80-1723-59bc-bccf-9f9175835030",
+      "request_id": "0060d368-83b0-5f11-ae37-d7f9a26857fd",
+      "tenant_id": "orq41-6b2ab547-en-history",
+      "message": "What recovery contact was approved for ORQ41PROJECTEN01?"
+    },
+    {
+      "sample_id": "EN/sse/15",
+      "language": "EN",
+      "protocol": "sse",
+      "warmup": false,
+      "category": "combined",
+      "conversation_id": "929bdcc0-bd85-5b7b-9c06-f05bf1e82487",
+      "request_id": "a0ea5d74-ace9-51a8-a248-6c20aab01c60",
+      "tenant_id": "orq37-t23",
+      "message": "Explain how provider abstraction separates adapters from domain services. Also recall the recovery contact approved for ORQ41PROJECTEN01."
+    },
+    {
+      "sample_id": "EN/sse/20",
+      "language": "EN",
+      "protocol": "sse",
+      "warmup": false,
+      "category": "empty",
+      "conversation_id": "a015d616-71c9-5eb4-976d-ec44775ed90d",
+      "request_id": "1d4d4ce9-868a-5e8a-914d-61e3306665b8",
+      "tenant_id": "orq41-6b2ab547-en-empty",
+      "message": "What evidence is available for unregistered project ORQ41UNKNOWN01?"
+    },
+    {
+      "sample_id": "ES/json/0",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": true,
+      "category": "document",
+      "conversation_id": "150dcde1-d026-5591-82d2-e57c2c1631f3",
+      "request_id": "6c326915-21e0-5440-a34b-6a3de06d8a1a",
+      "tenant_id": "orq37-t23",
+      "message": "Explic\u00e1 c\u00f3mo la abstracci\u00f3n de providers separa adapters y servicios de dominio."
+    },
+    {
+      "sample_id": "ES/json/5",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "document",
+      "conversation_id": "1f61bef7-43d3-5bc6-9280-83282d97bb9c",
+      "request_id": "bea1fcf9-48c3-556d-9f8c-d16421086ca0",
+      "tenant_id": "orq37-t23",
+      "message": "Explic\u00e1 c\u00f3mo la abstracci\u00f3n de providers separa adapters y servicios de dominio."
+    },
+    {
+      "sample_id": "ES/json/10",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "history",
+      "conversation_id": "65e68362-bce5-5e7e-a606-a106a115e482",
+      "request_id": "7beca7f5-63db-5cf4-b88a-cc591bd0cd82",
+      "tenant_id": "orq41-6b2ab547-es-history",
+      "message": "\u00bfQu\u00e9 contacto de recuperaci\u00f3n se aprob\u00f3 para ORQ41PROJECTES01?"
+    },
+    {
+      "sample_id": "ES/json/15",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "combined",
+      "conversation_id": "724bd38f-b8bf-5d57-a6ab-0ef72e54e2b6",
+      "request_id": "17e33daa-deda-5cba-9d07-702aec664f15",
+      "tenant_id": "orq37-t23",
+      "message": "Explic\u00e1 c\u00f3mo la abstracci\u00f3n de providers separa adapters y servicios de dominio. Record\u00e1 adem\u00e1s el contacto de recuperaci\u00f3n aprobado para ORQ41PROJECTES01."
+    },
+    {
+      "sample_id": "ES/json/20",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "empty",
+      "conversation_id": "d62a3449-6ce8-5e16-9e0b-4d18c6e822a3",
+      "request_id": "d390039b-374c-517f-8b23-aa48dc395fc7",
+      "tenant_id": "orq41-6b2ab547-es-empty",
+      "message": "\u00bfQu\u00e9 evidencia hay para el proyecto no registrado ORQ41UNKNOWN01?"
+    },
+    {
+      "sample_id": "ES/sse/0",
+      "language": "ES",
+      "protocol": "sse",
+      "warmup": true,
+      "category": "document",
+      "conversation_id": "01e303f4-91f8-5037-b8b5-b893ce2efd52",
+      "request_id": "2bf7eb8f-a638-500f-97be-ab950e128222",
+      "tenant_id": "orq37-t23",
+      "message": "Explic\u00e1 c\u00f3mo la abstracci\u00f3n de providers separa adapters y servicios de dominio."
+    },
+    {
+      "sample_id": "ES/sse/5",
+      "language": "ES",
+      "protocol": "sse",
+      "warmup": false,
+      "category": "document",
+      "conversation_id": "48f809e7-4873-5744-988b-1246c28fdbbf",
+      "request_id": "a362ed74-2d24-5ed3-b977-e4c2a2166e91",
+      "tenant_id": "orq37-t23",
+      "message": "Explic\u00e1 c\u00f3mo la abstracci\u00f3n de providers separa adapters y servicios de dominio."
+    },
+    {
+      "sample_id": "ES/sse/10",
+      "language": "ES",
+      "protocol": "sse",
+      "warmup": false,
+      "category": "history",
+      "conversation_id": "bd548af5-69b0-5470-b9dd-45c6485d51a3",
+      "request_id": "d0829079-2228-5997-9629-a46e5c0b55d5",
+      "tenant_id": "orq41-6b2ab547-es-history",
+      "message": "\u00bfQu\u00e9 contacto de recuperaci\u00f3n se aprob\u00f3 para ORQ41PROJECTES01?"
+    },
+    {
+      "sample_id": "ES/sse/15",
+      "language": "ES",
+      "protocol": "sse",
+      "warmup": false,
+      "category": "combined",
+      "conversation_id": "72e06d7c-45bd-5990-ad37-2d0f3b012f3c",
+      "request_id": "259c7093-8240-572c-91e1-d6a8da62dd75",
+      "tenant_id": "orq37-t23",
+      "message": "Explic\u00e1 c\u00f3mo la abstracci\u00f3n de providers separa adapters y servicios de dominio. Record\u00e1 adem\u00e1s el contacto de recuperaci\u00f3n aprobado para ORQ41PROJECTES01."
+    },
+    {
+      "sample_id": "ES/sse/20",
+      "language": "ES",
+      "protocol": "sse",
+      "warmup": false,
+      "category": "empty",
+      "conversation_id": "c61770fc-f53d-5d1e-9a85-19f9b2d2fac7",
+      "request_id": "8b60ba60-8507-5bba-8569-6db5f6a01648",
+      "tenant_id": "orq41-6b2ab547-es-empty",
+      "message": "\u00bfQu\u00e9 evidencia hay para el proyecto no registrado ORQ41UNKNOWN01?"
+    }
+  ],
+  "images": {
+    "c0": "sha256:3feaa36e5787976cf2447344be39b6e9976e5f3db2248c6beef652dbfb45dcc3",
+    "c1": "sha256:4e68ccdca15b97f7fd573034c74575d88a156d21ca7f4ff2251affc5db55e707"
+  },
+  "postgres_image": "sha256:8e5355e9ff399a002fa46148399a1ac22fb3e9b2d390f857296e6da6b5559ba1",
+  "resources": {
+    "nano_cpus": 2000000000,
+    "memory_bytes": 2147483648,
+    "memory_swap_bytes": 2147483648
+  },
+  "databases": {
+    "c0": "orq41_agg_261106213253_c0",
+    "c1": "orq41_agg_261106213253_c1"
+  },
+  "casefile_sha256": "6fc36930fc98a008764a2bda2c2fbc02ce98e68243ed9269dec2c9568445b0e6",
+  "harness_sha256": {
+    "experiments/production_graduation/gate_validation/controlled_latency.py": "a711e6161564e4f5fbf4f542c84bd6a3f1afb71df16760e4480cdae9073837f9",
+    "experiments/production_graduation/gate_validation/controlled_latency_worker.py": "a9f1996aadfe87406addbc9ba890ae291c186de76341b0f322aa2732b03804e8",
+    "experiments/production_graduation/gate_validation/controlled_latency_controller.py": "b77ab8466734b84f93d7ccf3476819054b674d0d6f98ae0402c7147d7b2656cd",
+    "experiments/production_graduation/gate_validation/local_api.py": "e9b8a886018ca60a7b77b2885b89fa813368373435464e455bd449589ea034eb",
+    "experiments/production_graduation/gate_validation/transports.py": "3c0f15acf79a08684fad8d89bfa7242d3779a980f89988a7f252e74cb7aef6e0",
+    "experiments/production_graduation/gate_validation/capture.py": "373dab408e467093a764720d6b9b6e5cd1617b7079e877c710b44cd3d24c68bf",
+    "experiments/production_graduation/gate_validation/fixtures.py": "ce7a3bc48939da71b4c3ac49829e9e21d9c686b5bdda7f72697c3ccbd14f1f0c",
+    "experiments/production_graduation/gate_validation/validate_g123.py": "d18aefea58b169264095466eafb81f5d1f0c259ae9e3ccb516c9534f228420c3",
+    "experiments/production_graduation/gate_validation/g9_controller.py": "4b3697b3d3eccf4eccb239060a50571bb91abe9bdd121143c6042b1ea91131ce",
+    "experiments/production_graduation/gate_validation/controlled_latency_aggregate.py": "06a6181c3461587c2ccf46f2af04dbbd2b462e19f90dd4a568c664a518ce831a",
+    "experiments/production_graduation/gate_validation/controlled_latency_aggregate_worker.py": "8fd5c6db976c1b30df127948c51f46f64ccd0a45c5e4823cbd384909f7df1f6b"
+  },
+  "external_calls": 0,
+  "paid_requests": 0,
+  "g6_live_bounds_claimed": false,
+  "limitation": "Diagnostic instrumentation only; no statistical gate or correction of official G6. One attempt; no automatic resend.",
+  "config_sha256": {
+    "c0": "1097561d681ad6736334a4c5ea77e8179e1debbbeea6a493cf656f5513e23686",
+    "c1": "73b7069c55c119a40ecdebd210878c7c4a1ff05b13909000a7c7d54677594816"
+  },
+  "support_files_sha256": {
+    ".framework/orqs/ORQ-41-production-retrieval-graduation/environment/g123/execution-freeze/settings/inspect.py": "501ea364ae3bfc21de353a0b6b0c6667dea5d44f682b7c456e4b01a6f1fbeb45",
+    ".framework/orqs/ORQ-41-production-retrieval-graduation/campaign-redesign/p2_netguard/sitecustomize.py": "2810dd72b69aa1c383c512a2ed6fb2444248c438b9a4b947330042020288a2f5",
+    ".framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106130053-rev2/diagnosis/receipt-copy-proposal/implementation/image-pin/receipt.json": "15fbd41517ebd30ddc86a60aa95a30c976573fcc80d43ee8efb51739caae2a79",
+    ".framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106130053-rev2/diagnosis/receipt-copy-proposal/implementation/image-pin/candidate-app-inventory.json": "6de25acd40bd5aadf2275f9bd63cfb88f005b95f074fa7a5d2d01a366b76ddeb",
+    ".framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106130053-rev2/diagnosis/receipt-copy-proposal/implementation/image-pin/parent-app-inventory.json": "6132df5408b6c944b4fee444103353da221a71959bad9d6aacad68deb756f75d"
+  },
+  "candidate_refresh": {
+    "purpose": "measure approved receipt-copy optimization using otherwise unchanged aggregate diagnostic",
+    "initial_plan_sha256": "d283ea71404321e3900d12819431abfc6eefd209b163203d45503f5ece48be31",
+    "image_pin_receipt": ".framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106130053-rev2/diagnosis/receipt-copy-proposal/implementation/image-pin/receipt.json",
+    "only_changed_app_file": "core/observability/context_evidence.py",
+    "source_sha256": "32490a738e58d2499b6f3a2bac9ee961f6d060a486830752d7b5207b5398ba20",
+    "previous_diagnostic_run": "261106190648",
+    "comparison_limit": "Different fresh UUIDs and host timing; previous C1 versus current C1 is historical, not a randomized same-run optimization effect estimate"
+  }
+}

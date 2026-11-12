@@ -1,0 +1,27 @@
+# Independent source review — blocked full-C1 A/A harness
+
+**BLOCKED_AA_SOURCE_REVIEW_PASS**. No new BLOCKER/HIGH/MEDIUM finding in scoped implementation review. This is not BLOCKED_AA_HARNESS_REVIEW_PASS: there is no reviewed executable packet or environment and no request/service preparation authorized by this receipt.
+
+## Scope and binding
+
+Independently inspected three new files (controller, worker, focused tests), approved proposal/contract and implementation authorization/source-manifest, plus retained author final XML. Exact source/test/proposal/contract/authorization/XML hashes match. Original immutable proposal/contract remain prospective design snapshots; separately bound authorization explicitly approves harness implementation/P2 tests only, not preparation/execution/formalG6/paid admission.
+
+## Contract and safety review
+
+Pure builder implements exact sorted business case lists,20representative warmups perworker,25measurements/block,4blocks/cell,32freshworkers,1440requests=800measured640warmups. Category rotation and across-block occurrence counters produce25/category and5/business/cell-arm; within-cell ABBA/BAAB source order matches contract. UUID5identities include phase/block/slot and newnamespace. Plan validation reconstructs the complete expected typed canonical representation and fixture histories, rejects unknown/missing/drifted fields, and separately requires full effectiveconfig and seedprobe. Native provider, Capture, C1purpose/invocation/applicationSDK checks and guarded postquiescence cleanup are reused with immutable reviewedhelper hashes, not rewritten.
+
+Worker primary sent and ingress callback clock placement remains reviewed original boundary. Both labels unconditionally run fullC1. A single block handles20warmups then25measurements, absolute300sdeadline, functionalJSON/SSE/request/conversation checks, native rewrite/primary exactlyonce and closedC1proof before cleanup. Validation/cleanupfailure recordsFAIL and breaks admission; controller incomplete/failed/contradictory block receipts halt remainingworkers. Scoped/provider teardown precedes Docker wait completion, so nextworker cannotstartwhile priorworkerremainsunresolved. Capture hook restored in finally. No executableformalG6mode present.
+
+Controller preflight requires exact independent executablepacketreview AND separate exact-plan executionauthorization before Docker/SQL, complete prep/ANALYZE/config proofs and sourcebindings. Preparation separately requires explicit environmentauthorization before operations. Globalandperworker exclusive durablemarkers forbid resume/admissionreplay, including startbeforeappchecks; failedpartials remainpreserved. Beforeeachnextworker source/support hashes are reread; output/block names are unique. Fixednetwork-none sharednamespace, image/cpuset/quota/memory/topology checks remain. No realprovidertransport introduced.
+
+ANALYZE is restricted to new named disposableDB/container, exact7tableinventory and7qualifiedstatements; no statistics/planner/autovacuumsettings/schema changes permitted. Preparation freezes receipts; no dynamic warmup or maintenancebased sampleexclusion. Readonlyproof validates exact histories/UUID/tenant/sequence, newexchangecontent/uniqueIDs before normalizing onlygeneratedIDs, pairedbusinessprojection,counts/corpus/RLS/roles/schema/locale. HostCPU/frequency anddatabase/reset/maintenance measurements are outside requesttiming; resets/missingcounters failclosed and no load/frequencyselectionthreshold is added.
+
+Aggregator pools100rawmeasuredsamples perarm/cell, original nearest-rank p95/index94 and integer symmetric5%bothdirections/zero. No averageblockquantile substitutes for metric. Global1440uniqueC1IDs, fullpopulation/typedmetadata/nativeparity required before anycalibrationPASS. Descriptiveblockstatistics are separate. CompletevalidFAIL remainsFAIL; no p95correction, confidenceescape or G6reclassification.
+
+## Verification actually performed
+
+Reviewer ran only bounded pure P2 controls: `timeout30s unshare -rn env -i ... python -m pytest -q -p no:cacheprovider tests/experiments/test_orq41_blocked_latency.py -k 'not actual_block_loop'`:67PASS/10deselected. One pytest cache_dir warning from deliberately disabled cache plugin. Ten nativeSDKthread actual-block-loop cases not rerun on host3.13.9 due known executorteardownissue. Parent's pinnedC1image167PASS/0skips XML inspected and hashbound; includes all77newtests plus existing32AA/23G6/35cleanup, with actual native-stubJSON/SSE fault cases attributed to parent. NoSQL/Docker/API/provider/network request, no prepare/execute or environment by reviewer. No sourcefix or planningedit; onlyreviewevidence.
+
+## Limits and follow-up
+
+Source tests/doubles do not prove a future realPG/environment/manifest is correct. Before any preparation obtain its explicit authorization; before any1440requestexecution require freshfixtures/config/seed/resources/sourcepins and a distinct exactpacket independentreview plus operatorauthorization. Actualruntime chains remain worker-validated compactevidence, not separatelyretainedrawchains. Host/DBcounters are asynchronouslyupdated, coarse andoverlapping—not causalwaitshares; fixedaffinity not exclusiveownership/frequency. R1A/A cannot certify statisticalequivalence or productionreadiness. No performancegain/G6PASS/paidreadiness established, no additionalmeasurement authorized. Historical AAFAILs, CONTROLLED_G6_FAIL and paidblock remain intact.

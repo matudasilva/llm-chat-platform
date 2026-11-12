@@ -1,0 +1,128 @@
+{
+  "status": "LIVE_RESTORATION_VERIFIED_PASS",
+  "captured_at": "2026-11-11T02:39:19.597472+00:00",
+  "journal_records": 53,
+  "final_hash": "d64c9461dedc0fa0eff8b8a8a1b878de6a253f415add6d1cad5612b7e55674d6",
+  "helper_sha256": "8064e669e1921475167fb70fb73d3746cb4c034fa02fe207c7ffa749346b2be2",
+  "archive_sha256": "89d8ea9adc6a2e131f9d31003c6c9bbf23601eb661d5f10850dee88c58702d23",
+  "units": {
+    "init.scope": {
+      "ControlGroup": "/init.scope",
+      "EffectiveCPUs": "0-31",
+      "AllowedCPUs": "",
+      "StartupAllowedCPUs": "",
+      "ActiveState": "active",
+      "FragmentPath": "",
+      "DropInPaths": "",
+      "Transient": "yes"
+    },
+    "machine.slice": {
+      "ControlGroup": "/machine.slice",
+      "EffectiveCPUs": "0-31",
+      "AllowedCPUs": "",
+      "StartupAllowedCPUs": "",
+      "ActiveState": "active",
+      "FragmentPath": "/usr/lib/systemd/system/machine.slice",
+      "DropInPaths": "",
+      "Transient": "no"
+    },
+    "orq41bench.slice": {
+      "ControlGroup": "",
+      "EffectiveCPUs": "",
+      "AllowedCPUs": "",
+      "StartupAllowedCPUs": "",
+      "ActiveState": "inactive",
+      "FragmentPath": "",
+      "DropInPaths": "",
+      "Transient": "no"
+    },
+    "system.slice": {
+      "ControlGroup": "/system.slice",
+      "EffectiveCPUs": "0-31",
+      "AllowedCPUs": "",
+      "StartupAllowedCPUs": "",
+      "ActiveState": "active",
+      "FragmentPath": "",
+      "DropInPaths": "",
+      "Transient": "no"
+    },
+    "user.slice": {
+      "ControlGroup": "/user.slice",
+      "EffectiveCPUs": "0-31",
+      "AllowedCPUs": "",
+      "StartupAllowedCPUs": "",
+      "ActiveState": "active",
+      "FragmentPath": "/usr/lib/systemd/system/user.slice",
+      "DropInPaths": "",
+      "Transient": "no"
+    }
+  },
+  "absent_paths": [
+    "/run/systemd/system/orq41bench.slice",
+    "/run/systemd/system.control/user.slice.d/50-AllowedCPUs.conf",
+    "/run/systemd/system.control/machine.slice.d/50-AllowedCPUs.conf",
+    "/run/systemd/system.control/system.slice.d/50-AllowedCPUs.conf",
+    "/run/systemd/transient/init.scope.d/50-AllowedCPUs.conf",
+    "/run/systemd/system.control/init.scope.d/50-AllowedCPUs.conf"
+  ],
+  "watchdog": {
+    "timer": {
+      "LoadState": "not-found",
+      "ActiveState": "inactive",
+      "SubState": "dead"
+    },
+    "service": {
+      "LoadState": "not-found",
+      "ActiveState": "inactive",
+      "SubState": "dead"
+    }
+  },
+  "containers": [
+    {
+      "Id": "2fe3ac8882eb38d50404c4fd5dc6ab1169016af60230dffd89f9ce5f77af9f6c",
+      "Name": "/orq41-paid-pg",
+      "RestartCount": 0,
+      "status": "running",
+      "pid": 1003056,
+      "started": "2026-11-06T11:32:02.24119901Z"
+    },
+    {
+      "Id": "7ffc345f9c8efa3b1b0c63441db6d30821142ec7d5041cab40e77bfc266eba4f",
+      "Name": "/orq41-env-pg",
+      "RestartCount": 0,
+      "status": "running",
+      "pid": 688975,
+      "started": "2026-11-03T12:44:08.64481316Z"
+    },
+    {
+      "Id": "5ce776396694d48362c7fcc29ed98865686313da054f62f94db80321a4bebb6a",
+      "Name": "/orq41-env-redis",
+      "RestartCount": 0,
+      "status": "running",
+      "pid": 711844,
+      "started": "2026-11-03T13:00:36.496078841Z"
+    },
+    {
+      "Id": "02211355a815471ada9fe1104c48f11f192e6de32a9f941c46bbb39ebf7514ad",
+      "Name": "/orq41-env-otel",
+      "RestartCount": 0,
+      "status": "running",
+      "pid": 711964,
+      "started": "2026-11-03T13:00:36.900255308Z"
+    }
+  ],
+  "power": {
+    "/sys/devices/system/cpu/cpu0/cpufreq/energy_performance_preference": "performance",
+    "/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor": "powersave",
+    "/sys/devices/system/cpu/cpu2/cpufreq/energy_performance_preference": "performance",
+    "/sys/devices/system/cpu/cpu2/cpufreq/scaling_governor": "powersave",
+    "/sys/devices/system/cpu/cpu4/cpufreq/energy_performance_preference": "performance",
+    "/sys/devices/system/cpu/cpu4/cpufreq/scaling_governor": "powersave",
+    "/sys/devices/system/cpu/cpu6/cpufreq/energy_performance_preference": "performance",
+    "/sys/devices/system/cpu/cpu6/cpufreq/scaling_governor": "powersave"
+  },
+  "benchmark_requests": 0,
+  "provider_calls": 0,
+  "spend_usd": "0",
+  "environment_ready": false
+}

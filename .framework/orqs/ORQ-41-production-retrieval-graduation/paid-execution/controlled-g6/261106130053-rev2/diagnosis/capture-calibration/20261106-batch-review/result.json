@@ -1,0 +1,195 @@
+{
+  "status": "CAPTURE_CALIBRATION_COMPLETE_NOT_A_GATE",
+  "fixture_sha256": "b9ff964585126bbb13847832a1cbaad9444c5179d722f742501fff756075ab69",
+  "botocore_version": "1.43.64",
+  "model": "nvidia.nemotron-nano-3-30b",
+  "input_shape": "400 measured original fixture queries, rewrite-only, locally reconstructed serialized bodies",
+  "measurements": {
+    "tape": [
+      {
+        "batch_sends": 400,
+        "wall_ns": 326023,
+        "thread_cpu_ns": 327140
+      },
+      {
+        "batch_sends": 400,
+        "wall_ns": 330323,
+        "thread_cpu_ns": 331352
+      },
+      {
+        "batch_sends": 400,
+        "wall_ns": 337863,
+        "thread_cpu_ns": 339031
+      },
+      {
+        "batch_sends": 400,
+        "wall_ns": 322123,
+        "thread_cpu_ns": 322576
+      },
+      {
+        "batch_sends": 400,
+        "wall_ns": 316312,
+        "thread_cpu_ns": 317132
+      },
+      {
+        "batch_sends": 400,
+        "wall_ns": 297719,
+        "thread_cpu_ns": 298346
+      },
+      {
+        "batch_sends": 400,
+        "wall_ns": 297437,
+        "thread_cpu_ns": 298113
+      },
+      {
+        "batch_sends": 400,
+        "wall_ns": 300668,
+        "thread_cpu_ns": 301668
+      },
+      {
+        "batch_sends": 400,
+        "wall_ns": 309614,
+        "thread_cpu_ns": 310351
+      }
+    ],
+    "capture_passive": [
+      {
+        "batch_sends": 400,
+        "wall_ns": 4768325,
+        "thread_cpu_ns": 4769053
+      },
+      {
+        "batch_sends": 400,
+        "wall_ns": 5203791,
+        "thread_cpu_ns": 5205366
+      },
+      {
+        "batch_sends": 400,
+        "wall_ns": 4997932,
+        "thread_cpu_ns": 4998599
+      },
+      {
+        "batch_sends": 400,
+        "wall_ns": 4930619,
+        "thread_cpu_ns": 4931300
+      },
+      {
+        "batch_sends": 400,
+        "wall_ns": 4889462,
+        "thread_cpu_ns": 4890080
+      },
+      {
+        "batch_sends": 400,
+        "wall_ns": 4949779,
+        "thread_cpu_ns": 4950301
+      },
+      {
+        "batch_sends": 400,
+        "wall_ns": 4955067,
+        "thread_cpu_ns": 4955679
+      },
+      {
+        "batch_sends": 400,
+        "wall_ns": 5113405,
+        "thread_cpu_ns": 5114162
+      },
+      {
+        "batch_sends": 400,
+        "wall_ns": 5119630,
+        "thread_cpu_ns": 5120206
+      }
+    ],
+    "capture_active": [
+      {
+        "batch_sends": 400,
+        "wall_ns": 14326340,
+        "thread_cpu_ns": 14327921
+      },
+      {
+        "batch_sends": 400,
+        "wall_ns": 12742083,
+        "thread_cpu_ns": 12742799
+      },
+      {
+        "batch_sends": 400,
+        "wall_ns": 12733406,
+        "thread_cpu_ns": 12734514
+      },
+      {
+        "batch_sends": 400,
+        "wall_ns": 12983486,
+        "thread_cpu_ns": 12984657
+      },
+      {
+        "batch_sends": 400,
+        "wall_ns": 13142515,
+        "thread_cpu_ns": 13143300
+      },
+      {
+        "batch_sends": 400,
+        "wall_ns": 12848067,
+        "thread_cpu_ns": 12849224
+      },
+      {
+        "batch_sends": 400,
+        "wall_ns": 12766823,
+        "thread_cpu_ns": 12767584
+      },
+      {
+        "batch_sends": 400,
+        "wall_ns": 12782065,
+        "thread_cpu_ns": 12782701
+      },
+      {
+        "batch_sends": 400,
+        "wall_ns": 12732354,
+        "thread_cpu_ns": 12733311
+      }
+    ]
+  },
+  "summary": {
+    "tape": {
+      "median_cpu_us_per_send": 0.79283,
+      "min_cpu_us_per_send": 0.7452825000000001,
+      "max_cpu_us_per_send": 0.8475775,
+      "median_wall_us_per_send": 0.7907799999999999
+    },
+    "capture_passive": {
+      "median_cpu_us_per_send": 12.3891975,
+      "min_cpu_us_per_send": 11.922632499999999,
+      "max_cpu_us_per_send": 13.013415,
+      "median_wall_us_per_send": 12.3876675
+    },
+    "capture_active": {
+      "median_cpu_us_per_send": 31.9567525,
+      "min_cpu_us_per_send": 31.8332775,
+      "max_cpu_us_per_send": 35.819802499999994,
+      "median_wall_us_per_send": 31.9551625
+    }
+  },
+  "validation": "raw bodies, independently computed text receipts, dispatch order, observer reconciliation, hash chain and caps PASS",
+  "limitations": [
+    "one context per batch rather than per request; lifecycle setup/teardown excluded",
+    "no ASGI/DB/provider execution; rewrite-only capture, no scopes or SDK hooks timed",
+    "current host/interpreter, not pinned source container resources; not historical latency attribution",
+    "batch mean costs cannot be subtracted from historical p95 or establish gate PASS"
+  ],
+  "g6_status_unchanged": true,
+  "api_requests": 0,
+  "database_queries": 0,
+  "provider_calls": 0,
+  "paid_spend_usd": "0",
+  "p2": {
+    "network_namespace": "unshare -rn",
+    "environment": "env -i, empty HOME, absent AWS credentials/config, metadata disabled, APP_SETTINGS_ENV_FILE empty",
+    "network_guard": "P2 sitecustomize enabled",
+    "blocked_network_attempts": 0,
+    "network_audit_bytes": 0
+  },
+  "source_hashes": {
+    "app/core/observability/context_evidence.py": "7d66fcbda6e6640033508f4bf0415b13ab91b1158fcae35c3b279da1d21e7c47",
+    "app/core/providers/bedrock_provider.py": "06f5340edddfb589be60fd88972ec1af052f493ce1f78c366ca7822e35371b79",
+    "experiments/production_graduation/gate_validation/capture.py": "373dab408e467093a764720d6b9b6e5cd1617b7079e877c710b44cd3d24c68bf",
+    "experiments/production_graduation/gate_validation/transports.py": "3c0f15acf79a08684fad8d89bfa7242d3779a980f89988a7f252e74cb7aef6e0"
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "status": "C1_COPY_COMPARISON_HARNESS_REVIEW_PASS",
+  "reviewer": "/root/packet_review",
+  "plan_sha256": "248e9fb62ff98c54f3590b487b078413d4397dac6035ef4ddfde74916b0f9bc9",
+  "harness_sha256": {
+    "experiments/production_graduation/gate_validation/controlled_latency.py": "a711e6161564e4f5fbf4f542c84bd6a3f1afb71df16760e4480cdae9073837f9",
+    "experiments/production_graduation/gate_validation/controlled_latency_worker.py": "a9f1996aadfe87406addbc9ba890ae291c186de76341b0f322aa2732b03804e8",
+    "experiments/production_graduation/gate_validation/controlled_latency_controller.py": "b77ab8466734b84f93d7ccf3476819054b674d0d6f98ae0402c7147d7b2656cd",
+    "experiments/production_graduation/gate_validation/local_api.py": "e9b8a886018ca60a7b77b2885b89fa813368373435464e455bd449589ea034eb",
+    "experiments/production_graduation/gate_validation/transports.py": "3c0f15acf79a08684fad8d89bfa7242d3779a980f89988a7f252e74cb7aef6e0",
+    "experiments/production_graduation/gate_validation/capture.py": "373dab408e467093a764720d6b9b6e5cd1617b7079e877c710b44cd3d24c68bf",
+    "experiments/production_graduation/gate_validation/fixtures.py": "ce7a3bc48939da71b4c3ac49829e9e21d9c686b5bdda7f72697c3ccbd14f1f0c",
+    "experiments/production_graduation/gate_validation/validate_g123.py": "d18aefea58b169264095466eafb81f5d1f0c259ae9e3ccb516c9534f228420c3",
+    "experiments/production_graduation/gate_validation/g9_controller.py": "4b3697b3d3eccf4eccb239060a50571bb91abe9bdd121143c6042b1ea91131ce",
+    "experiments/production_graduation/gate_validation/receipt_copy_comparison.py": "d7459d0de34614ce21a751a0d77fd2b1eab7a8cf083f241ad216b4b8def8aa2a",
+    "experiments/production_graduation/gate_validation/receipt_copy_comparison_worker.py": "15701b206083f5d9f102ca382babf4a49fe793a47a288e8c145478daa1f5c315"
+  },
+  "support_files_sha256": {
+    ".framework/orqs/ORQ-41-production-retrieval-graduation/environment/g123/execution-freeze/settings/inspect.py": "501ea364ae3bfc21de353a0b6b0c6667dea5d44f682b7c456e4b01a6f1fbeb45",
+    ".framework/orqs/ORQ-41-production-retrieval-graduation/campaign-redesign/p2_netguard/sitecustomize.py": "2810dd72b69aa1c383c512a2ed6fb2444248c438b9a4b947330042020288a2f5",
+    ".framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106130053-rev2/diagnosis/receipt-copy-proposal/implementation/image-pin/receipt.json": "15fbd41517ebd30ddc86a60aa95a30c976573fcc80d43ee8efb51739caae2a79",
+    ".framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106130053-rev2/diagnosis/receipt-copy-proposal/implementation/image-pin/parent-app-inventory.json": "6132df5408b6c944b4fee444103353da221a71959bad9d6aacad68deb756f75d",
+    ".framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106130053-rev2/diagnosis/receipt-copy-proposal/implementation/image-pin/candidate-app-inventory.json": "6de25acd40bd5aadf2275f9bd63cfb88f005b95f074fa7a5d2d01a366b76ddeb",
+    ".framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106130053-rev2/diagnosis/c1-copy-comparisons/261106215400/protocol.md": "cab332041ab9d1ea0549917038e57c868b762fe62885b2128190be168e4d5f4f",
+    "tests/experiments/test_orq41_receipt_copy_comparison.py": "66e24490f193183cc40bdebac97ce707cbe311b12152be45e5c06f3e6414f600"
+  },
+  "fixtures_sha256": "fa1efc2f902b52eede3bff13531a0d9187e4ab5b9b4f3ab2ff184c85aa11527e",
+  "prepared_database_receipt_sha256": "a2f0fd0d3d7887b0aaf541017ae909fb115c757d20508a6e8937ca0f8633dc97",
+  "review_sha256": "d6f4db77164c21ac9c3e9f33991c583389ce942f2c659bd975565d76fe529be3",
+  "prespecified_analyzer_sha256": "af054e35106ec3d65daac15bfe52f9e937e7bd9a556ddfe144877853334bc2b6",
+  "independent_p2_controls_passed": 4,
+  "test_xml_sha256": "691e876052c7a8d00507ef1ecaa2e8b23df6281aceb900aa4f3c45b7f1d7eb99",
+  "candidate_arms": [
+    "old",
+    "new"
+  ],
+  "both_arms_full_capture_and_candidate_evidence": true,
+  "timing_helpers_ast_equal_to_reviewed_aggregate": true,
+  "open_blocker_high_medium_findings": [],
+  "reviewer_api_calls": 0,
+  "reviewer_database_calls": 0,
+  "reviewer_docker_calls": 0,
+  "external_calls": 0,
+  "spend_usd": "0",
+  "operator_scope": "One direct40-request old/new C1 local diagnostic",
+  "not_a_gate": true,
+  "official_g6_status": "CONTROLLED_G6_FAIL",
+  "limits": [
+    "Fixed counterbalanced order is not randomization",
+    "N4 pairs per category cannot establish a G6 margin",
+    "Process CPU includes background threads",
+    "Parent executed prepared DB/config verifier; reviewer inspected source/receipt"
+  ]
+}

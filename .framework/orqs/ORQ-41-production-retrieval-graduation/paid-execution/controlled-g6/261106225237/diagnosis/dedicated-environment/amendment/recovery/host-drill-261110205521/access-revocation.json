@@ -1,0 +1,36 @@
+{
+  "timestamp_utc": "2026-11-10T21:48:17.559760+00:00",
+  "rule": "/etc/sudoers.d/orq41-cpuset-261110205521",
+  "operations": [
+    {
+      "name": "verify_before_revocation",
+      "argv": [
+        "sudo",
+        "-n",
+        "/usr/bin/python3",
+        "-I",
+        "/var/lib/orq41-cpuset/261110205521/helper.py",
+        "verify",
+        "/var/lib/orq41-cpuset/261110205521"
+      ],
+      "returncode": 0,
+      "stdout": "VERIFY_PASS\n",
+      "stderr": ""
+    },
+    {
+      "name": "remove_exact_temporary_rule",
+      "argv": [
+        "sudo",
+        "-n",
+        "/usr/bin/rm",
+        "--",
+        "/etc/sudoers.d/orq41-cpuset-261110205521"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "rule_absent": true,
+  "status": "TEMPORARY_ACCESS_REVOKED"
+}

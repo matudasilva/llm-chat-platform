@@ -1,0 +1,37 @@
+{
+  "status": "WORKLOAD_LIFECYCLE_DESIGN_REVIEW_PASS",
+  "scope": "Read-only prospective lifecycle design consistency; no implementation or execution approval",
+  "proposal_sha256": "5f1ee277decf45b2cf8a0560998353247867509730b545b371e6063f0c4e3ac6",
+  "review_sha256": "bbe10a7f46ccf87bdb1fe7ea6227cd913d7a5a5f87a17760f65181fcde0167da",
+  "new_blocker_high_medium_findings": [],
+  "operator_decisions_pending": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "proposed_bounds": {
+    "reservation_admission_s": 7200,
+    "supervisor_nominal_interval_s": 1,
+    "read_command_timeout_s": 5,
+    "permit_s": 1,
+    "request_s": 300,
+    "request_quiescence_s": 10,
+    "drain_observation_s": 390,
+    "graceful_service_stop_s": 30,
+    "restoration_success_s": 60
+  },
+  "implementation_authorized_by_review": false,
+  "host_operations": 0,
+  "tests_run": 0,
+  "benchmark_authorized": false,
+  "environment_ready": false,
+  "g6": "FAIL",
+  "paid_admission": "BLOCKED_CONTROLLED_G6_FAIL",
+  "proposal_metadata_sha256": "3f86a51ef5e716b7ed9736ec9e87322f78d53672ca4050290adfa36ce89aaeeb",
+  "source_identity_hashes_verified": {
+    "experiments/production_graduation/gate_validation/blocked_latency_worker.py": "da7e37aed740daeadc6f9f5364b01ba9b074eaec2858f87d577e90ce17888108",
+    "experiments/production_graduation/gate_validation/controlled_latency_controller.py": "a769fae216c70b6057276d5da55697ac52d8fd83b39fc39924e5c5754da76747",
+    "experiments/production_graduation/gate_validation/controlled_latency.py": "a711e6161564e4f5fbf4f542c84bd6a3f1afb71df16760e4480cdae9073837f9"
+  }
+}

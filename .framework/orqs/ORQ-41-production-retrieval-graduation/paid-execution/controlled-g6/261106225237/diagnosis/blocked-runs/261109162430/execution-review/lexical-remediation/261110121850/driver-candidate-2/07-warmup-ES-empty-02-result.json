@@ -1,0 +1,65 @@
+{
+  "index": 7,
+  "slot_id": "236ea3a8-fe62-5b93-b9a6-5c93637b1009",
+  "phase": "warmup",
+  "case_id": "ES-empty-02",
+  "category": "empty",
+  "tenant_id": "orq41-6b2ab547-es-empty",
+  "query_text": "\u00bfQu\u00e9 evidencia hay para el proyecto no registrado ORQ41UNKNOWN02?",
+  "expected_rows": 0,
+  "status": "PASS",
+  "error": null,
+  "adapter_call_begun": true,
+  "checkout_wall_ns": 608919,
+  "checkout_cpu_ns": 372838,
+  "before": {
+    "pid": 2330,
+    "current_user": "rag_app",
+    "session_user": "rag_app",
+    "read_only": "on",
+    "row_security": "on",
+    "tenant": "orq41-6b2ab547-es-empty",
+    "plan_cache_mode": "auto",
+    "superuser": false,
+    "bypass_rls": false,
+    "hybrid_cached": [
+      {
+        "name": "__asyncpg_stmt_9__",
+        "statement": "\n                WITH semantic AS (\n                    SELECT id, document_id, text, metadata,\n                           row_number() OVER (ORDER BY embedding <=> CAST($1 AS vector), id) AS rank\n                    FROM chunks\n                    ORDER BY embedding <=> CAST($1 AS vector), id\n                    LIMIT $2\n                ),\n                lexical_query AS MATERIALIZED (\n                    SELECT plainto_tsquery('english', $3) AS terms\n                    FROM (SELECT count(*) FROM semantic) AS semantic_ready\n                ),\n                keyword AS (\n                    SELECT id, document_id, text, metadata,\n                           row_number() OVER (ORDER BY ts_rank(search_vector, lexical_query.terms) DESC, id) AS rank\n                    FROM chunks\n                    CROSS JOIN lexical_query\n                    WHERE search_vector @@ lexical_query.terms\n                    ORDER BY ts_rank(search_vector, lexical_query.terms) DESC, id\n                    LIMIT $2\n                ),\n                fused AS (\n                    SELECT\n                        COALESCE(semantic.id, keyword.id) AS id,\n                        COALESCE(semantic.document_id, keyword.document_id) AS document_id,\n                        COALESCE(semantic.text, keyword.text) AS text,\n                        COALESCE(semantic.metadata, keyword.metadata) AS metadata,\n                        COALESCE(1.0 / ($4 + semantic.rank), 0.0)\n                            + COALESCE(1.0 / ($4 + keyword.rank), 0.0) AS score\n                    FROM semantic\n                    FULL OUTER JOIN keyword ON semantic.id = keyword.id\n                )\n                SELECT id, document_id, text, metadata, score\n                FROM fused\n                ORDER BY score DESC, id\n                LIMIT $2\n                ",
+        "parameter_types": "{vector,bigint,text,bigint}",
+        "custom_plans": 5,
+        "generic_plans": 2,
+        "from_sql": false
+      }
+    ]
+  },
+  "adapter_wall_ns": 462912,
+  "adapter_cpu_ns": 341037,
+  "after": {
+    "pid": 2330,
+    "current_user": "rag_app",
+    "session_user": "rag_app",
+    "read_only": "on",
+    "row_security": "on",
+    "tenant": "orq41-6b2ab547-es-empty",
+    "plan_cache_mode": "auto",
+    "superuser": false,
+    "bypass_rls": false,
+    "hybrid_cached": [
+      {
+        "name": "__asyncpg_stmt_9__",
+        "statement": "\n                WITH semantic AS (\n                    SELECT id, document_id, text, metadata,\n                           row_number() OVER (ORDER BY embedding <=> CAST($1 AS vector), id) AS rank\n                    FROM chunks\n                    ORDER BY embedding <=> CAST($1 AS vector), id\n                    LIMIT $2\n                ),\n                lexical_query AS MATERIALIZED (\n                    SELECT plainto_tsquery('english', $3) AS terms\n                    FROM (SELECT count(*) FROM semantic) AS semantic_ready\n                ),\n                keyword AS (\n                    SELECT id, document_id, text, metadata,\n                           row_number() OVER (ORDER BY ts_rank(search_vector, lexical_query.terms) DESC, id) AS rank\n                    FROM chunks\n                    CROSS JOIN lexical_query\n                    WHERE search_vector @@ lexical_query.terms\n                    ORDER BY ts_rank(search_vector, lexical_query.terms) DESC, id\n                    LIMIT $2\n                ),\n                fused AS (\n                    SELECT\n                        COALESCE(semantic.id, keyword.id) AS id,\n                        COALESCE(semantic.document_id, keyword.document_id) AS document_id,\n                        COALESCE(semantic.text, keyword.text) AS text,\n                        COALESCE(semantic.metadata, keyword.metadata) AS metadata,\n                        COALESCE(1.0 / ($4 + semantic.rank), 0.0)\n                            + COALESCE(1.0 / ($4 + keyword.rank), 0.0) AS score\n                    FROM semantic\n                    FULL OUTER JOIN keyword ON semantic.id = keyword.id\n                )\n                SELECT id, document_id, text, metadata, score\n                FROM fused\n                ORDER BY score DESC, id\n                LIMIT $2\n                ",
+        "parameter_types": "{vector,bigint,text,bigint}",
+        "custom_plans": 5,
+        "generic_plans": 3,
+        "from_sql": false
+      }
+    ]
+  },
+  "output_rows": 0,
+  "result_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "output_projection": [],
+  "chosen_mode": "generic",
+  "rollback_wall_ns": 124987,
+  "rollback_cpu_ns": 110700
+}

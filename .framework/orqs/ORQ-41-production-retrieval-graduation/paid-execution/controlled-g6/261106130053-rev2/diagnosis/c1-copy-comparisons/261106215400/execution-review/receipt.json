@@ -1,0 +1,157 @@
+{
+  "status": "C1_COPY_COMPARISON_EXECUTION_INDEPENDENT_REVIEW_PASS",
+  "reviewer": "/root/packet_review",
+  "plan_sha256": "248e9fb62ff98c54f3590b487b078413d4397dac6035ef4ddfde74916b0f9bc9",
+  "result_sha256": "9355c613cf3e62c76f93bbba4186a9fe9a1da8eaf5ab4429489563056b033af0",
+  "analysis_sha256": "d795da547784fa110ca1173fe3f2a97d3797671a8cba4577f4fd3e54f147745b",
+  "analyzer_sha256": "af054e35106ec3d65daac15bfe52f9e937e7bd9a556ddfe144877853334bc2b6",
+  "verifier_sha256": "c4418c145591cff1d8cae45ae004b39b1f03d81f1dbc0a1b32c17ddc10ed55c5",
+  "worker_receipts": {
+    "old-EN-json.json": "f44d88e8f39cd9427e614ddc4cc1e07df57c1c21a1b0d00475b85743397289f2",
+    "old-EN-sse.json": "aaeef98b64cd24f0d7c0ef022d29040143582df499b3b2ca211868bbf3860e49",
+    "old-ES-json.json": "24ad11b1c6cba89d80cd838268270ddce4864c117d719d06ee566380d1551ddb",
+    "old-ES-sse.json": "aee22f9ff354997f69489e83e9b937849dab235f5097176dfe9b59b8dd20cfe8",
+    "new-ES-json.json": "ca618d39da6becedc6ba957b6f35c0055a6e88167b3f0b28c4ef30ba65300878",
+    "new-EN-json.json": "cfaf5841371dd40e9aeb2b0f7d970fad67f095aa6330690f3a067e13e6d559f0",
+    "new-ES-sse.json": "11c9847e9d8b427b9953dfe860e32c29b1776c19eda10e56c29767454fcbac1b",
+    "new-EN-sse.json": "c7b5ad3a05f039de768b70ec5a049dc2cdfc3aa7a9c244c7281c850fde8c1064"
+  },
+  "final_database_verification_sha256": "8c24b2a8c4bd09e83edfa51eda4da289c0043a8c4a9536575e70f6a255608082",
+  "requests": 40,
+  "measured": 32,
+  "warmups": 8,
+  "candidate_accounting_instances": 40,
+  "native_payload_and_call_parity": true,
+  "overall": {
+    "n": 16,
+    "cpu": {
+      "median_new_minus_old_ms": -1.878422,
+      "range_ms": [
+        -5.885959,
+        3.480018
+      ],
+      "optimized_lower": 13,
+      "equal": 0,
+      "optimized_higher": 3
+    },
+    "wall": {
+      "median_new_minus_old_ms": -3.8232355,
+      "range_ms": [
+        -11.483049,
+        5.472058
+      ],
+      "optimized_lower": 14,
+      "equal": 0,
+      "optimized_higher": 2
+    }
+  },
+  "by_category": {
+    "document": {
+      "n": 4,
+      "cpu": {
+        "median_new_minus_old_ms": -0.07792949999999998,
+        "range_ms": [
+          -0.887676,
+          3.480018
+        ],
+        "optimized_lower": 2,
+        "equal": 0,
+        "optimized_higher": 2
+      },
+      "wall": {
+        "median_new_minus_old_ms": -1.696877,
+        "range_ms": [
+          -7.666068,
+          5.472058
+        ],
+        "optimized_lower": 3,
+        "equal": 0,
+        "optimized_higher": 1
+      }
+    },
+    "history": {
+      "n": 4,
+      "cpu": {
+        "median_new_minus_old_ms": -2.1179555,
+        "range_ms": [
+          -5.885959,
+          3.435583
+        ],
+        "optimized_lower": 3,
+        "equal": 0,
+        "optimized_higher": 1
+      },
+      "wall": {
+        "median_new_minus_old_ms": -2.9219635,
+        "range_ms": [
+          -5.873835,
+          3.715192
+        ],
+        "optimized_lower": 3,
+        "equal": 0,
+        "optimized_higher": 1
+      }
+    },
+    "combined": {
+      "n": 4,
+      "cpu": {
+        "median_new_minus_old_ms": -3.349103,
+        "range_ms": [
+          -5.036082,
+          -1.701139
+        ],
+        "optimized_lower": 4,
+        "equal": 0,
+        "optimized_higher": 0
+      },
+      "wall": {
+        "median_new_minus_old_ms": -6.15048,
+        "range_ms": [
+          -11.483049,
+          -4.223383
+        ],
+        "optimized_lower": 4,
+        "equal": 0,
+        "optimized_higher": 0
+      }
+    },
+    "empty": {
+      "n": 4,
+      "cpu": {
+        "median_new_minus_old_ms": -2.9685185,
+        "range_ms": [
+          -5.526262,
+          -1.614202
+        ],
+        "optimized_lower": 4,
+        "equal": 0,
+        "optimized_higher": 0
+      },
+      "wall": {
+        "median_new_minus_old_ms": -3.0775825,
+        "range_ms": [
+          -5.363037,
+          -1.956408
+        ],
+        "optimized_lower": 4,
+        "equal": 0,
+        "optimized_higher": 0
+      }
+    }
+  },
+  "order_strata_verified": true,
+  "integer_intervals_verified": true,
+  "not_a_gate": true,
+  "official_g6_status": "CONTROLLED_G6_FAIL",
+  "reviewer_api_calls": 0,
+  "reviewer_database_calls": 0,
+  "reviewer_docker_calls": 0,
+  "observed_guard_attempts": 0,
+  "external_calls": 0,
+  "spend_usd": "0",
+  "causal_speedup_or_g6_margin_established": false,
+  "report_sha256": "edec22e5509d00748d0bd7cb1a3fd8bc00ee198e287724dd48713f90b362bc29",
+  "review_sha256": "0888856d31c042890102b54ce61b2443afc09b4ec6bd0968ace688ad6ef5a221",
+  "report_interpretation_reviewed": true,
+  "causal_limit": "Favorable descriptive signal; fixed order and empty-case differences prevent isolated causal size or G6 margin inference"
+}

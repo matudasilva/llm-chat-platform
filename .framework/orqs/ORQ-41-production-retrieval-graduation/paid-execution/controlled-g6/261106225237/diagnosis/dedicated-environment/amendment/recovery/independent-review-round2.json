@@ -1,0 +1,32 @@
+{
+  "status": "ADMINISTRATIVE_RECOVERY_REVIEW_FINDINGS",
+  "previous_finding": "RECOVERY-R1 addressed in reviewed source",
+  "findings": [
+    {
+      "id": "RECOVERY-R2",
+      "severity": "HIGH",
+      "file": "admin_recovery.py",
+      "line": 417,
+      "summary": "Active owned timer accepted without associated recovery service",
+      "reproduction": "independent_missing_service.py"
+    }
+  ],
+  "technical_files_sha256": {
+    "admin_recovery.py": "21332ab8cba830f672f8f533165c6bc5ccd9c0960731b34b549ee7e18810c69f",
+    "test_admin_recovery.py": "177917a31aee5d8c37b3b6b4ca3c99a03d0a90a0a5451f4b1b4155d20f1b3e2c",
+    "run-tests.sh": "e54cd30d7126afffdca578fa0ee5fc9beb0d02dad3544ddd4a7c2acb02a29b20",
+    "README.md": "0e5b881c354ab8c79188cf3fe568a0fd5a2156138266b827d89fa8920f8088b1"
+  },
+  "artifacts_sha256": {
+    "independent_missing_service.py": "6bdf2ed213380a4016d7fc91afe69447b43b32e04f167608aa0f740a5d0429d9",
+    "independent-round2-tests.xml": "0731ab1088a774fcc29e683e5f895eb465dcc2805f03efb68d875d7e40178d68",
+    "independent-review-round2.md": "09aa7461cd73308751a4f26c35d1dd52b3b5dffd311b6d148009bb132625a169"
+  },
+  "independent_tests": {
+    "passed": 198,
+    "seconds": 17.62,
+    "host_operations": 0,
+    "external_calls": 0
+  },
+  "live_readiness": false
+}

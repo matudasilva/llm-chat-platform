@@ -1,0 +1,42 @@
+{
+  "status": "DEDICATED_BINDING_SOURCE_REVIEW_PASS",
+  "scope": "Approved binding-only source increment; no execution readiness",
+  "approval_sha256": "95ab7b44301cfeab0c030f96a67c906d20ac3c198ea21165b9be7da65ea8f495",
+  "technical_files_sha256": {
+    "experiments/production_graduation/gate_validation/blocked_latency.py": "640a80da7bb556c3828221906e39e91cf1375023087dce5324bf9043405ff08f",
+    "experiments/production_graduation/gate_validation/dedicated_environment.py": "8906d64d9e753a184306c95aa7d4d590d615f852c7c953b6567673dad6ddc5dc",
+    "tests/experiments/test_orq41_dedicated_environment.py": "cf0ef258a51bf6c7c69e1a81696af7ebee85364a92dee81bdb25d5a5a53654ad"
+  },
+  "resolved_findings": [
+    "BINDING-R1"
+  ],
+  "new_blocker_high_medium_findings": [],
+  "independent_tests": {
+    "passed": 54,
+    "seconds": 1.81,
+    "xml_sha256": "790f7dcc192a65e8cb4d59587970ad8a2c3efc67c88f1511f3c4cf665e1a7ce6"
+  },
+  "parent_regression": {
+    "execution_attribution": "parent",
+    "xml_sha256": "3813912f0ab433088ca19d0f602971d04c88f54e890365a85f2e74e8ca8b4c58",
+    "suites": [
+      {
+        "name": "pytest",
+        "errors": "0",
+        "failures": "0",
+        "skipped": "0",
+        "tests": "215",
+        "time": "9.967",
+        "timestamp": "2026-11-10T23:53:35.744916-03:00",
+        "hostname": "matias-Sword-16-HX-B14VFKG"
+      }
+    ]
+  },
+  "report_sha256": "b0c960c7e194729bec5eeb3e231913ab06734cb6cb83bfe01585f8af9e5a7e05",
+  "execution_barrier_present": true,
+  "workload_recovery_implemented": false,
+  "provisioning_approved": false,
+  "environment_ready": false,
+  "reviewer_host_operations": 0,
+  "reviewer_source_edits": 0
+}

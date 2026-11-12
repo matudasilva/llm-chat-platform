@@ -1,0 +1,32 @@
+{
+  "status": "PROSPECTIVE_FIXTURE_MATERIALIZATION_INDEPENDENT_REVIEW_PASS",
+  "reviewer": "/root/g9_final_distinct_reviewer",
+  "entries": 168,
+  "measured": 160,
+  "warmups": 8,
+  "paired_case_identities": 40,
+  "unique_prospective_conversations": 168,
+  "out_of_window_history_case_identities_checked": 20,
+  "history_conversations": 80,
+  "prospective_history_messages": 3840,
+  "fixture_state": "NOT_SEEDED",
+  "pins_or_live_config_verified": false,
+  "db_calls": 0,
+  "api_calls": 0,
+  "external_calls": 0,
+  "spend_usd": "0",
+  "manifest_sha256": "afbf61e184c258f161de1ea01c68f2abc8c455a1b5a719d73cfd84ec31ff912d",
+  "source_and_artifacts_sha256": {
+    "prepare_manifest.py": "5e11f744c3caecc4931dc253bc52b05bd9c4192b7ea9b2ca0f23d9e773073fba",
+    "manifest.json": "9aa95f09e1a33a2dc21763f4d97b8e9a6b297bfee728da1e16578d9354a55936",
+    "cases.json": "6fc36930fc98a008764a2bda2c2fbc02ce98e68243ed9269dec2c9568445b0e6",
+    "fixtures.prospective.json": "0ee9ca1ae82deb08011225241866e34b2e89f21bbcfd59aa13ef6e039753d14f",
+    "materialization.json": "b3cae7bbb8dc6621c08cfabb09b83df39c5044667a804e0df926034e297feeda"
+  },
+  "findings": [],
+  "limitations": [
+    "Prospective unique identities, not independently proven absent from live database",
+    "Tenant document absence and P3 document answerability require read-only DB checks after seeding",
+    "No live configuration/source/network/provider pins accepted by this review"
+  ]
+}

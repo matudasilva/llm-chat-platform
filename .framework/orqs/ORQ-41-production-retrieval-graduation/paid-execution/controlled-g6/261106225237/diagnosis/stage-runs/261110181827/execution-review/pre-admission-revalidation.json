@@ -1,0 +1,79 @@
+{
+  "status": "PRE_ADMISSION_METADATA_REVALIDATION_PASS",
+  "execution_marker_present": false,
+  "worker_markers": 0,
+  "worker_containers": 0,
+  "experiment_requests": 0,
+  "resources": {
+    "affinity": [
+      4,
+      6
+    ],
+    "effective_cpuset": [
+      4,
+      6
+    ],
+    "cpu_max": "200000 100000",
+    "cpu_stat": {
+      "usage_usec": 12547085,
+      "user_usec": 10428287,
+      "system_usec": 2118798,
+      "nice_usec": 0,
+      "core_sched.force_idle_usec": 0,
+      "nr_periods": 870,
+      "nr_throttled": 0,
+      "throttled_usec": 0,
+      "nr_bursts": 0,
+      "burst_usec": 0
+    },
+    "topology": [
+      {
+        "cpu": 0,
+        "core_id": 0,
+        "siblings": [
+          0,
+          1
+        ],
+        "max_khz": 5600000,
+        "governor": "powersave"
+      },
+      {
+        "cpu": 2,
+        "core_id": 4,
+        "siblings": [
+          2,
+          3
+        ],
+        "max_khz": 5600000,
+        "governor": "powersave"
+      },
+      {
+        "cpu": 4,
+        "core_id": 8,
+        "siblings": [
+          4,
+          5
+        ],
+        "max_khz": 5600000,
+        "governor": "powersave"
+      },
+      {
+        "cpu": 6,
+        "core_id": 12,
+        "siblings": [
+          6,
+          7
+        ],
+        "max_khz": 5600000,
+        "governor": "powersave"
+      }
+    ]
+  },
+  "prepared_data_equal": true,
+  "source_preserved": true,
+  "plan_sha256": "7b53fc0b603ddaae6bee6a5dbce08df97364112f1bbdddaf04d01ff4fa4e6bfa",
+  "initial_failure_sha256": "c8d29425c7c03b2ff8f7a84b45f965e265b78205fcfa148f16d878720bb3c9b0",
+  "metadata_failure_cause": "Unestablished; initial helper did not retain Docker stderr; same-P2 raw inspect subsequently succeeded",
+  "external_calls": 0,
+  "spend_usd": "0"
+}

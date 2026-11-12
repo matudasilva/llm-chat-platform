@@ -1,0 +1,38 @@
+{
+  "status": "WORKLOAD_LIFECYCLE_DESIGN_PROPOSED_NOT_IMPLEMENTED",
+  "proposal_sha256": "5f1ee277decf45b2cf8a0560998353247867509730b545b371e6063f0c4e3ac6",
+  "limits_proposed": {
+    "reservation_admission_window_s": 7200,
+    "nominal_supervisor_observation_interval_s": 1,
+    "supervisor_command_timeout_s": 5,
+    "single_use_permit_validity_s": 1,
+    "existing_request_deadline_s": 300,
+    "existing_nested_cleanup_bound_s": 10,
+    "drain_observation_s": 390,
+    "worker_finalization_observation_s": 30,
+    "graceful_service_stop_observation_s": 30,
+    "baseline_restoration_observation_s": 60
+  },
+  "request_population": {
+    "workers": 32,
+    "samples_per_worker": 45,
+    "total": 1440,
+    "measured": 800,
+    "warmups": 640,
+    "concurrency": 1
+  },
+  "binding_source_review_sha256": "01610cfd2f612ef2c3ffb71aa1cd829b8eb94b07c3b1aab5baafa8c0cc80a809",
+  "source_evidence_sha256": {
+    "experiments/production_graduation/gate_validation/blocked_latency_worker.py": "da7e37aed740daeadc6f9f5364b01ba9b074eaec2858f87d577e90ce17888108",
+    "experiments/production_graduation/gate_validation/controlled_latency_controller.py": "a769fae216c70b6057276d5da55697ac52d8fd83b39fc39924e5c5754da76747",
+    "experiments/production_graduation/gate_validation/controlled_latency.py": "a711e6161564e4f5fbf4f542c84bd6a3f1afb71df16760e4480cdae9073837f9"
+  },
+  "validation": "Retained source identities and actual deadline wrappers checked; 32*45=1440, 32*25=800, 32*20=640, 1+300+30+30+29=390. No execution or test rerun needed for design-only work.",
+  "implementation_authorized": false,
+  "host_execution_authorized": false,
+  "benchmark_authorized": false,
+  "provider_calls": 0,
+  "spend_usd": "0",
+  "official_g6_status": "CONTROLLED_G6_FAIL",
+  "paid_admission": "BLOCKED_CONTROLLED_G6_FAIL"
+}

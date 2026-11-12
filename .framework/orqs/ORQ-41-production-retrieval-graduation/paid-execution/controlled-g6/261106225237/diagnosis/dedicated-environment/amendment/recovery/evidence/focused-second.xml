@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="54" time="3.637" timestamp="2026-11-10T17:37:22.286021-03:00" hostname="matias-Sword-16-HX-B14VFKG"><testcase classname="" name="test_full_apply_and_exact_restore" time="0.125" /><testcase classname="" name="test_crash_after_each_apply_mutation[1]" time="0.019" /><testcase classname="" name="test_crash_after_each_apply_mutation[2]" time="0.034" /><testcase classname="" name="test_crash_after_each_apply_mutation[3]" time="0.035" /><testcase classname="" name="test_crash_after_each_apply_mutation[4]" time="0.046" /><testcase classname="" name="test_crash_after_each_apply_mutation[5]" time="0.049" /><testcase classname="" name="test_crash_after_each_apply_mutation[6]" time="0.063" /><testcase classname="" name="test_crash_after_each_apply_mutation[7]" time="0.068" /><testcase classname="" name="test_crash_after_each_apply_mutation[8]" time="0.096" /><testcase classname="" name="test_crash_after_each_apply_mutation[9]" time="0.087" /><testcase classname="" name="test_crash_after_each_apply_mutation[10]" time="0.103" /><testcase classname="" name="test_crash_after_each_apply_mutation[11]" time="0.108" /><testcase classname="" name="test_nonzero_after_mutation_enters_recovery[1]" time="0.025" /><testcase classname="" name="test_nonzero_after_mutation_enters_recovery[2]" time="0.031" /><testcase classname="" name="test_nonzero_after_mutation_enters_recovery[3]" time="0.033" /><testcase classname="" name="test_nonzero_after_mutation_enters_recovery[4]" time="0.052" /><testcase classname="" name="test_nonzero_after_mutation_enters_recovery[5]" time="0.046" /><testcase classname="" name="test_nonzero_after_mutation_enters_recovery[6]" time="0.067" /><testcase classname="" name="test_nonzero_after_mutation_enters_recovery[7]" time="0.077" /><testcase classname="" name="test_nonzero_after_mutation_enters_recovery[8]" time="0.102" /><testcase classname="" name="test_nonzero_after_mutation_enters_recovery[9]" time="0.113" /><testcase classname="" name="test_nonzero_after_mutation_enters_recovery[10]" time="0.117" /><testcase classname="" name="test_nonzero_after_mutation_enters_recovery[11]" time="0.112" /><testcase classname="" name="test_second_crash_during_each_restore_mutation[1]" time="0.117" /><testcase classname="" name="test_second_crash_during_each_restore_mutation[2]" time="0.114" /><testcase classname="" name="test_second_crash_during_each_restore_mutation[3]" time="0.121" /><testcase classname="" name="test_second_crash_during_each_restore_mutation[4]" time="0.138" /><testcase classname="" name="test_second_crash_during_each_restore_mutation[5]" time="0.126" /><testcase classname="" name="test_second_crash_during_each_restore_mutation[6]" time="0.125" /><testcase classname="" name="test_second_crash_during_each_restore_mutation[7]" time="0.140" /><testcase classname="" name="test_second_crash_during_each_restore_mutation[8]" time="0.131" /><testcase classname="" name="test_second_crash_during_each_restore_mutation[9]" time="0.125" /><testcase classname="" name="test_second_crash_during_each_restore_mutation[10]" time="0.124" /><testcase classname="" name="test_second_crash_during_each_restore_mutation[11]" time="0.136" /><testcase classname="" name="test_second_crash_during_each_restore_mutation[12]" time="0.124" /><testcase classname="" name="test_invalid_order_fails_without_mutation[APPLIED]" time="0.008" /><testcase classname="" name="test_invalid_order_fails_without_mutation[ARMED]" time="0.009" /><testcase classname="" name="test_invalid_order_fails_without_mutation[DISARMED]" time="0.008" /><testcase classname="" name="test_invalid_order_fails_without_mutation[RESTORED]" time="0.008" /><testcase classname="" name="test_invalid_order_fails_without_mutation[UNKNOWN]" time="0.009" /><testcase classname="" name="test_corrupt_record_fails_closed" time="0.009" /><testcase classname="" name="test_journal_gap_fails_closed" time="0.010" /><testcase classname="" name="test_occupied_slice_preserved" time="0.035" /><testcase classname="" name="test_foreign_override_untouched" time="0.040"><failure message="AssertionError: Regex pattern did not match.&#10; Regex: 'Unknown/concurrent'&#10; Input: 'Owned file replaced'">setup = (&lt;admin_recovery.Store object at 0x797e72480960&gt;, &lt;test_admin_recovery.Fake object at 0x797e7257f4d0&gt;, {'files': {'ini...m.slice': {'ActiveState': 'active', 'AllowedCPUs': '', 'ControlGroup': '/system.slice', 'DropInPaths': '', ...}, ...}})
+
+    def test_foreign_override_untouched(setup):
+        store, backend, _ = setup
+        m.apply(store, backend)
+        backend.files[m.UNITS[0]] = 'foreign'
+        calls = backend.calls[:]
+        with pytest.raises(RuntimeError, match='Unknown/concurrent'):
+&gt;           m.recover(store, backend)
+
+.framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106225237/diagnosis/dedicated-environment/amendment/recovery/test_admin_recovery.py:206: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+.framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106225237/diagnosis/dedicated-environment/amendment/recovery/admin_recovery.py:304: in recover
+    recover_locked(store, backend)
+.framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106225237/diagnosis/dedicated-environment/amendment/recovery/admin_recovery.py:275: in recover_locked
+    backend.validate_recoverable(baseline, intended, rows)
+.framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106225237/diagnosis/dedicated-environment/amendment/recovery/admin_recovery.py:422: in validate_recoverable
+    require(self.identity(unit) == witness['identity'], 'Owned file replaced')
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = False, message = 'Owned file replaced'
+
+    def require(value, message):
+        if not value:
+&gt;           raise RuntimeError(message)
+E           RuntimeError: Owned file replaced
+
+.framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106225237/diagnosis/dedicated-environment/amendment/recovery/admin_recovery.py:30: RuntimeError
+
+During handling of the above exception, another exception occurred:
+
+setup = (&lt;admin_recovery.Store object at 0x797e72480960&gt;, &lt;test_admin_recovery.Fake object at 0x797e7257f4d0&gt;, {'files': {'ini...m.slice': {'ActiveState': 'active', 'AllowedCPUs': '', 'ControlGroup': '/system.slice', 'DropInPaths': '', ...}, ...}})
+
+    def test_foreign_override_untouched(setup):
+        store, backend, _ = setup
+        m.apply(store, backend)
+        backend.files[m.UNITS[0]] = 'foreign'
+        calls = backend.calls[:]
+&gt;       with pytest.raises(RuntimeError, match='Unknown/concurrent'):
+E       AssertionError: Regex pattern did not match.
+E        Regex: 'Unknown/concurrent'
+E        Input: 'Owned file replaced'
+
+.framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106225237/diagnosis/dedicated-environment/amendment/recovery/test_admin_recovery.py:205: AssertionError</failure></testcase><testcase classname="" name="test_preservation_inventory_drift_blocks_recovery" time="0.047" /><testcase classname="" name="test_final_reload_failure_cannot_claim_restored" time="0.126" /><testcase classname="" name="test_baseline_drift_prevents_apply" time="0.007" /><testcase classname="" name="test_global_maintenance_lock" time="0.006" /><testcase classname="" name="test_baseline_fsync_failure_has_zero_host_mutations" time="0.000" /><testcase classname="" name="test_unsupported_existing_override_rejected" time="0.000" /><testcase classname="" name="test_state_symlink_rejected" time="0.007" /><testcase classname="" name="test_journal_symlink_rejected" time="0.009" /><testcase classname="" name="test_atomic_publication_never_overwrites" time="0.003" /><testcase classname="" name="test_live_commands_not_used" time="0.118" /></testsuite></testsuites>

@@ -1,0 +1,26 @@
+{
+  "status": "TRANSIENT_PATH_REMEDIATION_SOURCE_REVIEW_PASS",
+  "scope": "New helper source and deterministic fake/adapter tests only",
+  "technical_files_sha256": {
+    "admin_recovery.py": "8064e669e1921475167fb70fb73d3746cb4c034fa02fe207c7ffa749346b2be2",
+    "test_admin_recovery.py": "37a2742f53f1055b0e207d632d8ccaa8f365f10b253713411115f378d60b22ce",
+    "run-tests.sh": "e54cd30d7126afffdca578fa0ee5fc9beb0d02dad3544ddd4a7c2acb02a29b20"
+  },
+  "original_helper_sha256": "9025f3924dfcc49a6debbe82a835be0bd42e4e3eebeec9fb4f672d512742a2e6",
+  "artifacts_sha256": {
+    "review.md": "5ea9e778f52c384465f8e4944b781556edf17ae26fafb6f23cf1006f1c614553",
+    "evidence/independent-tests.xml": "5d9e2b039f8ff5710b416c7bdbf9e08709cb4dafb3877db8e70d2cc2d83f76f8"
+  },
+  "independent_tests": {
+    "passed": 215,
+    "seconds": 20.72
+  },
+  "additional_probe": "Actual retained legacy manifest rejected by new backend before host command",
+  "new_blocker_high_medium_findings": [],
+  "reviewer_host_operations": 0,
+  "reviewer_source_edits": 0,
+  "live_drill_pass": false,
+  "environment_ready": false,
+  "g6": "FAIL",
+  "paid_admission": "BLOCKED_CONTROLLED_G6_FAIL"
+}

@@ -1,0 +1,378 @@
+{
+  "status": "STAGE_DIAGNOSTIC_PREPARED_NOT_EXECUTED",
+  "plan_sha256": "7b53fc0b603ddaae6bee6a5dbce08df97364112f1bbdddaf04d01ff4fa4e6bfa",
+  "fixtures_sha256": "df8d7488fb11ee8e431228a89effbe9bf721da13654eeae2287e1da9e0831327",
+  "private_state": "/tmp/orq41-stage-261110181827-b4yeuwt1",
+  "analyses": [
+    {
+      "database": "orq41_stage_261110181827_off",
+      "settings": {
+        "autovacuum": "on",
+        "autovacuum_analyze_scale_factor": "0.1",
+        "autovacuum_analyze_threshold": "50",
+        "autovacuum_freeze_max_age": "200000000",
+        "autovacuum_max_workers": "3",
+        "autovacuum_multixact_freeze_max_age": "400000000",
+        "autovacuum_naptime": "60",
+        "autovacuum_vacuum_cost_delay": "2",
+        "autovacuum_vacuum_cost_limit": "-1",
+        "autovacuum_vacuum_insert_scale_factor": "0.2",
+        "autovacuum_vacuum_insert_threshold": "1000",
+        "autovacuum_vacuum_scale_factor": "0.2",
+        "autovacuum_vacuum_threshold": "50",
+        "autovacuum_work_mem": "-1",
+        "constraint_exclusion": "partition",
+        "cpu_index_tuple_cost": "0.005",
+        "cpu_operator_cost": "0.0025",
+        "cpu_tuple_cost": "0.01",
+        "cursor_tuple_fraction": "0.1",
+        "default_statistics_target": "100",
+        "effective_cache_size": "524288",
+        "enable_async_append": "on",
+        "enable_bitmapscan": "on",
+        "enable_gathermerge": "on",
+        "enable_hashagg": "on",
+        "enable_hashjoin": "on",
+        "enable_incremental_sort": "on",
+        "enable_indexonlyscan": "on",
+        "enable_indexscan": "on",
+        "enable_material": "on",
+        "enable_memoize": "on",
+        "enable_mergejoin": "on",
+        "enable_nestloop": "on",
+        "enable_parallel_append": "on",
+        "enable_parallel_hash": "on",
+        "enable_partition_pruning": "on",
+        "enable_partitionwise_aggregate": "off",
+        "enable_partitionwise_join": "off",
+        "enable_presorted_aggregate": "on",
+        "enable_seqscan": "on",
+        "enable_sort": "on",
+        "enable_tidscan": "on",
+        "from_collapse_limit": "8",
+        "geqo": "on",
+        "geqo_effort": "5",
+        "geqo_generations": "0",
+        "geqo_pool_size": "0",
+        "geqo_seed": "0",
+        "geqo_selection_bias": "2",
+        "geqo_threshold": "12",
+        "jit": "on",
+        "jit_above_cost": "100000",
+        "jit_inline_above_cost": "500000",
+        "jit_optimize_above_cost": "500000",
+        "join_collapse_limit": "8",
+        "min_parallel_index_scan_size": "64",
+        "min_parallel_table_scan_size": "1024",
+        "parallel_setup_cost": "1000",
+        "parallel_tuple_cost": "0.1",
+        "plan_cache_mode": "auto",
+        "random_page_cost": "4",
+        "recursive_worktable_factor": "10",
+        "seq_page_cost": "1"
+      },
+      "statements": [
+        "ANALYZE \"public\".\"alembic_version\";",
+        "ANALYZE \"public\".\"chunks\";",
+        "ANALYZE \"public\".\"conversations\";",
+        "ANALYZE \"public\".\"documents\";",
+        "ANALYZE \"public\".\"messages\";",
+        "ANALYZE \"public\".\"rag_request_metrics\";",
+        "ANALYZE \"public\".\"usage_events\";"
+      ],
+      "completion": {
+        "chunks": "2026-11-10 18:47:40.952384+00",
+        "usage_events": "2026-11-10 18:47:41.352288+00",
+        "rag_request_metrics": "2026-11-10 18:47:41.278426+00",
+        "conversations": "2026-11-10 18:47:41.03588+00",
+        "alembic_version": "2026-11-10 18:47:40.871761+00",
+        "messages": "2026-11-10 18:47:41.203409+00",
+        "documents": "2026-11-10 18:47:41.122673+00"
+      }
+    },
+    {
+      "database": "orq41_stage_261110181827_on",
+      "settings": {
+        "autovacuum": "on",
+        "autovacuum_analyze_scale_factor": "0.1",
+        "autovacuum_analyze_threshold": "50",
+        "autovacuum_freeze_max_age": "200000000",
+        "autovacuum_max_workers": "3",
+        "autovacuum_multixact_freeze_max_age": "400000000",
+        "autovacuum_naptime": "60",
+        "autovacuum_vacuum_cost_delay": "2",
+        "autovacuum_vacuum_cost_limit": "-1",
+        "autovacuum_vacuum_insert_scale_factor": "0.2",
+        "autovacuum_vacuum_insert_threshold": "1000",
+        "autovacuum_vacuum_scale_factor": "0.2",
+        "autovacuum_vacuum_threshold": "50",
+        "autovacuum_work_mem": "-1",
+        "constraint_exclusion": "partition",
+        "cpu_index_tuple_cost": "0.005",
+        "cpu_operator_cost": "0.0025",
+        "cpu_tuple_cost": "0.01",
+        "cursor_tuple_fraction": "0.1",
+        "default_statistics_target": "100",
+        "effective_cache_size": "524288",
+        "enable_async_append": "on",
+        "enable_bitmapscan": "on",
+        "enable_gathermerge": "on",
+        "enable_hashagg": "on",
+        "enable_hashjoin": "on",
+        "enable_incremental_sort": "on",
+        "enable_indexonlyscan": "on",
+        "enable_indexscan": "on",
+        "enable_material": "on",
+        "enable_memoize": "on",
+        "enable_mergejoin": "on",
+        "enable_nestloop": "on",
+        "enable_parallel_append": "on",
+        "enable_parallel_hash": "on",
+        "enable_partition_pruning": "on",
+        "enable_partitionwise_aggregate": "off",
+        "enable_partitionwise_join": "off",
+        "enable_presorted_aggregate": "on",
+        "enable_seqscan": "on",
+        "enable_sort": "on",
+        "enable_tidscan": "on",
+        "from_collapse_limit": "8",
+        "geqo": "on",
+        "geqo_effort": "5",
+        "geqo_generations": "0",
+        "geqo_pool_size": "0",
+        "geqo_seed": "0",
+        "geqo_selection_bias": "2",
+        "geqo_threshold": "12",
+        "jit": "on",
+        "jit_above_cost": "100000",
+        "jit_inline_above_cost": "500000",
+        "jit_optimize_above_cost": "500000",
+        "join_collapse_limit": "8",
+        "min_parallel_index_scan_size": "64",
+        "min_parallel_table_scan_size": "1024",
+        "parallel_setup_cost": "1000",
+        "parallel_tuple_cost": "0.1",
+        "plan_cache_mode": "auto",
+        "random_page_cost": "4",
+        "recursive_worktable_factor": "10",
+        "seq_page_cost": "1"
+      },
+      "statements": [
+        "ANALYZE \"public\".\"alembic_version\";",
+        "ANALYZE \"public\".\"chunks\";",
+        "ANALYZE \"public\".\"conversations\";",
+        "ANALYZE \"public\".\"documents\";",
+        "ANALYZE \"public\".\"messages\";",
+        "ANALYZE \"public\".\"rag_request_metrics\";",
+        "ANALYZE \"public\".\"usage_events\";"
+      ],
+      "completion": {
+        "documents": "2026-11-10 18:47:45.486079+00",
+        "conversations": "2026-11-10 18:47:45.403902+00",
+        "usage_events": "2026-11-10 18:47:45.708843+00",
+        "alembic_version": "2026-11-10 18:47:45.220748+00",
+        "chunks": "2026-11-10 18:47:45.317193+00",
+        "rag_request_metrics": "2026-11-10 18:47:45.628664+00",
+        "messages": "2026-11-10 18:47:45.554469+00"
+      }
+    }
+  ],
+  "databases": [
+    {
+      "arm": "c0",
+      "database": "orq41_stage_261110181827_off",
+      "conversations": 180,
+      "messages": 4224,
+      "generated_message_ids": 0,
+      "normalized_business_sha256": "0a578cfedb20b32bd6c51a96d59f9b52d1be58cd17e0e09c547366930578102d",
+      "rls": {
+        "": 0,
+        "orq37-t23": 2146,
+        "orq41-6b2ab547-en-empty": 0,
+        "orq41-6b2ab547-en-history": 0,
+        "orq41-6b2ab547-es-empty": 0,
+        "orq41-6b2ab547-es-history": 0,
+        "stage-unknown": 0
+      },
+      "corpus_content_sha256": "9fa959aeeb5d332882d61f60528eaa72468f110705c51ce05b70e213dd168506"
+    },
+    {
+      "arm": "c1",
+      "database": "orq41_stage_261110181827_on",
+      "conversations": 180,
+      "messages": 4224,
+      "generated_message_ids": 0,
+      "normalized_business_sha256": "0a578cfedb20b32bd6c51a96d59f9b52d1be58cd17e0e09c547366930578102d",
+      "rls": {
+        "": 0,
+        "orq37-t23": 2146,
+        "orq41-6b2ab547-en-empty": 0,
+        "orq41-6b2ab547-en-history": 0,
+        "orq41-6b2ab547-es-empty": 0,
+        "orq41-6b2ab547-es-history": 0,
+        "stage-unknown": 0
+      },
+      "corpus_content_sha256": "9fa959aeeb5d332882d61f60528eaa72468f110705c51ce05b70e213dd168506"
+    }
+  ],
+  "config_probes": [
+    {
+      "config": "9504bed39cd6596ac620e2f0da7fb5e5e4c9564d1a064b8080d0f2b59ae64253",
+      "normalized": "ba8d318986a6c9b73d097e841916161f20bfae60f1d15f8bf1754567390ae4b0",
+      "seed": {
+        "seed": "41",
+        "string_hash": 928176814434627218,
+        "python": "3.13.15 (main, Sep  1 2026, 00:07:39) [GCC 14.2.0]",
+        "hash_algorithm": "siphash13",
+        "hash_width": 64
+      },
+      "resources": {
+        "affinity": [
+          0,
+          2
+        ],
+        "effective_cpuset": [
+          0,
+          2
+        ],
+        "cpu_max": "200000 100000",
+        "cpu_stat": {
+          "usage_usec": 498294,
+          "user_usec": 462055,
+          "system_usec": 36239,
+          "nice_usec": 0,
+          "core_sched.force_idle_usec": 0,
+          "nr_periods": 5,
+          "nr_throttled": 0,
+          "throttled_usec": 0,
+          "nr_bursts": 0,
+          "burst_usec": 0
+        },
+        "topology": [
+          {
+            "cpu": 0,
+            "core_id": 0,
+            "siblings": [
+              0,
+              1
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 2,
+            "core_id": 4,
+            "siblings": [
+              2,
+              3
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 4,
+            "core_id": 8,
+            "siblings": [
+              4,
+              5
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 6,
+            "core_id": 12,
+            "siblings": [
+              6,
+              7
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          }
+        ]
+      }
+    },
+    {
+      "config": "11e863a14f92209743594a3c28f1f8a6cce75670e5b6a152bb20985fdd59f799",
+      "normalized": "ba8d318986a6c9b73d097e841916161f20bfae60f1d15f8bf1754567390ae4b0",
+      "seed": {
+        "seed": "41",
+        "string_hash": 928176814434627218,
+        "python": "3.13.15 (main, Sep  1 2026, 00:07:39) [GCC 14.2.0]",
+        "hash_algorithm": "siphash13",
+        "hash_width": 64
+      },
+      "resources": {
+        "affinity": [
+          0,
+          2
+        ],
+        "effective_cpuset": [
+          0,
+          2
+        ],
+        "cpu_max": "200000 100000",
+        "cpu_stat": {
+          "usage_usec": 476646,
+          "user_usec": 449666,
+          "system_usec": 26979,
+          "nice_usec": 0,
+          "core_sched.force_idle_usec": 0,
+          "nr_periods": 5,
+          "nr_throttled": 0,
+          "throttled_usec": 0,
+          "nr_bursts": 0,
+          "burst_usec": 0
+        },
+        "topology": [
+          {
+            "cpu": 0,
+            "core_id": 0,
+            "siblings": [
+              0,
+              1
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 2,
+            "core_id": 4,
+            "siblings": [
+              2,
+              3
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 4,
+            "core_id": 8,
+            "siblings": [
+              4,
+              5
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 6,
+            "core_id": 12,
+            "siblings": [
+              6,
+              7
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          }
+        ]
+      }
+    }
+  ],
+  "api_requests": 0,
+  "source_review_sha256": "630a8e1b1f810cd8c426c38e3d9f6bba1976c1289a0a9341c159f988eb8b4bb9",
+  "source_before": {
+    "business": "c06e1c0130ea592c6f869062b38fabb52eb181e22bbcd84ec3f270715efd5053",
+    "schema": "851772d47b85ce52856ef0e313fadc4e8bdf9be0eec06fc75b51e67eae570ce2"
+  }
+}

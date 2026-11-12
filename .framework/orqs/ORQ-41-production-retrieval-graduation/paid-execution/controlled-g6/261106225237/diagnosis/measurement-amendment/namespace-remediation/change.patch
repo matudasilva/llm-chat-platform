@@ -1,0 +1,101 @@
+--- experiments/production_graduation/gate_validation/blocked_latency_worker.py (before)
++++ experiments/production_graduation/gate_validation/blocked_latency_worker.py (after)
+@@ -11,12 +11,18 @@
+ import httpx
+ 
+ from .aa_calibration_resources import resource_delta, worker_resources
+-from .blocked_latency import (SCHEMA, CONTRACT_SHA256, require, seed_probe, write_json)
++from .blocked_latency import (SCHEMA, CONTRACT_SHA256, CELLS, require, seed_probe, write_json)
+ from .capture import Capture
+ from .controlled_latency import candidate_evidence, request_deadline
+ from .local_api import install
+ from .performance_cleanup import release_validated_case
+ from .transports import Reply, native_provider, _purpose
++
++
++def _cache_namespace(plan, entry):
++    # The shared validator requires the final component to be only the arm.
++    cell = CELLS.index(entry["cell"])
++    return f'orq41:g123:{plan["run_id"]}b{cell}{entry["block"]}:{entry["arm"]}:'
+ 
+ 
+ async def run_block(asgi, lifecycle, scoped, capture, replies, plan, entry):
+@@ -129,7 +135,7 @@
+     provider._cfg = replace(provider._cfg, model=settings.bedrock_model,
+                             timeout_s=settings.provider_timeout_s, max_attempts=settings.bedrock_max_attempts)
+     asgi, lifecycle, scoped = install(app, provider=provider, candidate=True,
+-        cache_namespace=f'orq41:g123:{plan["run_id"]}:{key}:')
++        cache_namespace=_cache_namespace(plan, entry))
+     try:
+         async with app.router.lifespan_context(app):
+             before = worker_resources()
+--- tests/experiments/test_orq41_blocked_latency.py (before)
++++ tests/experiments/test_orq41_blocked_latency.py (after)
+@@ -460,3 +460,67 @@
+     install = next(node for node in ast.walk(new) if isinstance(node, ast.Call)
+                    and isinstance(node.func, ast.Name) and node.func.id == "install")
+     assert next(key.value.value for key in install.keywords if key.arg == "candidate") is True
++
++
++@pytest.mark.parametrize("entry,expected", [
++    (dict(arm="c0", cell="EN-json", block=0), "orq41:g123:261109010101b00:c0:"),
++    (dict(arm="c1", cell="ES-sse", block=3), "orq41:g123:261109010101b33:c1:")])
++def test_worker_main_startup_uses_real_install_before_io(packet, tmp_path, entry, expected):
++    """Exercise the missed main/install handoff; stop before the real lifespan's I/O."""
++    plan, _ = packet
++    driver.write_json(tmp_path / "plan.json", plan)
++    code = r'''
++import asyncio,json,os
++from contextlib import asynccontextmanager
++from pathlib import Path
++from app.main import app
++from app.core.settings import settings
++from app.services import chat_response_cache
++from experiments.production_graduation.gate_validation import blocked_latency as d
++from experiments.production_graduation.gate_validation import blocked_latency_worker as w
++from experiments.production_graduation.gate_validation.local_api import NamespacedRedis
++from experiments.production_graduation.gate_validation.validate_g123 import config_identity
++
++out=Path(os.environ['G6_RUN_DIR']);plan=json.loads((out/'plan.json').read_text())
++plan['seed_probe']=d.seed_probe();plan['config_sha256'][os.environ['G6_ARM']]=config_identity(settings)
++(out/'plan.json').write_text(json.dumps(plan))
++d.write_json(out/'execution-started.json',dict(plan_sha256=d.sha_file(out/'plan.json')))
++class StartupReached(Exception):pass
++@asynccontextmanager
++async def no_io_lifespan(application):
++ assert application.state.g123_installed is True
++ assert isinstance(chat_response_cache.redis_client,NamespacedRedis)
++ assert chat_response_cache.redis_client.namespace==os.environ['EXPECTED_NAMESPACE']
++ raise StartupReached('actual install passed; stop before actual app startup I/O')
++ yield
++app.router.lifespan_context=no_io_lifespan
++async def forbidden_block(*args,**kwargs):raise AssertionError('Unit startup probe cannot admit requests')
++w.run_block=forbidden_block
++try:asyncio.run(w.main())
++except StartupReached:print(json.dumps(dict(actual_install_passed=True,requests=0,postgres_calls=0,redis_calls=0)))
++else:raise AssertionError('Expected startup boundary sentinel')
++'''
++    env = {**os.environ, **driver.worker_environment(plan, PASSWORDS, entry)}
++    env.update(PYTHONPATH=os.environ["PYTHONPATH"], G6_RUN_DIR=str(tmp_path), EXPECTED_NAMESPACE=expected)
++    result = subprocess.run([sys.executable, "-c", code], check=True, capture_output=True,
++                            text=True, env=env, timeout=20)
++    assert json.loads(result.stdout.splitlines()[-1]) == dict(
++        actual_install_passed=True, requests=0, postgres_calls=0, redis_calls=0)
++    key = f'{entry["arm"]}-{entry["cell"]}-b{entry["block"]}'
++    assert (tmp_path / (key + "-started.json")).exists()
++    assert not (tmp_path / (key + ".json")).exists()
++
++
++def test_all_worker_namespaces_match_shared_validator_and_remain_disjoint(packet):
++    from experiments.production_graduation.gate_validation.local_api import NamespacedRedis
++    from experiments.production_graduation.gate_validation.fixtures import HarnessError
++    plan, _ = packet
++    values = [worker._cache_namespace(plan, entry) for entry in plan["arm_cell_order"]]
++    assert len(values) == len(set(values)) == 32
++    for entry, value in zip(plan["arm_cell_order"], values):
++        assert NamespacedRedis(None, value).namespace == value
++        assert value.endswith(":" + entry["arm"] + ":")
++    other = dict(plan, run_id="261109010102")
++    assert not set(values) & {worker._cache_namespace(other, entry) for entry in plan["arm_cell_order"]}
++    with pytest.raises(HarnessError):
++        NamespacedRedis(None, "orq41:g123:261109010101:c0-EN-json-b0:")

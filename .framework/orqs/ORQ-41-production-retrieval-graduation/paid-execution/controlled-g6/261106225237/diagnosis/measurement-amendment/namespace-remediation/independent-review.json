@@ -1,0 +1,45 @@
+{
+  "status": "BLOCKED_AA_NAMESPACE_FIX_SOURCE_REVIEW_PASS",
+  "reviewer": "/root/packet_review",
+  "source_only": true,
+  "resolved_in_reviewed_source": [
+    "BLOCKED-AA-R1"
+  ],
+  "residual_findings": [
+    {
+      "id": "BLOCKED-AA-R2",
+      "severity": "LOW",
+      "disposition": "Unchanged stdout-only automaticlogs;manualstderr recovery required"
+    }
+  ],
+  "files_sha256": {
+    "experiments/production_graduation/gate_validation/blocked_latency_worker.py": "da7e37aed740daeadc6f9f5364b01ba9b074eaec2858f87d577e90ce17888108",
+    "tests/experiments/test_orq41_blocked_latency.py": "3dbca037a1707be59b87941353691181baf9aa48606c324855181ca265afdd80"
+  },
+  "unchanged_controller_sha256": "f0aa8e5211a0b2285d455a98784e9d7e75f0ef6e7b702de156e6ebdf8e57091b",
+  "unchanged_shared_validator_sha256": "e9b8a886018ca60a7b77b2885b89fa813368373435464e455bd449589ea034eb",
+  "authorization_sha256": "2e30939b18fa694a9aa5db6c024e4d7011681cc05b4fe3267391fd48f1402d08",
+  "source_manifest_sha256": "ac8bf68492a5b86ae358cbb564cbf2aa058b1caae42c60865cea45f2552d712c",
+  "patch_sha256": "8dbd8885f34974cd6fa37a88434afaf85e9fcef3b46e415da9a58f799665c093",
+  "red_xml_sha256": "75dbf3eff2f63af60038b559e0c51cb26cce0627980a097bab4291a07cb2ffcd",
+  "green_xml_sha256": "19cee030a76ff4d325de1d856ae84dfb5b07111e5742453eb6e3f673bb817055",
+  "final_xml_sha256": "b974dd548882c30447d48fd1365d8ec97bf550d5822d85eb0c018dd1034ade05",
+  "review_sha256": "66b463fa21c86b5c5c399e39ee4f70403d0cf2ced726cafadabf9225b605e8b6",
+  "independent_pure_tests_passed": 68,
+  "independent_native_startup_cases_deselected": 12,
+  "parent_red_expected_failures": 2,
+  "parent_green_passed": 3,
+  "parent_final_passed": 170,
+  "parent_final_skipped": 0,
+  "new_blocker_high_medium_findings": [],
+  "reviewer_api_calls": 0,
+  "reviewer_database_calls": 0,
+  "reviewer_docker_calls": 0,
+  "reviewer_external_calls": 0,
+  "fresh_packet_review_required": true,
+  "new_calibration_execution_authorized_by_review": false,
+  "failed_attempt_resumable": false,
+  "performance_gain_established": false,
+  "official_g6_status": "CONTROLLED_G6_FAIL",
+  "author_report_reviewed": false
+}

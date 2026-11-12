@@ -1,0 +1,65 @@
+{
+  "status": "DIAGNOSTIC_PROFILE_FINAL_DATABASES_INDEPENDENT_VERIFIER_PASS",
+  "verifier_author": "/root/packet_review",
+  "executor": "parent approved P2 Docker access",
+  "plan_sha256": "75943c856acd07363ad6529f4ed0e449d6aa061fdcf332a7e23968cd156f230f",
+  "verifier_sha256": "7cddd36981a79d2dd00bf7607a36114d28cf646b6197a8b619cfd980993cf00a",
+  "arms": [
+    {
+      "arm": "c0",
+      "database": "orq41_diag_261106153843_c0",
+      "conversations": 20,
+      "messages": 424,
+      "business_projection_sha256": "27821d332685ec704ff29607bda8f20c7ce42087826c357b02ca83262e2974ec",
+      "normalized_business_projection_sha256": "f3f1cf4b5d8e184db43ef7e9819abaf2daeb463d30951f3245f6a90f0b85571a",
+      "normalized_generated_message_ids": 40,
+      "normalized_schema_sha256": "851772d47b85ce52856ef0e313fadc4e8bdf9be0eec06fc75b51e67eae570ce2",
+      "corpus_content_sha256": "9fa959aeeb5d332882d61f60528eaa72468f110705c51ce05b70e213dd168506",
+      "rls": {
+        "orq37-t23": 2146,
+        "orq41-6b2ab547-en-empty": 0,
+        "orq41-6b2ab547-en-history": 0,
+        "orq41-6b2ab547-es-empty": 0,
+        "orq41-6b2ab547-es-history": 0,
+        "": 0,
+        "independent-unknown": 0
+      }
+    },
+    {
+      "arm": "c1",
+      "database": "orq41_diag_261106153843_c1",
+      "conversations": 20,
+      "messages": 424,
+      "business_projection_sha256": "5d5b2b843ac408d81a0126157e70d641a6f25504ff1a1b4729d33fca732e274c",
+      "normalized_business_projection_sha256": "f3f1cf4b5d8e184db43ef7e9819abaf2daeb463d30951f3245f6a90f0b85571a",
+      "normalized_generated_message_ids": 40,
+      "normalized_schema_sha256": "851772d47b85ce52856ef0e313fadc4e8bdf9be0eec06fc75b51e67eae570ce2",
+      "corpus_content_sha256": "9fa959aeeb5d332882d61f60528eaa72468f110705c51ce05b70e213dd168506",
+      "rls": {
+        "orq37-t23": 2146,
+        "orq41-6b2ab547-en-empty": 0,
+        "orq41-6b2ab547-en-history": 0,
+        "orq41-6b2ab547-es-empty": 0,
+        "orq41-6b2ab547-es-history": 0,
+        "": 0,
+        "independent-unknown": 0
+      }
+    }
+  ],
+  "configuration": {
+    "c0": {
+      "full": "a2798d9d000c244e3fc5564757f027b31072dd031d0a5a29eb685caa8f9074bf",
+      "normalized": "ba8d318986a6c9b73d097e841916161f20bfae60f1d15f8bf1754567390ae4b0"
+    },
+    "c1": {
+      "full": "e0cebf6dcb3c4afae19ffaeb6c9e57cad1d16d4b58f16dc0a24842dd031f0644",
+      "normalized": "ba8d318986a6c9b73d097e841916161f20bfae60f1d15f8bf1754567390ae4b0"
+    }
+  },
+  "normalized_effective_configuration_equal": true,
+  "platform_api_calls": 0,
+  "gate_executed": false,
+  "database_writes": 0,
+  "external_calls": 0,
+  "spend_usd": "0"
+}

@@ -1,0 +1,419 @@
+{
+  "status": "BLOCKED_AA_PREPARED_DATABASES_READONLY_VERIFIER_PASS",
+  "verifier_author": "adapted previous independent verifier; current parent execution, not distinct SQL attestation",
+  "executor": "parent approved P2 Docker access",
+  "plan_sha256": "e3f6f8efae1de5858e3402ee131cead41a28a42050b7115ded5c08a26f53eb54",
+  "verifier_sha256": "e6f79e99981a26c03f0e0fa2b3eac298e0c886149f13056e388bf39f857af924",
+  "arms": [
+    {
+      "arm": "c0",
+      "database": "orq41_blocked_261110150634_c0",
+      "conversations": 720,
+      "messages": 17280,
+      "business_projection_sha256": "a7195d1053a61837a2511ac53158e63b3201829a5761ae626e686db3534fee99",
+      "normalized_schema_sha256": "851772d47b85ce52856ef0e313fadc4e8bdf9be0eec06fc75b51e67eae570ce2",
+      "corpus_content_sha256": "9fa959aeeb5d332882d61f60528eaa72468f110705c51ce05b70e213dd168506",
+      "rls": {
+        "orq37-t23": 2146,
+        "orq41-6b2ab547-en-empty": 0,
+        "orq41-6b2ab547-en-history": 0,
+        "orq41-6b2ab547-es-empty": 0,
+        "orq41-6b2ab547-es-history": 0,
+        "": 0,
+        "independent-unknown": 0
+      }
+    },
+    {
+      "arm": "c1",
+      "database": "orq41_blocked_261110150634_c1",
+      "conversations": 720,
+      "messages": 17280,
+      "business_projection_sha256": "a7195d1053a61837a2511ac53158e63b3201829a5761ae626e686db3534fee99",
+      "normalized_schema_sha256": "851772d47b85ce52856ef0e313fadc4e8bdf9be0eec06fc75b51e67eae570ce2",
+      "corpus_content_sha256": "9fa959aeeb5d332882d61f60528eaa72468f110705c51ce05b70e213dd168506",
+      "rls": {
+        "orq37-t23": 2146,
+        "orq41-6b2ab547-en-empty": 0,
+        "orq41-6b2ab547-en-history": 0,
+        "orq41-6b2ab547-es-empty": 0,
+        "orq41-6b2ab547-es-history": 0,
+        "": 0,
+        "independent-unknown": 0
+      }
+    }
+  ],
+  "configuration": {
+    "c0": {
+      "full": "955a98734ca0f2553c06dfa2b1fa1bb2aca0adb7be448e129aee4712e65d8b88",
+      "normalized": "ba8d318986a6c9b73d097e841916161f20bfae60f1d15f8bf1754567390ae4b0",
+      "seed": {
+        "seed": "41",
+        "string_hash": 928176814434627218,
+        "python": "3.13.15 (main, Sep  1 2026, 00:07:39) [GCC 14.2.0]",
+        "hash_algorithm": "siphash13",
+        "hash_width": 64
+      }
+    },
+    "c1": {
+      "full": "1300f8f2bca5ff009127f28bf54b5480aa3c82f9406d988731c6b6a237e1013e",
+      "normalized": "ba8d318986a6c9b73d097e841916161f20bfae60f1d15f8bf1754567390ae4b0",
+      "seed": {
+        "seed": "41",
+        "string_hash": 928176814434627218,
+        "python": "3.13.15 (main, Sep  1 2026, 00:07:39) [GCC 14.2.0]",
+        "hash_algorithm": "siphash13",
+        "hash_width": 64
+      }
+    }
+  },
+  "constraint_and_locale_proof": {
+    "source": {
+      "raw_normalized_schema_sha256": "bbb4b743f29a4eb3e995e56dcccafa68a7ffb3f9934fb7c04a77a672fab4703a",
+      "locale": {
+        "encoding": "UTF8",
+        "collate": "en_US.utf8",
+        "ctype": "en_US.utf8",
+        "provider": "c",
+        "icu_locale": null
+      },
+      "expression_sha256": "ad2ca92ab5ce7a22dad0bfb45a90c0c4327ebe91ae41d75550eae52a711615e9",
+      "truth_table": [
+        {
+          "ord": 0,
+          "feedback": null,
+          "accepted": true
+        },
+        {
+          "ord": 1,
+          "feedback": "",
+          "accepted": false
+        },
+        {
+          "ord": 2,
+          "feedback": "up",
+          "accepted": true
+        },
+        {
+          "ord": 3,
+          "feedback": "down",
+          "accepted": true
+        },
+        {
+          "ord": 4,
+          "feedback": "UP",
+          "accepted": false
+        },
+        {
+          "ord": 5,
+          "feedback": "Down",
+          "accepted": false
+        },
+        {
+          "ord": 6,
+          "feedback": "up ",
+          "accepted": false
+        },
+        {
+          "ord": 7,
+          "feedback": " down",
+          "accepted": false
+        },
+        {
+          "ord": 8,
+          "feedback": "unknown",
+          "accepted": false
+        },
+        {
+          "ord": 9,
+          "feedback": "u",
+          "accepted": false
+        },
+        {
+          "ord": 10,
+          "feedback": "down\t",
+          "accepted": false
+        }
+      ],
+      "role_capabilities": [
+        "chat_ops|f|f",
+        "rag_app|f|f"
+      ]
+    },
+    "c0": {
+      "raw_normalized_schema_sha256": "851772d47b85ce52856ef0e313fadc4e8bdf9be0eec06fc75b51e67eae570ce2",
+      "locale": {
+        "encoding": "UTF8",
+        "collate": "en_US.utf8",
+        "ctype": "en_US.utf8",
+        "provider": "c",
+        "icu_locale": null
+      },
+      "expression_sha256": "8047791ed05601003be39435bcc7e8c5c634085dbbf0c259b7b43db7fdfa61c5",
+      "truth_table": [
+        {
+          "ord": 0,
+          "feedback": null,
+          "accepted": true
+        },
+        {
+          "ord": 1,
+          "feedback": "",
+          "accepted": false
+        },
+        {
+          "ord": 2,
+          "feedback": "up",
+          "accepted": true
+        },
+        {
+          "ord": 3,
+          "feedback": "down",
+          "accepted": true
+        },
+        {
+          "ord": 4,
+          "feedback": "UP",
+          "accepted": false
+        },
+        {
+          "ord": 5,
+          "feedback": "Down",
+          "accepted": false
+        },
+        {
+          "ord": 6,
+          "feedback": "up ",
+          "accepted": false
+        },
+        {
+          "ord": 7,
+          "feedback": " down",
+          "accepted": false
+        },
+        {
+          "ord": 8,
+          "feedback": "unknown",
+          "accepted": false
+        },
+        {
+          "ord": 9,
+          "feedback": "u",
+          "accepted": false
+        },
+        {
+          "ord": 10,
+          "feedback": "down\t",
+          "accepted": false
+        }
+      ],
+      "role_capabilities": [
+        "chat_ops|f|f",
+        "rag_app|f|f"
+      ]
+    },
+    "c1": {
+      "raw_normalized_schema_sha256": "851772d47b85ce52856ef0e313fadc4e8bdf9be0eec06fc75b51e67eae570ce2",
+      "locale": {
+        "encoding": "UTF8",
+        "collate": "en_US.utf8",
+        "ctype": "en_US.utf8",
+        "provider": "c",
+        "icu_locale": null
+      },
+      "expression_sha256": "8047791ed05601003be39435bcc7e8c5c634085dbbf0c259b7b43db7fdfa61c5",
+      "truth_table": [
+        {
+          "ord": 0,
+          "feedback": null,
+          "accepted": true
+        },
+        {
+          "ord": 1,
+          "feedback": "",
+          "accepted": false
+        },
+        {
+          "ord": 2,
+          "feedback": "up",
+          "accepted": true
+        },
+        {
+          "ord": 3,
+          "feedback": "down",
+          "accepted": true
+        },
+        {
+          "ord": 4,
+          "feedback": "UP",
+          "accepted": false
+        },
+        {
+          "ord": 5,
+          "feedback": "Down",
+          "accepted": false
+        },
+        {
+          "ord": 6,
+          "feedback": "up ",
+          "accepted": false
+        },
+        {
+          "ord": 7,
+          "feedback": " down",
+          "accepted": false
+        },
+        {
+          "ord": 8,
+          "feedback": "unknown",
+          "accepted": false
+        },
+        {
+          "ord": 9,
+          "feedback": "u",
+          "accepted": false
+        },
+        {
+          "ord": 10,
+          "feedback": "down\t",
+          "accepted": false
+        }
+      ],
+      "role_capabilities": [
+        "chat_ops|f|f",
+        "rag_app|f|f"
+      ]
+    }
+  },
+  "protocol_proof": {
+    "cells": [
+      {
+        "cell": "EN-json",
+        "measured_per_arm": 100,
+        "warmups_per_arm": 80,
+        "category_measured": {
+          "document": 25,
+          "history": 25,
+          "combined": 25,
+          "empty": 25
+        },
+        "first_blocks": {
+          "c0": 2,
+          "c1": 2
+        }
+      },
+      {
+        "cell": "EN-sse",
+        "measured_per_arm": 100,
+        "warmups_per_arm": 80,
+        "category_measured": {
+          "document": 25,
+          "history": 25,
+          "combined": 25,
+          "empty": 25
+        },
+        "first_blocks": {
+          "c1": 2,
+          "c0": 2
+        }
+      },
+      {
+        "cell": "ES-json",
+        "measured_per_arm": 100,
+        "warmups_per_arm": 80,
+        "category_measured": {
+          "document": 25,
+          "history": 25,
+          "combined": 25,
+          "empty": 25
+        },
+        "first_blocks": {
+          "c0": 2,
+          "c1": 2
+        }
+      },
+      {
+        "cell": "ES-sse",
+        "measured_per_arm": 100,
+        "warmups_per_arm": 80,
+        "category_measured": {
+          "document": 25,
+          "history": 25,
+          "combined": 25,
+          "empty": 25
+        },
+        "first_blocks": {
+          "c1": 2,
+          "c0": 2
+        }
+      }
+    ],
+    "total_future_requests": 1440,
+    "total_measured": 800,
+    "total_warmups": 640,
+    "historical_manifests_checked": 14,
+    "all720request_and_conversation_UUIDs_fresh": true,
+    "application_requests": 0
+  },
+  "preparation_proof": [
+    {
+      "database": "orq41_blocked_261110150634_c0",
+      "table_inventory": [
+        "alembic_version",
+        "chunks",
+        "conversations",
+        "documents",
+        "messages",
+        "rag_request_metrics",
+        "usage_events"
+      ],
+      "last_analyze": {
+        "chunks": "2026-11-10 15:06:41.280253+00",
+        "usage_events": "2026-11-10 15:06:41.688376+00",
+        "rag_request_metrics": "2026-11-10 15:06:41.618434+00",
+        "conversations": "2026-11-10 15:06:41.370307+00",
+        "alembic_version": "2026-11-10 15:06:41.181796+00",
+        "messages": "2026-11-10 15:06:41.552018+00",
+        "documents": "2026-11-10 15:06:41.444461+00"
+      },
+      "settings_sha256": "6331424228900b4bec20c1375378bf4166de5c6f43babc86f2b4805cb71c3c09",
+      "analyze_reexecuted": false
+    },
+    {
+      "database": "orq41_blocked_261110150634_c1",
+      "table_inventory": [
+        "alembic_version",
+        "chunks",
+        "conversations",
+        "documents",
+        "messages",
+        "rag_request_metrics",
+        "usage_events"
+      ],
+      "last_analyze": {
+        "documents": "2026-11-10 15:06:46.191201+00",
+        "conversations": "2026-11-10 15:06:46.100819+00",
+        "usage_events": "2026-11-10 15:06:46.464561+00",
+        "alembic_version": "2026-11-10 15:06:45.936802+00",
+        "chunks": "2026-11-10 15:06:46.027529+00",
+        "rag_request_metrics": "2026-11-10 15:06:46.389315+00",
+        "messages": "2026-11-10 15:06:46.296032+00"
+      },
+      "settings_sha256": "6331424228900b4bec20c1375378bf4166de5c6f43babc86f2b4805cb71c3c09",
+      "analyze_reexecuted": false
+    }
+  ],
+  "worker_effective_affinity": [
+    0,
+    2
+  ],
+  "postgres_effective_affinity": [
+    4,
+    6
+  ],
+  "normalized_effective_configuration_equal": true,
+  "platform_api_calls": 0,
+  "gate_executed": false,
+  "database_writes": 0,
+  "external_calls": 0,
+  "spend_usd": "0"
+}

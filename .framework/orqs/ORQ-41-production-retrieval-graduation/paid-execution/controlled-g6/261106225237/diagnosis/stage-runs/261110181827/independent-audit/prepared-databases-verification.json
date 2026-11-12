@@ -1,0 +1,385 @@
+{
+  "status": "STAGE_DIAGNOSTIC_PREPARED_DATABASES_READONLY_VERIFIER_PASS",
+  "verifier_author": "adapted previous independent verifier; current parent execution, not distinct SQL attestation",
+  "executor": "parent approved P2 Docker access",
+  "plan_sha256": "7b53fc0b603ddaae6bee6a5dbce08df97364112f1bbdddaf04d01ff4fa4e6bfa",
+  "verifier_sha256": "c02927e66c5a800171e6e439fe55324e1fb8bdd093fa531938b331ab68587c42",
+  "arms": [
+    {
+      "arm": "c0",
+      "database": "orq41_stage_261110181827_off",
+      "conversations": 180,
+      "messages": 4224,
+      "business_projection_sha256": "d2959a42e49b53213adaf176ceed3d6af469c391a2f2728307fd51565eee5034",
+      "normalized_schema_sha256": "851772d47b85ce52856ef0e313fadc4e8bdf9be0eec06fc75b51e67eae570ce2",
+      "corpus_content_sha256": "9fa959aeeb5d332882d61f60528eaa72468f110705c51ce05b70e213dd168506",
+      "rls": {
+        "orq37-t23": 2146,
+        "orq41-6b2ab547-en-empty": 0,
+        "orq41-6b2ab547-en-history": 0,
+        "orq41-6b2ab547-es-empty": 0,
+        "orq41-6b2ab547-es-history": 0,
+        "": 0,
+        "independent-unknown": 0
+      }
+    },
+    {
+      "arm": "c1",
+      "database": "orq41_stage_261110181827_on",
+      "conversations": 180,
+      "messages": 4224,
+      "business_projection_sha256": "d2959a42e49b53213adaf176ceed3d6af469c391a2f2728307fd51565eee5034",
+      "normalized_schema_sha256": "851772d47b85ce52856ef0e313fadc4e8bdf9be0eec06fc75b51e67eae570ce2",
+      "corpus_content_sha256": "9fa959aeeb5d332882d61f60528eaa72468f110705c51ce05b70e213dd168506",
+      "rls": {
+        "orq37-t23": 2146,
+        "orq41-6b2ab547-en-empty": 0,
+        "orq41-6b2ab547-en-history": 0,
+        "orq41-6b2ab547-es-empty": 0,
+        "orq41-6b2ab547-es-history": 0,
+        "": 0,
+        "independent-unknown": 0
+      }
+    }
+  ],
+  "configuration": {
+    "c0": {
+      "full": "9504bed39cd6596ac620e2f0da7fb5e5e4c9564d1a064b8080d0f2b59ae64253",
+      "normalized": "ba8d318986a6c9b73d097e841916161f20bfae60f1d15f8bf1754567390ae4b0",
+      "seed": {
+        "seed": "41",
+        "string_hash": 928176814434627218,
+        "python": "3.13.15 (main, Sep  1 2026, 00:07:39) [GCC 14.2.0]",
+        "hash_algorithm": "siphash13",
+        "hash_width": 64
+      }
+    },
+    "c1": {
+      "full": "11e863a14f92209743594a3c28f1f8a6cce75670e5b6a152bb20985fdd59f799",
+      "normalized": "ba8d318986a6c9b73d097e841916161f20bfae60f1d15f8bf1754567390ae4b0",
+      "seed": {
+        "seed": "41",
+        "string_hash": 928176814434627218,
+        "python": "3.13.15 (main, Sep  1 2026, 00:07:39) [GCC 14.2.0]",
+        "hash_algorithm": "siphash13",
+        "hash_width": 64
+      }
+    }
+  },
+  "constraint_and_locale_proof": {
+    "source": {
+      "raw_normalized_schema_sha256": "bbb4b743f29a4eb3e995e56dcccafa68a7ffb3f9934fb7c04a77a672fab4703a",
+      "locale": {
+        "encoding": "UTF8",
+        "collate": "en_US.utf8",
+        "ctype": "en_US.utf8",
+        "provider": "c",
+        "icu_locale": null
+      },
+      "expression_sha256": "ad2ca92ab5ce7a22dad0bfb45a90c0c4327ebe91ae41d75550eae52a711615e9",
+      "truth_table": [
+        {
+          "ord": 0,
+          "feedback": null,
+          "accepted": true
+        },
+        {
+          "ord": 1,
+          "feedback": "",
+          "accepted": false
+        },
+        {
+          "ord": 2,
+          "feedback": "up",
+          "accepted": true
+        },
+        {
+          "ord": 3,
+          "feedback": "down",
+          "accepted": true
+        },
+        {
+          "ord": 4,
+          "feedback": "UP",
+          "accepted": false
+        },
+        {
+          "ord": 5,
+          "feedback": "Down",
+          "accepted": false
+        },
+        {
+          "ord": 6,
+          "feedback": "up ",
+          "accepted": false
+        },
+        {
+          "ord": 7,
+          "feedback": " down",
+          "accepted": false
+        },
+        {
+          "ord": 8,
+          "feedback": "unknown",
+          "accepted": false
+        },
+        {
+          "ord": 9,
+          "feedback": "u",
+          "accepted": false
+        },
+        {
+          "ord": 10,
+          "feedback": "down\t",
+          "accepted": false
+        }
+      ],
+      "role_capabilities": [
+        "chat_ops|f|f",
+        "rag_app|f|f"
+      ]
+    },
+    "c0": {
+      "raw_normalized_schema_sha256": "851772d47b85ce52856ef0e313fadc4e8bdf9be0eec06fc75b51e67eae570ce2",
+      "locale": {
+        "encoding": "UTF8",
+        "collate": "en_US.utf8",
+        "ctype": "en_US.utf8",
+        "provider": "c",
+        "icu_locale": null
+      },
+      "expression_sha256": "8047791ed05601003be39435bcc7e8c5c634085dbbf0c259b7b43db7fdfa61c5",
+      "truth_table": [
+        {
+          "ord": 0,
+          "feedback": null,
+          "accepted": true
+        },
+        {
+          "ord": 1,
+          "feedback": "",
+          "accepted": false
+        },
+        {
+          "ord": 2,
+          "feedback": "up",
+          "accepted": true
+        },
+        {
+          "ord": 3,
+          "feedback": "down",
+          "accepted": true
+        },
+        {
+          "ord": 4,
+          "feedback": "UP",
+          "accepted": false
+        },
+        {
+          "ord": 5,
+          "feedback": "Down",
+          "accepted": false
+        },
+        {
+          "ord": 6,
+          "feedback": "up ",
+          "accepted": false
+        },
+        {
+          "ord": 7,
+          "feedback": " down",
+          "accepted": false
+        },
+        {
+          "ord": 8,
+          "feedback": "unknown",
+          "accepted": false
+        },
+        {
+          "ord": 9,
+          "feedback": "u",
+          "accepted": false
+        },
+        {
+          "ord": 10,
+          "feedback": "down\t",
+          "accepted": false
+        }
+      ],
+      "role_capabilities": [
+        "chat_ops|f|f",
+        "rag_app|f|f"
+      ]
+    },
+    "c1": {
+      "raw_normalized_schema_sha256": "851772d47b85ce52856ef0e313fadc4e8bdf9be0eec06fc75b51e67eae570ce2",
+      "locale": {
+        "encoding": "UTF8",
+        "collate": "en_US.utf8",
+        "ctype": "en_US.utf8",
+        "provider": "c",
+        "icu_locale": null
+      },
+      "expression_sha256": "8047791ed05601003be39435bcc7e8c5c634085dbbf0c259b7b43db7fdfa61c5",
+      "truth_table": [
+        {
+          "ord": 0,
+          "feedback": null,
+          "accepted": true
+        },
+        {
+          "ord": 1,
+          "feedback": "",
+          "accepted": false
+        },
+        {
+          "ord": 2,
+          "feedback": "up",
+          "accepted": true
+        },
+        {
+          "ord": 3,
+          "feedback": "down",
+          "accepted": true
+        },
+        {
+          "ord": 4,
+          "feedback": "UP",
+          "accepted": false
+        },
+        {
+          "ord": 5,
+          "feedback": "Down",
+          "accepted": false
+        },
+        {
+          "ord": 6,
+          "feedback": "up ",
+          "accepted": false
+        },
+        {
+          "ord": 7,
+          "feedback": " down",
+          "accepted": false
+        },
+        {
+          "ord": 8,
+          "feedback": "unknown",
+          "accepted": false
+        },
+        {
+          "ord": 9,
+          "feedback": "u",
+          "accepted": false
+        },
+        {
+          "ord": 10,
+          "feedback": "down\t",
+          "accepted": false
+        }
+      ],
+      "role_capabilities": [
+        "chat_ops|f|f",
+        "rag_app|f|f"
+      ]
+    }
+  },
+  "protocol_proof": {
+    "cells": [
+      {
+        "cell": "EN-json",
+        "warmups_per_mode": 20,
+        "measured_per_mode": 25,
+        "all_original_business_cases_warmed": true
+      },
+      {
+        "cell": "EN-sse",
+        "warmups_per_mode": 20,
+        "measured_per_mode": 25,
+        "all_original_business_cases_warmed": true
+      },
+      {
+        "cell": "ES-json",
+        "warmups_per_mode": 20,
+        "measured_per_mode": 25,
+        "all_original_business_cases_warmed": true
+      },
+      {
+        "cell": "ES-sse",
+        "warmups_per_mode": 20,
+        "measured_per_mode": 25,
+        "all_original_business_cases_warmed": true
+      }
+    ],
+    "total_future_requests": 360,
+    "total_measured": 200,
+    "total_warmups": 160,
+    "historical_manifests_checked": 15,
+    "all180request_and_conversation_UUIDs_fresh": true,
+    "actual_cache_namespace_constructor_passes": 8,
+    "source_review_sha256": "630a8e1b1f810cd8c426c38e3d9f6bba1976c1289a0a9341c159f988eb8b4bb9",
+    "application_requests": 0
+  },
+  "preparation_proof": [
+    {
+      "database": "orq41_stage_261110181827_off",
+      "table_inventory": [
+        "alembic_version",
+        "chunks",
+        "conversations",
+        "documents",
+        "messages",
+        "rag_request_metrics",
+        "usage_events"
+      ],
+      "last_analyze": {
+        "chunks": "2026-11-10 18:47:40.952384+00",
+        "usage_events": "2026-11-10 18:47:41.352288+00",
+        "rag_request_metrics": "2026-11-10 18:47:41.278426+00",
+        "conversations": "2026-11-10 18:47:41.03588+00",
+        "alembic_version": "2026-11-10 18:47:40.871761+00",
+        "messages": "2026-11-10 18:47:41.203409+00",
+        "documents": "2026-11-10 18:47:41.122673+00"
+      },
+      "settings_sha256": "6331424228900b4bec20c1375378bf4166de5c6f43babc86f2b4805cb71c3c09",
+      "analyze_reexecuted": false
+    },
+    {
+      "database": "orq41_stage_261110181827_on",
+      "table_inventory": [
+        "alembic_version",
+        "chunks",
+        "conversations",
+        "documents",
+        "messages",
+        "rag_request_metrics",
+        "usage_events"
+      ],
+      "last_analyze": {
+        "documents": "2026-11-10 18:47:45.486079+00",
+        "conversations": "2026-11-10 18:47:45.403902+00",
+        "usage_events": "2026-11-10 18:47:45.708843+00",
+        "alembic_version": "2026-11-10 18:47:45.220748+00",
+        "chunks": "2026-11-10 18:47:45.317193+00",
+        "rag_request_metrics": "2026-11-10 18:47:45.628664+00",
+        "messages": "2026-11-10 18:47:45.554469+00"
+      },
+      "settings_sha256": "6331424228900b4bec20c1375378bf4166de5c6f43babc86f2b4805cb71c3c09",
+      "analyze_reexecuted": false
+    }
+  ],
+  "worker_effective_affinity": [
+    0,
+    2
+  ],
+  "postgres_effective_affinity": [
+    4,
+    6
+  ],
+  "normalized_effective_configuration_equal": true,
+  "platform_api_calls": 0,
+  "gate_executed": false,
+  "database_writes": 0,
+  "external_calls": 0,
+  "spend_usd": "0"
+}

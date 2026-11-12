@@ -1,0 +1,42 @@
+{
+  "status": "BLOCKED_PENDING_LOCAL_ROOT_ACCESS",
+  "operator_authorized": "Sealed installation and administrative apply/recover drill; no benchmark",
+  "sudo_n_true_exit": 1,
+  "sudo_n_true_stderr": "sudo: a password is required",
+  "host_systemd": "255 (255.4-1ubuntu8.18)",
+  "unit_baseline": {
+    "system.slice": {
+      "AllowedCPUs": "",
+      "EffectiveCPUs": "0-31",
+      "DropInPaths": ""
+    },
+    "user.slice": {
+      "AllowedCPUs": "",
+      "EffectiveCPUs": "0-31",
+      "DropInPaths": ""
+    },
+    "machine.slice": {
+      "AllowedCPUs": "",
+      "EffectiveCPUs": "0-31",
+      "DropInPaths": ""
+    },
+    "init.scope": {
+      "AllowedCPUs": "",
+      "EffectiveCPUs": "0-31",
+      "DropInPaths": ""
+    },
+    "orq41bench.slice": {
+      "ActiveState": "inactive",
+      "FragmentPath": "",
+      "DropInPaths": ""
+    }
+  },
+  "watchdog_units": "Both timer and service LoadState=not-found, Transient=no. Read-only discovery exited0.",
+  "installer_sha256": "84e7a65df4f12bc654343fe84377857691b544a331c93863cfeece1dca9a18c3",
+  "installer_executed": false,
+  "root_installation_performed": false,
+  "cpu_changes": 0,
+  "benchmark_requests": 0,
+  "provider_calls": 0,
+  "spend_usd": "0"
+}

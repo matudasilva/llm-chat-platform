@@ -1,0 +1,63 @@
+{
+  "status": "REQUIRED_NOT_PROVISIONED",
+  "expected_containers": {
+    "postgres": "orq41-blocked-261110141551-postgres",
+    "redis": "orq41-blocked-261110141551-redis",
+    "collector": "orq41-blocked-261110141551-collector"
+  },
+  "expected_databases": {
+    "c0": "orq41_blocked_261110141551_c0",
+    "c1": "orq41_blocked_261110141551_c1"
+  },
+  "postgres_image": "sha256:8e5355e9ff399a002fa46148399a1ac22fb3e9b2d390f857296e6da6b5559ba1",
+  "auxiliary_images": {
+    "redis": "sha256:13105d2858ded45aedf7b24f0870e6a4e7ce4964924bffce68e562ca72149f1e",
+    "collector": "sha256:50dccac76879873148242bb98c6472404f3af3388c318ef270a6912b855c2dbc"
+  },
+  "resources": {
+    "api_cpus": [
+      0,
+      2
+    ],
+    "postgres_cpus": [
+      4,
+      6
+    ],
+    "nano_cpus": 2000000000,
+    "memory_bytes": 2147483648,
+    "memory_swap_bytes": 2147483648
+  },
+  "expected_locale": {
+    "encoding": "UTF8",
+    "collate": "en_US.utf8",
+    "ctype": "en_US.utf8",
+    "provider": "c",
+    "icu_locale": null
+  },
+  "expected_schema_sha256": "851772d47b85ce52856ef0e313fadc4e8bdf9be0eec06fc75b51e67eae570ce2",
+  "expected_corpus_fingerprint": "787ae13719ef23c5043449d7d2e84bd489e5896e18d0fe5a035f76e8c6df0999",
+  "expected_corpus_content_sha256": "9fa959aeeb5d332882d61f60528eaa72468f110705c51ce05b70e213dd168506",
+  "conversations_per_arm": 720,
+  "history_messages_per_arm": 17280,
+  "final_messages_per_arm": 18720,
+  "analyze_tables": [
+    "alembic_version",
+    "chunks",
+    "conversations",
+    "documents",
+    "messages",
+    "rag_request_metrics",
+    "usage_events"
+  ],
+  "runtime_plan_cache_mode": "auto",
+  "fallback": "Unset/None",
+  "routing": "static",
+  "shadow": false,
+  "pythonhashseed": "41",
+  "otlp_endpoint": "http://127.0.0.1:4318/v1/traces",
+  "external_credentials": false,
+  "config_probes": "PENDING: require actual future image/environment evidence",
+  "readiness": "PENDING: do not claim source/corpus/config/resources ready from historical receipts",
+  "source_database_reads_writes_performed": 0,
+  "container_database_allocation_performed": false
+}

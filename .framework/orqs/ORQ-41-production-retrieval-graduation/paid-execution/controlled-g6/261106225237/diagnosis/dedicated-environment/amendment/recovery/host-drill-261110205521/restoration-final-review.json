@@ -1,0 +1,38 @@
+{
+  "status": "RESTORATION_FINAL_EVIDENCE_REVIEW_PASS",
+  "scope": "Independent retained-file replay of operator-assisted restoration; no live reviewer host operations",
+  "artifacts_sha256": {
+    "restored-journal.tar": "829238b48c6795481bf5065be060366ff2c14abfd056df8a9fb4fb1d5c175dab",
+    "restoration-verification.json": "e6a9b6132b4e370b1cd92776c32ec38b9cbaa4b2c2a5ff40adbda4121123813e",
+    "restored-host-readback.json": "21babb37b27b748992a4675a86188ab2cd12d8ef653617fc585b91cd0ba64e39",
+    "access-revocation.json": "6389b4c4fb3a6450c5fa379f324a57773901c3facdb06a2c04781d56f3b620b2",
+    "capture-restored.py": "5679d789591c95322e2fdc4b62400681e11cafdf5b4731cbe2aa089c37b01f97",
+    "revoke-access.py": "229a9fd7aa7e7855a2d96f6c4806e7dd1a345d13585f4dbf58eaff7eda0f12ab",
+    "prepared-baseline.json": "bab17fbc27f8f82b5cf83206ea9c9958e625bb008f8ad7bc72ad823db3a00f4e",
+    "failed-journal.json": "2f06d3644b2c67dd167b48baaa50104e277d5531b9cca45dbb546d62b4682008",
+    "restore-local.sh": "ed6208cd0355aa7683982e74b3ec067bc6a75447b406d601a1893d10186c3af5",
+    "restoration-final-review.md": "c010755ff1f86cb4cbdddd9fb87cc4bcac77e03079c675b683b04e0165c93352"
+  },
+  "verified": {
+    "journal_rows": 51,
+    "original16_preserved": true,
+    "phase": "done",
+    "historical_verified_apply_indices": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "manual_init_restore": true,
+    "host_readback_checks": 18,
+    "temporary_rule_removed": true
+  },
+  "original_drill": "FAILED_SCOPE_PATH_ASSUMPTION",
+  "core_helper_remediated": false,
+  "environment_ready": false,
+  "g6": "FAIL",
+  "paid_admission": "BLOCKED_CONTROLLED_G6_FAIL",
+  "reviewer_host_operations": 0,
+  "reviewer_source_edits": 0,
+  "new_restoration_evidence_findings": []
+}

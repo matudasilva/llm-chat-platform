@@ -1,0 +1,26 @@
+{
+  "status": "DIAGNOSTIC_PROFILE_PREPARED_NOT_EXECUTED",
+  "plan_sha256": "75943c856acd07363ad6529f4ed0e449d6aa061fdcf332a7e23968cd156f230f",
+  "fixtures_sha256": "d31c5a889f8b3a2cf2184b5fff263679ef71e260cc943a1f5a45bc0c2563b005",
+  "databases": [
+    {
+      "arm": "c0",
+      "database": "orq41_diag_261106153843_c0",
+      "counts": "20|384",
+      "corpus_content_sha256": "9fa959aeeb5d332882d61f60528eaa72468f110705c51ce05b70e213dd168506",
+      "business_sha256": "2232bc3abf0520516e168bc9b26bec0258659fb3649afab35573d4d3fba15546",
+      "schema_sha256": "851772d47b85ce52856ef0e313fadc4e8bdf9be0eec06fc75b51e67eae570ce2"
+    },
+    {
+      "arm": "c1",
+      "database": "orq41_diag_261106153843_c1",
+      "counts": "20|384",
+      "corpus_content_sha256": "9fa959aeeb5d332882d61f60528eaa72468f110705c51ce05b70e213dd168506",
+      "business_sha256": "2232bc3abf0520516e168bc9b26bec0258659fb3649afab35573d4d3fba15546",
+      "schema_sha256": "851772d47b85ce52856ef0e313fadc4e8bdf9be0eec06fc75b51e67eae570ce2"
+    }
+  ],
+  "provider_calls": 0,
+  "prospective_freeze_note": "Final instrumentation and test hashes frozen after pre-execution reviewer detected shared-handler double wrapping; fixed idempotently with regression test before any API request. No gate or fixture change.",
+  "prospective_network_note": "Docker inspect resolves container network mode to container:<full ID>, proven on existing worker before execution. Compare against current PostgreSQL full ID, never name. Only preflight assertion corrected; no API requests."
+}

@@ -1,0 +1,44 @@
+{
+  "status": "LEXICAL_AA_IMAGE_BINDING_IMPLEMENTED_AWAITING_SOURCE_REVIEW",
+  "technical_files_sha256": {
+    "experiments/production_graduation/gate_validation/blocked_latency.py": "7d1c56c4a432bb1d47714a166f72fa927c1492a0b93f52e8796b736701de3006",
+    "tests/experiments/test_orq41_blocked_latency.py": "437a889ca4cd822d1079538fbea7b32eea3c0f524e0d9d56402386c4b7064067"
+  },
+  "image_amendment_approval_sha256": "1e367f6c279723ee8db757ac8a24cfa887835954f7ca9ad1d9fe45304fc306b8",
+  "unchanged_core_function_asts": [
+    "build_samples",
+    "pinned_files",
+    "seed_probe",
+    "configuration_probe",
+    "host_snapshot",
+    "host_delta",
+    "readonly",
+    "analyze_database",
+    "database_snapshot",
+    "database_delta",
+    "verify_projection",
+    "verify_databases",
+    "validate_worker",
+    "summarize",
+    "worker_environment",
+    "check_local_services",
+    "execute"
+  ],
+  "protected_files_unchanged": 503,
+  "protected_files_intentionally_changed": [
+    "experiments/production_graduation/gate_validation/blocked_latency.py",
+    "tests/experiments/test_orq41_blocked_latency.py"
+  ],
+  "functional_regression_passed": 219,
+  "functional_regression_skipped": 0,
+  "focused_passed": 53,
+  "first_focus_failure": "One new fixture omitted synthetic prepared config hashes; corrected test only; focused.xml retained.",
+  "worker_timing_source_unchanged": true,
+  "app_p5_env_unchanged": true,
+  "benchmark_admissions": 0,
+  "database_calls": 0,
+  "provider_calls": 0,
+  "external_calls": 0,
+  "spend_usd": "0",
+  "official_g6_status": "CONTROLLED_G6_FAIL"
+}

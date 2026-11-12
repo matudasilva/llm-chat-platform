@@ -1,0 +1,354 @@
+--- before/experiments/production_graduation/gate_validation/performance_cleanup.py
++++ after/experiments/production_graduation/gate_validation/performance_cleanup.py
+@@ -0,0 +1,60 @@
++"""Release validated performance-case retention; never production startup code.
++
++Call only after response parsing, lifecycle quiescence and full candidate/transport
++validation. Keep the projected result row; do not call on failed cases. No waits,
++cancellation, forced collection or application/session operations occur here.
++"""
++import hashlib
++
++from .fixtures import HarnessError
++
++
++def release_validated_case(lifecycle, capture, scoped, row, *, candidate):
++    if row['status'] != 'PASS' or row['error'] is not None:
++        raise HarnessError('Cannot release failed performance evidence')
++    if len(lifecycle.requests) != 1:
++        raise HarnessError('Ambiguous performance request ownership')
++    request = lifecycle.requests[0]
++    if request['completed'] is None or request['outcome'] != 'returned':
++        raise HarnessError('Performance response has not completed')
++    if any(not task.done() for task in lifecycle.tasks | scoped.tasks):
++        raise HarnessError('Performance tasks remain pending')
++    if (set(lifecycle.sessions) != lifecycle.closed_sessions
++            or any(session.in_transaction() for session in lifecycle.sessions)):
++        raise HarnessError('Performance sessions are unresolved')
++    if (lifecycle.faults_triggered or lifecycle.scenario_receipts
++            or getattr(scoped.provider, 'fault_events', ())):
++        raise HarnessError('Cannot discard unexpected fault evidence')
++    barriers = scoped.barriers
++    if barriers.held or any(barriers.waiters.values()):
++        raise HarnessError('Performance barriers remain owned')
++    if len(capture.bodies) != 2 or len(capture.sends) != 2 or len(row['dispatches']) != 2:
++        raise HarnessError('Incomplete retained transport projection')
++    for raw, send, projected, purpose in zip(capture.bodies, capture.sends, row['dispatches'], ('rewrite', 'primary')):
++        digest = hashlib.sha256(raw).hexdigest()
++        if (projected != {'purpose': purpose, 'sha256': digest}
++                or send['purpose'] != purpose or send['correlation_id'] != row['request_id']
++                or send.get('payload_sha256' if candidate else 'sha256') != digest):
++            raise HarnessError('Retained transport projection changed')
++    if candidate:
++        if len(lifecycle.evidence_states) != 1:
++            raise HarnessError('Missing candidate context at release')
++        state = lifecycle.evidence_states[0]
++        if not state.lock.acquire(blocking=False):
++            raise HarnessError('Candidate context remains owned')
++        try:
++            if (state.closed is not True or state.valid is not True
++                    or state.instance_id != row['accounting_instance_id']
++                    or state.correlation_id != row['request_id']):
++                raise HarnessError('Late or contradictory candidate evidence')
++        finally:
++            state.lock.release()
++    elif lifecycle.evidence_states or row['accounting_instance_id'] is not None:
++        raise HarnessError('Unexpected candidate evidence in baseline')
++
++    # All checks precede mutation; retain the already validated row and its hashes.
++    for collection in (capture.bodies, capture.sends, lifecycle.evidence_states,
++            lifecycle.tasks, lifecycle.requests, lifecycle.sessions,
++            lifecycle.closed_sessions, lifecycle.backend_pids, scoped.tasks,
++            barriers.timeline, barriers.reached, barriers.released, barriers.waiters):
++        collection.clear()
+--- before/experiments/production_graduation/gate_validation/aa_calibration_worker.py
++++ after/experiments/production_graduation/gate_validation/aa_calibration_worker.py
+@@ -14,6 +14,7 @@
+ from .transports import Reply,native_provider,_purpose
+ from .capture import Capture
+ from .aa_calibration_resources import worker_resources,resource_delta
++from .performance_cleanup import release_validated_case
+ 
+ OUT=Path(os.environ['G6_RUN_DIR']);ARM=os.environ['G6_ARM'];CELL=os.environ['G6_CELL']
+ 
+@@ -86,8 +87,11 @@
+                         'preparation_ns':current['primary_ns'][0]-current['start_ns'] if len(current['primary_ns'])==1 else None,'dispatches':list(current['dispatches'])})
+                     if status != 'PASS':
+                         break
+-                    # Release harness retention only after quiescence; never alter app state or persisted data.
+-                    capture.bodies.clear();capture.sends.clear();lifecycle.evidence_states.clear()
++                    try:
++                        release_validated_case(lifecycle,capture,scoped,rows[-1],candidate=True)
++                    except Exception as exc:
++                        rows[-1].update(status='FAIL',error='cleanup: '+type(exc).__name__+': '+str(exc)[:100])
++                        break
+             resources_after=worker_resources()
+         result={'arm':ARM,'full_c1':True,'resources_before':resources_before,'resources_after':resources_after,'cpu_stat_delta':resource_delta(resources_before,resources_after),'samples':rows,'config_identity':config_identity(settings),'provider_calls':0,'external_calls':0}
+         (OUT/(ARM+'-'+CELL+'.json')).write_text(json.dumps(result,indent=2)+'\n')
+--- before/experiments/production_graduation/gate_validation/controlled_latency_worker.py
++++ after/experiments/production_graduation/gate_validation/controlled_latency_worker.py
+@@ -12,6 +12,7 @@
+ from .controlled_latency import SAMPLES,WARMUPS,candidate_evidence,request_deadline
+ from .local_api import install
+ from .transports import Reply,Tape,native_provider,_purpose
++from .performance_cleanup import release_validated_case
+ 
+ OUT=Path(os.environ['G6_RUN_DIR']);ARM=os.environ['G6_ARM'];CELL=os.environ['G6_CELL']
+ 
+@@ -86,8 +87,11 @@
+                         'preparation_ns':current['primary_ns'][0]-current['start_ns'] if len(current['primary_ns'])==1 else None,'dispatches':list(current['dispatches'])})
+                     if status != 'PASS':
+                         break
+-                    # Release harness retention only after quiescence; never alter app state or persisted data.
+-                    capture.bodies.clear();capture.sends.clear();lifecycle.evidence_states.clear()
++                    try:
++                        release_validated_case(lifecycle,capture,scoped,rows[-1],candidate=ARM=='c1')
++                    except Exception as exc:
++                        rows[-1].update(status='FAIL',error='cleanup: '+type(exc).__name__+': '+str(exc)[:100])
++                        break
+         result={'arm':ARM,'samples':rows,'config_identity':config_identity(settings),'provider_calls':0,'external_calls':0}
+         (OUT/(ARM+'-'+CELL+'.json')).write_text(json.dumps(result,indent=2)+'\n')
+     finally:
+--- before/experiments/production_graduation/gate_validation/controlled_latency_controller.py
++++ after/experiments/production_graduation/gate_validation/controlled_latency_controller.py
+@@ -14,7 +14,8 @@
+ 
+ PG='orq41-env-pg'
+ MODULES=('controlled_latency.py','controlled_latency_worker.py','controlled_latency_controller.py',
+-         'local_api.py','transports.py','capture.py','fixtures.py','validate_g123.py','g9_controller.py')
++         'local_api.py','transports.py','capture.py','fixtures.py','validate_g123.py','g9_controller.py',
++         'performance_cleanup.py')
+ OPTIMIZED_C1_PIN=ORQ/'paid-execution/controlled-g6/261106130053-rev2/diagnosis/receipt-copy-proposal/implementation/image-pin/receipt.json'
+ 
+ def docker(*args,data=None):
+--- before/tests/experiments/test_orq41_performance_cleanup.py
++++ after/tests/experiments/test_orq41_performance_cleanup.py
+@@ -0,0 +1,228 @@
++"""Performance-only release guards and deterministic local JSON/SSE regressions."""
++import ast
++import asyncio
++import copy
++import gc
++import hashlib
++import json
++import weakref
++from contextlib import nullcontext
++from pathlib import Path
++from types import SimpleNamespace as NS
++from uuid import UUID, uuid5
++
++import httpx
++import pytest
++
++from app.core.observability import context_evidence as c1
++from app.core.domain.provider import ProviderInput
++from app.core.domain.types import ChatMessage
++from app.http.request_context import set_telemetry_identity, reset_telemetry_identity
++from experiments.production_graduation.gate_validation.capture import Capture
++from experiments.production_graduation.gate_validation.controlled_latency import candidate_evidence
++from experiments.production_graduation.gate_validation.fixtures import HarnessError
++from experiments.production_graduation.gate_validation.local_api import Lifecycle, LocalASGI
++from experiments.production_graduation.gate_validation.performance_cleanup import release_validated_case
++from experiments.production_graduation.gate_validation.transports import Barriers, Reply, ScopedProvider, Tape, native_provider, with_purpose
++
++
++class Session:
++    active = False
++    def in_transaction(self): return self.active
++
++
++def case(candidate=True):
++    lifecycle=Lifecycle();lifecycle.requests.append(dict(completed=1.0,outcome='returned'))
++    session=Session();lifecycle.sessions.append(session);lifecycle.closed_sessions.add(session)
++    lifecycle.backend_pids.append(1)
++    scoped=NS(tasks=set(),barriers=Barriers(),provider=NS(fault_events=[]))
++    scoped.barriers.timeline.append(('completed',1.0))
++    request_id=str(UUID(int=41));instance=str(UUID(int=42))
++    with c1.request_evidence(instance,request_id) as state: pass
++    if candidate: lifecycle.evidence_states.append(state)
++    capture=Capture() if candidate else Tape()
++    capture.bodies[:]=[b'rewrite',b'primary']
++    dispatches=[dict(purpose=p,sha256=hashlib.sha256(raw).hexdigest()) for p,raw in zip(('rewrite','primary'),capture.bodies)]
++    capture.sends[:]=[dict(purpose=d['purpose'],correlation_id=request_id,
++        **{('payload_sha256' if candidate else 'sha256'):d['sha256']}) for d in dispatches]
++    row=dict(status='PASS',error=None,request_id=request_id,accounting_instance_id=instance if candidate else None,dispatches=copy.deepcopy(dispatches))
++    return lifecycle,capture,scoped,row,state
++
++
++def retained(lifecycle,capture,scoped):
++    return [list(v) for v in (capture.bodies,capture.sends,lifecycle.evidence_states,lifecycle.tasks,
++        lifecycle.requests,lifecycle.sessions,lifecycle.closed_sessions,lifecycle.backend_pids,scoped.tasks,
++        scoped.barriers.timeline,scoped.barriers.reached,scoped.barriers.released,scoped.barriers.waiters)]
++
++
++@pytest.mark.parametrize('candidate',[False,True])
++def test_release_preserves_projection_and_releases_only_validated_retention(candidate):
++    lifecycle,capture,scoped,row,_=case(candidate);expected=copy.deepcopy(row)
++    release_validated_case(lifecycle,capture,scoped,row,candidate=candidate)
++    assert row==expected and all(not values for values in retained(lifecycle,capture,scoped))
++
++
++def test_busy_candidate_context_fails_without_waiting_or_releasing_evidence():
++    lifecycle,capture,scoped,row,state=case();calls=[]
++    state.lock=NS(acquire=lambda **kw: calls.append(kw) or False,
++        release=lambda: pytest.fail('Cannot release an unowned lock'))
++    before=retained(lifecycle,capture,scoped)
++    with pytest.raises(HarnessError): release_validated_case(lifecycle,capture,scoped,row,candidate=True)
++    assert calls==[{'blocking':False}] and retained(lifecycle,capture,scoped)==before
++
++
++@pytest.mark.parametrize('fault',['failed_row','error_row','running_request','aborted_request','duplicate_request',
++    'task_pending','scope_pending','transaction','unclosed_session','orphan_session','fault','scenario',
++    'provider_fault','held_barrier','barrier_waiter','missing_body','changed_body','changed_projection',
++    'wrong_capture_request','invalid_state','unclosed_state','wrong_instance','late_observation'])
++@pytest.mark.asyncio
++async def test_unsafe_release_preserves_evidence_and_does_not_cancel_work(fault):
++    lifecycle,capture,scoped,row,state=case();future=None
++    if fault=='failed_row': row['status']='FAIL'
++    elif fault=='error_row': row['error']='retained failure'
++    elif fault=='running_request': lifecycle.requests[0]['completed']=None
++    elif fault=='aborted_request': lifecycle.requests[0]['outcome']='CancelledError'
++    elif fault=='duplicate_request': lifecycle.requests.append(lifecycle.requests[0])
++    elif fault in ('task_pending','scope_pending'):
++        future=asyncio.get_running_loop().create_future()
++        (lifecycle.tasks if fault=='task_pending' else scoped.tasks).add(future)
++    elif fault=='transaction': lifecycle.sessions[0].active=True
++    elif fault=='unclosed_session': lifecycle.closed_sessions.clear()
++    elif fault=='orphan_session': lifecycle.closed_sessions.add(Session())
++    elif fault=='fault': lifecycle.faults_triggered.append('unexpected')
++    elif fault=='scenario': lifecycle.scenario_receipts.append({'retained':'oracle'})
++    elif fault=='provider_fault': scoped.provider.fault_events.append('unexpected')
++    elif fault=='held_barrier': scoped.barriers.held=frozenset({'held'})
++    elif fault=='barrier_waiter': scoped.barriers.waiters['held']={object():{}}
++    elif fault=='missing_body': capture.bodies.pop()
++    elif fault=='changed_body': capture.bodies[0]=b'changed'
++    elif fault=='changed_projection': row['dispatches'][0]['sha256']='f'*64
++    elif fault=='wrong_capture_request': capture.sends[0]['correlation_id']='wrong'
++    elif fault=='invalid_state': state.valid=False
++    elif fault=='unclosed_state': state.closed=False
++    elif fault=='wrong_instance': state.instance_id=str(UUID(int=43))
++    elif fault=='late_observation':
++        token=c1._current.set(state)
++        try: c1.observe('late',lambda _: {})
++        finally: c1._current.reset(token)
++        assert state.valid is False
++    before=retained(lifecycle,capture,scoped);saved=copy.deepcopy(row)
++    with pytest.raises(HarnessError): release_validated_case(lifecycle,capture,scoped,row,candidate=True)
++    assert retained(lifecycle,capture,scoped)==before and row==saved
++    if future is not None:
++        assert not future.cancelled() and not future.done()
++        future.cancel()  # Test teardown only; release_validated_case never cancels.
++
++
++@pytest.mark.asyncio
++async def test_completed_cancelled_listener_is_quiescent_without_consuming_its_result():
++    lifecycle,capture,scoped,row,_=case()
++    future=asyncio.get_running_loop().create_future();future.cancel();lifecycle.tasks.add(future)
++    release_validated_case(lifecycle,capture,scoped,row,candidate=True)
++    assert future.cancelled() and not lifecycle.tasks
++
++
++@pytest.mark.parametrize('candidate',[False,True])
++@pytest.mark.parametrize('protocol',['json','sse'])
++@pytest.mark.asyncio
++async def test_local_native_json_sse_contexts_are_released_across_repeated_cases(candidate,protocol):
++    lifecycle=Lifecycle();barriers=Barriers();capture=Capture() if candidate else Tape()
++    replies={'rewrite':Reply('rewritten'),'primary':Reply('Controlled local response.',chunks=('Controlled ','local response.'))}
++    provider,close=native_provider('bedrock',capture,replies)
++    scoped=ScopedProvider(provider,candidate=candidate,barriers=barriers)
++    refs=[];saved_rows=[]
++    async def app(scope,receive,send):
++        request_id=dict(scope['headers'])[b'x-request-id'].decode()
++        instance=str(uuid5(UUID(int=42),request_id));tokens=set_telemetry_identity(instance,request_id)
++        state=None
++        try:
++            with c1.request_evidence(instance,request_id) if candidate else nullcontext() as state:
++                pin=ProviderInput(request_id=UUID(request_id),messages=(ChatMessage(role='user',content='query'),))
++                await with_purpose(scoped.generate,'rewrite')(pin)
++                if protocol=='sse':
++                    stream=await scoped.stream(pin)
++                    chunks=[chunk async for chunk in stream.chunks]
++                    final=await stream.get_final_result()
++                    assert ''.join(chunks)==final.content=='Controlled local response.'
++                    body=b'event: done\ndata: {"status":"success"}\n\n'
++                    content_type=b'text/event-stream'
++                else:
++                    result=await scoped.generate(pin)
++                    assert result.content=='Controlled local response.'
++                    body=b'{"status":"success"}';content_type=b'application/json'
++                session=Session();lifecycle.sessions.append(session);lifecycle.closed_sessions.add(session)
++                await send(dict(type='http.response.start',status=200,headers=[(b'content-type',content_type)]))
++                await send(dict(type='http.response.body',body=body,more_body=False))
++        finally:
++            reset_telemetry_identity(*tokens)
++            if state is not None:
++                lifecycle.evidence_states.append(state);refs.append(weakref.ref(state))
++    try:
++        transport=httpx.ASGITransport(app=LocalASGI(app,lifecycle,barriers))
++        with lifecycle.track_tasks():
++            async with httpx.AsyncClient(transport=transport,base_url='http://local') as client:
++                for index in range(8):
++                    rid=str(uuid5(UUID(int=41),str(index)))
++                    response=await client.post('/chat',headers={'X-Request-ID':rid})
++                    assert response.status_code==200
++                    assert b'success' in response.content
++                    await lifecycle.quiesce(asyncio.get_running_loop().time()+1)
++                    instance=candidate_evidence(lifecycle.snapshots,capture.sends,rid) if candidate else None
++                    row=dict(status='PASS',error=None,request_id=rid,accounting_instance_id=instance,
++                        dispatches=[dict(purpose=send['purpose'],sha256=hashlib.sha256(raw).hexdigest()) for raw,send in zip(capture.bodies,capture.sends)])
++                    saved=copy.deepcopy(row);saved_rows.append(row)
++                    release_validated_case(lifecycle,capture,scoped,row,candidate=candidate)
++                    assert row==saved and all(not v for v in retained(lifecycle,capture,scoped))
++                    await asyncio.sleep(0);gc.collect()  # Reachability check only, never benchmark policy.
++                    assert all(ref() is None for ref in refs)
++        assert len(saved_rows)==8 and all(len(row['dispatches'])==2 for row in saved_rows)
++    finally:
++        await scoped.quiesce();await close()
++
++
++@pytest.mark.parametrize('protocol',['json','sse'])
++@pytest.mark.asyncio
++async def test_cancelled_local_request_keeps_abort_evidence(protocol):
++    lifecycle=Lifecycle();barriers=Barriers(held=('primary_before_dispatch',));capture=Capture()
++    provider,close=native_provider('bedrock',capture,{'primary':Reply('local')})
++    scoped=ScopedProvider(provider,candidate=True,barriers=barriers)
++    rid=str(UUID(int=41));instance=str(UUID(int=42))
++    async def app(scope,receive,send):
++        state=None
++        try:
++            with c1.request_evidence(instance,rid) as state:
++                pin=ProviderInput(request_id=UUID(rid),messages=(ChatMessage(role='user',content='query'),))
++                if protocol=='sse': await scoped.stream(pin)
++                else: await scoped.generate(pin)
++        finally:
++            if state is not None: lifecycle.evidence_states.append(state)
++    try:
++        async with httpx.AsyncClient(transport=httpx.ASGITransport(app=LocalASGI(app,lifecycle,barriers)),base_url='http://local') as client:
++            task=asyncio.create_task(client.post('/chat'))
++            await barriers.wait('primary_before_dispatch')
++            task.cancel()  # External cancellation being tested, not cleanup behavior.
++            with pytest.raises(asyncio.CancelledError): await task
++        await lifecycle.quiesce(asyncio.get_running_loop().time()+1)
++        state=lifecycle.evidence_states[0]
++        assert state.closed and state.records[-1]['data']['outcome']=='aborted'
++        assert lifecycle.requests[0]['outcome']=='CancelledError'
++        before=retained(lifecycle,capture,scoped)
++        with pytest.raises(HarnessError):
++            release_validated_case(lifecycle,capture,scoped,dict(status='FAIL',error='CancelledError'),candidate=True)
++        assert retained(lifecycle,capture,scoped)==before
++    finally:
++        await scoped.quiesce();await close()
++
++
++@pytest.mark.parametrize('worker',['aa_calibration_worker.py','controlled_latency_worker.py'])
++def test_worker_cleanup_failure_marks_row_and_stops_admission(worker):
++    base=Path(__file__).parents[2]/'experiments/production_graduation/gate_validation'
++    tree=ast.parse((base/worker).read_text())
++    cleanup=next(n for n in ast.walk(tree) if isinstance(n,ast.Try) and any(isinstance(v,ast.Call) and isinstance(v.func,ast.Name) and v.func.id=='release_validated_case' for v in ast.walk(ast.Module(body=n.body,type_ignores=[]))) and len(n.body)==1)
++    calls=[];row=dict(status='PASS',error=None,dispatches=['retained'])
++    def fail(*args,**kwargs): raise HarnessError('retained cleanup failure')
++    loop=ast.For(target=ast.Name(id='index',ctx=ast.Store()),iter=ast.List(elts=[ast.Constant(0),ast.Constant(1)],ctx=ast.Load()),
++        body=[ast.Expr(ast.Call(func=ast.Attribute(value=ast.Name(id='calls',ctx=ast.Load()),attr='append',ctx=ast.Load()),args=[ast.Name(id='index',ctx=ast.Load())],keywords=[])),cleanup],orelse=[])
++    namespace=dict(calls=calls,rows=[row],release_validated_case=fail,lifecycle=None,capture=None,scoped=None,ARM='c1')
++    exec(compile(ast.fix_missing_locations(ast.Module(body=[loop],type_ignores=[])),'<worker-release-failure>','exec'),namespace)
++    assert calls==[0] and row['status']=='FAIL' and row['error'].startswith('cleanup: HarnessError') and row['dispatches']==['retained']

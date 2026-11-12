@@ -1,0 +1,373 @@
+{
+  "status": "BLOCKED_AA_PREPARED_NOT_EXECUTED",
+  "plan_sha256": "ae37ecfb95379e52c8feff53fedfaabb83a99b2b3b6a7d61521cd58aaa7177bc",
+  "fixtures_sha256": "ab144380bd6254d706268c351d661d7ac970d12938a3ee9e04956368e517c3c9",
+  "private_state": "/tmp/orq41-blocked-261109141719-7ljl8bm_",
+  "analyses": [
+    {
+      "database": "orq41_blocked_261109141719_c0",
+      "statements": [
+        "ANALYZE \"public\".\"alembic_version\";",
+        "ANALYZE \"public\".\"chunks\";",
+        "ANALYZE \"public\".\"conversations\";",
+        "ANALYZE \"public\".\"documents\";",
+        "ANALYZE \"public\".\"messages\";",
+        "ANALYZE \"public\".\"rag_request_metrics\";",
+        "ANALYZE \"public\".\"usage_events\";"
+      ],
+      "settings": {
+        "autovacuum": "on",
+        "autovacuum_analyze_scale_factor": "0.1",
+        "autovacuum_analyze_threshold": "50",
+        "autovacuum_freeze_max_age": "200000000",
+        "autovacuum_max_workers": "3",
+        "autovacuum_multixact_freeze_max_age": "400000000",
+        "autovacuum_naptime": "60",
+        "autovacuum_vacuum_cost_delay": "2",
+        "autovacuum_vacuum_cost_limit": "-1",
+        "autovacuum_vacuum_insert_scale_factor": "0.2",
+        "autovacuum_vacuum_insert_threshold": "1000",
+        "autovacuum_vacuum_scale_factor": "0.2",
+        "autovacuum_vacuum_threshold": "50",
+        "autovacuum_work_mem": "-1",
+        "constraint_exclusion": "partition",
+        "cpu_index_tuple_cost": "0.005",
+        "cpu_operator_cost": "0.0025",
+        "cpu_tuple_cost": "0.01",
+        "cursor_tuple_fraction": "0.1",
+        "default_statistics_target": "100",
+        "effective_cache_size": "524288",
+        "enable_async_append": "on",
+        "enable_bitmapscan": "on",
+        "enable_gathermerge": "on",
+        "enable_hashagg": "on",
+        "enable_hashjoin": "on",
+        "enable_incremental_sort": "on",
+        "enable_indexonlyscan": "on",
+        "enable_indexscan": "on",
+        "enable_material": "on",
+        "enable_memoize": "on",
+        "enable_mergejoin": "on",
+        "enable_nestloop": "on",
+        "enable_parallel_append": "on",
+        "enable_parallel_hash": "on",
+        "enable_partition_pruning": "on",
+        "enable_partitionwise_aggregate": "off",
+        "enable_partitionwise_join": "off",
+        "enable_presorted_aggregate": "on",
+        "enable_seqscan": "on",
+        "enable_sort": "on",
+        "enable_tidscan": "on",
+        "from_collapse_limit": "8",
+        "geqo": "on",
+        "geqo_effort": "5",
+        "geqo_generations": "0",
+        "geqo_pool_size": "0",
+        "geqo_seed": "0",
+        "geqo_selection_bias": "2",
+        "geqo_threshold": "12",
+        "jit": "on",
+        "jit_above_cost": "100000",
+        "jit_inline_above_cost": "500000",
+        "jit_optimize_above_cost": "500000",
+        "join_collapse_limit": "8",
+        "min_parallel_index_scan_size": "64",
+        "min_parallel_table_scan_size": "1024",
+        "parallel_setup_cost": "1000",
+        "parallel_tuple_cost": "0.1",
+        "plan_cache_mode": "auto",
+        "random_page_cost": "4",
+        "recursive_worktable_factor": "10",
+        "seq_page_cost": "1"
+      },
+      "completion": {
+        "chunks": "2026-11-09 14:17:26.438574+00",
+        "usage_events": "2026-11-09 14:17:26.864653+00",
+        "rag_request_metrics": "2026-11-09 14:17:26.784466+00",
+        "conversations": "2026-11-09 14:17:26.522685+00",
+        "alembic_version": "2026-11-09 14:17:26.363692+00",
+        "messages": "2026-11-09 14:17:26.7239+00",
+        "documents": "2026-11-09 14:17:26.627738+00"
+      }
+    },
+    {
+      "database": "orq41_blocked_261109141719_c1",
+      "statements": [
+        "ANALYZE \"public\".\"alembic_version\";",
+        "ANALYZE \"public\".\"chunks\";",
+        "ANALYZE \"public\".\"conversations\";",
+        "ANALYZE \"public\".\"documents\";",
+        "ANALYZE \"public\".\"messages\";",
+        "ANALYZE \"public\".\"rag_request_metrics\";",
+        "ANALYZE \"public\".\"usage_events\";"
+      ],
+      "settings": {
+        "autovacuum": "on",
+        "autovacuum_analyze_scale_factor": "0.1",
+        "autovacuum_analyze_threshold": "50",
+        "autovacuum_freeze_max_age": "200000000",
+        "autovacuum_max_workers": "3",
+        "autovacuum_multixact_freeze_max_age": "400000000",
+        "autovacuum_naptime": "60",
+        "autovacuum_vacuum_cost_delay": "2",
+        "autovacuum_vacuum_cost_limit": "-1",
+        "autovacuum_vacuum_insert_scale_factor": "0.2",
+        "autovacuum_vacuum_insert_threshold": "1000",
+        "autovacuum_vacuum_scale_factor": "0.2",
+        "autovacuum_vacuum_threshold": "50",
+        "autovacuum_work_mem": "-1",
+        "constraint_exclusion": "partition",
+        "cpu_index_tuple_cost": "0.005",
+        "cpu_operator_cost": "0.0025",
+        "cpu_tuple_cost": "0.01",
+        "cursor_tuple_fraction": "0.1",
+        "default_statistics_target": "100",
+        "effective_cache_size": "524288",
+        "enable_async_append": "on",
+        "enable_bitmapscan": "on",
+        "enable_gathermerge": "on",
+        "enable_hashagg": "on",
+        "enable_hashjoin": "on",
+        "enable_incremental_sort": "on",
+        "enable_indexonlyscan": "on",
+        "enable_indexscan": "on",
+        "enable_material": "on",
+        "enable_memoize": "on",
+        "enable_mergejoin": "on",
+        "enable_nestloop": "on",
+        "enable_parallel_append": "on",
+        "enable_parallel_hash": "on",
+        "enable_partition_pruning": "on",
+        "enable_partitionwise_aggregate": "off",
+        "enable_partitionwise_join": "off",
+        "enable_presorted_aggregate": "on",
+        "enable_seqscan": "on",
+        "enable_sort": "on",
+        "enable_tidscan": "on",
+        "from_collapse_limit": "8",
+        "geqo": "on",
+        "geqo_effort": "5",
+        "geqo_generations": "0",
+        "geqo_pool_size": "0",
+        "geqo_seed": "0",
+        "geqo_selection_bias": "2",
+        "geqo_threshold": "12",
+        "jit": "on",
+        "jit_above_cost": "100000",
+        "jit_inline_above_cost": "500000",
+        "jit_optimize_above_cost": "500000",
+        "join_collapse_limit": "8",
+        "min_parallel_index_scan_size": "64",
+        "min_parallel_table_scan_size": "1024",
+        "parallel_setup_cost": "1000",
+        "parallel_tuple_cost": "0.1",
+        "plan_cache_mode": "auto",
+        "random_page_cost": "4",
+        "recursive_worktable_factor": "10",
+        "seq_page_cost": "1"
+      },
+      "completion": {
+        "documents": "2026-11-09 14:17:31.396551+00",
+        "conversations": "2026-11-09 14:17:31.305976+00",
+        "usage_events": "2026-11-09 14:17:31.67934+00",
+        "alembic_version": "2026-11-09 14:17:31.140305+00",
+        "chunks": "2026-11-09 14:17:31.233004+00",
+        "rag_request_metrics": "2026-11-09 14:17:31.5969+00",
+        "messages": "2026-11-09 14:17:31.516368+00"
+      }
+    }
+  ],
+  "databases": [
+    {
+      "arm": "c0",
+      "database": "orq41_blocked_261109141719_c0",
+      "conversations": 720,
+      "messages": 17280,
+      "generated_message_ids": 0,
+      "normalized_business_sha256": "68f1ef7218bc00c5dd0b4b4b05c4b9e4b448a66005949ba7514481b350b54541",
+      "rls": {
+        "": 0,
+        "blocked-unknown": 0,
+        "orq37-t23": 2146,
+        "orq41-6b2ab547-en-empty": 0,
+        "orq41-6b2ab547-en-history": 0,
+        "orq41-6b2ab547-es-empty": 0,
+        "orq41-6b2ab547-es-history": 0
+      },
+      "corpus_content_sha256": "9fa959aeeb5d332882d61f60528eaa72468f110705c51ce05b70e213dd168506"
+    },
+    {
+      "arm": "c1",
+      "database": "orq41_blocked_261109141719_c1",
+      "conversations": 720,
+      "messages": 17280,
+      "generated_message_ids": 0,
+      "normalized_business_sha256": "68f1ef7218bc00c5dd0b4b4b05c4b9e4b448a66005949ba7514481b350b54541",
+      "rls": {
+        "": 0,
+        "blocked-unknown": 0,
+        "orq37-t23": 2146,
+        "orq41-6b2ab547-en-empty": 0,
+        "orq41-6b2ab547-en-history": 0,
+        "orq41-6b2ab547-es-empty": 0,
+        "orq41-6b2ab547-es-history": 0
+      },
+      "corpus_content_sha256": "9fa959aeeb5d332882d61f60528eaa72468f110705c51ce05b70e213dd168506"
+    }
+  ],
+  "config_probes": [
+    {
+      "config": "c568bbf3ba88f793162666e3b11f988157352a8b0ca0dc67068f18c12d4407fe",
+      "normalized": "ba8d318986a6c9b73d097e841916161f20bfae60f1d15f8bf1754567390ae4b0",
+      "seed": {
+        "seed": "41",
+        "string_hash": 928176814434627218,
+        "python": "3.13.15 (main, Sep  1 2026, 00:07:39) [GCC 14.2.0]",
+        "hash_algorithm": "siphash13",
+        "hash_width": 64
+      },
+      "resources": {
+        "affinity": [
+          0,
+          2
+        ],
+        "effective_cpuset": [
+          0,
+          2
+        ],
+        "cpu_max": "200000 100000",
+        "cpu_stat": {
+          "usage_usec": 476138,
+          "user_usec": 444866,
+          "system_usec": 31271,
+          "nice_usec": 0,
+          "core_sched.force_idle_usec": 0,
+          "nr_periods": 5,
+          "nr_throttled": 0,
+          "throttled_usec": 0,
+          "nr_bursts": 0,
+          "burst_usec": 0
+        },
+        "topology": [
+          {
+            "cpu": 0,
+            "core_id": 0,
+            "siblings": [
+              0,
+              1
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 2,
+            "core_id": 4,
+            "siblings": [
+              2,
+              3
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 4,
+            "core_id": 8,
+            "siblings": [
+              4,
+              5
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 6,
+            "core_id": 12,
+            "siblings": [
+              6,
+              7
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          }
+        ]
+      }
+    },
+    {
+      "config": "90121879ba06ae5252126a7b58390f30b9b23c68e1647e0b0ba6f81e94686740",
+      "normalized": "ba8d318986a6c9b73d097e841916161f20bfae60f1d15f8bf1754567390ae4b0",
+      "seed": {
+        "seed": "41",
+        "string_hash": 928176814434627218,
+        "python": "3.13.15 (main, Sep  1 2026, 00:07:39) [GCC 14.2.0]",
+        "hash_algorithm": "siphash13",
+        "hash_width": 64
+      },
+      "resources": {
+        "affinity": [
+          0,
+          2
+        ],
+        "effective_cpuset": [
+          0,
+          2
+        ],
+        "cpu_max": "200000 100000",
+        "cpu_stat": {
+          "usage_usec": 485479,
+          "user_usec": 452378,
+          "system_usec": 33100,
+          "nice_usec": 0,
+          "core_sched.force_idle_usec": 0,
+          "nr_periods": 5,
+          "nr_throttled": 0,
+          "throttled_usec": 0,
+          "nr_bursts": 0,
+          "burst_usec": 0
+        },
+        "topology": [
+          {
+            "cpu": 0,
+            "core_id": 0,
+            "siblings": [
+              0,
+              1
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 2,
+            "core_id": 4,
+            "siblings": [
+              2,
+              3
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 4,
+            "core_id": 8,
+            "siblings": [
+              4,
+              5
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 6,
+            "core_id": 12,
+            "siblings": [
+              6,
+              7
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          }
+        ]
+      }
+    }
+  ],
+  "api_requests": 0
+}

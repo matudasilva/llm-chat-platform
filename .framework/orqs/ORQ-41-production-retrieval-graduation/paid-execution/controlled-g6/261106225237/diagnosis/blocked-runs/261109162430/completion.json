@@ -1,0 +1,39 @@
+{
+  "status": "BLOCKED_AA_HARNESS_REVIEW_PASS",
+  "run_id": "261109162430",
+  "plan_sha256": "b3d7cbe4aa4587ca20a3dadd79e2a10d7813981b8a33550d661c58af6f19026b",
+  "fixtures_sha256": "2a2e7668bb9302939391ff996ed13c9b6322326716e6937ab02cf10db92831cb",
+  "preparation_sha256": "fcc24ded6b54398ae1ce9a8b9c78a91ec1b5c41d76f8b20029a42df37d3eb315",
+  "independent_review_sha256": "8f447eae61aac94704a6c5700a595df520e3f8192ed1a49b8440b1f8002019a2",
+  "report_sha256": "166ab681d7c3238dcba0bf8f8d9c2b94a86e0a1a4260176ca9f25d3eafa1bf21",
+  "validation_sha256": "d60a29e85fef0078c1f6f04025a0e3d2e0c467316325b48f27c31d46f9ab58f7",
+  "admission_guard_sha256": "c8163fd4c1ca484e7623a61096db8db6c012b14470cf238d623c91d3838129d7",
+  "scope_final_sha256": "d2c407da7569a344e3d19b22137bcceb4519e9ad8cf11bb5d7eedf11fba67645",
+  "namespace_remediation_completion_sha256": "4ddb2adf5e5178f026acd925dc10a4182507c8479676b14ffd5d97f457a8e01f",
+  "prepared_conversations_per_arm": 720,
+  "prepared_messages_per_arm": 17280,
+  "independently_validated_namespaces": 32,
+  "source_tests_passed": 170,
+  "source_tests_rerun_during_preparation": false,
+  "unchanged_source_files_during_preparation": 500,
+  "resolved_in_reviewed_source": [
+    "BLOCKED-AA-R1"
+  ],
+  "residual_findings": [
+    {
+      "id": "BLOCKED-AA-R2",
+      "severity": "LOW",
+      "disposition": "Manual stderr recovery; not fixed"
+    }
+  ],
+  "environment_state": "RUNNING_ISOLATED_NOT_EXECUTED",
+  "execution_status": "AWAITING_EXPLICIT_OPERATOR_AUTHORIZATION",
+  "application_requests": 0,
+  "warmups": 0,
+  "measurements": 0,
+  "external_provider_calls": 0,
+  "paid_spend_usd": "0",
+  "failed_prior_attempt_resumed": false,
+  "official_g6_status": "CONTROLLED_G6_FAIL",
+  "paid_admission": "BLOCKED_CONTROLLED_G6_FAIL"
+}

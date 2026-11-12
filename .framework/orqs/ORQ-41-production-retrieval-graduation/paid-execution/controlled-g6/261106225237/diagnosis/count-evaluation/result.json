@@ -1,0 +1,757 @@
+{
+  "status": "OFFLINE_COUNTER_EVALUATION_COMPLETE_NOT_A_GATE",
+  "checks_passed": 68,
+  "checks": [
+    "full_chain_delivery:EN/json/0",
+    "full_chain_delivery:EN/json/5",
+    "full_chain_delivery:EN/json/10",
+    "full_chain_delivery:EN/json/15",
+    "full_chain_delivery:EN/json/20",
+    "full_chain_delivery:EN/sse/0",
+    "full_chain_delivery:EN/sse/5",
+    "full_chain_delivery:EN/sse/10",
+    "full_chain_delivery:EN/sse/15",
+    "full_chain_delivery:EN/sse/20",
+    "full_chain_delivery:ES/json/0",
+    "full_chain_delivery:ES/json/5",
+    "full_chain_delivery:ES/json/10",
+    "full_chain_delivery:ES/json/15",
+    "full_chain_delivery:ES/json/20",
+    "full_chain_delivery:ES/sse/0",
+    "full_chain_delivery:ES/sse/5",
+    "full_chain_delivery:ES/sse/10",
+    "full_chain_delivery:ES/sse/15",
+    "full_chain_delivery:ES/sse/20",
+    "counter_caps_failure:0:(10000, 8388608)",
+    "counter_caps_failure:0:(3, 8388608)",
+    "counter_caps_failure:0:(10000, 300)",
+    "counter_caps_failure:1:(10000, 8388608)",
+    "counter_caps_failure:1:(3, 8388608)",
+    "counter_caps_failure:1:(10000, 300)",
+    "counter_caps_failure:2:(10000, 8388608)",
+    "counter_caps_failure:2:(3, 8388608)",
+    "counter_caps_failure:2:(10000, 300)",
+    "counter_caps_failure:3:(10000, 8388608)",
+    "counter_caps_failure:3:(3, 8388608)",
+    "counter_caps_failure:3:(10000, 300)",
+    "counter_caps_failure:4:(10000, 8388608)",
+    "counter_caps_failure:4:(3, 8388608)",
+    "counter_caps_failure:4:(10000, 300)",
+    "counter_caps_failure:5:(10000, 8388608)",
+    "counter_caps_failure:5:(3, 8388608)",
+    "counter_caps_failure:5:(10000, 300)",
+    "counter_caps_failure:6:(10000, 8388608)",
+    "counter_caps_failure:6:(3, 8388608)",
+    "counter_caps_failure:6:(10000, 300)",
+    "counter_caps_failure:7:(10000, 8388608)",
+    "counter_caps_failure:7:(3, 8388608)",
+    "counter_caps_failure:7:(10000, 300)",
+    "counter_caps_failure:8:(10000, 8388608)",
+    "counter_caps_failure:8:(3, 8388608)",
+    "counter_caps_failure:8:(10000, 300)",
+    "counter_caps_failure:9:(10000, 8388608)",
+    "counter_caps_failure:9:(3, 8388608)",
+    "counter_caps_failure:9:(10000, 300)",
+    "counter_caps_failure:10:(10000, 8388608)",
+    "counter_caps_failure:10:(3, 8388608)",
+    "counter_caps_failure:10:(10000, 300)",
+    "counter_caps_failure:11:(10000, 8388608)",
+    "counter_caps_failure:11:(3, 8388608)",
+    "counter_caps_failure:11:(10000, 300)",
+    "counter_caps_failure:12:(10000, 8388608)",
+    "counter_caps_failure:12:(3, 8388608)",
+    "counter_caps_failure:12:(10000, 300)",
+    "counter_caps_failure:13:(10000, 8388608)",
+    "counter_caps_failure:13:(3, 8388608)",
+    "counter_caps_failure:13:(10000, 300)",
+    "exact_cap_edge:8:8388608",
+    "exact_cap_edge:9:8388608",
+    "exact_cap_edge:10:8388608",
+    "exact_cap_edge:10000:631",
+    "exact_cap_edge:10000:632",
+    "exact_cap_edge:10000:633"
+  ],
+  "warmups": [
+    {
+      "arm": "current",
+      "workloads": 60,
+      "cpu_ns": 114485181
+    },
+    {
+      "arm": "candidate",
+      "workloads": 60,
+      "cpu_ns": 111117547
+    }
+  ],
+  "batches": [
+    {
+      "batch": 0,
+      "category": "document",
+      "arm": "current",
+      "workloads": 80,
+      "cpu_ns": 74503282,
+      "wall_ns": 74758850
+    },
+    {
+      "batch": 0,
+      "category": "document",
+      "arm": "candidate",
+      "workloads": 80,
+      "cpu_ns": 75064309,
+      "wall_ns": 75324329
+    },
+    {
+      "batch": 0,
+      "category": "history",
+      "arm": "current",
+      "workloads": 40,
+      "cpu_ns": 129061409,
+      "wall_ns": 129471738
+    },
+    {
+      "batch": 0,
+      "category": "history",
+      "arm": "candidate",
+      "workloads": 40,
+      "cpu_ns": 128046859,
+      "wall_ns": 128499615
+    },
+    {
+      "batch": 0,
+      "category": "combined",
+      "arm": "current",
+      "workloads": 40,
+      "cpu_ns": 152060881,
+      "wall_ns": 152630325
+    },
+    {
+      "batch": 0,
+      "category": "combined",
+      "arm": "candidate",
+      "workloads": 40,
+      "cpu_ns": 150444379,
+      "wall_ns": 150984252
+    },
+    {
+      "batch": 0,
+      "category": "empty",
+      "arm": "current",
+      "workloads": 40,
+      "cpu_ns": 15671526,
+      "wall_ns": 15733183
+    },
+    {
+      "batch": 0,
+      "category": "empty",
+      "arm": "candidate",
+      "workloads": 40,
+      "cpu_ns": 15284454,
+      "wall_ns": 15339695
+    },
+    {
+      "batch": 1,
+      "category": "document",
+      "arm": "candidate",
+      "workloads": 80,
+      "cpu_ns": 76460353,
+      "wall_ns": 76733021
+    },
+    {
+      "batch": 1,
+      "category": "document",
+      "arm": "current",
+      "workloads": 80,
+      "cpu_ns": 76401066,
+      "wall_ns": 76650247
+    },
+    {
+      "batch": 1,
+      "category": "history",
+      "arm": "candidate",
+      "workloads": 40,
+      "cpu_ns": 128325911,
+      "wall_ns": 128792782
+    },
+    {
+      "batch": 1,
+      "category": "history",
+      "arm": "current",
+      "workloads": 40,
+      "cpu_ns": 129904088,
+      "wall_ns": 130352345
+    },
+    {
+      "batch": 1,
+      "category": "combined",
+      "arm": "candidate",
+      "workloads": 40,
+      "cpu_ns": 149758783,
+      "wall_ns": 150279554
+    },
+    {
+      "batch": 1,
+      "category": "combined",
+      "arm": "current",
+      "workloads": 40,
+      "cpu_ns": 151650337,
+      "wall_ns": 152199186
+    },
+    {
+      "batch": 1,
+      "category": "empty",
+      "arm": "candidate",
+      "workloads": 40,
+      "cpu_ns": 15601648,
+      "wall_ns": 15651310
+    },
+    {
+      "batch": 1,
+      "category": "empty",
+      "arm": "current",
+      "workloads": 40,
+      "cpu_ns": 15189395,
+      "wall_ns": 15241510
+    },
+    {
+      "batch": 2,
+      "category": "document",
+      "arm": "current",
+      "workloads": 80,
+      "cpu_ns": 76357148,
+      "wall_ns": 76610606
+    },
+    {
+      "batch": 2,
+      "category": "document",
+      "arm": "candidate",
+      "workloads": 80,
+      "cpu_ns": 76300516,
+      "wall_ns": 76545179
+    },
+    {
+      "batch": 2,
+      "category": "history",
+      "arm": "current",
+      "workloads": 40,
+      "cpu_ns": 129833995,
+      "wall_ns": 130301269
+    },
+    {
+      "batch": 2,
+      "category": "history",
+      "arm": "candidate",
+      "workloads": 40,
+      "cpu_ns": 127933402,
+      "wall_ns": 128377668
+    },
+    {
+      "batch": 2,
+      "category": "combined",
+      "arm": "current",
+      "workloads": 40,
+      "cpu_ns": 151593415,
+      "wall_ns": 152126338
+    },
+    {
+      "batch": 2,
+      "category": "combined",
+      "arm": "candidate",
+      "workloads": 40,
+      "cpu_ns": 149777936,
+      "wall_ns": 150315375
+    },
+    {
+      "batch": 2,
+      "category": "empty",
+      "arm": "current",
+      "workloads": 40,
+      "cpu_ns": 15502558,
+      "wall_ns": 15544801
+    },
+    {
+      "batch": 2,
+      "category": "empty",
+      "arm": "candidate",
+      "workloads": 40,
+      "cpu_ns": 15206539,
+      "wall_ns": 15259482
+    },
+    {
+      "batch": 3,
+      "category": "document",
+      "arm": "candidate",
+      "workloads": 80,
+      "cpu_ns": 76151613,
+      "wall_ns": 76409170
+    },
+    {
+      "batch": 3,
+      "category": "document",
+      "arm": "current",
+      "workloads": 80,
+      "cpu_ns": 76459187,
+      "wall_ns": 76720696
+    },
+    {
+      "batch": 3,
+      "category": "history",
+      "arm": "candidate",
+      "workloads": 40,
+      "cpu_ns": 128747329,
+      "wall_ns": 129183994
+    },
+    {
+      "batch": 3,
+      "category": "history",
+      "arm": "current",
+      "workloads": 40,
+      "cpu_ns": 131181705,
+      "wall_ns": 131616159
+    },
+    {
+      "batch": 3,
+      "category": "combined",
+      "arm": "candidate",
+      "workloads": 40,
+      "cpu_ns": 150879624,
+      "wall_ns": 151422869
+    },
+    {
+      "batch": 3,
+      "category": "combined",
+      "arm": "current",
+      "workloads": 40,
+      "cpu_ns": 152608282,
+      "wall_ns": 153151454
+    },
+    {
+      "batch": 3,
+      "category": "empty",
+      "arm": "candidate",
+      "workloads": 40,
+      "cpu_ns": 15517308,
+      "wall_ns": 15556754
+    },
+    {
+      "batch": 3,
+      "category": "empty",
+      "arm": "current",
+      "workloads": 40,
+      "cpu_ns": 15335583,
+      "wall_ns": 15388233
+    },
+    {
+      "batch": 4,
+      "category": "document",
+      "arm": "current",
+      "workloads": 80,
+      "cpu_ns": 77127137,
+      "wall_ns": 77432332
+    },
+    {
+      "batch": 4,
+      "category": "document",
+      "arm": "candidate",
+      "workloads": 80,
+      "cpu_ns": 75358732,
+      "wall_ns": 75609616
+    },
+    {
+      "batch": 4,
+      "category": "history",
+      "arm": "current",
+      "workloads": 40,
+      "cpu_ns": 130391958,
+      "wall_ns": 130821334
+    },
+    {
+      "batch": 4,
+      "category": "history",
+      "arm": "candidate",
+      "workloads": 40,
+      "cpu_ns": 129310056,
+      "wall_ns": 129745750
+    },
+    {
+      "batch": 4,
+      "category": "combined",
+      "arm": "current",
+      "workloads": 40,
+      "cpu_ns": 155750007,
+      "wall_ns": 156375277
+    },
+    {
+      "batch": 4,
+      "category": "combined",
+      "arm": "candidate",
+      "workloads": 40,
+      "cpu_ns": 152529591,
+      "wall_ns": 153087998
+    },
+    {
+      "batch": 4,
+      "category": "empty",
+      "arm": "current",
+      "workloads": 40,
+      "cpu_ns": 16382222,
+      "wall_ns": 16446712
+    },
+    {
+      "batch": 4,
+      "category": "empty",
+      "arm": "candidate",
+      "workloads": 40,
+      "cpu_ns": 15514265,
+      "wall_ns": 15578357
+    },
+    {
+      "batch": 5,
+      "category": "document",
+      "arm": "candidate",
+      "workloads": 80,
+      "cpu_ns": 76471203,
+      "wall_ns": 76734171
+    },
+    {
+      "batch": 5,
+      "category": "document",
+      "arm": "current",
+      "workloads": 80,
+      "cpu_ns": 87601121,
+      "wall_ns": 87934957
+    },
+    {
+      "batch": 5,
+      "category": "history",
+      "arm": "candidate",
+      "workloads": 40,
+      "cpu_ns": 130840156,
+      "wall_ns": 131345054
+    },
+    {
+      "batch": 5,
+      "category": "history",
+      "arm": "current",
+      "workloads": 40,
+      "cpu_ns": 132609444,
+      "wall_ns": 132636599
+    },
+    {
+      "batch": 5,
+      "category": "combined",
+      "arm": "candidate",
+      "workloads": 40,
+      "cpu_ns": 152036159,
+      "wall_ns": 152034022
+    },
+    {
+      "batch": 5,
+      "category": "combined",
+      "arm": "current",
+      "workloads": 40,
+      "cpu_ns": 154427957,
+      "wall_ns": 154462749
+    },
+    {
+      "batch": 5,
+      "category": "empty",
+      "arm": "candidate",
+      "workloads": 40,
+      "cpu_ns": 15769537,
+      "wall_ns": 15770032
+    },
+    {
+      "batch": 5,
+      "category": "empty",
+      "arm": "current",
+      "workloads": 40,
+      "cpu_ns": 15340268,
+      "wall_ns": 15340450
+    },
+    {
+      "batch": 6,
+      "category": "document",
+      "arm": "current",
+      "workloads": 80,
+      "cpu_ns": 77676992,
+      "wall_ns": 77676493
+    },
+    {
+      "batch": 6,
+      "category": "document",
+      "arm": "candidate",
+      "workloads": 80,
+      "cpu_ns": 77946700,
+      "wall_ns": 77946134
+    },
+    {
+      "batch": 6,
+      "category": "history",
+      "arm": "current",
+      "workloads": 40,
+      "cpu_ns": 132044284,
+      "wall_ns": 132045739
+    },
+    {
+      "batch": 6,
+      "category": "history",
+      "arm": "candidate",
+      "workloads": 40,
+      "cpu_ns": 130477623,
+      "wall_ns": 130476160
+    },
+    {
+      "batch": 6,
+      "category": "combined",
+      "arm": "current",
+      "workloads": 40,
+      "cpu_ns": 154752238,
+      "wall_ns": 154750903
+    },
+    {
+      "batch": 6,
+      "category": "combined",
+      "arm": "candidate",
+      "workloads": 40,
+      "cpu_ns": 152925238,
+      "wall_ns": 152926132
+    },
+    {
+      "batch": 6,
+      "category": "empty",
+      "arm": "current",
+      "workloads": 40,
+      "cpu_ns": 16205413,
+      "wall_ns": 16205867
+    },
+    {
+      "batch": 6,
+      "category": "empty",
+      "arm": "candidate",
+      "workloads": 40,
+      "cpu_ns": 15215410,
+      "wall_ns": 15215409
+    },
+    {
+      "batch": 7,
+      "category": "document",
+      "arm": "candidate",
+      "workloads": 80,
+      "cpu_ns": 76598319,
+      "wall_ns": 76597570
+    },
+    {
+      "batch": 7,
+      "category": "document",
+      "arm": "current",
+      "workloads": 80,
+      "cpu_ns": 77074034,
+      "wall_ns": 77073236
+    },
+    {
+      "batch": 7,
+      "category": "history",
+      "arm": "candidate",
+      "workloads": 40,
+      "cpu_ns": 130222711,
+      "wall_ns": 130221476
+    },
+    {
+      "batch": 7,
+      "category": "history",
+      "arm": "current",
+      "workloads": 40,
+      "cpu_ns": 132017754,
+      "wall_ns": 132016356
+    },
+    {
+      "batch": 7,
+      "category": "combined",
+      "arm": "candidate",
+      "workloads": 40,
+      "cpu_ns": 152601994,
+      "wall_ns": 152784932
+    },
+    {
+      "batch": 7,
+      "category": "combined",
+      "arm": "current",
+      "workloads": 40,
+      "cpu_ns": 154155548,
+      "wall_ns": 154730497
+    },
+    {
+      "batch": 7,
+      "category": "empty",
+      "arm": "candidate",
+      "workloads": 40,
+      "cpu_ns": 15571628,
+      "wall_ns": 15628352
+    },
+    {
+      "batch": 7,
+      "category": "empty",
+      "arm": "current",
+      "workloads": 40,
+      "cpu_ns": 15468987,
+      "wall_ns": 15526851
+    },
+    {
+      "batch": 8,
+      "category": "document",
+      "arm": "current",
+      "workloads": 80,
+      "cpu_ns": 76793053,
+      "wall_ns": 77059140
+    },
+    {
+      "batch": 8,
+      "category": "document",
+      "arm": "candidate",
+      "workloads": 80,
+      "cpu_ns": 76589839,
+      "wall_ns": 76851164
+    },
+    {
+      "batch": 8,
+      "category": "history",
+      "arm": "current",
+      "workloads": 40,
+      "cpu_ns": 131117724,
+      "wall_ns": 131556298
+    },
+    {
+      "batch": 8,
+      "category": "history",
+      "arm": "candidate",
+      "workloads": 40,
+      "cpu_ns": 129593842,
+      "wall_ns": 130023054
+    },
+    {
+      "batch": 8,
+      "category": "combined",
+      "arm": "current",
+      "workloads": 40,
+      "cpu_ns": 153804716,
+      "wall_ns": 154421460
+    },
+    {
+      "batch": 8,
+      "category": "combined",
+      "arm": "candidate",
+      "workloads": 40,
+      "cpu_ns": 152211768,
+      "wall_ns": 152830551
+    },
+    {
+      "batch": 8,
+      "category": "empty",
+      "arm": "current",
+      "workloads": 40,
+      "cpu_ns": 15582658,
+      "wall_ns": 15641245
+    },
+    {
+      "batch": 8,
+      "category": "empty",
+      "arm": "candidate",
+      "workloads": 40,
+      "cpu_ns": 15365200,
+      "wall_ns": 15411902
+    }
+  ],
+  "summary": {
+    "document": {
+      "cpu_ns_per_workload": {
+        "median_ms": -0.002540175,
+        "range_ms": [
+          -0.139123975,
+          0.0070128375
+        ],
+        "candidate_lower_batches": 6
+      },
+      "wall_ns_per_workload": {
+        "median_ms": -0.0025997,
+        "range_ms": [
+          -0.140009825,
+          0.0070684875
+        ],
+        "candidate_lower_batches": 6
+      }
+    },
+    "history": {
+      "cpu_ns_per_workload": {
+        "median_ms": -0.039454425,
+        "range_ms": [
+          -0.0608594,
+          -0.02536375
+        ],
+        "candidate_lower_batches": 9
+      },
+      "wall_ns_per_workload": {
+        "median_ms": -0.038989075,
+        "range_ms": [
+          -0.060804125,
+          -0.024303075
+        ],
+        "candidate_lower_batches": 9
+      }
+    },
+    "combined": {
+      "cpu_ns_per_workload": {
+        "median_ms": -0.045386974999999996,
+        "range_ms": [
+          -0.0805104,
+          -0.03883885
+        ],
+        "candidate_lower_batches": 9
+      },
+      "wall_ns_per_workload": {
+        "median_ms": -0.045619275,
+        "range_ms": [
+          -0.082181975,
+          -0.039772725
+        ],
+        "candidate_lower_batches": 9
+      }
+    },
+    "empty": {
+      "cpu_ns_per_workload": {
+        "median_ms": -0.00543645,
+        "range_ms": [
+          -0.024750075,
+          0.010731725000000001
+        ],
+        "candidate_lower_batches": 5
+      },
+      "wall_ns_per_workload": {
+        "median_ms": -0.0057335749999999994,
+        "range_ms": [
+          -0.02476145,
+          0.010739549999999999
+        ],
+        "candidate_lower_batches": 5
+      }
+    }
+  },
+  "source_sha256": "32490a738e58d2499b6f3a2bac9ee961f6d060a486830752d7b5207b5398ba20",
+  "counterfactual_sha256": "6a2f723600a13b008541fa1242a34bfb72b86270ee1f981a5cb4c8e571d1f1f0",
+  "evaluator_sha256": "84697d8ae5ef5ef96e715de07943a85ba7c04291b9184b18a1ac977baa045486",
+  "workload_sha256": "c3bd02efd8d2745a20379cb70a0a140eed004b6da20235fd50a1e588d5411b7a",
+  "sql_sha256": "dccc54f6ba7511bfaa1a50efee4608280a6a9e975fec084e8248358331103bc7",
+  "fixture_sha256": "d31c5a889f8b3a2cf2184b5fff263679ef71e260cc943a1f5a45bc0c2563b005",
+  "snapshot_sha256": "0334e3af47edf9c885093a6ad061390f6f85ba62517e56b94450339950599d4f",
+  "runtime_modified": false,
+  "api_requests": 0,
+  "database_queries": 0,
+  "provider_calls": 0,
+  "external_calls": 0,
+  "spend_usd": "0",
+  "limitations": [
+    "reconstructed lexical P3 selection, not original retrieval ranking",
+    "host interpreter, not pinned container resources",
+    "aggregate full workload includes rendering, serialization, Capture, snapshot and chain validation",
+    "no ASGI/DB waits or G6 p95 attribution; no inferred gate PASS"
+  ]
+}

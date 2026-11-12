@@ -1,0 +1,39 @@
+{
+  "status": "ADMIN_LIVE_R1_NORMAL_PATH_REVIEW_PASS",
+  "scope": "Independent offline replay of actual normal administrative apply/recover evidence only",
+  "admin_live_r1": "CLOSED_NORMAL_PATH_ONLY",
+  "run_id": "261111015223",
+  "helper_sha256": "8064e669e1921475167fb70fb73d3746cb4c034fa02fe207c7ffa749346b2be2",
+  "artifacts_sha256": {
+    "journal.tar": "89d8ea9adc6a2e131f9d31003c6c9bbf23601eb661d5f10850dee88c58702d23",
+    "drill.log": "c13fe6825504b1f2b6a00a3f56134e1370c4a078b21576d04f62e316f26d9b4f",
+    "exits.txt": "e0a3bf2559bd4b3fcfe8e7f903e132b40da1aaa2e44921acc59a6a400084f67c",
+    "live-verification.json": "4f24be51f30e33a23f2e07865b33d5086eee379496ac550ee5138c9e53d97f55",
+    "scope-check.json": "d596a3bf4f24307568a6866d5cda495bb746ef7e18f815671e5b57ca09c23a6d",
+    "verify-live.py": "96b00193877cd8ce6cf7366e4357763e2dea04440e3d8a2306865fe06e88924c",
+    "run-local-drill.sh": "998db1e9057b95ef464ffe2d6a563460cc4ffef38b6b9e4d525d61973c79858e",
+    "source-review.json": "58ab8873ae31ce947d786c6b727fc353907606f8888ee11c96d94d806710ae1e",
+    "live-review.md": "dc424cceae9fc6c26a7849f77ca7204b02925717747a98bd5eb8bc7427a6a241"
+  },
+  "verified": {
+    "journal_records": 53,
+    "apply_indices": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "phase": "done",
+    "original_failed_run_preserved": true,
+    "manual_recovery_required": false
+  },
+  "new_blocker_high_medium_findings": [],
+  "reviewer_host_operations": 0,
+  "reviewer_source_edits": 0,
+  "watchdog_interruption_tested": false,
+  "environment_ready": false,
+  "benchmark_authorized": false,
+  "g6": "FAIL",
+  "paid_admission": "BLOCKED_CONTROLLED_G6_FAIL"
+}

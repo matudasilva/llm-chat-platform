@@ -1,0 +1,807 @@
+{
+  "arm": "c1",
+  "block": 1,
+  "samples": [
+    {
+      "sample_id": "ES/json/b1/warm/combined",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": true,
+      "category": "combined",
+      "block": 1,
+      "case_id": "ES-combined-01",
+      "request_id": "e9d8cd68-0cbc-5972-932e-ee17aa0ad922",
+      "conversation_id": "68cef574-ccc3-5bd3-817b-14d13fbea1cb",
+      "accounting_instance_id": "93015a4b-cb44-4fdf-9002-49cca94f7cee",
+      "status": "PASS",
+      "error": null,
+      "wait_events": [
+        {
+          "kind": "gc",
+          "phase": "start",
+          "identity": "123305390068608:0",
+          "at_ns": 404719917101717,
+          "thread": 123305390068608,
+          "request_id": "e9d8cd68-0cbc-5972-932e-ee17aa0ad922",
+          "context_owner": "e9d8cd68-0cbc-5972-932e-ee17aa0ad922"
+        },
+        {
+          "kind": "gc",
+          "phase": "stop",
+          "identity": "123305390068608:0",
+          "at_ns": 404719917312917,
+          "thread": 123305390068608,
+          "request_id": "e9d8cd68-0cbc-5972-932e-ee17aa0ad922",
+          "context_owner": "e9d8cd68-0cbc-5972-932e-ee17aa0ad922"
+        },
+        {
+          "kind": "sdk",
+          "phase": "queued",
+          "identity": 1,
+          "at_ns": 404719923727873,
+          "thread": 123305390068608,
+          "request_id": "e9d8cd68-0cbc-5972-932e-ee17aa0ad922",
+          "context_owner": "e9d8cd68-0cbc-5972-932e-ee17aa0ad922"
+        },
+        {
+          "kind": "sdk",
+          "phase": "entered",
+          "identity": 1,
+          "at_ns": 404719923889022,
+          "thread": 123305257203392,
+          "request_id": "e9d8cd68-0cbc-5972-932e-ee17aa0ad922",
+          "context_owner": "e9d8cd68-0cbc-5972-932e-ee17aa0ad922"
+        },
+        {
+          "kind": "gc",
+          "phase": "start",
+          "identity": "123305257203392:0",
+          "at_ns": 404719925686382,
+          "thread": 123305257203392,
+          "request_id": "e9d8cd68-0cbc-5972-932e-ee17aa0ad922",
+          "context_owner": "e9d8cd68-0cbc-5972-932e-ee17aa0ad922"
+        },
+        {
+          "kind": "gc",
+          "phase": "stop",
+          "identity": "123305257203392:0",
+          "at_ns": 404719925989485,
+          "thread": 123305257203392,
+          "request_id": "e9d8cd68-0cbc-5972-932e-ee17aa0ad922",
+          "context_owner": "e9d8cd68-0cbc-5972-932e-ee17aa0ad922"
+        },
+        {
+          "kind": "sdk",
+          "phase": "exited",
+          "identity": 1,
+          "at_ns": 404719926248490,
+          "thread": 123305257203392,
+          "request_id": "e9d8cd68-0cbc-5972-932e-ee17aa0ad922",
+          "context_owner": "e9d8cd68-0cbc-5972-932e-ee17aa0ad922"
+        },
+        {
+          "kind": "sdk",
+          "phase": "returned",
+          "identity": 1,
+          "at_ns": 404719926368341,
+          "thread": 123305390068608,
+          "request_id": "e9d8cd68-0cbc-5972-932e-ee17aa0ad922",
+          "context_owner": "e9d8cd68-0cbc-5972-932e-ee17aa0ad922"
+        },
+        {
+          "kind": "sql",
+          "phase": "start",
+          "identity": 2,
+          "at_ns": 404719927113076,
+          "thread": 123305390068608,
+          "request_id": "e9d8cd68-0cbc-5972-932e-ee17aa0ad922",
+          "context_owner": "e9d8cd68-0cbc-5972-932e-ee17aa0ad922"
+        },
+        {
+          "kind": "sql",
+          "phase": "stop",
+          "identity": 2,
+          "at_ns": 404719952328565,
+          "thread": 123305390068608,
+          "request_id": "e9d8cd68-0cbc-5972-932e-ee17aa0ad922",
+          "context_owner": "e9d8cd68-0cbc-5972-932e-ee17aa0ad922"
+        },
+        {
+          "kind": "sql",
+          "phase": "start",
+          "identity": 3,
+          "at_ns": 404719954416799,
+          "thread": 123305390068608,
+          "request_id": "e9d8cd68-0cbc-5972-932e-ee17aa0ad922",
+          "context_owner": "e9d8cd68-0cbc-5972-932e-ee17aa0ad922"
+        },
+        {
+          "kind": "gc",
+          "phase": "start",
+          "identity": "123305390068608:1",
+          "at_ns": 404719974068956,
+          "thread": 123305390068608,
+          "request_id": "e9d8cd68-0cbc-5972-932e-ee17aa0ad922",
+          "context_owner": "e9d8cd68-0cbc-5972-932e-ee17aa0ad922"
+        },
+        {
+          "kind": "gc",
+          "phase": "stop",
+          "identity": "123305390068608:1",
+          "at_ns": 404719979910537,
+          "thread": 123305390068608,
+          "request_id": "e9d8cd68-0cbc-5972-932e-ee17aa0ad922",
+          "context_owner": "e9d8cd68-0cbc-5972-932e-ee17aa0ad922"
+        },
+        {
+          "kind": "sql",
+          "phase": "stop",
+          "identity": 3,
+          "at_ns": 404719985804616,
+          "thread": 123305390068608,
+          "request_id": "e9d8cd68-0cbc-5972-932e-ee17aa0ad922",
+          "context_owner": "e9d8cd68-0cbc-5972-932e-ee17aa0ad922"
+        },
+        {
+          "kind": "sql",
+          "phase": "start",
+          "identity": 4,
+          "at_ns": 404719985981788,
+          "thread": 123305390068608,
+          "request_id": "e9d8cd68-0cbc-5972-932e-ee17aa0ad922",
+          "context_owner": "e9d8cd68-0cbc-5972-932e-ee17aa0ad922"
+        },
+        {
+          "kind": "gc",
+          "phase": "start",
+          "identity": "123305390068608:0",
+          "at_ns": 404719993932085,
+          "thread": 123305390068608,
+          "request_id": "e9d8cd68-0cbc-5972-932e-ee17aa0ad922",
+          "context_owner": "e9d8cd68-0cbc-5972-932e-ee17aa0ad922"
+        },
+        {
+          "kind": "gc",
+          "phase": "stop",
+          "identity": "123305390068608:0",
+          "at_ns": 404719994201947,
+          "thread": 123305390068608,
+          "request_id": "e9d8cd68-0cbc-5972-932e-ee17aa0ad922",
+          "context_owner": "e9d8cd68-0cbc-5972-932e-ee17aa0ad922"
+        },
+        {
+          "kind": "sql",
+          "phase": "stop",
+          "identity": 4,
+          "at_ns": 404719994732125,
+          "thread": 123305390068608,
+          "request_id": "e9d8cd68-0cbc-5972-932e-ee17aa0ad922",
+          "context_owner": "e9d8cd68-0cbc-5972-932e-ee17aa0ad922"
+        },
+        {
+          "kind": "sql",
+          "phase": "start",
+          "identity": 5,
+          "at_ns": 404719997034518,
+          "thread": 123305390068608,
+          "request_id": "e9d8cd68-0cbc-5972-932e-ee17aa0ad922",
+          "context_owner": "e9d8cd68-0cbc-5972-932e-ee17aa0ad922"
+        },
+        {
+          "kind": "sql",
+          "phase": "stop",
+          "identity": 5,
+          "at_ns": 404720004643314,
+          "thread": 123305390068608,
+          "request_id": "e9d8cd68-0cbc-5972-932e-ee17aa0ad922",
+          "context_owner": "e9d8cd68-0cbc-5972-932e-ee17aa0ad922"
+        },
+        {
+          "kind": "sdk",
+          "phase": "queued",
+          "identity": 6,
+          "at_ns": 404720040529825,
+          "thread": 123305390068608,
+          "request_id": "e9d8cd68-0cbc-5972-932e-ee17aa0ad922",
+          "context_owner": "e9d8cd68-0cbc-5972-932e-ee17aa0ad922"
+        },
+        {
+          "kind": "sdk",
+          "phase": "entered",
+          "identity": 6,
+          "at_ns": 404720040729573,
+          "thread": 123305257203392,
+          "request_id": "e9d8cd68-0cbc-5972-932e-ee17aa0ad922",
+          "context_owner": "e9d8cd68-0cbc-5972-932e-ee17aa0ad922"
+        },
+        {
+          "kind": "sdk",
+          "phase": "exited",
+          "identity": 6,
+          "at_ns": 404720045679268,
+          "thread": 123305257203392,
+          "request_id": "e9d8cd68-0cbc-5972-932e-ee17aa0ad922",
+          "context_owner": "e9d8cd68-0cbc-5972-932e-ee17aa0ad922"
+        },
+        {
+          "kind": "sdk",
+          "phase": "returned",
+          "identity": 6,
+          "at_ns": 404720046021151,
+          "thread": 123305390068608,
+          "request_id": "e9d8cd68-0cbc-5972-932e-ee17aa0ad922",
+          "context_owner": "e9d8cd68-0cbc-5972-932e-ee17aa0ad922"
+        }
+      ],
+      "observer_valid": true,
+      "start_ns": 404719915252222,
+      "primary_dispatch_ns": 404720043736421,
+      "start_cpu_ns": 1192596324,
+      "primary_cpu_ns": 1264342796,
+      "process_cpu_ns": 71746472,
+      "preparation_ns": 128484199,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "6d119127bdf4dcd82e4c71be5b8b833dd779cb993b32e26e534641c3298d34e0"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "d1e244f8c609c1fbf979a9178a83ad4cbc5192f437c90305517fa83005b1e888"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/b1/warm/empty",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": true,
+      "category": "empty",
+      "block": 1,
+      "case_id": "ES-empty-01",
+      "request_id": "d519a8ad-acfe-50cf-b0e3-2e910ddf8327",
+      "conversation_id": "65ae3baa-b444-563c-8bd6-94daf497c888",
+      "accounting_instance_id": "c73e1af0-0698-400b-a891-85585bbff428",
+      "status": "PASS",
+      "error": null,
+      "wait_events": [
+        {
+          "kind": "sdk",
+          "phase": "queued",
+          "identity": 7,
+          "at_ns": 404720071092204,
+          "thread": 123305390068608,
+          "request_id": "d519a8ad-acfe-50cf-b0e3-2e910ddf8327",
+          "context_owner": "d519a8ad-acfe-50cf-b0e3-2e910ddf8327"
+        },
+        {
+          "kind": "sdk",
+          "phase": "entered",
+          "identity": 7,
+          "at_ns": 404720071230159,
+          "thread": 123305257203392,
+          "request_id": "d519a8ad-acfe-50cf-b0e3-2e910ddf8327",
+          "context_owner": "d519a8ad-acfe-50cf-b0e3-2e910ddf8327"
+        },
+        {
+          "kind": "gc",
+          "phase": "start",
+          "identity": "123305257203392:0",
+          "at_ns": 404720072122975,
+          "thread": 123305257203392,
+          "request_id": "d519a8ad-acfe-50cf-b0e3-2e910ddf8327",
+          "context_owner": "d519a8ad-acfe-50cf-b0e3-2e910ddf8327"
+        },
+        {
+          "kind": "gc",
+          "phase": "stop",
+          "identity": "123305257203392:0",
+          "at_ns": 404720072573997,
+          "thread": 123305257203392,
+          "request_id": "d519a8ad-acfe-50cf-b0e3-2e910ddf8327",
+          "context_owner": "d519a8ad-acfe-50cf-b0e3-2e910ddf8327"
+        },
+        {
+          "kind": "sdk",
+          "phase": "exited",
+          "identity": 7,
+          "at_ns": 404720072670394,
+          "thread": 123305257203392,
+          "request_id": "d519a8ad-acfe-50cf-b0e3-2e910ddf8327",
+          "context_owner": "d519a8ad-acfe-50cf-b0e3-2e910ddf8327"
+        },
+        {
+          "kind": "sdk",
+          "phase": "returned",
+          "identity": 7,
+          "at_ns": 404720072879891,
+          "thread": 123305390068608,
+          "request_id": "d519a8ad-acfe-50cf-b0e3-2e910ddf8327",
+          "context_owner": "d519a8ad-acfe-50cf-b0e3-2e910ddf8327"
+        },
+        {
+          "kind": "sql",
+          "phase": "start",
+          "identity": 8,
+          "at_ns": 404720073844791,
+          "thread": 123305390068608,
+          "request_id": "d519a8ad-acfe-50cf-b0e3-2e910ddf8327",
+          "context_owner": "d519a8ad-acfe-50cf-b0e3-2e910ddf8327"
+        },
+        {
+          "kind": "sql",
+          "phase": "stop",
+          "identity": 8,
+          "at_ns": 404720077130066,
+          "thread": 123305390068608,
+          "request_id": "d519a8ad-acfe-50cf-b0e3-2e910ddf8327",
+          "context_owner": "d519a8ad-acfe-50cf-b0e3-2e910ddf8327"
+        },
+        {
+          "kind": "sql",
+          "phase": "start",
+          "identity": 9,
+          "at_ns": 404720079736637,
+          "thread": 123305390068608,
+          "request_id": "d519a8ad-acfe-50cf-b0e3-2e910ddf8327",
+          "context_owner": "d519a8ad-acfe-50cf-b0e3-2e910ddf8327"
+        },
+        {
+          "kind": "sql",
+          "phase": "stop",
+          "identity": 9,
+          "at_ns": 404720082223531,
+          "thread": 123305390068608,
+          "request_id": "d519a8ad-acfe-50cf-b0e3-2e910ddf8327",
+          "context_owner": "d519a8ad-acfe-50cf-b0e3-2e910ddf8327"
+        },
+        {
+          "kind": "sql",
+          "phase": "start",
+          "identity": 10,
+          "at_ns": 404720082669537,
+          "thread": 123305390068608,
+          "request_id": "d519a8ad-acfe-50cf-b0e3-2e910ddf8327",
+          "context_owner": "d519a8ad-acfe-50cf-b0e3-2e910ddf8327"
+        },
+        {
+          "kind": "sql",
+          "phase": "stop",
+          "identity": 10,
+          "at_ns": 404720084242168,
+          "thread": 123305390068608,
+          "request_id": "d519a8ad-acfe-50cf-b0e3-2e910ddf8327",
+          "context_owner": "d519a8ad-acfe-50cf-b0e3-2e910ddf8327"
+        },
+        {
+          "kind": "sql",
+          "phase": "start",
+          "identity": 11,
+          "at_ns": 404720086436417,
+          "thread": 123305390068608,
+          "request_id": "d519a8ad-acfe-50cf-b0e3-2e910ddf8327",
+          "context_owner": "d519a8ad-acfe-50cf-b0e3-2e910ddf8327"
+        },
+        {
+          "kind": "sql",
+          "phase": "stop",
+          "identity": 11,
+          "at_ns": 404720089481878,
+          "thread": 123305390068608,
+          "request_id": "d519a8ad-acfe-50cf-b0e3-2e910ddf8327",
+          "context_owner": "d519a8ad-acfe-50cf-b0e3-2e910ddf8327"
+        },
+        {
+          "kind": "sdk",
+          "phase": "queued",
+          "identity": 12,
+          "at_ns": 404720093713873,
+          "thread": 123305390068608,
+          "request_id": "d519a8ad-acfe-50cf-b0e3-2e910ddf8327",
+          "context_owner": "d519a8ad-acfe-50cf-b0e3-2e910ddf8327"
+        },
+        {
+          "kind": "sdk",
+          "phase": "entered",
+          "identity": 12,
+          "at_ns": 404720093842801,
+          "thread": 123305257203392,
+          "request_id": "d519a8ad-acfe-50cf-b0e3-2e910ddf8327",
+          "context_owner": "d519a8ad-acfe-50cf-b0e3-2e910ddf8327"
+        },
+        {
+          "kind": "sdk",
+          "phase": "exited",
+          "identity": 12,
+          "at_ns": 404720095330742,
+          "thread": 123305257203392,
+          "request_id": "d519a8ad-acfe-50cf-b0e3-2e910ddf8327",
+          "context_owner": "d519a8ad-acfe-50cf-b0e3-2e910ddf8327"
+        },
+        {
+          "kind": "sdk",
+          "phase": "returned",
+          "identity": 12,
+          "at_ns": 404720095580106,
+          "thread": 123305390068608,
+          "request_id": "d519a8ad-acfe-50cf-b0e3-2e910ddf8327",
+          "context_owner": "d519a8ad-acfe-50cf-b0e3-2e910ddf8327"
+        }
+      ],
+      "observer_valid": true,
+      "start_ns": 404720067699627,
+      "primary_dispatch_ns": 404720094961927,
+      "start_cpu_ns": 1283430623,
+      "primary_cpu_ns": 1305352262,
+      "process_cpu_ns": 21921639,
+      "preparation_ns": 27262300,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "868d22d89b67c12837a99641761a613f60504f36e67e5af8828d9fbbfb882731"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "a33fc5e6b1cacf1ad6eb8f1c4566288828c08af5ebb408fefc5374325f2a4ee5"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/b1/measured/combined",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "combined",
+      "block": 1,
+      "case_id": "ES-combined-02",
+      "request_id": "7157f0c5-acd1-5647-bcd1-1ba641fb29b2",
+      "conversation_id": "37a3ed55-382e-5e05-98e2-0e029a6de9e8",
+      "accounting_instance_id": "34367afd-f6d8-4b1a-986d-fcd8d776dd20",
+      "status": "PASS",
+      "error": null,
+      "wait_events": [
+        {
+          "kind": "sdk",
+          "phase": "queued",
+          "identity": 13,
+          "at_ns": 404720107440544,
+          "thread": 123305390068608,
+          "request_id": "7157f0c5-acd1-5647-bcd1-1ba641fb29b2",
+          "context_owner": "7157f0c5-acd1-5647-bcd1-1ba641fb29b2"
+        },
+        {
+          "kind": "sdk",
+          "phase": "entered",
+          "identity": 13,
+          "at_ns": 404720107580368,
+          "thread": 123305257203392,
+          "request_id": "7157f0c5-acd1-5647-bcd1-1ba641fb29b2",
+          "context_owner": "7157f0c5-acd1-5647-bcd1-1ba641fb29b2"
+        },
+        {
+          "kind": "sdk",
+          "phase": "exited",
+          "identity": 13,
+          "at_ns": 404720108457338,
+          "thread": 123305257203392,
+          "request_id": "7157f0c5-acd1-5647-bcd1-1ba641fb29b2",
+          "context_owner": "7157f0c5-acd1-5647-bcd1-1ba641fb29b2"
+        },
+        {
+          "kind": "sdk",
+          "phase": "returned",
+          "identity": 13,
+          "at_ns": 404720108666523,
+          "thread": 123305390068608,
+          "request_id": "7157f0c5-acd1-5647-bcd1-1ba641fb29b2",
+          "context_owner": "7157f0c5-acd1-5647-bcd1-1ba641fb29b2"
+        },
+        {
+          "kind": "sql",
+          "phase": "start",
+          "identity": 14,
+          "at_ns": 404720109559757,
+          "thread": 123305390068608,
+          "request_id": "7157f0c5-acd1-5647-bcd1-1ba641fb29b2",
+          "context_owner": "7157f0c5-acd1-5647-bcd1-1ba641fb29b2"
+        },
+        {
+          "kind": "sql",
+          "phase": "stop",
+          "identity": 14,
+          "at_ns": 404720122593241,
+          "thread": 123305390068608,
+          "request_id": "7157f0c5-acd1-5647-bcd1-1ba641fb29b2",
+          "context_owner": "7157f0c5-acd1-5647-bcd1-1ba641fb29b2"
+        },
+        {
+          "kind": "sql",
+          "phase": "start",
+          "identity": 15,
+          "at_ns": 404720126730157,
+          "thread": 123305390068608,
+          "request_id": "7157f0c5-acd1-5647-bcd1-1ba641fb29b2",
+          "context_owner": "7157f0c5-acd1-5647-bcd1-1ba641fb29b2"
+        },
+        {
+          "kind": "sql",
+          "phase": "stop",
+          "identity": 15,
+          "at_ns": 404720129041823,
+          "thread": 123305390068608,
+          "request_id": "7157f0c5-acd1-5647-bcd1-1ba641fb29b2",
+          "context_owner": "7157f0c5-acd1-5647-bcd1-1ba641fb29b2"
+        },
+        {
+          "kind": "sql",
+          "phase": "start",
+          "identity": 16,
+          "at_ns": 404720129340138,
+          "thread": 123305390068608,
+          "request_id": "7157f0c5-acd1-5647-bcd1-1ba641fb29b2",
+          "context_owner": "7157f0c5-acd1-5647-bcd1-1ba641fb29b2"
+        },
+        {
+          "kind": "sql",
+          "phase": "stop",
+          "identity": 16,
+          "at_ns": 404720130737382,
+          "thread": 123305390068608,
+          "request_id": "7157f0c5-acd1-5647-bcd1-1ba641fb29b2",
+          "context_owner": "7157f0c5-acd1-5647-bcd1-1ba641fb29b2"
+        },
+        {
+          "kind": "sql",
+          "phase": "start",
+          "identity": 17,
+          "at_ns": 404720133521076,
+          "thread": 123305390068608,
+          "request_id": "7157f0c5-acd1-5647-bcd1-1ba641fb29b2",
+          "context_owner": "7157f0c5-acd1-5647-bcd1-1ba641fb29b2"
+        },
+        {
+          "kind": "sql",
+          "phase": "stop",
+          "identity": 17,
+          "at_ns": 404720134809969,
+          "thread": 123305390068608,
+          "request_id": "7157f0c5-acd1-5647-bcd1-1ba641fb29b2",
+          "context_owner": "7157f0c5-acd1-5647-bcd1-1ba641fb29b2"
+        },
+        {
+          "kind": "sdk",
+          "phase": "queued",
+          "identity": 18,
+          "at_ns": 404720137335246,
+          "thread": 123305390068608,
+          "request_id": "7157f0c5-acd1-5647-bcd1-1ba641fb29b2",
+          "context_owner": "7157f0c5-acd1-5647-bcd1-1ba641fb29b2"
+        },
+        {
+          "kind": "sdk",
+          "phase": "entered",
+          "identity": 18,
+          "at_ns": 404720137480114,
+          "thread": 123305257203392,
+          "request_id": "7157f0c5-acd1-5647-bcd1-1ba641fb29b2",
+          "context_owner": "7157f0c5-acd1-5647-bcd1-1ba641fb29b2"
+        },
+        {
+          "kind": "sdk",
+          "phase": "exited",
+          "identity": 18,
+          "at_ns": 404720138814531,
+          "thread": 123305257203392,
+          "request_id": "7157f0c5-acd1-5647-bcd1-1ba641fb29b2",
+          "context_owner": "7157f0c5-acd1-5647-bcd1-1ba641fb29b2"
+        },
+        {
+          "kind": "sdk",
+          "phase": "returned",
+          "identity": 18,
+          "at_ns": 404720139012057,
+          "thread": 123305390068608,
+          "request_id": "7157f0c5-acd1-5647-bcd1-1ba641fb29b2",
+          "context_owner": "7157f0c5-acd1-5647-bcd1-1ba641fb29b2"
+        }
+      ],
+      "observer_valid": true,
+      "start_ns": 404720104034829,
+      "primary_dispatch_ns": 404720138287445,
+      "start_cpu_ns": 1311955463,
+      "primary_cpu_ns": 1331890600,
+      "process_cpu_ns": 19935137,
+      "preparation_ns": 34252616,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "d46226bfe7ff339135d73c7b3f9ff3642a8e13d34a0fbd21d94ea895c2b8e83d"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "6592c5a9bb02c1d79536e33051ebeec98edf507ad2676f99f4a744accffc5ea6"
+        }
+      ]
+    },
+    {
+      "sample_id": "ES/json/b1/measured/empty",
+      "language": "ES",
+      "protocol": "json",
+      "warmup": false,
+      "category": "empty",
+      "block": 1,
+      "case_id": "ES-empty-02",
+      "request_id": "4da1373c-1f62-5f5b-b0e7-b3c63ad16e73",
+      "conversation_id": "31bc0518-05bd-59a8-b777-dde2b92dc14d",
+      "accounting_instance_id": "4599e9e0-9530-41bb-822a-d6e36b0a2ae0",
+      "status": "PASS",
+      "error": null,
+      "wait_events": [
+        {
+          "kind": "sdk",
+          "phase": "queued",
+          "identity": 19,
+          "at_ns": 404720151419105,
+          "thread": 123305390068608,
+          "request_id": "4da1373c-1f62-5f5b-b0e7-b3c63ad16e73",
+          "context_owner": "4da1373c-1f62-5f5b-b0e7-b3c63ad16e73"
+        },
+        {
+          "kind": "sdk",
+          "phase": "entered",
+          "identity": 19,
+          "at_ns": 404720151601830,
+          "thread": 123305257203392,
+          "request_id": "4da1373c-1f62-5f5b-b0e7-b3c63ad16e73",
+          "context_owner": "4da1373c-1f62-5f5b-b0e7-b3c63ad16e73"
+        },
+        {
+          "kind": "sdk",
+          "phase": "exited",
+          "identity": 19,
+          "at_ns": 404720153646870,
+          "thread": 123305257203392,
+          "request_id": "4da1373c-1f62-5f5b-b0e7-b3c63ad16e73",
+          "context_owner": "4da1373c-1f62-5f5b-b0e7-b3c63ad16e73"
+        },
+        {
+          "kind": "sdk",
+          "phase": "returned",
+          "identity": 19,
+          "at_ns": 404720153950730,
+          "thread": 123305390068608,
+          "request_id": "4da1373c-1f62-5f5b-b0e7-b3c63ad16e73",
+          "context_owner": "4da1373c-1f62-5f5b-b0e7-b3c63ad16e73"
+        },
+        {
+          "kind": "sql",
+          "phase": "start",
+          "identity": 20,
+          "at_ns": 404720156164994,
+          "thread": 123305390068608,
+          "request_id": "4da1373c-1f62-5f5b-b0e7-b3c63ad16e73",
+          "context_owner": "4da1373c-1f62-5f5b-b0e7-b3c63ad16e73"
+        },
+        {
+          "kind": "sql",
+          "phase": "stop",
+          "identity": 20,
+          "at_ns": 404720162127427,
+          "thread": 123305390068608,
+          "request_id": "4da1373c-1f62-5f5b-b0e7-b3c63ad16e73",
+          "context_owner": "4da1373c-1f62-5f5b-b0e7-b3c63ad16e73"
+        },
+        {
+          "kind": "sql",
+          "phase": "start",
+          "identity": 21,
+          "at_ns": 404720166284901,
+          "thread": 123305390068608,
+          "request_id": "4da1373c-1f62-5f5b-b0e7-b3c63ad16e73",
+          "context_owner": "4da1373c-1f62-5f5b-b0e7-b3c63ad16e73"
+        },
+        {
+          "kind": "sql",
+          "phase": "stop",
+          "identity": 21,
+          "at_ns": 404720169419440,
+          "thread": 123305390068608,
+          "request_id": "4da1373c-1f62-5f5b-b0e7-b3c63ad16e73",
+          "context_owner": "4da1373c-1f62-5f5b-b0e7-b3c63ad16e73"
+        },
+        {
+          "kind": "sql",
+          "phase": "start",
+          "identity": 22,
+          "at_ns": 404720169795201,
+          "thread": 123305390068608,
+          "request_id": "4da1373c-1f62-5f5b-b0e7-b3c63ad16e73",
+          "context_owner": "4da1373c-1f62-5f5b-b0e7-b3c63ad16e73"
+        },
+        {
+          "kind": "sql",
+          "phase": "stop",
+          "identity": 22,
+          "at_ns": 404720171029436,
+          "thread": 123305390068608,
+          "request_id": "4da1373c-1f62-5f5b-b0e7-b3c63ad16e73",
+          "context_owner": "4da1373c-1f62-5f5b-b0e7-b3c63ad16e73"
+        },
+        {
+          "kind": "sql",
+          "phase": "start",
+          "identity": 23,
+          "at_ns": 404720172558800,
+          "thread": 123305390068608,
+          "request_id": "4da1373c-1f62-5f5b-b0e7-b3c63ad16e73",
+          "context_owner": "4da1373c-1f62-5f5b-b0e7-b3c63ad16e73"
+        },
+        {
+          "kind": "sql",
+          "phase": "stop",
+          "identity": 23,
+          "at_ns": 404720174526919,
+          "thread": 123305390068608,
+          "request_id": "4da1373c-1f62-5f5b-b0e7-b3c63ad16e73",
+          "context_owner": "4da1373c-1f62-5f5b-b0e7-b3c63ad16e73"
+        },
+        {
+          "kind": "sdk",
+          "phase": "queued",
+          "identity": 24,
+          "at_ns": 404720176862057,
+          "thread": 123305390068608,
+          "request_id": "4da1373c-1f62-5f5b-b0e7-b3c63ad16e73",
+          "context_owner": "4da1373c-1f62-5f5b-b0e7-b3c63ad16e73"
+        },
+        {
+          "kind": "sdk",
+          "phase": "entered",
+          "identity": 24,
+          "at_ns": 404720176924930,
+          "thread": 123305257203392,
+          "request_id": "4da1373c-1f62-5f5b-b0e7-b3c63ad16e73",
+          "context_owner": "4da1373c-1f62-5f5b-b0e7-b3c63ad16e73"
+        },
+        {
+          "kind": "sdk",
+          "phase": "exited",
+          "identity": 24,
+          "at_ns": 404720177968793,
+          "thread": 123305257203392,
+          "request_id": "4da1373c-1f62-5f5b-b0e7-b3c63ad16e73",
+          "context_owner": "4da1373c-1f62-5f5b-b0e7-b3c63ad16e73"
+        },
+        {
+          "kind": "sdk",
+          "phase": "returned",
+          "identity": 24,
+          "at_ns": 404720178184722,
+          "thread": 123305390068608,
+          "request_id": "4da1373c-1f62-5f5b-b0e7-b3c63ad16e73",
+          "context_owner": "4da1373c-1f62-5f5b-b0e7-b3c63ad16e73"
+        }
+      ],
+      "observer_valid": true,
+      "start_ns": 404720146657602,
+      "primary_dispatch_ns": 404720177689993,
+      "start_cpu_ns": 1338049544,
+      "primary_cpu_ns": 1363395571,
+      "process_cpu_ns": 25346027,
+      "preparation_ns": 31032391,
+      "dispatches": [
+        {
+          "purpose": "rewrite",
+          "sha256": "7ec529c2e9a29fbe90815f78161680d91ce7a583801308c5c2a1fe55f3f30f13"
+        },
+        {
+          "purpose": "primary",
+          "sha256": "75a0c6be848fac135c760bbb20bd6b54b7290db25bbf82dd4ef825dad84862c9"
+        }
+      ]
+    }
+  ],
+  "config_identity": "cfa2e9b793093bb0d89e37d265d0bc772b5c39f14416c1a7ecfc310fbf5a8d1d",
+  "provider_calls": 0,
+  "external_calls": 0
+}

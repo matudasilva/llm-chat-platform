@@ -1,0 +1,759 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="198" time="17.500" timestamp="2026-11-06T09:38:18.240735-03:00" hostname="matias-Sword-16-HX-B14VFKG"><testcase classname="tests.experiments.test_orq41_client_measurements" name="test_actual_transport_records_correlated_distinct_timings[False]" time="0.017" /><testcase classname="tests.experiments.test_orq41_client_measurements" name="test_actual_transport_records_correlated_distinct_timings[True]" time="0.014" /><testcase classname="tests.experiments.test_orq41_client_measurements" name="test_measurement_or_transport_failure_stops_with_rmax[missing_token]" time="0.047" /><testcase classname="tests.experiments.test_orq41_client_measurements" name="test_measurement_or_transport_failure_stops_with_rmax[truncated]" time="0.048" /><testcase classname="tests.experiments.test_orq41_client_measurements" name="test_measurement_or_transport_failure_stops_with_rmax[extra_after_done]" time="0.048" /><testcase classname="tests.experiments.test_orq41_client_measurements" name="test_measurement_or_transport_failure_stops_with_rmax[durability]" time="0.044" /><testcase classname="tests.experiments.test_orq41_client_measurements" name="test_record_rejects_identity_order_and_missing_evidence" time="0.009" /><testcase classname="tests.experiments.test_orq41_client_measurements" name="test_pinned_measurement_source_is_enforced" time="0.015" /><testcase classname="tests.experiments.test_orq41_client_measurements" name="test_deadline_still_applies_after_durable_measurement" time="0.050" /><testcase classname="tests.experiments.test_orq41_client_measurements" name="test_real_measurement_fsync_error_is_not_swallowed" time="0.009" /><testcase classname="tests.experiments.test_orq41_client_measurements" name="test_http_error_receipt_is_not_validated_response_latency" time="0.012" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_terminal_states_and_conservative_settlement[normal-COMPLETE]" time="0.041" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_terminal_states_and_conservative_settlement[retry-INCOMPLETE_STOP_RETRY]" time="0.049" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_terminal_states_and_conservative_settlement[evaluator-INCOMPLETE_STOP_EVALUATOR]" time="0.050" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_terminal_states_and_conservative_settlement[evaluator_failed-INCOMPLETE_STOP_EVALUATOR]" time="0.045" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_terminal_states_and_conservative_settlement[both-INCOMPLETE_STOP_RETRY]" time="0.046" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_terminal_states_and_conservative_settlement[wrong-FAILED]" time="0.048" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_terminal_states_and_conservative_settlement[ambiguous-FAILED]" time="0.044" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_terminal_states_and_conservative_settlement[duplicate-FAILED]" time="0.043" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_terminal_states_and_conservative_settlement[incomplete-FAILED]" time="0.042" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_terminal_states_and_conservative_settlement[timeout-FAILED]" time="0.124" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_terminal_states_and_conservative_settlement[failure-FAILED]" time="0.086" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_stop_prevents_next_admission[retry]" time="0.041" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_stop_prevents_next_admission[evaluator]" time="0.045" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_stop_prevents_next_admission[wrong]" time="0.045" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_stop_prevents_next_admission[ambiguous]" time="0.043" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_ledger_hash_chain_fsync_and_duplicates" time="0.008" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_corrupt_ledger_fails_closed[hash]" time="0.015" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_corrupt_ledger_fails_closed[truncated]" time="0.016" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_corrupt_ledger_fails_closed[garbage]" time="0.016" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_corrupt_ledger_fails_closed[whole_line]" time="0.017" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_corrupt_ledger_fails_closed[deleted]" time="0.017" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_admission_boundary" time="0.000" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_crash_recovery_no_resend" time="0.022" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_head_can_lag_durable_admission_after_crash" time="0.021" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_single_runner_lock_and_stale_lock" time="0.010" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_budget_cumulative_across_campaigns" time="1.048" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_full_manifest_complete_and_block_revalidation" time="0.898" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_worst_case_168_request_replay" time="0.788" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_preflight_failures_no_admission[manifest]" time="0.015" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_preflight_failures_no_admission[hash]" time="0.015" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_preflight_failures_no_admission[fallback]" time="0.022" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_preflight_failures_no_admission[shadow]" time="0.021" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_preflight_failures_no_admission[routing]" time="0.021" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_preflight_failures_no_admission[otel]" time="0.020" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_preflight_failures_no_admission[source]" time="0.013" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_block_configuration_drift_stops" time="0.193" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_call_counts_do_not_infer_evaluator" time="0.000" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_invalid_state_transition" time="0.000" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_evidence_identity_order_and_real_text[wrong_logger]" time="0.000" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_evidence_identity_order_and_real_text[wrong_order]" time="0.000" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_evidence_identity_order_and_real_text[garbled]" time="0.000" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_evidence_identity_order_and_real_text[docker_timestamp]" time="0.000" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_undercharged_stop_is_rejected" time="0.007" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_missing_admission_is_rejected" time="0.007" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_closed_campaign_is_refused" time="0.043" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_log_source_change_is_failed" time="0.037" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_failed_cli_inputs_print_terminal_json" time="0.001"><failure message="SystemExit: 2">self = ArgumentParser(prog='runner', usage=None, description='Serial campaign execution, with transport/evidence seams for P2 simulations.', formatter_class=&lt;class 'argparse.HelpFormatter'&gt;, conflict_handler='error', add_help=True)
+args = ['--root', '/home/matias/Cursor/llm-chat-platform', '--directory', '/tmp/pytest-of-root/pytest-29/test_failed_cli_inputs_print_t0', '--campaign-id', '00000000-0000-4000-8000-000000000041', ...]
+namespace = Namespace(root=PosixPath('/home/matias/Cursor/llm-chat-platform'), directory=PosixPath('/tmp/pytest-of-root/pytest-29/.../tmp/pytest-of-root/pytest-29/test_failed_cli_inputs_print_t0/absent-pins'), api='http://127.0.0.1', measurements=None)
+intermixed = False
+
+    def _parse_known_args2(self, args, namespace, intermixed):
+        if args is None:
+            # args default to the system args
+            args = _sys.argv[1:]
+        else:
+            # make sure that args are mutable
+            args = list(args)
+    
+        # default Namespace built from parser defaults
+        if namespace is None:
+            namespace = Namespace()
+    
+        # add any action defaults that aren't present
+        for action in self._actions:
+            if action.dest is not SUPPRESS:
+                if not hasattr(namespace, action.dest):
+                    if action.default is not SUPPRESS:
+                        setattr(namespace, action.dest, action.default)
+    
+        # add any parser defaults that aren't present
+        for dest in self._defaults:
+            if not hasattr(namespace, dest):
+                setattr(namespace, dest, self._defaults[dest])
+    
+        # parse the arguments and exit if there are any errors
+        if self.exit_on_error:
+            try:
+&gt;               namespace, args = self._parse_known_args(args, namespace, intermixed)
+
+../../miniconda3/lib/python3.13/argparse.py:1937: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = ArgumentParser(prog='runner', usage=None, description='Serial campaign execution, with transport/evidence seams for P2 simulations.', formatter_class=&lt;class 'argparse.HelpFormatter'&gt;, conflict_handler='error', add_help=True)
+arg_strings = ['--root', '/home/matias/Cursor/llm-chat-platform', '--directory', '/tmp/pytest-of-root/pytest-29/test_failed_cli_inputs_print_t0', '--campaign-id', '00000000-0000-4000-8000-000000000041', ...]
+namespace = Namespace(root=PosixPath('/home/matias/Cursor/llm-chat-platform'), directory=PosixPath('/tmp/pytest-of-root/pytest-29/.../tmp/pytest-of-root/pytest-29/test_failed_cli_inputs_print_t0/absent-pins'), api='http://127.0.0.1', measurements=None)
+intermixed = False
+
+    def _parse_known_args(self, arg_strings, namespace, intermixed):
+        # replace arg strings that are file references
+        if self.fromfile_prefix_chars is not None:
+            arg_strings = self._read_args_from_files(arg_strings)
+    
+        # map all mutually exclusive arguments to the other arguments
+        # they can't occur with
+        action_conflicts = {}
+        for mutex_group in self._mutually_exclusive_groups:
+            group_actions = mutex_group._group_actions
+            for i, mutex_action in enumerate(mutex_group._group_actions):
+                conflicts = action_conflicts.setdefault(mutex_action, [])
+                conflicts.extend(group_actions[:i])
+                conflicts.extend(group_actions[i + 1:])
+    
+        # find all option indices, and determine the arg_string_pattern
+        # which has an 'O' if there is an option at an index,
+        # an 'A' if there is an argument, or a '-' if there is a '--'
+        option_string_indices = {}
+        arg_string_pattern_parts = []
+        arg_strings_iter = iter(arg_strings)
+        for i, arg_string in enumerate(arg_strings_iter):
+    
+            # all args after -- are non-options
+            if arg_string == '--':
+                arg_string_pattern_parts.append('-')
+                for arg_string in arg_strings_iter:
+                    arg_string_pattern_parts.append('A')
+    
+            # otherwise, add the arg to the arg strings
+            # and note the index if it was an option
+            else:
+                option_tuples = self._parse_optional(arg_string)
+                if option_tuples is None:
+                    pattern = 'A'
+                else:
+                    option_string_indices[i] = option_tuples
+                    pattern = 'O'
+                arg_string_pattern_parts.append(pattern)
+    
+        # join the pieces together to form the pattern
+        arg_strings_pattern = ''.join(arg_string_pattern_parts)
+    
+        # converts arg strings to the appropriate and then takes the action
+        seen_actions = set()
+        seen_non_default_actions = set()
+        warned = set()
+    
+        def take_action(action, argument_strings, option_string=None):
+            seen_actions.add(action)
+            argument_values = self._get_values(action, argument_strings)
+    
+            # error if this argument is not allowed with other previously
+            # seen arguments
+            if action.option_strings or argument_strings:
+                seen_non_default_actions.add(action)
+                for conflict_action in action_conflicts.get(action, []):
+                    if conflict_action in seen_non_default_actions:
+                        msg = _('not allowed with argument %s')
+                        action_name = _get_action_name(conflict_action)
+                        raise ArgumentError(action, msg % action_name)
+    
+            # take the action if we didn't receive a SUPPRESS value
+            # (e.g. from a default)
+            if argument_values is not SUPPRESS:
+                action(self, namespace, argument_values, option_string)
+    
+        # function to convert arg_strings into an optional action
+        def consume_optional(start_index):
+    
+            # get the optional identified at this index
+            option_tuples = option_string_indices[start_index]
+            # if multiple actions match, the option string was ambiguous
+            if len(option_tuples) &gt; 1:
+                options = ', '.join([option_string
+                    for action, option_string, sep, explicit_arg in option_tuples])
+                args = {'option': arg_strings[start_index], 'matches': options}
+                msg = _('ambiguous option: %(option)s could match %(matches)s')
+                raise ArgumentError(None, msg % args)
+    
+            action, option_string, sep, explicit_arg = option_tuples[0]
+    
+            # identify additional optionals in the same arg string
+            # (e.g. -xyz is the same as -x -y -z if no args are required)
+            match_argument = self._match_argument
+            action_tuples = []
+            while True:
+    
+                # if we found no optional action, skip it
+                if action is None:
+                    extras.append(arg_strings[start_index])
+                    extras_pattern.append('O')
+                    return start_index + 1
+    
+                # if there is an explicit argument, try to match the
+                # optional's string arguments to only this
+                if explicit_arg is not None:
+                    arg_count = match_argument(action, 'A')
+    
+                    # if the action is a single-dash option and takes no
+                    # arguments, try to parse more single-dash options out
+                    # of the tail of the option string
+                    chars = self.prefix_chars
+                    if (
+                        arg_count == 0
+                        and option_string[1] not in chars
+                        and explicit_arg != ''
+                    ):
+                        if sep or explicit_arg[0] in chars:
+                            msg = _('ignored explicit argument %r')
+                            raise ArgumentError(action, msg % explicit_arg)
+                        action_tuples.append((action, [], option_string))
+                        char = option_string[0]
+                        option_string = char + explicit_arg[0]
+                        optionals_map = self._option_string_actions
+                        if option_string in optionals_map:
+                            action = optionals_map[option_string]
+                            explicit_arg = explicit_arg[1:]
+                            if not explicit_arg:
+                                sep = explicit_arg = None
+                            elif explicit_arg[0] == '=':
+                                sep = '='
+                                explicit_arg = explicit_arg[1:]
+                            else:
+                                sep = ''
+                        else:
+                            extras.append(char + explicit_arg)
+                            extras_pattern.append('O')
+                            stop = start_index + 1
+                            break
+                    # if the action expect exactly one argument, we've
+                    # successfully matched the option; exit the loop
+                    elif arg_count == 1:
+                        stop = start_index + 1
+                        args = [explicit_arg]
+                        action_tuples.append((action, args, option_string))
+                        break
+    
+                    # error if a double-dash option did not use the
+                    # explicit argument
+                    else:
+                        msg = _('ignored explicit argument %r')
+                        raise ArgumentError(action, msg % explicit_arg)
+    
+                # if there is no explicit argument, try to match the
+                # optional's string arguments with the following strings
+                # if successful, exit the loop
+                else:
+                    start = start_index + 1
+                    selected_patterns = arg_strings_pattern[start:]
+                    arg_count = match_argument(action, selected_patterns)
+                    stop = start + arg_count
+                    args = arg_strings[start:stop]
+                    action_tuples.append((action, args, option_string))
+                    break
+    
+            # add the Optional to the list and return the index at which
+            # the Optional's string args stopped
+            assert action_tuples
+            for action, args, option_string in action_tuples:
+                if action.deprecated and option_string not in warned:
+                    self._warning(_("option '%(option)s' is deprecated") %
+                                  {'option': option_string})
+                    warned.add(option_string)
+                take_action(action, args, option_string)
+            return stop
+    
+        # the list of Positionals left to be parsed; this is modified
+        # by consume_positionals()
+        positionals = self._get_positional_actions()
+    
+        # function to convert arg_strings into positional actions
+        def consume_positionals(start_index):
+            # match as many Positionals as possible
+            match_partial = self._match_arguments_partial
+            selected_pattern = arg_strings_pattern[start_index:]
+            arg_counts = match_partial(positionals, selected_pattern)
+    
+            # slice off the appropriate arg strings for each Positional
+            # and add the Positional and its args to the list
+            for action, arg_count in zip(positionals, arg_counts):
+                args = arg_strings[start_index: start_index + arg_count]
+                # Strip out the first '--' if it is not in REMAINDER arg.
+                if action.nargs == PARSER:
+                    if arg_strings_pattern[start_index] == '-':
+                        assert args[0] == '--'
+                        args.remove('--')
+                elif action.nargs != REMAINDER:
+                    if (arg_strings_pattern.find('-', start_index,
+                                                 start_index + arg_count) &gt;= 0):
+                        args.remove('--')
+                start_index += arg_count
+                if args and action.deprecated and action.dest not in warned:
+                    self._warning(_("argument '%(argument_name)s' is deprecated") %
+                                  {'argument_name': action.dest})
+                    warned.add(action.dest)
+                take_action(action, args)
+    
+            # slice off the Positionals that we just parsed and return the
+            # index at which the Positionals' string args stopped
+            positionals[:] = positionals[len(arg_counts):]
+            return start_index
+    
+        # consume Positionals and Optionals alternately, until we have
+        # passed the last option string
+        extras = []
+        extras_pattern = []
+        start_index = 0
+        if option_string_indices:
+            max_option_string_index = max(option_string_indices)
+        else:
+            max_option_string_index = -1
+        while start_index &lt;= max_option_string_index:
+    
+            # consume any Positionals preceding the next option
+            next_option_string_index = start_index
+            while next_option_string_index &lt;= max_option_string_index:
+                if next_option_string_index in option_string_indices:
+                    break
+                next_option_string_index += 1
+            if not intermixed and start_index != next_option_string_index:
+                positionals_end_index = consume_positionals(start_index)
+    
+                # only try to parse the next optional if we didn't consume
+                # the option string during the positionals parsing
+                if positionals_end_index &gt; start_index:
+                    start_index = positionals_end_index
+                    continue
+                else:
+                    start_index = positionals_end_index
+    
+            # if we consumed all the positionals we could and we're not
+            # at the index of an option string, there were extra arguments
+            if start_index not in option_string_indices:
+                strings = arg_strings[start_index:next_option_string_index]
+                extras.extend(strings)
+                extras_pattern.extend(arg_strings_pattern[start_index:next_option_string_index])
+                start_index = next_option_string_index
+    
+            # consume the next optional and any arguments for it
+            start_index = consume_optional(start_index)
+    
+        if not intermixed:
+            # consume any positionals following the last Optional
+            stop_index = consume_positionals(start_index)
+    
+            # if we didn't consume all the argument strings, there were extras
+            extras.extend(arg_strings[stop_index:])
+        else:
+            extras.extend(arg_strings[start_index:])
+            extras_pattern.extend(arg_strings_pattern[start_index:])
+            extras_pattern = ''.join(extras_pattern)
+            assert len(extras_pattern) == len(extras)
+            # consume all positionals
+            arg_strings = [s for s, c in zip(extras, extras_pattern) if c != 'O']
+            arg_strings_pattern = extras_pattern.replace('O', '')
+            stop_index = consume_positionals(0)
+            # leave unknown optionals and non-consumed positionals in extras
+            for i, c in enumerate(extras_pattern):
+                if not stop_index:
+                    break
+                if c != 'O':
+                    stop_index -= 1
+                    extras[i] = None
+            extras = [s for s in extras if s is not None]
+    
+        # make sure all required actions were present and also convert
+        # action defaults which were not given as arguments
+        required_actions = []
+        for action in self._actions:
+            if action not in seen_actions:
+                if action.required:
+                    required_actions.append(_get_action_name(action))
+                else:
+                    # Convert action default now instead of doing it before
+                    # parsing arguments to avoid calling convert functions
+                    # twice (which may fail) if the argument was given, but
+                    # only if it was defined already in the namespace
+                    if (action.default is not None and
+                        isinstance(action.default, str) and
+                        hasattr(namespace, action.dest) and
+                        action.default is getattr(namespace, action.dest)):
+                        setattr(namespace, action.dest,
+                                self._get_value(action, action.default))
+    
+        if required_actions:
+&gt;           raise ArgumentError(None, _('the following arguments are required: %s') %
+                       ', '.join(required_actions))
+E           argparse.ArgumentError: the following arguments are required: --measurements
+
+../../miniconda3/lib/python3.13/argparse.py:2234: ArgumentError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-29/test_failed_cli_inputs_print_t0')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x7e1f4fe4d2b0&gt;
+capsys = &lt;_pytest.capture.CaptureFixture object at 0x7e1f4fdbfa10&gt;
+
+    def test_failed_cli_inputs_print_terminal_json(tmp_path, monkeypatch, capsys):
+        import sys
+        from experiments.production_graduation.campaign_runner.runner import main
+    
+        monkeypatch.setattr(sys, "argv", ["runner", "--root", str(ROOT), "--directory", str(tmp_path),
+                                        "--campaign-id", CAMPAIGN, "--manifest", str(tmp_path / "absent"),
+                                        "--pins", str(tmp_path / "absent-pins"), "--api", "http://127.0.0.1"])
+&gt;       assert main() == 1
+
+tests/experiments/test_orq41_campaign_runner.py:455: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+experiments/production_graduation/campaign_runner/runner.py:419: in main
+    args = parser.parse_args()
+../../miniconda3/lib/python3.13/argparse.py:1898: in parse_args
+    args, argv = self.parse_known_args(args, namespace)
+../../miniconda3/lib/python3.13/argparse.py:1908: in parse_known_args
+    return self._parse_known_args2(args, namespace, intermixed=False)
+../../miniconda3/lib/python3.13/argparse.py:1939: in _parse_known_args2
+    self.error(str(err))
+../../miniconda3/lib/python3.13/argparse.py:2658: in error
+    self.exit(2, _('%(prog)s: error: %(message)s\n') % args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = ArgumentParser(prog='runner', usage=None, description='Serial campaign execution, with transport/evidence seams for P2 simulations.', formatter_class=&lt;class 'argparse.HelpFormatter'&gt;, conflict_handler='error', add_help=True)
+status = 2
+message = 'runner: error: the following arguments are required: --measurements\n'
+
+    def exit(self, status=0, message=None):
+        if message:
+            self._print_message(message, _sys.stderr)
+&gt;       _sys.exit(status)
+E       SystemExit: 2
+
+../../miniconda3/lib/python3.13/argparse.py:2645: SystemExit</failure></testcase><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_credentials_rejected_without_reading_values" time="0.014" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_local_api_rejects_external_endpoint" time="0.000" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_s1_from_actual_bedrock_retry_path" time="0.002" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_crash_process_leaves_lock_and_recovers" time="0.042" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_invalid_pinned_tenant_refused_before_admission[None]" time="0.020" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_invalid_pinned_tenant_refused_before_admission[]" time="0.021" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_invalid_pinned_tenant_refused_before_admission[ padded]" time="0.021" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_invalid_pinned_tenant_refused_before_admission[trailing ]" time="0.021" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_invalid_pinned_tenant_refused_before_admission[a\r\nX-Evil: yes]" time="0.021" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_invalid_pinned_tenant_refused_before_admission[\xfc]" time="0.021" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_invalid_pinned_tenant_refused_before_admission[aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa]" time="0.021" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_invalid_pinned_tenant_refused_before_admission[1]" time="0.021" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_invalid_pinned_tenant_refused_before_admission[False]" time="0.021" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_invalid_pinned_tenant_refused_before_admission[tenant9]" time="0.023" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_invalid_pinned_tenant_refused_before_admission[tenant10]" time="0.021" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_tenant_is_part_of_manifest_and_request_identity" time="0.015" /><testcase classname="tests.experiments.test_orq41_campaign_runner_local" name="test_local_stub_api_both_transports[normal-COMPLETE]" time="0.543" /><testcase classname="tests.experiments.test_orq41_campaign_runner_local" name="test_local_stub_api_both_transports[retry-INCOMPLETE_STOP_RETRY]" time="0.666" /><testcase classname="tests.experiments.test_orq41_campaign_runner_local" name="test_local_stub_api_both_transports[evaluator-INCOMPLETE_STOP_EVALUATOR]" time="0.657" /><testcase classname="tests.experiments.test_orq41_p5_critical_fixes" name="test_s2_matrix_settlement[false-False-COMPLETE]" time="0.170" /><testcase classname="tests.experiments.test_orq41_p5_critical_fixes" name="test_s2_matrix_settlement[true-True-INCOMPLETE_STOP_EVALUATOR]" time="0.167" /><testcase classname="tests.experiments.test_orq41_p5_critical_fixes" name="test_s2_matrix_settlement[true-False-FAILED]" time="0.174" /><testcase classname="tests.experiments.test_orq41_p5_critical_fixes" name="test_s2_matrix_settlement[false-True-FAILED]" time="0.164" /><testcase classname="tests.experiments.test_orq41_p5_critical_fixes" name="test_s2_matrix_settlement[missing-False-FAILED]" time="0.154" /><testcase classname="tests.experiments.test_orq41_p5_critical_fixes" name="test_s2_matrix_settlement[missing-True-FAILED]" time="0.155" /><testcase classname="tests.experiments.test_orq41_p5_critical_fixes" name="test_s2_matrix_settlement[duplicate-False-FAILED]" time="0.116" /><testcase classname="tests.experiments.test_orq41_p5_critical_fixes" name="test_s2_matrix_settlement[corrupt-False-FAILED]" time="0.046" /><testcase classname="tests.experiments.test_orq41_p5_critical_fixes" name="test_s2_matrix_settlement[wrong-False-FAILED]" time="0.053" /><testcase classname="tests.experiments.test_orq41_p5_critical_fixes" name="test_s2_matrix_settlement[legacy-False-FAILED]" time="0.045" /><testcase classname="tests.experiments.test_orq41_p5_critical_fixes" name="test_durable_creation_order[1]" time="0.002" /><testcase classname="tests.experiments.test_orq41_p5_critical_fixes" name="test_durable_creation_order[3]" time="0.003" /><testcase classname="tests.experiments.test_orq41_p5_critical_fixes" name="test_directory_fsync_failure_before_send[1]" time="0.008" /><testcase classname="tests.experiments.test_orq41_p5_critical_fixes" name="test_directory_fsync_failure_before_send[2]" time="0.010" /><testcase classname="tests.experiments.test_orq41_p5_critical_fixes" name="test_directory_fsync_failure_before_send[3]" time="0.009" /><testcase classname="tests.experiments.test_orq41_p5_critical_fixes" name="test_directory_fsync_failure_before_send[4]" time="0.011" /><testcase classname="tests.experiments.test_orq41_p5_critical_fixes" name="test_directory_fsync_failure_before_send[5]" time="0.011" /><testcase classname="tests.experiments.test_orq41_p5_critical_fixes" name="test_directory_fsync_failure_before_send[6]" time="0.012" /><testcase classname="tests.experiments.test_orq41_p5_critical_fixes" name="test_completion_deadline_boundary[0.079-False]" time="0.000" /><testcase classname="tests.experiments.test_orq41_p5_critical_fixes" name="test_completion_deadline_boundary[0.079-True]" time="0.000" /><testcase classname="tests.experiments.test_orq41_p5_critical_fixes" name="test_completion_deadline_boundary[0.08-False]" time="0.000" /><testcase classname="tests.experiments.test_orq41_p5_critical_fixes" name="test_completion_deadline_boundary[0.08-True]" time="0.000" /><testcase classname="tests.experiments.test_orq41_p5_critical_fixes" name="test_completion_deadline_boundary[0.081-False]" time="0.001" /><testcase classname="tests.experiments.test_orq41_p5_critical_fixes" name="test_completion_deadline_boundary[0.081-True]" time="0.000" /><testcase classname="tests.experiments.test_orq41_p5_critical_fixes" name="test_slow_headers_deadline[False]" time="0.000" /><testcase classname="tests.experiments.test_orq41_p5_critical_fixes" name="test_slow_headers_deadline[True]" time="0.000" /><testcase classname="tests.experiments.test_orq41_p5_critical_fixes" name="test_framing_timeout_settles_unresolved_without_resend" time="0.138" /><testcase classname="tests.experiments.test_orq41_p5_independent_review" name="test_review_selective_activation_loss_fails_closed[activation]" time="0.003" /><testcase classname="tests.experiments.test_orq41_p5_independent_review" name="test_review_selective_activation_loss_fails_closed[completion]" time="0.002" /><testcase classname="tests.experiments.test_orq41_p5_independent_review" name="test_review_selective_activation_loss_fails_closed[both]" time="0.002" /><testcase classname="tests.experiments.test_orq41_p5_independent_review" name="test_review_absolute_deadline_rejects_late_done" time="0.002" /><testcase classname="tests.experiments.test_orq41_p5_independent_review" name="test_review_sse_error_after_done_fails_closed" time="0.002" /><testcase classname="tests.experiments.test_orq41_p5_independent_review" name="test_review_failure_after_completion_fails_closed" time="0.001" /><testcase classname="tests.experiments.test_orq41_p5_independent_review" name="test_review_new_budget_parent_is_fsynced" time="0.147" /><testcase classname="tests.experiments.test_orq41_p5_independent_review" name="test_review_cleanup_error_reports_failed" time="0.161" /><testcase classname="tests.experiments.test_orq41_p5_independent_review" name="test_review_replacement_lock_is_preserved" time="0.008" /><testcase classname="tests.experiments.test_orq41_p5_independent_review" name="test_review_ledger_symlink_replacement_is_rejected" time="0.007" /><testcase classname="tests.experiments.test_orq41_p5_independent_review" name="test_review_independent_budget_and_168_replay" time="2.021" /><testcase classname="tests.experiments.test_orq41_p5_remaining_fixes" name="test_cleanup_fault_overrides_each_terminal_without_rewriting[unlink-normal]" time="0.174" /><testcase classname="tests.experiments.test_orq41_p5_remaining_fixes" name="test_cleanup_fault_overrides_each_terminal_without_rewriting[unlink-retry]" time="0.173" /><testcase classname="tests.experiments.test_orq41_p5_remaining_fixes" name="test_cleanup_fault_overrides_each_terminal_without_rewriting[unlink-evaluator]" time="0.174" /><testcase classname="tests.experiments.test_orq41_p5_remaining_fixes" name="test_cleanup_fault_overrides_each_terminal_without_rewriting[unlink-wrong]" time="0.177" /><testcase classname="tests.experiments.test_orq41_p5_remaining_fixes" name="test_cleanup_fault_overrides_each_terminal_without_rewriting[unlink-budget]" time="0.163" /><testcase classname="tests.experiments.test_orq41_p5_remaining_fixes" name="test_cleanup_fault_overrides_each_terminal_without_rewriting[fsync-normal]" time="0.113" /><testcase classname="tests.experiments.test_orq41_p5_remaining_fixes" name="test_cleanup_fault_overrides_each_terminal_without_rewriting[fsync-retry]" time="0.054" /><testcase classname="tests.experiments.test_orq41_p5_remaining_fixes" name="test_cleanup_fault_overrides_each_terminal_without_rewriting[fsync-evaluator]" time="0.059" /><testcase classname="tests.experiments.test_orq41_p5_remaining_fixes" name="test_cleanup_fault_overrides_each_terminal_without_rewriting[fsync-wrong]" time="0.049" /><testcase classname="tests.experiments.test_orq41_p5_remaining_fixes" name="test_cleanup_fault_overrides_each_terminal_without_rewriting[fsync-budget]" time="0.046" /><testcase classname="tests.experiments.test_orq41_p5_remaining_fixes" name="test_cleanup_fault_cli_exit_is_nonzero" time="0.009"><failure message="SystemExit: 2">self = ArgumentParser(prog='runner', usage=None, description='Serial campaign execution, with transport/evidence seams for P2 simulations.', formatter_class=&lt;class 'argparse.HelpFormatter'&gt;, conflict_handler='error', add_help=True)
+args = ['--root', '/home/matias/Cursor/llm-chat-platform', '--directory', '/tmp/pytest-of-root/pytest-29/test_cleanup_fault_cli_exit_is0', '--campaign-id', '00000000-0000-4000-8000-000000000041', ...]
+namespace = Namespace(root=PosixPath('/home/matias/Cursor/llm-chat-platform'), directory=PosixPath('/tmp/pytest-of-root/pytest-29/...('/tmp/pytest-of-root/pytest-29/test_cleanup_fault_cli_exit_is0/pins.json'), api='http://127.0.0.1', measurements=None)
+intermixed = False
+
+    def _parse_known_args2(self, args, namespace, intermixed):
+        if args is None:
+            # args default to the system args
+            args = _sys.argv[1:]
+        else:
+            # make sure that args are mutable
+            args = list(args)
+    
+        # default Namespace built from parser defaults
+        if namespace is None:
+            namespace = Namespace()
+    
+        # add any action defaults that aren't present
+        for action in self._actions:
+            if action.dest is not SUPPRESS:
+                if not hasattr(namespace, action.dest):
+                    if action.default is not SUPPRESS:
+                        setattr(namespace, action.dest, action.default)
+    
+        # add any parser defaults that aren't present
+        for dest in self._defaults:
+            if not hasattr(namespace, dest):
+                setattr(namespace, dest, self._defaults[dest])
+    
+        # parse the arguments and exit if there are any errors
+        if self.exit_on_error:
+            try:
+&gt;               namespace, args = self._parse_known_args(args, namespace, intermixed)
+
+../../miniconda3/lib/python3.13/argparse.py:1937: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = ArgumentParser(prog='runner', usage=None, description='Serial campaign execution, with transport/evidence seams for P2 simulations.', formatter_class=&lt;class 'argparse.HelpFormatter'&gt;, conflict_handler='error', add_help=True)
+arg_strings = ['--root', '/home/matias/Cursor/llm-chat-platform', '--directory', '/tmp/pytest-of-root/pytest-29/test_cleanup_fault_cli_exit_is0', '--campaign-id', '00000000-0000-4000-8000-000000000041', ...]
+namespace = Namespace(root=PosixPath('/home/matias/Cursor/llm-chat-platform'), directory=PosixPath('/tmp/pytest-of-root/pytest-29/...('/tmp/pytest-of-root/pytest-29/test_cleanup_fault_cli_exit_is0/pins.json'), api='http://127.0.0.1', measurements=None)
+intermixed = False
+
+    def _parse_known_args(self, arg_strings, namespace, intermixed):
+        # replace arg strings that are file references
+        if self.fromfile_prefix_chars is not None:
+            arg_strings = self._read_args_from_files(arg_strings)
+    
+        # map all mutually exclusive arguments to the other arguments
+        # they can't occur with
+        action_conflicts = {}
+        for mutex_group in self._mutually_exclusive_groups:
+            group_actions = mutex_group._group_actions
+            for i, mutex_action in enumerate(mutex_group._group_actions):
+                conflicts = action_conflicts.setdefault(mutex_action, [])
+                conflicts.extend(group_actions[:i])
+                conflicts.extend(group_actions[i + 1:])
+    
+        # find all option indices, and determine the arg_string_pattern
+        # which has an 'O' if there is an option at an index,
+        # an 'A' if there is an argument, or a '-' if there is a '--'
+        option_string_indices = {}
+        arg_string_pattern_parts = []
+        arg_strings_iter = iter(arg_strings)
+        for i, arg_string in enumerate(arg_strings_iter):
+    
+            # all args after -- are non-options
+            if arg_string == '--':
+                arg_string_pattern_parts.append('-')
+                for arg_string in arg_strings_iter:
+                    arg_string_pattern_parts.append('A')
+    
+            # otherwise, add the arg to the arg strings
+            # and note the index if it was an option
+            else:
+                option_tuples = self._parse_optional(arg_string)
+                if option_tuples is None:
+                    pattern = 'A'
+                else:
+                    option_string_indices[i] = option_tuples
+                    pattern = 'O'
+                arg_string_pattern_parts.append(pattern)
+    
+        # join the pieces together to form the pattern
+        arg_strings_pattern = ''.join(arg_string_pattern_parts)
+    
+        # converts arg strings to the appropriate and then takes the action
+        seen_actions = set()
+        seen_non_default_actions = set()
+        warned = set()
+    
+        def take_action(action, argument_strings, option_string=None):
+            seen_actions.add(action)
+            argument_values = self._get_values(action, argument_strings)
+    
+            # error if this argument is not allowed with other previously
+            # seen arguments
+            if action.option_strings or argument_strings:
+                seen_non_default_actions.add(action)
+                for conflict_action in action_conflicts.get(action, []):
+                    if conflict_action in seen_non_default_actions:
+                        msg = _('not allowed with argument %s')
+                        action_name = _get_action_name(conflict_action)
+                        raise ArgumentError(action, msg % action_name)
+    
+            # take the action if we didn't receive a SUPPRESS value
+            # (e.g. from a default)
+            if argument_values is not SUPPRESS:
+                action(self, namespace, argument_values, option_string)
+    
+        # function to convert arg_strings into an optional action
+        def consume_optional(start_index):
+    
+            # get the optional identified at this index
+            option_tuples = option_string_indices[start_index]
+            # if multiple actions match, the option string was ambiguous
+            if len(option_tuples) &gt; 1:
+                options = ', '.join([option_string
+                    for action, option_string, sep, explicit_arg in option_tuples])
+                args = {'option': arg_strings[start_index], 'matches': options}
+                msg = _('ambiguous option: %(option)s could match %(matches)s')
+                raise ArgumentError(None, msg % args)
+    
+            action, option_string, sep, explicit_arg = option_tuples[0]
+    
+            # identify additional optionals in the same arg string
+            # (e.g. -xyz is the same as -x -y -z if no args are required)
+            match_argument = self._match_argument
+            action_tuples = []
+            while True:
+    
+                # if we found no optional action, skip it
+                if action is None:
+                    extras.append(arg_strings[start_index])
+                    extras_pattern.append('O')
+                    return start_index + 1
+    
+                # if there is an explicit argument, try to match the
+                # optional's string arguments to only this
+                if explicit_arg is not None:
+                    arg_count = match_argument(action, 'A')
+    
+                    # if the action is a single-dash option and takes no
+                    # arguments, try to parse more single-dash options out
+                    # of the tail of the option string
+                    chars = self.prefix_chars
+                    if (
+                        arg_count == 0
+                        and option_string[1] not in chars
+                        and explicit_arg != ''
+                    ):
+                        if sep or explicit_arg[0] in chars:
+                            msg = _('ignored explicit argument %r')
+                            raise ArgumentError(action, msg % explicit_arg)
+                        action_tuples.append((action, [], option_string))
+                        char = option_string[0]
+                        option_string = char + explicit_arg[0]
+                        optionals_map = self._option_string_actions
+                        if option_string in optionals_map:
+                            action = optionals_map[option_string]
+                            explicit_arg = explicit_arg[1:]
+                            if not explicit_arg:
+                                sep = explicit_arg = None
+                            elif explicit_arg[0] == '=':
+                                sep = '='
+                                explicit_arg = explicit_arg[1:]
+                            else:
+                                sep = ''
+                        else:
+                            extras.append(char + explicit_arg)
+                            extras_pattern.append('O')
+                            stop = start_index + 1
+                            break
+                    # if the action expect exactly one argument, we've
+                    # successfully matched the option; exit the loop
+                    elif arg_count == 1:
+                        stop = start_index + 1
+                        args = [explicit_arg]
+                        action_tuples.append((action, args, option_string))
+                        break
+    
+                    # error if a double-dash option did not use the
+                    # explicit argument
+                    else:
+                        msg = _('ignored explicit argument %r')
+                        raise ArgumentError(action, msg % explicit_arg)
+    
+                # if there is no explicit argument, try to match the
+                # optional's string arguments with the following strings
+                # if successful, exit the loop
+                else:
+                    start = start_index + 1
+                    selected_patterns = arg_strings_pattern[start:]
+                    arg_count = match_argument(action, selected_patterns)
+                    stop = start + arg_count
+                    args = arg_strings[start:stop]
+                    action_tuples.append((action, args, option_string))
+                    break
+    
+            # add the Optional to the list and return the index at which
+            # the Optional's string args stopped
+            assert action_tuples
+            for action, args, option_string in action_tuples:
+                if action.deprecated and option_string not in warned:
+                    self._warning(_("option '%(option)s' is deprecated") %
+                                  {'option': option_string})
+                    warned.add(option_string)
+                take_action(action, args, option_string)
+            return stop
+    
+        # the list of Positionals left to be parsed; this is modified
+        # by consume_positionals()
+        positionals = self._get_positional_actions()
+    
+        # function to convert arg_strings into positional actions
+        def consume_positionals(start_index):
+            # match as many Positionals as possible
+            match_partial = self._match_arguments_partial
+            selected_pattern = arg_strings_pattern[start_index:]
+            arg_counts = match_partial(positionals, selected_pattern)
+    
+            # slice off the appropriate arg strings for each Positional
+            # and add the Positional and its args to the list
+            for action, arg_count in zip(positionals, arg_counts):
+                args = arg_strings[start_index: start_index + arg_count]
+                # Strip out the first '--' if it is not in REMAINDER arg.
+                if action.nargs == PARSER:
+                    if arg_strings_pattern[start_index] == '-':
+                        assert args[0] == '--'
+                        args.remove('--')
+                elif action.nargs != REMAINDER:
+                    if (arg_strings_pattern.find('-', start_index,
+                                                 start_index + arg_count) &gt;= 0):
+                        args.remove('--')
+                start_index += arg_count
+                if args and action.deprecated and action.dest not in warned:
+                    self._warning(_("argument '%(argument_name)s' is deprecated") %
+                                  {'argument_name': action.dest})
+                    warned.add(action.dest)
+                take_action(action, args)
+    
+            # slice off the Positionals that we just parsed and return the
+            # index at which the Positionals' string args stopped
+            positionals[:] = positionals[len(arg_counts):]
+            return start_index
+    
+        # consume Positionals and Optionals alternately, until we have
+        # passed the last option string
+        extras = []
+        extras_pattern = []
+        start_index = 0
+        if option_string_indices:
+            max_option_string_index = max(option_string_indices)
+        else:
+            max_option_string_index = -1
+        while start_index &lt;= max_option_string_index:
+    
+            # consume any Positionals preceding the next option
+            next_option_string_index = start_index
+            while next_option_string_index &lt;= max_option_string_index:
+                if next_option_string_index in option_string_indices:
+                    break
+                next_option_string_index += 1
+            if not intermixed and start_index != next_option_string_index:
+                positionals_end_index = consume_positionals(start_index)
+    
+                # only try to parse the next optional if we didn't consume
+                # the option string during the positionals parsing
+                if positionals_end_index &gt; start_index:
+                    start_index = positionals_end_index
+                    continue
+                else:
+                    start_index = positionals_end_index
+    
+            # if we consumed all the positionals we could and we're not
+            # at the index of an option string, there were extra arguments
+            if start_index not in option_string_indices:
+                strings = arg_strings[start_index:next_option_string_index]
+                extras.extend(strings)
+                extras_pattern.extend(arg_strings_pattern[start_index:next_option_string_index])
+                start_index = next_option_string_index
+    
+            # consume the next optional and any arguments for it
+            start_index = consume_optional(start_index)
+    
+        if not intermixed:
+            # consume any positionals following the last Optional
+            stop_index = consume_positionals(start_index)
+    
+            # if we didn't consume all the argument strings, there were extras
+            extras.extend(arg_strings[stop_index:])
+        else:
+            extras.extend(arg_strings[start_index:])
+            extras_pattern.extend(arg_strings_pattern[start_index:])
+            extras_pattern = ''.join(extras_pattern)
+            assert len(extras_pattern) == len(extras)
+            # consume all positionals
+            arg_strings = [s for s, c in zip(extras, extras_pattern) if c != 'O']
+            arg_strings_pattern = extras_pattern.replace('O', '')
+            stop_index = consume_positionals(0)
+            # leave unknown optionals and non-consumed positionals in extras
+            for i, c in enumerate(extras_pattern):
+                if not stop_index:
+                    break
+                if c != 'O':
+                    stop_index -= 1
+                    extras[i] = None
+            extras = [s for s in extras if s is not None]
+    
+        # make sure all required actions were present and also convert
+        # action defaults which were not given as arguments
+        required_actions = []
+        for action in self._actions:
+            if action not in seen_actions:
+                if action.required:
+                    required_actions.append(_get_action_name(action))
+                else:
+                    # Convert action default now instead of doing it before
+                    # parsing arguments to avoid calling convert functions
+                    # twice (which may fail) if the argument was given, but
+                    # only if it was defined already in the namespace
+                    if (action.default is not None and
+                        isinstance(action.default, str) and
+                        hasattr(namespace, action.dest) and
+                        action.default is getattr(namespace, action.dest)):
+                        setattr(namespace, action.dest,
+                                self._get_value(action, action.default))
+    
+        if required_actions:
+&gt;           raise ArgumentError(None, _('the following arguments are required: %s') %
+                       ', '.join(required_actions))
+E           argparse.ArgumentError: the following arguments are required: --measurements
+
+../../miniconda3/lib/python3.13/argparse.py:2234: ArgumentError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-29/test_cleanup_fault_cli_exit_is0')
+packet = ({'entries': [{'block': 'EN-C1', 'language': 'EN', 'payload': {'message': 'Local synthetic fixture', 'stream': False},...17e56b94450339950599d4f', ...}, 'manifest_sha256': '0c1781f1b1b05fc06b364c28b71a761e99f487a1e625b605a3b687aec16e2ee8'})
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x7e1f4fdfb380&gt;
+capsys = &lt;_pytest.capture.CaptureFixture object at 0x7e1f4fa05950&gt;
+
+    def test_cleanup_fault_cli_exit_is_nonzero(tmp_path, packet, monkeypatch, capsys):
+        manifest, pins = packet
+        manifest_path, pins_path = tmp_path / 'manifest.json', tmp_path / 'pins.json'
+        manifest_path.write_text(json.dumps(manifest))
+        pins_path.write_text(json.dumps(pins))
+        release = storage.RunnerLock.__exit__
+        def fail(self, *args):
+            release(self, *args)
+            raise OSError('cleanup fault')
+        monkeypatch.setattr(storage.RunnerLock, '__exit__', fail)
+        monkeypatch.setattr(module, 'LocalAPI', lambda *args: Driver(pins))
+        sleep = module.Runner.__init__
+        def fast(self, *args, **kwargs):
+            sleep(self, *args, **kwargs, simulation=True, sleep=lambda _: None)
+        monkeypatch.setattr(module.Runner, '__init__', fast)
+        monkeypatch.setattr(sys, 'argv', ['runner', '--root', str(ROOT), '--directory', str(tmp_path),
+                            '--campaign-id', CAMPAIGN, '--manifest', str(manifest_path),
+                            '--pins', str(pins_path), '--api', 'http://127.0.0.1'])
+&gt;       assert module.main() != 0
+
+tests/experiments/test_orq41_p5_remaining_fixes.py:85: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+experiments/production_graduation/campaign_runner/runner.py:419: in main
+    args = parser.parse_args()
+../../miniconda3/lib/python3.13/argparse.py:1898: in parse_args
+    args, argv = self.parse_known_args(args, namespace)
+../../miniconda3/lib/python3.13/argparse.py:1908: in parse_known_args
+    return self._parse_known_args2(args, namespace, intermixed=False)
+../../miniconda3/lib/python3.13/argparse.py:1939: in _parse_known_args2
+    self.error(str(err))
+../../miniconda3/lib/python3.13/argparse.py:2658: in error
+    self.exit(2, _('%(prog)s: error: %(message)s\n') % args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = ArgumentParser(prog='runner', usage=None, description='Serial campaign execution, with transport/evidence seams for P2 simulations.', formatter_class=&lt;class 'argparse.HelpFormatter'&gt;, conflict_handler='error', add_help=True)
+status = 2
+message = 'runner: error: the following arguments are required: --measurements\n'
+
+    def exit(self, status=0, message=None):
+        if message:
+            self._print_message(message, _sys.stderr)
+&gt;       _sys.exit(status)
+E       SystemExit: 2
+
+../../miniconda3/lib/python3.13/argparse.py:2645: SystemExit</failure></testcase><testcase classname="tests.experiments.test_orq41_p5_remaining_fixes" name="test_evaluator_failure_order_settlement[sequence0-True]" time="0.053" /><testcase classname="tests.experiments.test_orq41_p5_remaining_fixes" name="test_evaluator_failure_order_settlement[sequence1-False]" time="0.048" /><testcase classname="tests.experiments.test_orq41_p5_remaining_fixes" name="test_evaluator_failure_order_settlement[sequence2-False]" time="0.049" /><testcase classname="tests.experiments.test_orq41_p5_remaining_fixes" name="test_evaluator_failure_order_settlement[sequence3-False]" time="0.048" /><testcase classname="tests.experiments.test_orq41_p5_remaining_fixes" name="test_sse_after_done_rejected_across_reads[event: error\ndata: {}\n\n-False]" time="0.001" /><testcase classname="tests.experiments.test_orq41_p5_remaining_fixes" name="test_sse_after_done_rejected_across_reads[event: error\ndata: {}\n\n-True]" time="0.001" /><testcase classname="tests.experiments.test_orq41_p5_remaining_fixes" name="test_sse_after_done_rejected_across_reads[event: done\ndata: {}\n\n-False]" time="0.000" /><testcase classname="tests.experiments.test_orq41_p5_remaining_fixes" name="test_sse_after_done_rejected_across_reads[event: done\ndata: {}\n\n-True]" time="0.000" /><testcase classname="tests.experiments.test_orq41_p5_remaining_fixes" name="test_sse_after_done_rejected_across_reads[event: token\ndata: extra\n\n-False]" time="0.000" /><testcase classname="tests.experiments.test_orq41_p5_remaining_fixes" name="test_sse_after_done_rejected_across_reads[event: token\ndata: extra\n\n-True]" time="0.000" /><testcase classname="tests.experiments.test_orq41_p5_remaining_fixes" name="test_sse_after_done_rejected_across_reads[event: token-False]" time="0.000" /><testcase classname="tests.experiments.test_orq41_p5_remaining_fixes" name="test_sse_after_done_rejected_across_reads[event: token-True]" time="0.000" /><testcase classname="tests.experiments.test_orq41_p5_remaining_fixes" name="test_sse_after_done_rejected_across_reads[event: token\n-False]" time="0.000" /><testcase classname="tests.experiments.test_orq41_p5_remaining_fixes" name="test_sse_after_done_rejected_across_reads[event: token\n-True]" time="0.000" /><testcase classname="tests.experiments.test_orq41_p5_remaining_fixes" name="test_sse_body_eof_without_tcp_close[False]" time="0.000" /><testcase classname="tests.experiments.test_orq41_p5_remaining_fixes" name="test_sse_body_eof_without_tcp_close[True]" time="0.000" /><testcase classname="tests.experiments.test_orq41_p5_remaining_fixes" name="test_sse_invalid_or_late_body_settles_rmax_no_resend[False]" time="0.052" /><testcase classname="tests.experiments.test_orq41_p5_remaining_fixes" name="test_sse_invalid_or_late_body_settles_rmax_no_resend[True]" time="0.055" /><testcase classname="tests.experiments.test_orq41_p5_remaining_fixes" name="test_ledger_replacement_does_not_write_or_advance_head[regular]" time="0.009" /><testcase classname="tests.experiments.test_orq41_p5_remaining_fixes" name="test_ledger_replacement_does_not_write_or_advance_head[symlink]" time="0.009" /><testcase classname="tests.experiments.test_orq41_p5_remaining_fixes" name="test_runner_ledger_replacement_before_admission_fails_closed" time="0.035" /><testcase classname="tests.experiments.test_orq41_p5_remaining_fixes" name="test_ledger_replacement_after_admission_recovers_rmax_without_resend" time="0.055" /><testcase classname="tests.experiments.test_orq41_p5_remaining_fixes" name="test_changed_lock_is_not_removed_and_descriptor_is_closed[missing]" time="0.002" /><testcase classname="tests.experiments.test_orq41_p5_remaining_fixes" name="test_changed_lock_is_not_removed_and_descriptor_is_closed[symlink]" time="0.002" /><testcase classname="tests.experiments.test_orq41_http_length" name="test_http_body_integrity_settlement_and_no_resend[False-exact]" time="0.052" /><testcase classname="tests.experiments.test_orq41_http_length" name="test_http_body_integrity_settlement_and_no_resend[False-truncated]" time="0.048" /><testcase classname="tests.experiments.test_orq41_http_length" name="test_http_body_integrity_settlement_and_no_resend[False-extra]" time="0.057" /><testcase classname="tests.experiments.test_orq41_http_length" name="test_http_body_integrity_settlement_and_no_resend[True-exact]" time="0.183" /><testcase classname="tests.experiments.test_orq41_http_length" name="test_http_body_integrity_settlement_and_no_resend[True-before_done]" time="0.184" /><testcase classname="tests.experiments.test_orq41_http_length" name="test_http_body_integrity_settlement_and_no_resend[True-truncated]" time="0.180" /><testcase classname="tests.experiments.test_orq41_http_length" name="test_http_body_integrity_settlement_and_no_resend[False-deadline]" time="0.166" /><testcase classname="tests.experiments.test_orq41_http_length" name="test_http_body_integrity_settlement_and_no_resend[True-deadline]" time="0.175" /><testcase classname="tests.experiments.test_orq41_chunked_framing" name="test_chunked_terminal_truncation[0\r\n-False-\r\n]" time="0.174" /><testcase classname="tests.experiments.test_orq41_chunked_framing" name="test_chunked_terminal_truncation[0\r\n-False-XX]" time="0.183" /><testcase classname="tests.experiments.test_orq41_chunked_framing" name="test_chunked_terminal_truncation[0\r\n-True-\r\n]" time="0.172" /><testcase classname="tests.experiments.test_orq41_chunked_framing" name="test_chunked_terminal_truncation[0\r\n-True-XX]" time="0.175" /><testcase classname="tests.experiments.test_orq41_chunked_framing" name="test_chunked_terminal_truncation[0\r\nX-Trailer: unfinished-False-\r\n]" time="0.181" /><testcase classname="tests.experiments.test_orq41_chunked_framing" name="test_chunked_terminal_truncation[0\r\nX-Trailer: unfinished-False-XX]" time="0.175" /><testcase classname="tests.experiments.test_orq41_chunked_framing" name="test_chunked_terminal_truncation[0\r\nX-Trailer: unfinished-True-\r\n]" time="0.175" /><testcase classname="tests.experiments.test_orq41_chunked_framing" name="test_chunked_terminal_truncation[0\r\nX-Trailer: unfinished-True-XX]" time="0.181" /><testcase classname="tests.experiments.test_orq41_chunked_framing" name="test_chunked_terminal_truncation[0\r\n\r\n-False-\r\n]" time="0.175" /><testcase classname="tests.experiments.test_orq41_chunked_framing" name="test_chunked_terminal_truncation[0\r\n\r\n-False-XX]" time="0.175" /><testcase classname="tests.experiments.test_orq41_chunked_framing" name="test_chunked_terminal_truncation[0\r\n\r\n-True-\r\n]" time="0.179" /><testcase classname="tests.experiments.test_orq41_chunked_framing" name="test_chunked_terminal_truncation[0\r\n\r\n-True-XX]" time="0.178" /><testcase classname="tests.experiments.test_orq41_chunked_framing" name="test_chunked_terminal_truncation[0\r\nX-Trailer: valid\r\n\r\n-False-\r\n]" time="0.173" /><testcase classname="tests.experiments.test_orq41_chunked_framing" name="test_chunked_terminal_truncation[0\r\nX-Trailer: valid\r\n\r\n-False-XX]" time="0.174" /><testcase classname="tests.experiments.test_orq41_chunked_framing" name="test_chunked_terminal_truncation[0\r\nX-Trailer: valid\r\n\r\n-True-\r\n]" time="0.175" /><testcase classname="tests.experiments.test_orq41_chunked_framing" name="test_chunked_terminal_truncation[0\r\nX-Trailer: valid\r\n\r\n-True-XX]" time="0.176" /><testcase classname="tests.experiments.test_orq41_s1_corroboration" name="test_request_receipt_stages[none]" time="0.003" /><testcase classname="tests.experiments.test_orq41_s1_corroboration" name="test_request_receipt_stages[rewrite]" time="0.004" /><testcase classname="tests.experiments.test_orq41_s1_corroboration" name="test_request_receipt_stages[evaluator]" time="0.006" /><testcase classname="tests.experiments.test_orq41_s1_corroboration" name="test_request_receipt_stages[primary]" time="0.004" /><testcase classname="tests.experiments.test_orq41_s1_corroboration" name="test_request_receipt_stages[stream]" time="0.008" /><testcase classname="tests.experiments.test_orq41_s1_corroboration" name="test_request_receipt_stages[cancel]" time="0.005" /><testcase classname="tests.experiments.test_orq41_s1_corroboration" name="test_invalid_receipt_stops_and_reserves[lost_retry]" time="0.173" /><testcase classname="tests.experiments.test_orq41_s1_corroboration" name="test_invalid_receipt_stops_and_reserves[lost_both]" time="0.162" /><testcase classname="tests.experiments.test_orq41_s1_corroboration" name="test_invalid_receipt_stops_and_reserves[lost_summary]" time="0.168" /><testcase classname="tests.experiments.test_orq41_s1_corroboration" name="test_invalid_receipt_stops_and_reserves[contradiction]" time="0.177" /><testcase classname="tests.experiments.test_orq41_s1_corroboration" name="test_invalid_receipt_stops_and_reserves[wrong]" time="0.168" /><testcase classname="tests.experiments.test_orq41_s1_corroboration" name="test_invalid_receipt_stops_and_reserves[duplicate]" time="0.169" /><testcase classname="tests.experiments.test_orq41_s1_corroboration" name="test_invalid_receipt_stops_and_reserves[invalid]" time="0.177" /><testcase classname="tests.experiments.test_orq41_s1_corroboration" name="test_concurrent_request_isolation_and_stream_context" time="0.004" /><testcase classname="tests.experiments.test_orq41_s1_corroboration" name="test_observation_failure_preserves_response[logging]" time="0.002" /><testcase classname="tests.experiments.test_orq41_s1_corroboration" name="test_observation_failure_preserves_response[record]" time="0.003" /><testcase classname="tests.experiments.test_orq41_s1_corroboration" name="test_observation_failure_preserves_response[init]" time="0.003" /><testcase classname="tests.experiments.test_orq41_s1_corroboration" name="test_actual_formatter_selective_loss[drop0]" time="0.004" /><testcase classname="tests.experiments.test_orq41_s1_corroboration" name="test_actual_formatter_selective_loss[drop1]" time="0.004" /><testcase classname="tests.experiments.test_orq41_s1_corroboration" name="test_actual_formatter_selective_loss[drop2]" time="0.004" /><testcase classname="tests.experiments.test_orq41_s1_corroboration" name="test_exception_and_cancellation_propagate_with_final_summary" time="0.003" /><testcase classname="tests.experiments.test_orq41_s1_corroboration" name="test_additional_integrity_checks[after]" time="0.002" /><testcase classname="tests.experiments.test_orq41_s1_corroboration" name="test_additional_integrity_checks[wrong_logger]" time="0.001" /><testcase classname="tests.experiments.test_orq41_s1_corroboration" name="test_additional_integrity_checks[false_error]" time="0.007" /></testsuite></testsuites>

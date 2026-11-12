@@ -1,0 +1,1289 @@
+{
+  "status": "DIAGNOSTIC_WAITS_ANALYSIS_COMPLETE_NOT_A_GATE",
+  "plan_sha256": "56e110e4dd374948106579c46dbc17fe70206cef5709120221d0217194174ec9",
+  "result_sha256": "d1e8e76bf3910b40e3635dbe229d85563ea9c7cc4e8ceae803bf935a25a8b403",
+  "analyzer_sha256": "a327e15dd2e526dd7220b54e9013f773eb8f46b0b6e04de12baa042d28f79f14",
+  "rows": [
+    {
+      "arm": "c0",
+      "cell": "EN-json",
+      "sample_id": "EN/json/0",
+      "category": "document",
+      "warmup": true,
+      "counts": {
+        "sql": 4,
+        "gc": 4,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 96048914,
+      "gc_union_ns": 7146645,
+      "sdk_queue_union_ns": 400137,
+      "sdk_execution_union_ns": 3115561,
+      "sdk_return_union_ns": 119574,
+      "wall_ns": 134064413,
+      "cpu_ns": 71564690,
+      "all_captured_union_ns": 100316567
+    },
+    {
+      "arm": "c0",
+      "cell": "EN-json",
+      "sample_id": "EN/json/15",
+      "category": "combined",
+      "warmup": false,
+      "counts": {
+        "sql": 4,
+        "gc": 1,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 29274876,
+      "gc_union_ns": 1306291,
+      "sdk_queue_union_ns": 376154,
+      "sdk_execution_union_ns": 3335181,
+      "sdk_return_union_ns": 178549,
+      "wall_ns": 47248191,
+      "cpu_ns": 27542641,
+      "all_captured_union_ns": 33164760
+    },
+    {
+      "arm": "c0",
+      "cell": "EN-json",
+      "sample_id": "EN/json/16",
+      "category": "combined",
+      "warmup": false,
+      "counts": {
+        "sql": 4,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 37073962,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 467631,
+      "sdk_execution_union_ns": 6011477,
+      "sdk_return_union_ns": 398071,
+      "wall_ns": 62287019,
+      "cpu_ns": 31340787,
+      "all_captured_union_ns": 43951141
+    },
+    {
+      "arm": "c0",
+      "cell": "EN-json",
+      "sample_id": "EN/json/20",
+      "category": "empty",
+      "warmup": false,
+      "counts": {
+        "sql": 4,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 11012032,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 180679,
+      "sdk_execution_union_ns": 1970377,
+      "sdk_return_union_ns": 130013,
+      "wall_ns": 27341776,
+      "cpu_ns": 22033008,
+      "all_captured_union_ns": 13293101
+    },
+    {
+      "arm": "c0",
+      "cell": "EN-json",
+      "sample_id": "EN/json/21",
+      "category": "empty",
+      "warmup": false,
+      "counts": {
+        "sql": 4,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 11284731,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 406396,
+      "sdk_execution_union_ns": 4108569,
+      "sdk_return_union_ns": 419799,
+      "wall_ns": 31993098,
+      "cpu_ns": 26642292,
+      "all_captured_union_ns": 16219495
+    },
+    {
+      "arm": "c1",
+      "cell": "EN-json",
+      "sample_id": "EN/json/0",
+      "category": "document",
+      "warmup": true,
+      "counts": {
+        "sql": 4,
+        "gc": 4,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 60567896,
+      "gc_union_ns": 4067988,
+      "sdk_queue_union_ns": 476623,
+      "sdk_execution_union_ns": 3881313,
+      "sdk_return_union_ns": 126137,
+      "wall_ns": 107541513,
+      "cpu_ns": 56942661,
+      "all_captured_union_ns": 65246384
+    },
+    {
+      "arm": "c1",
+      "cell": "EN-json",
+      "sample_id": "EN/json/15",
+      "category": "combined",
+      "warmup": false,
+      "counts": {
+        "sql": 4,
+        "gc": 1,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 22613529,
+      "gc_union_ns": 481930,
+      "sdk_queue_union_ns": 333528,
+      "sdk_execution_union_ns": 2839499,
+      "sdk_return_union_ns": 228223,
+      "wall_ns": 42149481,
+      "cpu_ns": 23748098,
+      "all_captured_union_ns": 26014779
+    },
+    {
+      "arm": "c1",
+      "cell": "EN-json",
+      "sample_id": "EN/json/16",
+      "category": "combined",
+      "warmup": false,
+      "counts": {
+        "sql": 4,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 19088013,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 291484,
+      "sdk_execution_union_ns": 1838204,
+      "sdk_return_union_ns": 184580,
+      "wall_ns": 32565522,
+      "cpu_ns": 16273297,
+      "all_captured_union_ns": 21402281
+    },
+    {
+      "arm": "c1",
+      "cell": "EN-json",
+      "sample_id": "EN/json/20",
+      "category": "empty",
+      "warmup": false,
+      "counts": {
+        "sql": 4,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 3304189,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 195126,
+      "sdk_execution_union_ns": 985595,
+      "sdk_return_union_ns": 167134,
+      "wall_ns": 10431997,
+      "cpu_ns": 8452389,
+      "all_captured_union_ns": 4652044
+    },
+    {
+      "arm": "c1",
+      "cell": "EN-json",
+      "sample_id": "EN/json/21",
+      "category": "empty",
+      "warmup": false,
+      "counts": {
+        "sql": 4,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 1966591,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 307936,
+      "sdk_execution_union_ns": 891271,
+      "sdk_return_union_ns": 190705,
+      "wall_ns": 7922182,
+      "cpu_ns": 6634063,
+      "all_captured_union_ns": 3356503
+    },
+    {
+      "arm": "c1",
+      "cell": "EN-sse",
+      "sample_id": "EN/sse/0",
+      "category": "document",
+      "warmup": true,
+      "counts": {
+        "sql": 3,
+        "gc": 4,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 55492053,
+      "gc_union_ns": 4588451,
+      "sdk_queue_union_ns": 581862,
+      "sdk_execution_union_ns": 4556208,
+      "sdk_return_union_ns": 156183,
+      "wall_ns": 74805680,
+      "cpu_ns": 43253839,
+      "all_captured_union_ns": 61342333
+    },
+    {
+      "arm": "c1",
+      "cell": "EN-sse",
+      "sample_id": "EN/sse/15",
+      "category": "combined",
+      "warmup": false,
+      "counts": {
+        "sql": 3,
+        "gc": 1,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 34867997,
+      "gc_union_ns": 577149,
+      "sdk_queue_union_ns": 707410,
+      "sdk_execution_union_ns": 4615801,
+      "sdk_return_union_ns": 194239,
+      "wall_ns": 57106173,
+      "cpu_ns": 27968079,
+      "all_captured_union_ns": 40962596
+    },
+    {
+      "arm": "c1",
+      "cell": "EN-sse",
+      "sample_id": "EN/sse/16",
+      "category": "combined",
+      "warmup": false,
+      "counts": {
+        "sql": 3,
+        "gc": 1,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 12535909,
+      "gc_union_ns": 171626,
+      "sdk_queue_union_ns": 270805,
+      "sdk_execution_union_ns": 1310544,
+      "sdk_return_union_ns": 183795,
+      "wall_ns": 20515314,
+      "cpu_ns": 9545931,
+      "all_captured_union_ns": 14301053
+    },
+    {
+      "arm": "c1",
+      "cell": "EN-sse",
+      "sample_id": "EN/sse/20",
+      "category": "empty",
+      "warmup": false,
+      "counts": {
+        "sql": 3,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 2644727,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 162262,
+      "sdk_execution_union_ns": 792993,
+      "sdk_return_union_ns": 139754,
+      "wall_ns": 7757042,
+      "cpu_ns": 6226663,
+      "all_captured_union_ns": 3739736
+    },
+    {
+      "arm": "c1",
+      "cell": "EN-sse",
+      "sample_id": "EN/sse/21",
+      "category": "empty",
+      "warmup": false,
+      "counts": {
+        "sql": 3,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 1128144,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 137387,
+      "sdk_execution_union_ns": 683134,
+      "sdk_return_union_ns": 118883,
+      "wall_ns": 5188989,
+      "cpu_ns": 4503869,
+      "all_captured_union_ns": 2067548
+    },
+    {
+      "arm": "c0",
+      "cell": "EN-sse",
+      "sample_id": "EN/sse/0",
+      "category": "document",
+      "warmup": true,
+      "counts": {
+        "sql": 3,
+        "gc": 4,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 49441681,
+      "gc_union_ns": 3933385,
+      "sdk_queue_union_ns": 729054,
+      "sdk_execution_union_ns": 5962691,
+      "sdk_return_union_ns": 148578,
+      "wall_ns": 68767904,
+      "cpu_ns": 38312421,
+      "all_captured_union_ns": 56461214
+    },
+    {
+      "arm": "c0",
+      "cell": "EN-sse",
+      "sample_id": "EN/sse/15",
+      "category": "combined",
+      "warmup": false,
+      "counts": {
+        "sql": 3,
+        "gc": 1,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 26046826,
+      "gc_union_ns": 376710,
+      "sdk_queue_union_ns": 390318,
+      "sdk_execution_union_ns": 2929731,
+      "sdk_return_union_ns": 286073,
+      "wall_ns": 38463569,
+      "cpu_ns": 17587662,
+      "all_captured_union_ns": 29652948
+    },
+    {
+      "arm": "c0",
+      "cell": "EN-sse",
+      "sample_id": "EN/sse/16",
+      "category": "combined",
+      "warmup": false,
+      "counts": {
+        "sql": 3,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 30718195,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 393642,
+      "sdk_execution_union_ns": 3680593,
+      "sdk_return_union_ns": 177506,
+      "wall_ns": 42696744,
+      "cpu_ns": 15598769,
+      "all_captured_union_ns": 34969936
+    },
+    {
+      "arm": "c0",
+      "cell": "EN-sse",
+      "sample_id": "EN/sse/20",
+      "category": "empty",
+      "warmup": false,
+      "counts": {
+        "sql": 3,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 12280198,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 878444,
+      "sdk_execution_union_ns": 5204853,
+      "sdk_return_union_ns": 416662,
+      "wall_ns": 37822047,
+      "cpu_ns": 33184053,
+      "all_captured_union_ns": 18780157
+    },
+    {
+      "arm": "c0",
+      "cell": "EN-sse",
+      "sample_id": "EN/sse/21",
+      "category": "empty",
+      "warmup": false,
+      "counts": {
+        "sql": 3,
+        "gc": 1,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 11214531,
+      "gc_union_ns": 1346541,
+      "sdk_queue_union_ns": 626091,
+      "sdk_execution_union_ns": 1943897,
+      "sdk_return_union_ns": 160448,
+      "wall_ns": 24723623,
+      "cpu_ns": 20338730,
+      "all_captured_union_ns": 13944967
+    },
+    {
+      "arm": "c1",
+      "cell": "ES-json",
+      "sample_id": "ES/json/0",
+      "category": "document",
+      "warmup": true,
+      "counts": {
+        "sql": 4,
+        "gc": 4,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 75304328,
+      "gc_union_ns": 6580187,
+      "sdk_queue_union_ns": 513736,
+      "sdk_execution_union_ns": 5198276,
+      "sdk_return_union_ns": 101728,
+      "wall_ns": 133823064,
+      "cpu_ns": 68959310,
+      "all_captured_union_ns": 81340953
+    },
+    {
+      "arm": "c1",
+      "cell": "ES-json",
+      "sample_id": "ES/json/15",
+      "category": "combined",
+      "warmup": false,
+      "counts": {
+        "sql": 4,
+        "gc": 1,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 34889789,
+      "gc_union_ns": 652214,
+      "sdk_queue_union_ns": 380563,
+      "sdk_execution_union_ns": 3515724,
+      "sdk_return_union_ns": 399778,
+      "wall_ns": 55589413,
+      "cpu_ns": 28974947,
+      "all_captured_union_ns": 39185854
+    },
+    {
+      "arm": "c1",
+      "cell": "ES-json",
+      "sample_id": "ES/json/16",
+      "category": "combined",
+      "warmup": false,
+      "counts": {
+        "sql": 4,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 28030603,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 355334,
+      "sdk_execution_union_ns": 3994525,
+      "sdk_return_union_ns": 299284,
+      "wall_ns": 53519796,
+      "cpu_ns": 31385895,
+      "all_captured_union_ns": 32679746
+    },
+    {
+      "arm": "c1",
+      "cell": "ES-json",
+      "sample_id": "ES/json/20",
+      "category": "empty",
+      "warmup": false,
+      "counts": {
+        "sql": 4,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 13899275,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 286076,
+      "sdk_execution_union_ns": 3444926,
+      "sdk_return_union_ns": 359604,
+      "wall_ns": 38562542,
+      "cpu_ns": 32495509,
+      "all_captured_union_ns": 17989881
+    },
+    {
+      "arm": "c1",
+      "cell": "ES-json",
+      "sample_id": "ES/json/21",
+      "category": "empty",
+      "warmup": false,
+      "counts": {
+        "sql": 4,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 13043572,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 343972,
+      "sdk_execution_union_ns": 2615668,
+      "sdk_return_union_ns": 161931,
+      "wall_ns": 36417047,
+      "cpu_ns": 29958973,
+      "all_captured_union_ns": 16165143
+    },
+    {
+      "arm": "c0",
+      "cell": "ES-json",
+      "sample_id": "ES/json/0",
+      "category": "document",
+      "warmup": true,
+      "counts": {
+        "sql": 4,
+        "gc": 4,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 52919158,
+      "gc_union_ns": 3826717,
+      "sdk_queue_union_ns": 388944,
+      "sdk_execution_union_ns": 3023276,
+      "sdk_return_union_ns": 164798,
+      "wall_ns": 92850492,
+      "cpu_ns": 45726513,
+      "all_captured_union_ns": 57051628
+    },
+    {
+      "arm": "c0",
+      "cell": "ES-json",
+      "sample_id": "ES/json/15",
+      "category": "combined",
+      "warmup": false,
+      "counts": {
+        "sql": 4,
+        "gc": 1,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 24195930,
+      "gc_union_ns": 693056,
+      "sdk_queue_union_ns": 251838,
+      "sdk_execution_union_ns": 2157834,
+      "sdk_return_union_ns": 178346,
+      "wall_ns": 38424189,
+      "cpu_ns": 18900755,
+      "all_captured_union_ns": 26783948
+    },
+    {
+      "arm": "c0",
+      "cell": "ES-json",
+      "sample_id": "ES/json/16",
+      "category": "combined",
+      "warmup": false,
+      "counts": {
+        "sql": 4,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 16669780,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 326582,
+      "sdk_execution_union_ns": 1786502,
+      "sdk_return_union_ns": 185593,
+      "wall_ns": 27029461,
+      "cpu_ns": 12551079,
+      "all_captured_union_ns": 18968457
+    },
+    {
+      "arm": "c0",
+      "cell": "ES-json",
+      "sample_id": "ES/json/20",
+      "category": "empty",
+      "warmup": false,
+      "counts": {
+        "sql": 4,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 4058298,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 291551,
+      "sdk_execution_union_ns": 1087182,
+      "sdk_return_union_ns": 171798,
+      "wall_ns": 10939389,
+      "cpu_ns": 8390675,
+      "all_captured_union_ns": 5608829
+    },
+    {
+      "arm": "c0",
+      "cell": "ES-json",
+      "sample_id": "ES/json/21",
+      "category": "empty",
+      "warmup": false,
+      "counts": {
+        "sql": 4,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 2291151,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 303563,
+      "sdk_execution_union_ns": 800432,
+      "sdk_return_union_ns": 74042,
+      "wall_ns": 7155648,
+      "cpu_ns": 5592426,
+      "all_captured_union_ns": 3469188
+    },
+    {
+      "arm": "c0",
+      "cell": "ES-sse",
+      "sample_id": "ES/sse/0",
+      "category": "document",
+      "warmup": true,
+      "counts": {
+        "sql": 3,
+        "gc": 4,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 38879931,
+      "gc_union_ns": 3007971,
+      "sdk_queue_union_ns": 511090,
+      "sdk_execution_union_ns": 3858948,
+      "sdk_return_union_ns": 138607,
+      "wall_ns": 55040168,
+      "cpu_ns": 30727729,
+      "all_captured_union_ns": 43563845
+    },
+    {
+      "arm": "c0",
+      "cell": "ES-sse",
+      "sample_id": "ES/sse/15",
+      "category": "combined",
+      "warmup": false,
+      "counts": {
+        "sql": 3,
+        "gc": 1,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 29734272,
+      "gc_union_ns": 420890,
+      "sdk_queue_union_ns": 573689,
+      "sdk_execution_union_ns": 5240538,
+      "sdk_return_union_ns": 572009,
+      "wall_ns": 50883041,
+      "cpu_ns": 27327499,
+      "all_captured_union_ns": 36120508
+    },
+    {
+      "arm": "c0",
+      "cell": "ES-sse",
+      "sample_id": "ES/sse/16",
+      "category": "combined",
+      "warmup": false,
+      "counts": {
+        "sql": 3,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 25162433,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 370060,
+      "sdk_execution_union_ns": 3250466,
+      "sdk_return_union_ns": 373562,
+      "wall_ns": 40181320,
+      "cpu_ns": 19035459,
+      "all_captured_union_ns": 29156521
+    },
+    {
+      "arm": "c0",
+      "cell": "ES-sse",
+      "sample_id": "ES/sse/20",
+      "category": "empty",
+      "warmup": false,
+      "counts": {
+        "sql": 3,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 3225933,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 269445,
+      "sdk_execution_union_ns": 1368192,
+      "sdk_return_union_ns": 122759,
+      "wall_ns": 9418349,
+      "cpu_ns": 7589982,
+      "all_captured_union_ns": 4986329
+    },
+    {
+      "arm": "c0",
+      "cell": "ES-sse",
+      "sample_id": "ES/sse/21",
+      "category": "empty",
+      "warmup": false,
+      "counts": {
+        "sql": 3,
+        "gc": 1,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 4767400,
+      "gc_union_ns": 597393,
+      "sdk_queue_union_ns": 298059,
+      "sdk_execution_union_ns": 1492462,
+      "sdk_return_union_ns": 140261,
+      "wall_ns": 12317803,
+      "cpu_ns": 10036961,
+      "all_captured_union_ns": 6698182
+    },
+    {
+      "arm": "c1",
+      "cell": "ES-sse",
+      "sample_id": "ES/sse/0",
+      "category": "document",
+      "warmup": true,
+      "counts": {
+        "sql": 3,
+        "gc": 4,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 63943245,
+      "gc_union_ns": 6118457,
+      "sdk_queue_union_ns": 705926,
+      "sdk_execution_union_ns": 5587292,
+      "sdk_return_union_ns": 155981,
+      "wall_ns": 86053946,
+      "cpu_ns": 49682223,
+      "all_captured_union_ns": 71127854
+    },
+    {
+      "arm": "c1",
+      "cell": "ES-sse",
+      "sample_id": "ES/sse/15",
+      "category": "combined",
+      "warmup": false,
+      "counts": {
+        "sql": 3,
+        "gc": 1,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 24650490,
+      "gc_union_ns": 730394,
+      "sdk_queue_union_ns": 263788,
+      "sdk_execution_union_ns": 2746528,
+      "sdk_return_union_ns": 325128,
+      "wall_ns": 40352139,
+      "cpu_ns": 19616541,
+      "all_captured_union_ns": 28716328
+    },
+    {
+      "arm": "c1",
+      "cell": "ES-sse",
+      "sample_id": "ES/sse/16",
+      "category": "combined",
+      "warmup": false,
+      "counts": {
+        "sql": 3,
+        "gc": 1,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 18390639,
+      "gc_union_ns": 476806,
+      "sdk_queue_union_ns": 304920,
+      "sdk_execution_union_ns": 1689229,
+      "sdk_return_union_ns": 167128,
+      "wall_ns": 29465094,
+      "cpu_ns": 14263205,
+      "all_captured_union_ns": 20551916
+    },
+    {
+      "arm": "c1",
+      "cell": "ES-sse",
+      "sample_id": "ES/sse/20",
+      "category": "empty",
+      "warmup": false,
+      "counts": {
+        "sql": 3,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 2438270,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 260405,
+      "sdk_execution_union_ns": 1557788,
+      "sdk_return_union_ns": 139744,
+      "wall_ns": 9268962,
+      "cpu_ns": 7827673,
+      "all_captured_union_ns": 4396207
+    },
+    {
+      "arm": "c1",
+      "cell": "ES-sse",
+      "sample_id": "ES/sse/21",
+      "category": "empty",
+      "warmup": false,
+      "counts": {
+        "sql": 3,
+        "gc": 0,
+        "sdk_queue": 2,
+        "sdk_execution": 2,
+        "sdk_return": 1
+      },
+      "sql_union_ns": 11655159,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 845454,
+      "sdk_execution_union_ns": 3801394,
+      "sdk_return_union_ns": 287474,
+      "wall_ns": 33271414,
+      "cpu_ns": 28609468,
+      "all_captured_union_ns": 16589481
+    }
+  ],
+  "paired_deltas": [
+    {
+      "sample_id": "EN/json/15",
+      "cell": "EN-json",
+      "category": "combined",
+      "sql_union_ns": -6661347,
+      "gc_union_ns": -824361,
+      "sdk_queue_union_ns": -42626,
+      "sdk_execution_union_ns": -495682,
+      "sdk_return_union_ns": 49674,
+      "wall_ns": -5098710,
+      "cpu_ns": -3794543,
+      "all_captured_union_ns": -7149981
+    },
+    {
+      "sample_id": "EN/json/16",
+      "cell": "EN-json",
+      "category": "combined",
+      "sql_union_ns": -17985949,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": -176147,
+      "sdk_execution_union_ns": -4173273,
+      "sdk_return_union_ns": -213491,
+      "wall_ns": -29721497,
+      "cpu_ns": -15067490,
+      "all_captured_union_ns": -22548860
+    },
+    {
+      "sample_id": "EN/json/20",
+      "cell": "EN-json",
+      "category": "empty",
+      "sql_union_ns": -7707843,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 14447,
+      "sdk_execution_union_ns": -984782,
+      "sdk_return_union_ns": 37121,
+      "wall_ns": -16909779,
+      "cpu_ns": -13580619,
+      "all_captured_union_ns": -8641057
+    },
+    {
+      "sample_id": "EN/json/21",
+      "cell": "EN-json",
+      "category": "empty",
+      "sql_union_ns": -9318140,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": -98460,
+      "sdk_execution_union_ns": -3217298,
+      "sdk_return_union_ns": -229094,
+      "wall_ns": -24070916,
+      "cpu_ns": -20008229,
+      "all_captured_union_ns": -12862992
+    },
+    {
+      "sample_id": "EN/sse/15",
+      "cell": "EN-sse",
+      "category": "combined",
+      "sql_union_ns": 8821171,
+      "gc_union_ns": 200439,
+      "sdk_queue_union_ns": 317092,
+      "sdk_execution_union_ns": 1686070,
+      "sdk_return_union_ns": -91834,
+      "wall_ns": 18642604,
+      "cpu_ns": 10380417,
+      "all_captured_union_ns": 11309648
+    },
+    {
+      "sample_id": "EN/sse/16",
+      "cell": "EN-sse",
+      "category": "combined",
+      "sql_union_ns": -18182286,
+      "gc_union_ns": 171626,
+      "sdk_queue_union_ns": -122837,
+      "sdk_execution_union_ns": -2370049,
+      "sdk_return_union_ns": 6289,
+      "wall_ns": -22181430,
+      "cpu_ns": -6052838,
+      "all_captured_union_ns": -20668883
+    },
+    {
+      "sample_id": "EN/sse/20",
+      "cell": "EN-sse",
+      "category": "empty",
+      "sql_union_ns": -9635471,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": -716182,
+      "sdk_execution_union_ns": -4411860,
+      "sdk_return_union_ns": -276908,
+      "wall_ns": -30065005,
+      "cpu_ns": -26957390,
+      "all_captured_union_ns": -15040421
+    },
+    {
+      "sample_id": "EN/sse/21",
+      "cell": "EN-sse",
+      "category": "empty",
+      "sql_union_ns": -10086387,
+      "gc_union_ns": -1346541,
+      "sdk_queue_union_ns": -488704,
+      "sdk_execution_union_ns": -1260763,
+      "sdk_return_union_ns": -41565,
+      "wall_ns": -19534634,
+      "cpu_ns": -15834861,
+      "all_captured_union_ns": -11877419
+    },
+    {
+      "sample_id": "ES/json/15",
+      "cell": "ES-json",
+      "category": "combined",
+      "sql_union_ns": 10693859,
+      "gc_union_ns": -40842,
+      "sdk_queue_union_ns": 128725,
+      "sdk_execution_union_ns": 1357890,
+      "sdk_return_union_ns": 221432,
+      "wall_ns": 17165224,
+      "cpu_ns": 10074192,
+      "all_captured_union_ns": 12401906
+    },
+    {
+      "sample_id": "ES/json/16",
+      "cell": "ES-json",
+      "category": "combined",
+      "sql_union_ns": 11360823,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 28752,
+      "sdk_execution_union_ns": 2208023,
+      "sdk_return_union_ns": 113691,
+      "wall_ns": 26490335,
+      "cpu_ns": 18834816,
+      "all_captured_union_ns": 13711289
+    },
+    {
+      "sample_id": "ES/json/20",
+      "cell": "ES-json",
+      "category": "empty",
+      "sql_union_ns": 9840977,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": -5475,
+      "sdk_execution_union_ns": 2357744,
+      "sdk_return_union_ns": 187806,
+      "wall_ns": 27623153,
+      "cpu_ns": 24104834,
+      "all_captured_union_ns": 12381052
+    },
+    {
+      "sample_id": "ES/json/21",
+      "cell": "ES-json",
+      "category": "empty",
+      "sql_union_ns": 10752421,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": 40409,
+      "sdk_execution_union_ns": 1815236,
+      "sdk_return_union_ns": 87889,
+      "wall_ns": 29261399,
+      "cpu_ns": 24366547,
+      "all_captured_union_ns": 12695955
+    },
+    {
+      "sample_id": "ES/sse/15",
+      "cell": "ES-sse",
+      "category": "combined",
+      "sql_union_ns": -5083782,
+      "gc_union_ns": 309504,
+      "sdk_queue_union_ns": -309901,
+      "sdk_execution_union_ns": -2494010,
+      "sdk_return_union_ns": -246881,
+      "wall_ns": -10530902,
+      "cpu_ns": -7710958,
+      "all_captured_union_ns": -7404180
+    },
+    {
+      "sample_id": "ES/sse/16",
+      "cell": "ES-sse",
+      "category": "combined",
+      "sql_union_ns": -6771794,
+      "gc_union_ns": 476806,
+      "sdk_queue_union_ns": -65140,
+      "sdk_execution_union_ns": -1561237,
+      "sdk_return_union_ns": -206434,
+      "wall_ns": -10716226,
+      "cpu_ns": -4772254,
+      "all_captured_union_ns": -8604605
+    },
+    {
+      "sample_id": "ES/sse/20",
+      "cell": "ES-sse",
+      "category": "empty",
+      "sql_union_ns": -787663,
+      "gc_union_ns": 0,
+      "sdk_queue_union_ns": -9040,
+      "sdk_execution_union_ns": 189596,
+      "sdk_return_union_ns": 16985,
+      "wall_ns": -149387,
+      "cpu_ns": 237691,
+      "all_captured_union_ns": -590122
+    },
+    {
+      "sample_id": "ES/sse/21",
+      "cell": "ES-sse",
+      "category": "empty",
+      "sql_union_ns": 6887759,
+      "gc_union_ns": -597393,
+      "sdk_queue_union_ns": 547395,
+      "sdk_execution_union_ns": 2308932,
+      "sdk_return_union_ns": 147213,
+      "wall_ns": 20953611,
+      "cpu_ns": 18572507,
+      "all_captured_union_ns": 9891299
+    }
+  ],
+  "summary": {
+    "combined": {
+      "sql_union_ns": {
+        "median_ms": -5.8725645,
+        "range_ms": [
+          -18.182286,
+          11.360823
+        ]
+      },
+      "gc_union_ns": {
+        "median_ms": 0.085813,
+        "range_ms": [
+          -0.824361,
+          0.476806
+        ]
+      },
+      "sdk_queue_union_ns": {
+        "median_ms": -0.053883,
+        "range_ms": [
+          -0.309901,
+          0.317092
+        ]
+      },
+      "sdk_execution_union_ns": {
+        "median_ms": -1.0284595,
+        "range_ms": [
+          -4.173273,
+          2.208023
+        ]
+      },
+      "sdk_return_union_ns": {
+        "median_ms": -0.0427725,
+        "range_ms": [
+          -0.246881,
+          0.221432
+        ]
+      },
+      "wall_ns": {
+        "median_ms": -7.814806,
+        "range_ms": [
+          -29.721497,
+          26.490335
+        ]
+      },
+      "cpu_ns": {
+        "median_ms": -4.2833985,
+        "range_ms": [
+          -15.06749,
+          18.834816
+        ]
+      },
+      "all_captured_union_ns": {
+        "median_ms": -7.2770805,
+        "range_ms": [
+          -22.54886,
+          13.711289
+        ]
+      }
+    },
+    "empty": {
+      "sql_union_ns": {
+        "median_ms": -4.247753,
+        "range_ms": [
+          -10.086387,
+          10.752421
+        ]
+      },
+      "gc_union_ns": {
+        "median_ms": 0.0,
+        "range_ms": [
+          -1.346541,
+          0.0
+        ]
+      },
+      "sdk_queue_union_ns": {
+        "median_ms": -0.0072575,
+        "range_ms": [
+          -0.716182,
+          0.547395
+        ]
+      },
+      "sdk_execution_union_ns": {
+        "median_ms": -0.397593,
+        "range_ms": [
+          -4.41186,
+          2.357744
+        ]
+      },
+      "sdk_return_union_ns": {
+        "median_ms": 0.027053,
+        "range_ms": [
+          -0.276908,
+          0.187806
+        ]
+      },
+      "wall_ns": {
+        "median_ms": -8.529583,
+        "range_ms": [
+          -30.065005,
+          29.261399
+        ]
+      },
+      "cpu_ns": {
+        "median_ms": -6.671464,
+        "range_ms": [
+          -26.95739,
+          24.366547
+        ]
+      },
+      "all_captured_union_ns": {
+        "median_ms": -4.6155895,
+        "range_ms": [
+          -15.040421,
+          12.695955
+        ]
+      }
+    }
+  },
+  "arm_medians_ms": {
+    "c0": {
+      "combined": {
+        "sql_union_ns": 27.660851,
+        "gc_union_ns": 0.188355,
+        "sdk_queue_union_ns": 0.383236,
+        "sdk_execution_union_ns": 3.2928235,
+        "sdk_return_union_ns": 0.235833,
+        "wall_ns": 41.439032,
+        "cpu_ns": 18.968107,
+        "all_captured_union_ns": 31.408854
+      },
+      "empty": {
+        "sql_union_ns": 7.889716,
+        "gc_union_ns": 0.0,
+        "sdk_queue_union_ns": 0.300811,
+        "sdk_execution_union_ns": 1.7181795,
+        "sdk_return_union_ns": 0.1503545,
+        "wall_ns": 18.520713,
+        "cpu_ns": 15.1878455,
+        "all_captured_union_ns": 9.9956415
+      }
+    },
+    "c1": {
+      "combined": {
+        "sql_union_ns": 23.6320095,
+        "gc_union_ns": 0.479368,
+        "sdk_queue_union_ns": 0.319224,
+        "sdk_execution_union_ns": 2.7930135,
+        "sdk_return_union_ns": 0.211231,
+        "wall_ns": 41.25081,
+        "cpu_ns": 21.6823195,
+        "all_captured_union_ns": 27.3655535
+      },
+      "empty": {
+        "sql_union_ns": 2.974458,
+        "gc_union_ns": 0.0,
+        "sdk_queue_union_ns": 0.2732405,
+        "sdk_execution_union_ns": 1.2716915,
+        "sdk_return_union_ns": 0.1645325,
+        "wall_ns": 9.8504795,
+        "cpu_ns": 8.140031,
+        "all_captured_union_ns": 4.5241255
+      }
+    }
+  },
+  "order_medians_ms": {
+    "c0_first": {
+      "sql_union_ns": -6.7165705,
+      "gc_union_ns": 0.0,
+      "sdk_queue_union_ns": -0.053883,
+      "sdk_execution_union_ns": -1.2730095,
+      "sdk_return_union_ns": -0.0947245,
+      "wall_ns": -10.623564,
+      "cpu_ns": -6.241606,
+      "all_captured_union_ns": -8.0043925
+    },
+    "c1_first": {
+      "sql_union_ns": 9.331074,
+      "gc_union_ns": 0.0,
+      "sdk_queue_union_ns": 0.0116385,
+      "sdk_execution_union_ns": 1.52198,
+      "sdk_return_union_ns": 0.047089,
+      "wall_ns": 17.903914,
+      "cpu_ns": 10.2273045,
+      "all_captured_union_ns": 11.84535
+    }
+  },
+  "external_calls": 0,
+  "provider_calls": 0,
+  "paid_spend_usd": "0",
+  "official_g6_status": "CONTROLLED_G6_FAIL",
+  "interpretation": "Descriptive only; overlapping unions are not additive, process CPU cannot be subtracted from wall, no causal GC/SQL/scheduling share or corrected p95."
+}

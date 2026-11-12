@@ -1,0 +1,50 @@
+{
+  "status": "DIAGNOSTIC_CROSSOVER_HARNESS_REVIEW_PASS",
+  "reviewer": "/root/packet_review",
+  "not_a_gate": true,
+  "plan_sha256": "bcd882d10e1bf57b359135dc7b2eb408c55eed8412dbf717aa6f097f016c4f4b",
+  "protocol_sha256": "52cee3c44cbe2c3cfbf2a75963b4f260eee16f37ef94acc935f056228cc17454",
+  "preparation_sha256": "bfd6cdbe86416457141007165e1ee8d168c6f677d14ad15004c9f6ab329d6716",
+  "fixtures_sha256": "ee14f1e138432d3990a7adcd10916b004485c77ef40c38ae84bdfa42b587c521",
+  "analyzer_sha256": "469f3da6586cbe0927deec7deb5808bea452ec4e606dd86a44500d1766796722",
+  "harness_sha256": {
+    "experiments/production_graduation/gate_validation/controlled_latency.py": "a711e6161564e4f5fbf4f542c84bd6a3f1afb71df16760e4480cdae9073837f9",
+    "experiments/production_graduation/gate_validation/controlled_latency_worker.py": "a9f1996aadfe87406addbc9ba890ae291c186de76341b0f322aa2732b03804e8",
+    "experiments/production_graduation/gate_validation/controlled_latency_controller.py": "914e48832b1848f72194a64251c5440651c8842808ad8482ebec1d17a6d6e0d6",
+    "experiments/production_graduation/gate_validation/local_api.py": "e9b8a886018ca60a7b77b2885b89fa813368373435464e455bd449589ea034eb",
+    "experiments/production_graduation/gate_validation/transports.py": "3c0f15acf79a08684fad8d89bfa7242d3779a980f89988a7f252e74cb7aef6e0",
+    "experiments/production_graduation/gate_validation/capture.py": "373dab408e467093a764720d6b9b6e5cd1617b7079e877c710b44cd3d24c68bf",
+    "experiments/production_graduation/gate_validation/fixtures.py": "ce7a3bc48939da71b4c3ac49829e9e21d9c686b5bdda7f72697c3ccbd14f1f0c",
+    "experiments/production_graduation/gate_validation/validate_g123.py": "d18aefea58b169264095466eafb81f5d1f0c259ae9e3ccb516c9534f228420c3",
+    "experiments/production_graduation/gate_validation/g9_controller.py": "4b3697b3d3eccf4eccb239060a50571bb91abe9bdd121143c6042b1ea91131ce",
+    "experiments/production_graduation/gate_validation/controlled_latency_crossover.py": "e9b555d41ad3bcccf14cca864d9417ea93dfee76b1c2739d944947bdb16f8d79",
+    "experiments/production_graduation/gate_validation/controlled_latency_crossover_worker.py": "00d74057fd8e6a7b831be4b868578bc4c19b74c4e6512c0fe093f4d5aa4e0725",
+    "experiments/production_graduation/gate_validation/wait_observer.py": "70cff7cf2f5013c3ea65318f3ca4f206a251eac169c21b45e224d2529959de7d"
+  },
+  "support_files_sha256": {
+    ".framework/orqs/ORQ-41-production-retrieval-graduation/environment/g123/execution-freeze/settings/inspect.py": "501ea364ae3bfc21de353a0b6b0c6667dea5d44f682b7c456e4b01a6f1fbeb45",
+    ".framework/orqs/ORQ-41-production-retrieval-graduation/campaign-redesign/p2_netguard/sitecustomize.py": "2810dd72b69aa1c383c512a2ed6fb2444248c438b9a4b947330042020288a2f5",
+    ".framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106130053-rev2/diagnosis/receipt-copy-proposal/implementation/image-pin/receipt.json": "15fbd41517ebd30ddc86a60aa95a30c976573fcc80d43ee8efb51739caae2a79"
+  },
+  "prepared_database_verification_sha256": "ebfacc68d4bc969263c4fe7c76917112dbc5f0b8975b651d16c1f1eb35c867c2",
+  "prepared_database_verifier_sha256": "a20ff7760bb1e771acc79182f3064ec2e1b6fceb3c9b56c125482046b45f2bf5",
+  "review_sha256": "7bc5cf2867651bf0229a88d6d82554ddf5949e6c59d43f8de675e76bce494dba",
+  "planned_requests": 64,
+  "measured_requests": 32,
+  "warmups": 32,
+  "independent_pure_controls_passed": 4,
+  "parent_image_controls_passed": 51,
+  "reviewer_api_calls": 0,
+  "reviewer_database_calls": 0,
+  "reviewer_docker_calls": 0,
+  "reviewer_external_calls": 0,
+  "execution_observed": false,
+  "new_blocker_high_medium_findings": [],
+  "official_g6_status": "CONTROLLED_G6_FAIL",
+  "limits": [
+    "Descriptive local diagnostic only; not statistical G6 PASS",
+    "Fixed within-cell crossover does not remove block/time/interactions",
+    "Prepared SQL/config verifier executed by parent, independently inspected source/receipt",
+    "Analyzer inspected prospectively, no raw-result execution yet"
+  ]
+}

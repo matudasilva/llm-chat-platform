@@ -1,0 +1,65 @@
+{
+  "status": "C1_COMPARISON_FINAL_DATABASES_READONLY_VERIFIER_PASS",
+  "verifier_author": "adapted prior independent read-only verifier; parent executed, distinct reviewer inspects source/receipt",
+  "executor": "parent approved P2 Docker access",
+  "plan_sha256": "248e9fb62ff98c54f3590b487b078413d4397dac6035ef4ddfde74916b0f9bc9",
+  "verifier_sha256": "f55cc8ae0eaf5ad9228ab3d5db22a4e8bbf0ca72b2844c2528b4d6949ead482f",
+  "arms": [
+    {
+      "arm": "old",
+      "database": "orq41_c1cmp_261106215400_old",
+      "conversations": 20,
+      "messages": 424,
+      "business_projection_sha256": "036db25b75a2057ffbb212cc64bb7bce925785353fdddb517a20eb6e2a37a851",
+      "normalized_business_projection_sha256": "65cb11f752ef31c9eb007fb2cca0f7d02b41d63bd2f367db49840c28e352abc3",
+      "normalized_generated_message_ids": 40,
+      "normalized_schema_sha256": "851772d47b85ce52856ef0e313fadc4e8bdf9be0eec06fc75b51e67eae570ce2",
+      "corpus_content_sha256": "9fa959aeeb5d332882d61f60528eaa72468f110705c51ce05b70e213dd168506",
+      "rls": {
+        "orq37-t23": 2146,
+        "orq41-6b2ab547-en-empty": 0,
+        "orq41-6b2ab547-en-history": 0,
+        "orq41-6b2ab547-es-empty": 0,
+        "orq41-6b2ab547-es-history": 0,
+        "": 0,
+        "independent-unknown": 0
+      }
+    },
+    {
+      "arm": "new",
+      "database": "orq41_c1cmp_261106215400_new",
+      "conversations": 20,
+      "messages": 424,
+      "business_projection_sha256": "660853421f5f1bcef60ffb7783189ef0fbccf4420e0c4bfa065bd8ea3c94a30e",
+      "normalized_business_projection_sha256": "65cb11f752ef31c9eb007fb2cca0f7d02b41d63bd2f367db49840c28e352abc3",
+      "normalized_generated_message_ids": 40,
+      "normalized_schema_sha256": "851772d47b85ce52856ef0e313fadc4e8bdf9be0eec06fc75b51e67eae570ce2",
+      "corpus_content_sha256": "9fa959aeeb5d332882d61f60528eaa72468f110705c51ce05b70e213dd168506",
+      "rls": {
+        "orq37-t23": 2146,
+        "orq41-6b2ab547-en-empty": 0,
+        "orq41-6b2ab547-en-history": 0,
+        "orq41-6b2ab547-es-empty": 0,
+        "orq41-6b2ab547-es-history": 0,
+        "": 0,
+        "independent-unknown": 0
+      }
+    }
+  ],
+  "configuration": {
+    "old": {
+      "full": "40d84ea1298aec2c6350bbe68173159b3d5342e19c2008c4b65aef1aa1acd248",
+      "normalized": "ba8d318986a6c9b73d097e841916161f20bfae60f1d15f8bf1754567390ae4b0"
+    },
+    "new": {
+      "full": "550bc2c5f800db03143c97d62ae39a84d4ab0514ce6ab9a3ad2d568d45bae5a0",
+      "normalized": "ba8d318986a6c9b73d097e841916161f20bfae60f1d15f8bf1754567390ae4b0"
+    }
+  },
+  "normalized_effective_configuration_equal": true,
+  "platform_api_calls": 0,
+  "gate_executed": false,
+  "database_writes": 0,
+  "external_calls": 0,
+  "spend_usd": "0"
+}

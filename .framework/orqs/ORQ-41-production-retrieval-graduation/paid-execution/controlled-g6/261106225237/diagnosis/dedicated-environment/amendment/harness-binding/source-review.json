@@ -1,0 +1,49 @@
+{
+  "status": "DEDICATED_BINDING_SOURCE_REVIEW_PASS",
+  "scope": "Binding source including wired but permanently gated PG/auxiliary provisioning",
+  "approval_sha256": "95ab7b44301cfeab0c030f96a67c906d20ac3c198ea21165b9be7da65ea8f495",
+  "technical_files_sha256": {
+    "experiments/production_graduation/gate_validation/blocked_latency.py": "794aaae44bf643df769ed19f6a953854b99802b8d9a6135aee5b4b5dc330067c",
+    "experiments/production_graduation/gate_validation/dedicated_environment.py": "9383cb3e039811bd50887f09d765071fc6b45dc84add414bce0523dc3c3227ee",
+    "tests/experiments/test_orq41_dedicated_environment.py": "0b4902ae6fe0720294a32f29bffe6f16ada9b5b338c7a33eb3858b5fa6b1d608"
+  },
+  "resolved_findings": [
+    "BINDING-R1"
+  ],
+  "new_blocker_high_medium_findings": [],
+  "independent_tests": {
+    "passed": 55,
+    "seconds": 1.96,
+    "xml_sha256": "cc6c1f35ab3130b8f04260d0fb4e3fd6ac939f0fbe1a8693ae4d28a1b405a83b"
+  },
+  "prior_source_review_sha256": "945b00378143a321532df71faa4c5ae6b310d04be268dd612ca82ec543685211",
+  "report_sha256": "b96027caf1db0ee2a517d397246eb020d7082930c49e93b72e1a2fcf65057826",
+  "execution_barrier_present": true,
+  "provisioning_wired": true,
+  "workload_recovery_implemented": false,
+  "provisioning_approved": false,
+  "environment_ready": false,
+  "reviewer_host_operations": 0,
+  "reviewer_source_edits": 0,
+  "parent_regression": {
+    "attribution": "parent executed, reviewer inspected XML only",
+    "file": "regression-complete.xml",
+    "sha256": "b500bbb7155b2ab58dc62650e8c3d0ae73470f3ce10a298ad61511c19fc3fc55",
+    "suites": [
+      {
+        "name": "pytest",
+        "errors": "0",
+        "failures": "0",
+        "skipped": "0",
+        "tests": "216",
+        "time": "9.997",
+        "timestamp": "2026-11-10T23:54:55.762146-03:00",
+        "hostname": "matias-Sword-16-HX-B14VFKG"
+      }
+    ]
+  },
+  "author_evidence_sha256": {
+    "implementation.json": "9f96dba055127b6b4e56c92b75f975778d478fbd1a7c15a9d9a0cb6e8772e6f1",
+    "validation.md": "1966d16a575e2e83bd0361b12fb89a7591d8135830a32280c49e0dd713ecfe15"
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "status": "PARENT_RAW_REPLAY_VERIFIED_VALID_AA_FAIL",
+  "plan_sha256": "e3f6f8efae1de5858e3402ee131cead41a28a42050b7115ded5c08a26f53eb54",
+  "result_sha256": "592c5136dfbc4fa5106c5906c112fc6f056b764312af264615c25e9dd7005207",
+  "requests_functionally_passed": 1440,
+  "measured": 800,
+  "warmups": 640,
+  "unique_accounting_instances": 1440,
+  "unique_arm_request_admissions": 1440,
+  "workers": 32,
+  "cells": [
+    {
+      "cell": "EN-json",
+      "c0_p95_ns": 14642350,
+      "c1_p95_ns": 14444318,
+      "c0_p95_ms": "14.64235",
+      "c1_p95_ms": "14.444318",
+      "signed_b_vs_a_percent": "-1.352460499851458270018132340",
+      "symmetric_gap_percent": "1.371002770778101119069796200",
+      "status": "PASS"
+    },
+    {
+      "cell": "EN-sse",
+      "c0_p95_ns": 15134931,
+      "c1_p95_ns": 14790465,
+      "c0_p95_ms": "15.134931",
+      "c1_p95_ms": "14.790465",
+      "signed_b_vs_a_percent": "-2.275966768530361981828658490",
+      "symmetric_gap_percent": "2.328973429841455288931078200",
+      "status": "PASS"
+    },
+    {
+      "cell": "ES-json",
+      "c0_p95_ns": 16155431,
+      "c1_p95_ns": 14904832,
+      "c0_p95_ms": "16.155431",
+      "c1_p95_ms": "14.904832",
+      "signed_b_vs_a_percent": "-7.741043863206125543787720670",
+      "symmetric_gap_percent": "8.390560859726563841846724600",
+      "status": "FAIL"
+    },
+    {
+      "cell": "ES-sse",
+      "c0_p95_ns": 14462488,
+      "c1_p95_ns": 16463800,
+      "c0_p95_ms": "14.462488",
+      "c1_p95_ms": "16.4638",
+      "signed_b_vs_a_percent": "13.83795098049519557077592740",
+      "symmetric_gap_percent": "13.83795098049519557077592740",
+      "status": "FAIL"
+    }
+  ],
+  "source_config_files_unchanged": 505,
+  "functional_failures": 0,
+  "actual_external_calls": 0,
+  "task_external_spend_usd": "0",
+  "official_g6_status": "CONTROLLED_G6_FAIL",
+  "paid_admission": "BLOCKED_CONTROLLED_G6_FAIL",
+  "causal_failure_explanation_proven": false,
+  "automatic_resends_or_favorable_repetitions": 0
+}

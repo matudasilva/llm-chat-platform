@@ -1,0 +1,59 @@
+{
+  "status": "CONTROLLED_G6_HARNESS_INDEPENDENT_REVIEW_PASS",
+  "reviewer": "/root/packet_review",
+  "plan_sha256": "cdc785a3ccfb9538882d66f327e71c978ebc85e910cf2a0fa68e21ca6853fbf7",
+  "preparation_sha256": "6dafd86b601caab5b876509d1ba81f48e3b7e8bf0bc1e5f92460887faecdf717",
+  "fixtures_sha256": "7d857a8bfbecb26bd40376c71e3175f448e35307b2b28acb535b8485752b2135",
+  "harness_sha256": {
+    "experiments/production_graduation/gate_validation/controlled_latency.py": "a711e6161564e4f5fbf4f542c84bd6a3f1afb71df16760e4480cdae9073837f9",
+    "experiments/production_graduation/gate_validation/controlled_latency_worker.py": "a9f1996aadfe87406addbc9ba890ae291c186de76341b0f322aa2732b03804e8",
+    "experiments/production_graduation/gate_validation/controlled_latency_controller.py": "914e48832b1848f72194a64251c5440651c8842808ad8482ebec1d17a6d6e0d6",
+    "experiments/production_graduation/gate_validation/local_api.py": "e9b8a886018ca60a7b77b2885b89fa813368373435464e455bd449589ea034eb",
+    "experiments/production_graduation/gate_validation/transports.py": "3c0f15acf79a08684fad8d89bfa7242d3779a980f89988a7f252e74cb7aef6e0",
+    "experiments/production_graduation/gate_validation/capture.py": "373dab408e467093a764720d6b9b6e5cd1617b7079e877c710b44cd3d24c68bf",
+    "experiments/production_graduation/gate_validation/fixtures.py": "ce7a3bc48939da71b4c3ac49829e9e21d9c686b5bdda7f72697c3ccbd14f1f0c",
+    "experiments/production_graduation/gate_validation/validate_g123.py": "d18aefea58b169264095466eafb81f5d1f0c259ae9e3ccb516c9534f228420c3",
+    "experiments/production_graduation/gate_validation/g9_controller.py": "4b3697b3d3eccf4eccb239060a50571bb91abe9bdd121143c6042b1ea91131ce"
+  },
+  "support_files_sha256": {
+    ".framework/orqs/ORQ-41-production-retrieval-graduation/environment/g123/execution-freeze/settings/inspect.py": "501ea364ae3bfc21de353a0b6b0c6667dea5d44f682b7c456e4b01a6f1fbeb45",
+    ".framework/orqs/ORQ-41-production-retrieval-graduation/campaign-redesign/p2_netguard/sitecustomize.py": "2810dd72b69aa1c383c512a2ed6fb2444248c438b9a4b947330042020288a2f5"
+  },
+  "candidate_pin_receipt_sha256": "15fbd41517ebd30ddc86a60aa95a30c976573fcc80d43ee8efb51739caae2a79",
+  "candidate_image": "sha256:4e68ccdca15b97f7fd573034c74575d88a156d21ca7f4ff2251affc5db55e707",
+  "candidate_source_sha256": "32490a738e58d2499b6f3a2bac9ee961f6d060a486830752d7b5207b5398ba20",
+  "database_verification_receipt_sha256": "4a47e7d9776d2f90001b605f6d2e5bba88d88b18df38e14b4df7fa423a78791d",
+  "candidate_override_test_sha256": "95a6aecc2277fc07ba348bb76d54a26bd2b913e4fb0db3b2ae802a77d95a6986",
+  "independent_p2_tests_passed": 28,
+  "independent_test_output": "28 passed, 1 cache_dir plugin warning in 0.19s; tool chunk2219c8; no XML generated",
+  "review_scope": "Candidate override exact reviewed image/parent; immutable plan/pins/config/fixtures; prior unchanged worker/summarizer; prospective only",
+  "sample_requests": 840,
+  "measured_requests": 800,
+  "warmups": 40,
+  "n_per_cell_arm": 100,
+  "w_per_cell_arm": 5,
+  "relative_p95_limit_percent": 5,
+  "open_blocker_high_medium_findings": [],
+  "evidence": [
+    "Exact plan/preparation/fixture/source/support hashes match",
+    "420 paired fresh identities; 25 measured samples per category/cell/arm",
+    "Parent executed reviewer-authored read-only DB/config verifier:420 conversations/9600 messages per arm; P3/RLS/schema/business/config parity",
+    "prepare-only override matches optimized image status/ID and approved parent; execute CLI refuses a new override",
+    "No result or worker receipts existed at review; no requests executed by reviewer"
+  ],
+  "reviewer_api_calls": 0,
+  "reviewer_database_calls": 0,
+  "reviewer_docker_calls": 0,
+  "external_calls": 0,
+  "spend_usd": "0",
+  "gate_execution_performed": false,
+  "receipt_is_not_gate_pass": true,
+  "execution_requires_separate_operator_authorization": true,
+  "official_previous_g6_status": "CONTROLLED_G6_FAIL",
+  "limitations": [
+    "R=1 fixed arm order and host jitter remain",
+    "Memory-native stub timing does not certify live provider absolute bounds",
+    "Parent performed DB/config verification, reviewer inspected source/receipt",
+    "No actual container/process inventory was queried by reviewer"
+  ]
+}

@@ -1,0 +1,228 @@
+{
+  "status": "RETAINED_PROCESS_CONFIGURATION_AUDIT_PASS",
+  "pairs": [
+    {
+      "cell": "EN-json",
+      "normalized_environment_equal": true,
+      "unexpected_environment_difference_keys": [],
+      "expected_raw_difference_keys": [
+        "DATABASE_URL",
+        "DATABASE_URL_APP",
+        "DATABASE_URL_OPS",
+        "G6_ARM"
+      ],
+      "image_equal": true,
+      "process_configuration_equal": true,
+      "resources_equal": true,
+      "mounts_equal": true
+    },
+    {
+      "cell": "EN-sse",
+      "normalized_environment_equal": true,
+      "unexpected_environment_difference_keys": [],
+      "expected_raw_difference_keys": [
+        "DATABASE_URL",
+        "DATABASE_URL_APP",
+        "DATABASE_URL_OPS",
+        "G6_ARM"
+      ],
+      "image_equal": true,
+      "process_configuration_equal": true,
+      "resources_equal": true,
+      "mounts_equal": true
+    },
+    {
+      "cell": "ES-json",
+      "normalized_environment_equal": true,
+      "unexpected_environment_difference_keys": [],
+      "expected_raw_difference_keys": [
+        "DATABASE_URL",
+        "DATABASE_URL_APP",
+        "DATABASE_URL_OPS",
+        "G6_ARM"
+      ],
+      "image_equal": true,
+      "process_configuration_equal": true,
+      "resources_equal": true,
+      "mounts_equal": true
+    },
+    {
+      "cell": "ES-sse",
+      "normalized_environment_equal": true,
+      "unexpected_environment_difference_keys": [],
+      "expected_raw_difference_keys": [
+        "DATABASE_URL",
+        "DATABASE_URL_APP",
+        "DATABASE_URL_OPS",
+        "G6_ARM"
+      ],
+      "image_equal": true,
+      "process_configuration_equal": true,
+      "resources_equal": true,
+      "mounts_equal": true
+    }
+  ],
+  "workers": [
+    {
+      "name": "/orq41-aa-261107150655-c0-en-json",
+      "started": "2026-11-07T15:12:31.697820076Z",
+      "finished": "2026-11-07T15:12:34.58206867Z",
+      "exit_code": 0,
+      "oom_killed": false,
+      "restart_count": 0,
+      "runtime_environment": {
+        "PYTHONHASHSEED": "UNSET",
+        "PYTHONMALLOC": "UNSET",
+        "PYTHONOPTIMIZE": "UNSET",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHON_GIL": "UNSET",
+        "PYTHON_JIT": "UNSET",
+        "LANG": "UNSET",
+        "TZ": "UNSET",
+        "MALLOC_ARENA_MAX": "UNSET"
+      }
+    },
+    {
+      "name": "/orq41-aa-261107150655-c1-en-json",
+      "started": "2026-11-07T15:12:35.551956076Z",
+      "finished": "2026-11-07T15:12:38.501636168Z",
+      "exit_code": 0,
+      "oom_killed": false,
+      "restart_count": 0,
+      "runtime_environment": {
+        "PYTHONHASHSEED": "UNSET",
+        "PYTHONMALLOC": "UNSET",
+        "PYTHONOPTIMIZE": "UNSET",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHON_GIL": "UNSET",
+        "PYTHON_JIT": "UNSET",
+        "LANG": "UNSET",
+        "TZ": "UNSET",
+        "MALLOC_ARENA_MAX": "UNSET"
+      }
+    },
+    {
+      "name": "/orq41-aa-261107150655-c0-en-sse",
+      "started": "2026-11-07T15:12:44.177873145Z",
+      "finished": "2026-11-07T15:12:48.039858494Z",
+      "exit_code": 0,
+      "oom_killed": false,
+      "restart_count": 0,
+      "runtime_environment": {
+        "PYTHONHASHSEED": "UNSET",
+        "PYTHONMALLOC": "UNSET",
+        "PYTHONOPTIMIZE": "UNSET",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHON_GIL": "UNSET",
+        "PYTHON_JIT": "UNSET",
+        "LANG": "UNSET",
+        "TZ": "UNSET",
+        "MALLOC_ARENA_MAX": "UNSET"
+      }
+    },
+    {
+      "name": "/orq41-aa-261107150655-c1-en-sse",
+      "started": "2026-11-07T15:12:39.562369934Z",
+      "finished": "2026-11-07T15:12:43.185246346Z",
+      "exit_code": 0,
+      "oom_killed": false,
+      "restart_count": 0,
+      "runtime_environment": {
+        "PYTHONHASHSEED": "UNSET",
+        "PYTHONMALLOC": "UNSET",
+        "PYTHONOPTIMIZE": "UNSET",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHON_GIL": "UNSET",
+        "PYTHON_JIT": "UNSET",
+        "LANG": "UNSET",
+        "TZ": "UNSET",
+        "MALLOC_ARENA_MAX": "UNSET"
+      }
+    },
+    {
+      "name": "/orq41-aa-261107150655-c0-es-json",
+      "started": "2026-11-07T15:12:48.998376485Z",
+      "finished": "2026-11-07T15:12:51.950038412Z",
+      "exit_code": 0,
+      "oom_killed": false,
+      "restart_count": 0,
+      "runtime_environment": {
+        "PYTHONHASHSEED": "UNSET",
+        "PYTHONMALLOC": "UNSET",
+        "PYTHONOPTIMIZE": "UNSET",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHON_GIL": "UNSET",
+        "PYTHON_JIT": "UNSET",
+        "LANG": "UNSET",
+        "TZ": "UNSET",
+        "MALLOC_ARENA_MAX": "UNSET"
+      }
+    },
+    {
+      "name": "/orq41-aa-261107150655-c1-es-json",
+      "started": "2026-11-07T15:12:52.8791326Z",
+      "finished": "2026-11-07T15:12:55.830414371Z",
+      "exit_code": 0,
+      "oom_killed": false,
+      "restart_count": 0,
+      "runtime_environment": {
+        "PYTHONHASHSEED": "UNSET",
+        "PYTHONMALLOC": "UNSET",
+        "PYTHONOPTIMIZE": "UNSET",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHON_GIL": "UNSET",
+        "PYTHON_JIT": "UNSET",
+        "LANG": "UNSET",
+        "TZ": "UNSET",
+        "MALLOC_ARENA_MAX": "UNSET"
+      }
+    },
+    {
+      "name": "/orq41-aa-261107150655-c0-es-sse",
+      "started": "2026-11-07T15:13:01.785305475Z",
+      "finished": "2026-11-07T15:13:05.809297601Z",
+      "exit_code": 0,
+      "oom_killed": false,
+      "restart_count": 0,
+      "runtime_environment": {
+        "PYTHONHASHSEED": "UNSET",
+        "PYTHONMALLOC": "UNSET",
+        "PYTHONOPTIMIZE": "UNSET",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHON_GIL": "UNSET",
+        "PYTHON_JIT": "UNSET",
+        "LANG": "UNSET",
+        "TZ": "UNSET",
+        "MALLOC_ARENA_MAX": "UNSET"
+      }
+    },
+    {
+      "name": "/orq41-aa-261107150655-c1-es-sse",
+      "started": "2026-11-07T15:12:56.842513062Z",
+      "finished": "2026-11-07T15:13:00.826514711Z",
+      "exit_code": 0,
+      "oom_killed": false,
+      "restart_count": 0,
+      "runtime_environment": {
+        "PYTHONHASHSEED": "UNSET",
+        "PYTHONMALLOC": "UNSET",
+        "PYTHONOPTIMIZE": "UNSET",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHON_GIL": "UNSET",
+        "PYTHON_JIT": "UNSET",
+        "LANG": "UNSET",
+        "TZ": "UNSET",
+        "MALLOC_ARENA_MAX": "UNSET"
+      }
+    }
+  ],
+  "api_requests": 0,
+  "database_queries": 0,
+  "provider_calls": 0,
+  "external_calls": 0,
+  "limitations": [
+    "configuration identity is not equality of runtime scheduler/heap/cache state",
+    "unset PYTHONHASHSEED leaves process hash randomization uncontrolled; magnitude unproven"
+  ],
+  "source_sha256": "116e81e921eba966076af4a9878aa5630511b62145cac7bb2d2166208d8f31a7"
+}

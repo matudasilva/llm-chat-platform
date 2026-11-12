@@ -1,0 +1,38 @@
+{
+  "status": "DIAGNOSTIC_PROFILE_EXECUTION_INDEPENDENT_REVIEW_PASS",
+  "not_a_gate": true,
+  "plan_sha256": "75943c856acd07363ad6529f4ed0e449d6aa061fdcf332a7e23968cd156f230f",
+  "result_sha256": "6342b75398b94aa9d4bee32bd39c081ed94cf1fb2fce34d3d5e2d356f4d2b537",
+  "analysis_sha256": "ed8b521061bc2615fd6a166f981f401ae0c65dc77ed333c54b9bcb5f63d3386c",
+  "verifier_sha256": "54bcc3b3f6c7e3e0603c4d8bf6b330dbef5d3ea69a7ab46413fa1257fa763327",
+  "requests": 40,
+  "measured": 32,
+  "warmups": 8,
+  "accounting_instances": 20,
+  "profile_events": 7696,
+  "phases": {
+    "before_primary": 6712,
+    "after_primary": 984
+  },
+  "exclusive_tree_arithmetic_verified": true,
+  "cpu_classification_and_sql_union_verified": true,
+  "native_payload_parity": true,
+  "observed_guard_attempts": 0,
+  "reviewer_api_calls": 0,
+  "external_calls": 0,
+  "spend_usd": "0",
+  "official_g6_status": "CONTROLLED_G6_FAIL",
+  "causal_percentage_established": false,
+  "replay_status": "DIAGNOSTIC_PROFILE_EXECUTION_INDEPENDENT_REPLAY_PASS",
+  "database_final_verification_sha256": "f5f6b86801f1457766f8e3516281825fe530f59fc0ec25a290d12c7ed146e9aa",
+  "prepared_fixtures_preserved_and_complete_exchanges": true,
+  "final_messages_per_arm": 424,
+  "review_sha256": "6dc78df602ca41f0ab9bd322c5a4fdb4760dc721a8c39e001974c7311791d260",
+  "next_step_proposal_sha256": "9edd5e394834849f38ff96497465f61abd223d1b34398e02057ed659786f4713",
+  "next_step": "Approval required for lighter offline aggregate CPU replay; no runtime optimization or new API/gate execution authorized by this receipt",
+  "limitations": [
+    "Fine-grained wrapper overhead can remain in parent self CPU",
+    "No exact uninstrumented causal share or corrected p95 established",
+    "Final read-only DB/config verification executed by parent, not reviewer"
+  ]
+}

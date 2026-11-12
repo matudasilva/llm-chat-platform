@@ -1,0 +1,13 @@
+# Independent dedicated-binding source review — final updated wiring
+
+Result: **DEDICATED_BINDING_SOURCE_REVIEW_PASS**, approved binding-only source increment. Prior source review54-test version preserved as source-review-round2.json/md; this receipt supersedes only that source snapshot.
+
+Independently reviewed the added bound provisioning construction and prepare forwarding. prepare forwards its explicitly bound policy into make_plan and selects dedicated provision only for that plan, leaving legacy aa.provision unchanged. Dedicated provision first invokes the unconditional validated execution barrier; no bound file write/import/command is reachable through production entry. Behind that barrier it builds the new network-none PG with exact benchmark parent/mask/quota/memory/image; auxiliary Redis/collector retain network sharing, local configuration and housekeeping system.slice parent. No stop/remove/restart operation is introduced. The new unit test patches the barrier only within the test and replaces every Docker operation; only temp private-file writes occur. Existing bound prepare and execute entry barriers remain before host I/O. No execution-unlock option exists.
+
+BINDING-R1 remains resolved: unit/kernel masks correlate even for empty groups; root mask and parent/subset relationships are mandatory; duplicate/invalid task evidence rejects. Re-reviewed final three technical files. Independently reran all55 focused controls with unshare -rn/env-i, absolute P2 guard/repo PYTHONPATH, credential paths disabled and neutral pytest configuration:55PASS in1.96s, no warnings. XML retained. No broader regression is claimed as independently executed; parent receipts remain separately attributed.
+
+Bound PG/auxiliary provisioning is now wired in source **but permanently gated**. This does not implement or approve workload-aware lease/drain/recovery orchestration, API live pre-admission handshake, future privileged placement or executable dedicated packet. Those remain explicit prerequisites and require separately approved reviewed work. Current snapshot checks are boundary evidence, not interval-wide hardware exclusivity; IRQ/kernel/concurrent-admin limits remain.
+
+No new confirmed B/H/M defect was identified in the reviewed addition. No technical source edits, actual Docker/host/service/SQL/API/provider/network operation or measurements were performed by reviewer. No environment readiness/provisioning/benchmark/G6PASS/paid admission follows; G6FAIL/paidBLOCK remain unchanged.
+
+Inspected separately preserved parent regression-complete.xml:216PASS/0fail/0error/0skip in10.00s, parent-executed under P2; reviewer did not rerun this combined suite. The previous215-test XML remains separate.

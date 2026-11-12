@@ -1,0 +1,503 @@
+{
+  "status": "AA_OWN_SERVICES_STOPPED_DATA_RETAINED",
+  "plan_sha256": "f1552995b797fecef6e67f00635c85cede5c1938d19728d3b553b0df8ff0c8df",
+  "before": {
+    "postgres": {
+      "name": "orq41-aa-261108131511-postgres",
+      "id": "3d26134aeece8f2b96ac8df84317c8c63d7ae9c01667bd53e5306de7851fadec",
+      "image": "sha256:8e5355e9ff399a002fa46148399a1ac22fb3e9b2d390f857296e6da6b5559ba1",
+      "state": {
+        "Status": "running",
+        "Running": true,
+        "ExitCode": 0,
+        "StartedAt": "2026-11-08T13:15:11.791380862Z",
+        "FinishedAt": "0001-01-01T00:00:00Z",
+        "OOMKilled": false
+      },
+      "network_mode": "none",
+      "port_bindings": {},
+      "cpuset_cpus": "4,6",
+      "nano_cpus": 2000000000,
+      "memory": 2147483648,
+      "memory_swap": 2147483648,
+      "mounts": [
+        {
+          "Type": "bind",
+          "Source": "/home/matias/Cursor/llm-chat-platform/scripts/postgres-init",
+          "Destination": "/docker-entrypoint-initdb.d",
+          "RW": false
+        },
+        {
+          "Type": "volume",
+          "Source": "/var/lib/docker/volumes/f10be0d671ff3383df6a59a8a3362ab57ae23d4d5c340233ee4b07923d45f271/_data",
+          "Destination": "/var/lib/postgresql/data",
+          "RW": true
+        }
+      ]
+    },
+    "redis": {
+      "name": "orq41-aa-261108131511-redis",
+      "id": "85456f8794fe1db20533f7ed00fda169db2b795e6b721c8e937a657872927344",
+      "image": "sha256:13105d2858ded45aedf7b24f0870e6a4e7ce4964924bffce68e562ca72149f1e",
+      "state": {
+        "Status": "running",
+        "Running": true,
+        "ExitCode": 0,
+        "StartedAt": "2026-11-08T13:15:12.94048194Z",
+        "FinishedAt": "0001-01-01T00:00:00Z",
+        "OOMKilled": false
+      },
+      "network_mode": "container:3d26134aeece8f2b96ac8df84317c8c63d7ae9c01667bd53e5306de7851fadec",
+      "port_bindings": {},
+      "cpuset_cpus": "",
+      "nano_cpus": 500000000,
+      "memory": 268435456,
+      "memory_swap": 268435456,
+      "mounts": [
+        {
+          "Type": "volume",
+          "Source": "/var/lib/docker/volumes/bb3ec16a79448d7ee5b94baa56d624cc9a1c020c07cef6c2f28b5625a8582221/_data",
+          "Destination": "/data",
+          "RW": true
+        }
+      ]
+    },
+    "collector": {
+      "name": "orq41-aa-261108131511-collector",
+      "id": "b804021515364b77172f831467153048e65df59ac1e8eeb829e57a110049a0c9",
+      "image": "sha256:50dccac76879873148242bb98c6472404f3af3388c318ef270a6912b855c2dbc",
+      "state": {
+        "Status": "running",
+        "Running": true,
+        "ExitCode": 0,
+        "StartedAt": "2026-11-08T13:15:13.05799208Z",
+        "FinishedAt": "0001-01-01T00:00:00Z",
+        "OOMKilled": false
+      },
+      "network_mode": "container:3d26134aeece8f2b96ac8df84317c8c63d7ae9c01667bd53e5306de7851fadec",
+      "port_bindings": {},
+      "cpuset_cpus": "",
+      "nano_cpus": 500000000,
+      "memory": 268435456,
+      "memory_swap": 268435456,
+      "mounts": [
+        {
+          "Type": "bind",
+          "Source": "/home/matias/Cursor/llm-chat-platform/.framework/orqs/ORQ-41-production-retrieval-graduation/environment/g8/collector.yaml",
+          "Destination": "/etc/otelcol/config.yaml",
+          "RW": false
+        }
+      ]
+    }
+  },
+  "after": {
+    "postgres": {
+      "name": "orq41-aa-261108131511-postgres",
+      "id": "3d26134aeece8f2b96ac8df84317c8c63d7ae9c01667bd53e5306de7851fadec",
+      "image": "sha256:8e5355e9ff399a002fa46148399a1ac22fb3e9b2d390f857296e6da6b5559ba1",
+      "state": {
+        "Status": "exited",
+        "Running": false,
+        "ExitCode": 0,
+        "StartedAt": "2026-11-08T13:15:11.791380862Z",
+        "FinishedAt": "2026-11-08T14:17:29.509213358Z",
+        "OOMKilled": false
+      },
+      "network_mode": "none",
+      "port_bindings": {},
+      "cpuset_cpus": "4,6",
+      "nano_cpus": 2000000000,
+      "memory": 2147483648,
+      "memory_swap": 2147483648,
+      "mounts": [
+        {
+          "Type": "bind",
+          "Source": "/home/matias/Cursor/llm-chat-platform/scripts/postgres-init",
+          "Destination": "/docker-entrypoint-initdb.d",
+          "RW": false
+        },
+        {
+          "Type": "volume",
+          "Source": "/var/lib/docker/volumes/f10be0d671ff3383df6a59a8a3362ab57ae23d4d5c340233ee4b07923d45f271/_data",
+          "Destination": "/var/lib/postgresql/data",
+          "RW": true
+        }
+      ]
+    },
+    "redis": {
+      "name": "orq41-aa-261108131511-redis",
+      "id": "85456f8794fe1db20533f7ed00fda169db2b795e6b721c8e937a657872927344",
+      "image": "sha256:13105d2858ded45aedf7b24f0870e6a4e7ce4964924bffce68e562ca72149f1e",
+      "state": {
+        "Status": "exited",
+        "Running": false,
+        "ExitCode": 0,
+        "StartedAt": "2026-11-08T13:15:12.94048194Z",
+        "FinishedAt": "2026-11-08T14:17:29.362631608Z",
+        "OOMKilled": false
+      },
+      "network_mode": "container:3d26134aeece8f2b96ac8df84317c8c63d7ae9c01667bd53e5306de7851fadec",
+      "port_bindings": {},
+      "cpuset_cpus": "",
+      "nano_cpus": 500000000,
+      "memory": 268435456,
+      "memory_swap": 268435456,
+      "mounts": [
+        {
+          "Type": "volume",
+          "Source": "/var/lib/docker/volumes/bb3ec16a79448d7ee5b94baa56d624cc9a1c020c07cef6c2f28b5625a8582221/_data",
+          "Destination": "/data",
+          "RW": true
+        }
+      ]
+    },
+    "collector": {
+      "name": "orq41-aa-261108131511-collector",
+      "id": "b804021515364b77172f831467153048e65df59ac1e8eeb829e57a110049a0c9",
+      "image": "sha256:50dccac76879873148242bb98c6472404f3af3388c318ef270a6912b855c2dbc",
+      "state": {
+        "Status": "exited",
+        "Running": false,
+        "ExitCode": 0,
+        "StartedAt": "2026-11-08T13:15:13.05799208Z",
+        "FinishedAt": "2026-11-08T14:17:29.20584054Z",
+        "OOMKilled": false
+      },
+      "network_mode": "container:3d26134aeece8f2b96ac8df84317c8c63d7ae9c01667bd53e5306de7851fadec",
+      "port_bindings": {},
+      "cpuset_cpus": "",
+      "nano_cpus": 500000000,
+      "memory": 268435456,
+      "memory_swap": 268435456,
+      "mounts": [
+        {
+          "Type": "bind",
+          "Source": "/home/matias/Cursor/llm-chat-platform/.framework/orqs/ORQ-41-production-retrieval-graduation/environment/g8/collector.yaml",
+          "Destination": "/etc/otelcol/config.yaml",
+          "RW": false
+        }
+      ]
+    }
+  },
+  "workers": [
+    {
+      "name": "orq41-aa-261108131511-c0-en-json",
+      "id": "539b6a8479f927789112d462fe081013ad0ba6e678b4a345951e3cb26c36e85e",
+      "image": "sha256:4e68ccdca15b97f7fd573034c74575d88a156d21ca7f4ff2251affc5db55e707",
+      "state": {
+        "Status": "exited",
+        "Running": false,
+        "ExitCode": 0,
+        "StartedAt": "2026-11-08T13:21:39.257857418Z",
+        "FinishedAt": "2026-11-08T13:21:42.244491094Z",
+        "OOMKilled": false
+      },
+      "network_mode": "container:3d26134aeece8f2b96ac8df84317c8c63d7ae9c01667bd53e5306de7851fadec",
+      "port_bindings": {},
+      "cpuset_cpus": "0,2",
+      "nano_cpus": 2000000000,
+      "memory": 2147483648,
+      "memory_swap": 2147483648,
+      "mounts": [
+        {
+          "Type": "bind",
+          "Source": "/home/matias/Cursor/llm-chat-platform/.framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106225237/diagnosis/aa-runs/261108131511",
+          "Destination": "/g6run",
+          "RW": true
+        },
+        {
+          "Type": "bind",
+          "Source": "/home/matias/Cursor/llm-chat-platform/experiments",
+          "Destination": "/app/experiments",
+          "RW": false
+        },
+        {
+          "Type": "bind",
+          "Source": "/home/matias/Cursor/llm-chat-platform/.framework/orqs/ORQ-41-production-retrieval-graduation/campaign-redesign/p2_netguard",
+          "Destination": "/p2_netguard",
+          "RW": false
+        }
+      ]
+    },
+    {
+      "name": "orq41-aa-261108131511-c1-en-json",
+      "id": "208b5ce990cb84e65b36915a17be64b2030be13e0e8079ce2d4aba266eeb3a9a",
+      "image": "sha256:4e68ccdca15b97f7fd573034c74575d88a156d21ca7f4ff2251affc5db55e707",
+      "state": {
+        "Status": "exited",
+        "Running": false,
+        "ExitCode": 0,
+        "StartedAt": "2026-11-08T13:21:43.26907735Z",
+        "FinishedAt": "2026-11-08T13:21:46.110295465Z",
+        "OOMKilled": false
+      },
+      "network_mode": "container:3d26134aeece8f2b96ac8df84317c8c63d7ae9c01667bd53e5306de7851fadec",
+      "port_bindings": {},
+      "cpuset_cpus": "0,2",
+      "nano_cpus": 2000000000,
+      "memory": 2147483648,
+      "memory_swap": 2147483648,
+      "mounts": [
+        {
+          "Type": "bind",
+          "Source": "/home/matias/Cursor/llm-chat-platform/.framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106225237/diagnosis/aa-runs/261108131511",
+          "Destination": "/g6run",
+          "RW": true
+        },
+        {
+          "Type": "bind",
+          "Source": "/home/matias/Cursor/llm-chat-platform/experiments",
+          "Destination": "/app/experiments",
+          "RW": false
+        },
+        {
+          "Type": "bind",
+          "Source": "/home/matias/Cursor/llm-chat-platform/.framework/orqs/ORQ-41-production-retrieval-graduation/campaign-redesign/p2_netguard",
+          "Destination": "/p2_netguard",
+          "RW": false
+        }
+      ]
+    },
+    {
+      "name": "orq41-aa-261108131511-c1-en-sse",
+      "id": "6505131f10331b62c09ec64b2a8b32f4c8589108de030a76c83122e6cc5259bc",
+      "image": "sha256:4e68ccdca15b97f7fd573034c74575d88a156d21ca7f4ff2251affc5db55e707",
+      "state": {
+        "Status": "exited",
+        "Running": false,
+        "ExitCode": 0,
+        "StartedAt": "2026-11-08T13:21:47.122502797Z",
+        "FinishedAt": "2026-11-08T13:21:50.6099783Z",
+        "OOMKilled": false
+      },
+      "network_mode": "container:3d26134aeece8f2b96ac8df84317c8c63d7ae9c01667bd53e5306de7851fadec",
+      "port_bindings": {},
+      "cpuset_cpus": "0,2",
+      "nano_cpus": 2000000000,
+      "memory": 2147483648,
+      "memory_swap": 2147483648,
+      "mounts": [
+        {
+          "Type": "bind",
+          "Source": "/home/matias/Cursor/llm-chat-platform/.framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106225237/diagnosis/aa-runs/261108131511",
+          "Destination": "/g6run",
+          "RW": true
+        },
+        {
+          "Type": "bind",
+          "Source": "/home/matias/Cursor/llm-chat-platform/experiments",
+          "Destination": "/app/experiments",
+          "RW": false
+        },
+        {
+          "Type": "bind",
+          "Source": "/home/matias/Cursor/llm-chat-platform/.framework/orqs/ORQ-41-production-retrieval-graduation/campaign-redesign/p2_netguard",
+          "Destination": "/p2_netguard",
+          "RW": false
+        }
+      ]
+    },
+    {
+      "name": "orq41-aa-261108131511-c0-en-sse",
+      "id": "32c49e0d317ea4ff424f19dd3a28ecd66b1cbeb43486b9e94c110266c261b729",
+      "image": "sha256:4e68ccdca15b97f7fd573034c74575d88a156d21ca7f4ff2251affc5db55e707",
+      "state": {
+        "Status": "exited",
+        "Running": false,
+        "ExitCode": 0,
+        "StartedAt": "2026-11-08T13:21:51.55842293Z",
+        "FinishedAt": "2026-11-08T13:21:55.077983789Z",
+        "OOMKilled": false
+      },
+      "network_mode": "container:3d26134aeece8f2b96ac8df84317c8c63d7ae9c01667bd53e5306de7851fadec",
+      "port_bindings": {},
+      "cpuset_cpus": "0,2",
+      "nano_cpus": 2000000000,
+      "memory": 2147483648,
+      "memory_swap": 2147483648,
+      "mounts": [
+        {
+          "Type": "bind",
+          "Source": "/home/matias/Cursor/llm-chat-platform/.framework/orqs/ORQ-41-production-retrieval-graduation/campaign-redesign/p2_netguard",
+          "Destination": "/p2_netguard",
+          "RW": false
+        },
+        {
+          "Type": "bind",
+          "Source": "/home/matias/Cursor/llm-chat-platform/.framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106225237/diagnosis/aa-runs/261108131511",
+          "Destination": "/g6run",
+          "RW": true
+        },
+        {
+          "Type": "bind",
+          "Source": "/home/matias/Cursor/llm-chat-platform/experiments",
+          "Destination": "/app/experiments",
+          "RW": false
+        }
+      ]
+    },
+    {
+      "name": "orq41-aa-261108131511-c0-es-json",
+      "id": "d4a201d9d1d30a24d1e7fad0670987c5e6f6c847e538e86845c12b51cb91dc7f",
+      "image": "sha256:4e68ccdca15b97f7fd573034c74575d88a156d21ca7f4ff2251affc5db55e707",
+      "state": {
+        "Status": "exited",
+        "Running": false,
+        "ExitCode": 0,
+        "StartedAt": "2026-11-08T13:21:56.155741267Z",
+        "FinishedAt": "2026-11-08T13:21:59.012127669Z",
+        "OOMKilled": false
+      },
+      "network_mode": "container:3d26134aeece8f2b96ac8df84317c8c63d7ae9c01667bd53e5306de7851fadec",
+      "port_bindings": {},
+      "cpuset_cpus": "0,2",
+      "nano_cpus": 2000000000,
+      "memory": 2147483648,
+      "memory_swap": 2147483648,
+      "mounts": [
+        {
+          "Type": "bind",
+          "Source": "/home/matias/Cursor/llm-chat-platform/.framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106225237/diagnosis/aa-runs/261108131511",
+          "Destination": "/g6run",
+          "RW": true
+        },
+        {
+          "Type": "bind",
+          "Source": "/home/matias/Cursor/llm-chat-platform/experiments",
+          "Destination": "/app/experiments",
+          "RW": false
+        },
+        {
+          "Type": "bind",
+          "Source": "/home/matias/Cursor/llm-chat-platform/.framework/orqs/ORQ-41-production-retrieval-graduation/campaign-redesign/p2_netguard",
+          "Destination": "/p2_netguard",
+          "RW": false
+        }
+      ]
+    },
+    {
+      "name": "orq41-aa-261108131511-c1-es-json",
+      "id": "be32d6e1670f98284de73734fa2ada7d8881cf3dd201afaf6b8d4a468434cde0",
+      "image": "sha256:4e68ccdca15b97f7fd573034c74575d88a156d21ca7f4ff2251affc5db55e707",
+      "state": {
+        "Status": "exited",
+        "Running": false,
+        "ExitCode": 0,
+        "StartedAt": "2026-11-08T13:21:59.945409432Z",
+        "FinishedAt": "2026-11-08T13:22:02.832131396Z",
+        "OOMKilled": false
+      },
+      "network_mode": "container:3d26134aeece8f2b96ac8df84317c8c63d7ae9c01667bd53e5306de7851fadec",
+      "port_bindings": {},
+      "cpuset_cpus": "0,2",
+      "nano_cpus": 2000000000,
+      "memory": 2147483648,
+      "memory_swap": 2147483648,
+      "mounts": [
+        {
+          "Type": "bind",
+          "Source": "/home/matias/Cursor/llm-chat-platform/.framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106225237/diagnosis/aa-runs/261108131511",
+          "Destination": "/g6run",
+          "RW": true
+        },
+        {
+          "Type": "bind",
+          "Source": "/home/matias/Cursor/llm-chat-platform/experiments",
+          "Destination": "/app/experiments",
+          "RW": false
+        },
+        {
+          "Type": "bind",
+          "Source": "/home/matias/Cursor/llm-chat-platform/.framework/orqs/ORQ-41-production-retrieval-graduation/campaign-redesign/p2_netguard",
+          "Destination": "/p2_netguard",
+          "RW": false
+        }
+      ]
+    },
+    {
+      "name": "orq41-aa-261108131511-c1-es-sse",
+      "id": "6604a6b85b115f7194dedfd421331e0f899302ac1cdcbdd2fcd757c93aa931a2",
+      "image": "sha256:4e68ccdca15b97f7fd573034c74575d88a156d21ca7f4ff2251affc5db55e707",
+      "state": {
+        "Status": "exited",
+        "Running": false,
+        "ExitCode": 0,
+        "StartedAt": "2026-11-08T13:22:03.832190977Z",
+        "FinishedAt": "2026-11-08T13:22:07.313778008Z",
+        "OOMKilled": false
+      },
+      "network_mode": "container:3d26134aeece8f2b96ac8df84317c8c63d7ae9c01667bd53e5306de7851fadec",
+      "port_bindings": {},
+      "cpuset_cpus": "0,2",
+      "nano_cpus": 2000000000,
+      "memory": 2147483648,
+      "memory_swap": 2147483648,
+      "mounts": [
+        {
+          "Type": "bind",
+          "Source": "/home/matias/Cursor/llm-chat-platform/.framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106225237/diagnosis/aa-runs/261108131511",
+          "Destination": "/g6run",
+          "RW": true
+        },
+        {
+          "Type": "bind",
+          "Source": "/home/matias/Cursor/llm-chat-platform/experiments",
+          "Destination": "/app/experiments",
+          "RW": false
+        },
+        {
+          "Type": "bind",
+          "Source": "/home/matias/Cursor/llm-chat-platform/.framework/orqs/ORQ-41-production-retrieval-graduation/campaign-redesign/p2_netguard",
+          "Destination": "/p2_netguard",
+          "RW": false
+        }
+      ]
+    },
+    {
+      "name": "orq41-aa-261108131511-c0-es-sse",
+      "id": "2986bfa4531a111c6c7eb4fa3a77d636dea6113c0501348f7da4e1d848022b10",
+      "image": "sha256:4e68ccdca15b97f7fd573034c74575d88a156d21ca7f4ff2251affc5db55e707",
+      "state": {
+        "Status": "exited",
+        "Running": false,
+        "ExitCode": 0,
+        "StartedAt": "2026-11-08T13:22:08.116556891Z",
+        "FinishedAt": "2026-11-08T13:22:11.713316622Z",
+        "OOMKilled": false
+      },
+      "network_mode": "container:3d26134aeece8f2b96ac8df84317c8c63d7ae9c01667bd53e5306de7851fadec",
+      "port_bindings": {},
+      "cpuset_cpus": "0,2",
+      "nano_cpus": 2000000000,
+      "memory": 2147483648,
+      "memory_swap": 2147483648,
+      "mounts": [
+        {
+          "Type": "bind",
+          "Source": "/home/matias/Cursor/llm-chat-platform/.framework/orqs/ORQ-41-production-retrieval-graduation/campaign-redesign/p2_netguard",
+          "Destination": "/p2_netguard",
+          "RW": false
+        },
+        {
+          "Type": "bind",
+          "Source": "/home/matias/Cursor/llm-chat-platform/.framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106225237/diagnosis/aa-runs/261108131511",
+          "Destination": "/g6run",
+          "RW": true
+        },
+        {
+          "Type": "bind",
+          "Source": "/home/matias/Cursor/llm-chat-platform/experiments",
+          "Destination": "/app/experiments",
+          "RW": false
+        }
+      ]
+    }
+  ],
+  "original_postgres_running_before_and_after": true,
+  "original_postgres_id": "7ffc345f9c8efa3b1b0c63441db6d30821142ec7d5041cab40e77bfc266eba4f",
+  "containers_removed": 0,
+  "volumes_removed": 0,
+  "databases_deleted": 0,
+  "external_calls": 0,
+  "spend_usd": "0"
+}

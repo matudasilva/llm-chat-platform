@@ -1,0 +1,27 @@
+{
+  "status": "DEDICATED_LIFECYCLE_SOURCE_REVIEW_FINDINGS",
+  "findings": [
+    {
+      "id": "LIFECYCLE-R1",
+      "severity": "MEDIUM",
+      "file": "experiments/production_graduation/gate_validation/dedicated_lifecycle.py",
+      "symbol": "Supervisor._recover",
+      "summary": "Local cleanup errors are lost across restart before RESTORE_BEGIN; FAILED becomes PASS"
+    }
+  ],
+  "technical_files_sha256": {
+    "experiments/production_graduation/gate_validation/dedicated_lifecycle.py": "09ec59c3ced5f0f6b402f11236f37e16b2b12ab08f31bf134006b884f8985204",
+    "experiments/production_graduation/gate_validation/dedicated_lifecycle_host.py": "dca3279c64ab8b26633e67b7416bfca6a7f17fc43a602299e11571d2570c66a6",
+    "experiments/production_graduation/gate_validation/blocked_latency.py": "6080f2806ae30e57d19fee342492fdb053a65613039755378714e57c61da96ec",
+    "experiments/production_graduation/gate_validation/blocked_latency_worker.py": "8c63e41ccdfd6dc583cfb7beb404ee12cb12164f808976887f158cd215714cd1",
+    "tests/experiments/test_orq41_dedicated_lifecycle.py": "bd3c251a6ed83551130b956c62f413fa620454083e1b9ad07a442206a7a74216"
+  },
+  "probe_sha256": "bc5134c44490ed734773b24e7ba744d9092bce6933518e8700c8013020091d44",
+  "report_sha256": "50319467c665ded1c1b7eb74da6becf5f88206e669665a824ff73ca5d7995885",
+  "actual_reproduction_output": [
+    "crash=False FAILED",
+    "crash=True LIFECYCLE_PASS"
+  ],
+  "reviewer_host_operations": 0,
+  "reviewer_source_edits": 0
+}

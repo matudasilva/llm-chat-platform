@@ -1,0 +1,36 @@
+/var/lib/orq41-cpuset/bootstrap-8064e669.py: La suma coincide
+PREPARED_NOT_APPLIED
+APPLY_PASS
+EffectiveCPUs=8-31
+AllowedCPUs=8-31
+ActiveState=active
+DropInPaths=/run/systemd/system.control/system.slice.d/50-AllowedCPUs.conf
+Transient=no
+
+EffectiveCPUs=8-31
+AllowedCPUs=8-31
+ActiveState=active
+DropInPaths=/run/systemd/system.control/user.slice.d/50-AllowedCPUs.conf
+Transient=no
+
+EffectiveCPUs=8-31
+AllowedCPUs=8-31
+ActiveState=active
+DropInPaths=/run/systemd/system.control/machine.slice.d/50-AllowedCPUs.conf
+Transient=no
+
+EffectiveCPUs=8-31
+AllowedCPUs=8-31
+ActiveState=active
+DropInPaths=/run/systemd/transient/init.scope.d/50-AllowedCPUs.conf
+Transient=yes
+
+EffectiveCPUs=0-7
+AllowedCPUs=0-7
+ActiveState=active
+DropInPaths=
+Transient=no
+RECOVER_PASS
+VERIFY_PASS
+RESULT apply=0 readback=0 recover=0 verify=0
+ORQ41_ADMINISTRATIVE_DRILL_COMMANDS_PASS

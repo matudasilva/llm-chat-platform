@@ -1,0 +1,39 @@
+{
+  "status": "ADMINISTRATIVE_RECOVERY_REVIEW_FINDINGS",
+  "review_scope": "Independent source and deterministic fake-backend review only; no live operations",
+  "technical_files_sha256": {
+    "admin_recovery.py": "4fe6123fbef5fa4e2904ee85143201b304a53688628a780f53923bb5d158acc7",
+    "test_admin_recovery.py": "c55ed2b5faf0f72a222bece48e7b502c252f9885588a079237f633124e82d104"
+  },
+  "findings": [
+    {
+      "id": "RECOVERY-R1",
+      "severity": "MEDIUM",
+      "file": "admin_recovery.py",
+      "lines": [
+        243,
+        258,
+        298,
+        301,
+        375,
+        385
+      ],
+      "summary": "Rejected foreign watchdog collision is nevertheless unconditionally disarmed",
+      "reproduction": "independent_timer_collision.py"
+    }
+  ],
+  "independent_controls": {
+    "passed": 190,
+    "xml": "independent-round1-tests.xml",
+    "executed_test_sha256": "a0e21aa483dd040fcbac7865d3101f5107b7c6502fa6eaa5676377b62c81c2d1",
+    "author_added_after_run": "Three adapter-focused controls; not independently rerun"
+  },
+  "artifacts_sha256": {
+    "independent_timer_collision.py": "441d185f9ac032ae8323b24b4a49c587ccc9a139a66b431afde9b4e7e5bd9c99",
+    "independent-round1-tests.xml": "a71f42e80e2029d99803d6bfce86a46196c8600c8213376f42516a33ac5de3ba",
+    "independent-review-round1.md": "d80fbf879734fafa8a0eefc951c5db6c80b1539e3f0116998ee4a39fb961ceec"
+  },
+  "external_calls": 0,
+  "host_mutations": 0,
+  "live_readiness": false
+}

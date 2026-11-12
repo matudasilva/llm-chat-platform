@@ -1,0 +1,21 @@
+{
+  "status": "EXISTING_GUARD_REJECTION_REPRODUCED",
+  "reference_plan_accepted": true,
+  "candidate_plan_accepted": false,
+  "error": "Frozen plan drift: images",
+  "changed_top_level_fields": [
+    "images"
+  ],
+  "expected_images": {
+    "c0": "sha256:4e68ccdca15b97f7fd573034c74575d88a156d21ca7f4ff2251affc5db55e707",
+    "c1": "sha256:4e68ccdca15b97f7fd573034c74575d88a156d21ca7f4ff2251affc5db55e707"
+  },
+  "proposed_images": {
+    "c0": "sha256:775d925078229f173fc48a4b95d5ca1620cb518b46433ead60cec3440029b852",
+    "c1": "sha256:775d925078229f173fc48a4b95d5ca1620cb518b46433ead60cec3440029b852"
+  },
+  "prepared_flag": false,
+  "docker_calls": 0,
+  "database_calls": 0,
+  "api_requests": 0
+}

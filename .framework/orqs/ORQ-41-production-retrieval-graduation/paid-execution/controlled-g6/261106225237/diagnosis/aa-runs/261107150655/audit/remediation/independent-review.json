@@ -1,0 +1,35 @@
+{
+  "status": "AA_RETENTION_FIX_INDEPENDENT_REVIEW_PASS",
+  "reviewer": "/root/packet_review",
+  "finding": "AA-AUDIT-R1",
+  "files_sha256": {
+    "experiments/production_graduation/gate_validation/performance_cleanup.py": "66a4089429b668c17a00457dbbda837d5400e2975a44ed208c02274d79c68016",
+    "experiments/production_graduation/gate_validation/aa_calibration_worker.py": "312322db6c63e4e9cba280f022a41b77559822f67f48f197e3d810d9015a87a7",
+    "experiments/production_graduation/gate_validation/controlled_latency_worker.py": "bbd38eacdeac85f4f408a47727dc62e3420375c4043a49735c27e8f20aee82cb",
+    "experiments/production_graduation/gate_validation/controlled_latency_controller.py": "a769fae216c70b6057276d5da55697ac52d8fd83b39fc39924e5c5754da76747",
+    "tests/experiments/test_orq41_performance_cleanup.py": "9e9c025700414bc107c43db62fce340b6ba5b2537dcff1fa059912221fb42619"
+  },
+  "manifest_sha256": "0bbc55e7140ef19343c1be5e248b46f1831c30a9780b86eced9c31d2ceae7fe2",
+  "patch_sha256": "dae018043f2c66f47ec48d7bc237b1c088a330e5aa97806ebcf2acc227972bc2",
+  "validation_report_sha256": "3f73c39de8142854af4db3494defda97e34df876c227f0be8dc5ac4c0b3bdc29",
+  "author_final_xml_sha256": "1faf5756d2632f6f67e204a7eaded32d785fce3a990e141bdf7ce5384d0bc763",
+  "review_sha256": "60a181202eb2af8a4b510c3eda1eac950befa533ad97f1187fb71b5e1770d526",
+  "independent_pure_tests_passed": 29,
+  "independent_thread_cases_deselected": 6,
+  "parent_image_tests_passed": 90,
+  "parent_image_tests_skipped": 0,
+  "reviewer_api_calls": 0,
+  "reviewer_docker_calls": 0,
+  "reviewer_database_calls": 0,
+  "reviewer_external_calls": 0,
+  "new_blocker_high_medium_findings": [],
+  "performance_improvement_established": false,
+  "aa_rerun": false,
+  "official_g6_status": "CONTROLLED_G6_FAIL",
+  "prior_calibration_status": "AA_CALIBRATION_FAIL",
+  "limitations": [
+    "No benchmark performed or performance gain claimed",
+    "Six native/thread synthetic tests parent-image executed, not independently host rerun",
+    "Fresh execution/source pins require separate prospective approval/review"
+  ]
+}

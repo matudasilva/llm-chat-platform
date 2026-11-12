@@ -1,0 +1,84 @@
+{
+  "status": "CONTROLLED_G6_EXECUTION_INDEPENDENT_REPLAY_VERIFIED_FAIL",
+  "reviewer": "/root/packet_review",
+  "plan_sha256": "cdc785a3ccfb9538882d66f327e71c978ebc85e910cf2a0fa68e21ca6853fbf7",
+  "result_sha256": "a6a2cdd17d57529d501880d9a145fc77bfef0ed5dc3119d8ef40c4ade58e8fa8",
+  "verifier_sha256": "b8830e257c29041c5a9c8822540b12ae37ae2d181cd83d62841b8cfc07b6e72d",
+  "worker_receipts": {
+    "c1-ES-sse.json": "2f57a0224542ca669f57c2cd98f7a10a69ceaabece98ff7d2a12407763eaf1e1",
+    "c1-ES-json.json": "ed13680f1e7ebb181676493d881c009f73d30febe2e646260c98895411af5ce8",
+    "c0-ES-json.json": "43e05cecf6cfd70e41b79264082f41a59e25162ba713b8e25b110edc019cab4d",
+    "c1-EN-sse.json": "eb2912c1cf220f5fbb112c60138aeeb67cf3f110b87c8222a2f5ee2c8b0e2985",
+    "c0-EN-json.json": "a3a4992583e283560c55cd1b66f730567dd1b0ca7a34d840b4e2ece16f4906b3",
+    "c0-ES-sse.json": "64b45823f19aa8e0e8ca7bc261b2eb051229fadeac6c727422a234d020b467d9",
+    "c1-EN-json.json": "cc24696eeec43e47ec4ba9c015ae73910bfbf1c624657f13f932c988e03f661f",
+    "c0-EN-sse.json": "bf8133a7682dc1ffee0b3c82e98008e73eb3dc536a5998684f4b14ec59c30337"
+  },
+  "total_requests": 840,
+  "measured_requests": 800,
+  "warmups": 40,
+  "functional_failures": 0,
+  "candidate_unique_accounting_instances": 420,
+  "cells": [
+    {
+      "language": "EN",
+      "protocol": "json",
+      "baseline_p95_ns": 75138562,
+      "candidate_p95_ns": 81882634,
+      "overhead_percent": "8.975513798094778550592969800",
+      "status": "FAIL"
+    },
+    {
+      "language": "EN",
+      "protocol": "sse",
+      "baseline_p95_ns": 73304663,
+      "candidate_p95_ns": 77105101,
+      "overhead_percent": "5.184442359417162861795026600",
+      "status": "FAIL"
+    },
+    {
+      "language": "ES",
+      "protocol": "json",
+      "baseline_p95_ns": 79389852,
+      "candidate_p95_ns": 85783142,
+      "overhead_percent": "8.053031765319325699209012300",
+      "status": "FAIL"
+    },
+    {
+      "language": "ES",
+      "protocol": "sse",
+      "baseline_p95_ns": 70150033,
+      "candidate_p95_ns": 77309276,
+      "overhead_percent": "10.20561601161328035298287030",
+      "status": "FAIL"
+    }
+  ],
+  "payload_and_call_parity": true,
+  "network_guard_attempts_observed": 0,
+  "request_resends_by_reviewer": 0,
+  "reviewer_api_calls": 0,
+  "reviewer_database_writes": 0,
+  "external_calls": 0,
+  "spend_usd": "0",
+  "driver_exit_zero_is_gate_pass": false,
+  "live_absolute_bounds_claimed": false,
+  "preparation_sha256": "6dafd86b601caab5b876509d1ba81f48e3b7e8bf0bc1e5f92460887faecdf717",
+  "fixtures_sha256": "7d857a8bfbecb26bd40376c71e3175f448e35307b2b28acb535b8485752b2135",
+  "prepared_database_verification_sha256": "4a47e7d9776d2f90001b605f6d2e5bba88d88b18df38e14b4df7fa423a78791d",
+  "images": {
+    "c0": "sha256:3feaa36e5787976cf2447344be39b6e9976e5f3db2248c6beef652dbfb45dcc3",
+    "c1": "sha256:4e68ccdca15b97f7fd573034c74575d88a156d21ca7f4ff2251affc5db55e707"
+  },
+  "planned_attempts_per_identity": 1,
+  "unique_request_and_conversation_ids_per_arm": 420,
+  "local_native_transport_sends": 1680,
+  "limitations": [
+    "Prepared DB/config proof executed read-only by parent; reviewer inspected receipt/source",
+    "No post-run DB connection or actual container query performed by reviewer",
+    "Candidate raw context chains/attempt fields validated by reviewed worker but not retained for separate raw replay",
+    "Fixed R1 order, host jitter and local stubs do not certify live bounds or causal optimization shares"
+  ],
+  "review_sha256": "53e85e28434dab7dd21baf42069f2e22e053e11ab3c42a94c620c66ad70e7b53",
+  "gate_disposition": "CONTROLLED_G6_FAIL",
+  "all_four_cells_exceed_approved_limit": true
+}

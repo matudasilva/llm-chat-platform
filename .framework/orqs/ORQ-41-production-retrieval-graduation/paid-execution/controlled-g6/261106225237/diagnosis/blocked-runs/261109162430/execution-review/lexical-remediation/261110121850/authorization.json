@@ -1,0 +1,21 @@
+{
+  "status": "OPERATOR_AUTHORIZED_LEXICAL_SQL_REMEDIATION",
+  "operator_message": "realizar remediacion",
+  "date": "2026-11-10T12:18:50.159860+00:00",
+  "approved_proposal_sha256": "aca0a8ed27eafada1e9ea7a9e16323e471a017460d617e92b8013df04576b1cb",
+  "technical_scope": [
+    "app/core/providers/pgvector_store.py SQL only",
+    "tests/core/test_pgvector_query_equivalence.py"
+  ],
+  "pre_design_review_required": true,
+  "post_implementation_review_required": true,
+  "p2_real_postgres_testing": true,
+  "external_provider_calls_authorized": 0,
+  "source_files_before": 500,
+  "original_AA": "AA_CALIBRATION_FAIL",
+  "official_g6": "CONTROLLED_G6_FAIL",
+  "paid_admission": "BLOCKED_CONTROLLED_G6_FAIL",
+  "image_build_authorized": false,
+  "AA_or_campaign_authorized": false,
+  "notion_or_commits_authorized": false
+}

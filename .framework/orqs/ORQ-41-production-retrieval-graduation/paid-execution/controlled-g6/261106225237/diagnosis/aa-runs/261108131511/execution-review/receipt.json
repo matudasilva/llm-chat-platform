@@ -1,0 +1,82 @@
+{
+  "status": "AA_CALIBRATION_EXECUTION_INDEPENDENT_REPLAY_VERIFIED_FAIL",
+  "reviewer": "/root/packet_review",
+  "plan_sha256": "f1552995b797fecef6e67f00635c85cede5c1938d19728d3b553b0df8ff0c8df",
+  "result_sha256": "6838699f4f177facf43fb00353f3051088e248da9b55c75da0b98a15352d07b6",
+  "verifier_sha256": "259a28ec6ff7bb73e68dfc5561a60028d7a891670bb56896feda09af0f755296",
+  "worker_receipts": {
+    "c1-ES-sse.json": "31401a08a079320cf88691c62aadbed9972e825ae72d5e6d64a4b906ec3cb058",
+    "c1-ES-json.json": "dcb08178e45bd266aaa5e6f9842409ddbffff8c3033df1a32f8d7bc1e8fe906a",
+    "c0-ES-json.json": "9e26a575d90814d2573902d56497aac977a937705c84cef92e6416c6db4d8281",
+    "c1-EN-sse.json": "d1d226f8403d99424192299fb8a7d4f9a2742ed2c79a29751087a88374778d29",
+    "c0-EN-json.json": "017d8c638b63f68297ca63f74d0d8939ff69c4ce5e51277e06a93d9245e8aaa0",
+    "c0-ES-sse.json": "04847f2eb84d512a692ae401c081b33b4441d194491eeb2a337e4262138f2249",
+    "c1-EN-json.json": "301c04fde404b44d995e5574b352a94b792d61b7051a7f0db83c65e6dca583ac",
+    "c0-EN-sse.json": "4ca060953978eb2f87a997195a31be77c8bd0be74e6bd1549a287f9051979bd2"
+  },
+  "database_verification_sha256": "cf1469d488496825c321b0b1638f1e3f49d2b55a1c5f1f36e387bd162d8f3244",
+  "requests": 840,
+  "measured": 800,
+  "warmups": 40,
+  "unique_full_c1_instances": 840,
+  "cells": [
+    {
+      "cell": "EN-json",
+      "a_p95_ns": 14526087,
+      "b_p95_ns": 16773784,
+      "signed_percent": 15.47352015721784,
+      "status": "FAIL"
+    },
+    {
+      "cell": "EN-sse",
+      "a_p95_ns": 16529449,
+      "b_p95_ns": 15881095,
+      "signed_percent": -3.9224174986111153,
+      "status": "PASS"
+    },
+    {
+      "cell": "ES-json",
+      "a_p95_ns": 14970033,
+      "b_p95_ns": 17069936,
+      "signed_percent": 14.02737722755855,
+      "status": "FAIL"
+    },
+    {
+      "cell": "ES-sse",
+      "a_p95_ns": 14878458,
+      "b_p95_ns": 16016835,
+      "signed_percent": 7.651175948475306,
+      "status": "FAIL"
+    }
+  ],
+  "all_cpu_counter_deltas_recomputed": true,
+  "recorded_throttling_zero": true,
+  "reviewer_api_calls": 0,
+  "reviewer_database_calls": 0,
+  "reviewer_docker_calls": 0,
+  "external_calls": 0,
+  "spend_usd": "0",
+  "official_g6_status": "CONTROLLED_G6_FAIL",
+  "causal_attribution_established": false,
+  "review_sha256": "ff4db468e78c06f729a019d41adc48ec0c9fbf48592223615a4a5421d8c3982c",
+  "final_database_verifier_source_sha256": "490e0fcfa7592ab9efa925f63e96dacf2cb01ea31f4ad86657eb74360e42da6c",
+  "new_blocker_high_medium_findings": [],
+  "author_report_reviewed": true,
+  "zero_api_and_pg_recorded_throttling_verified": true,
+  "cleanup_failures": 0,
+  "controls_source": "Previous remediation90PASS0skip copiedunchanged;notrerun",
+  "limitations": [
+    "R=1 identicalimagecalibration notstatisticalequivalence",
+    "No causalcleanupgain orhardware/appcauseestablished",
+    "Parent executedfinalDBproof;reviewer inspectedsource/receipt",
+    "RawC1chainvalidatedbyworker not retainedforsecondreplay"
+  ],
+  "author_report_sha256": "4370ebbbc024371ab26cfb7d9311b4fa7cc088c1862e4b9231ad4c5a51180032",
+  "author_report_numbers_and_limits_checked": true,
+  "validation_sha256": "a5d67d3dc6fbbb0896257a07e0c8888296d757d3fc4b5764f4404b49fd534707",
+  "cleanup_record_sha256": "b6f08dae3b452170003f50086d2b556099a67d9613114c8fba867d732be83765",
+  "scope_final_sha256": "4d7309b985e2e620abf984f48dd09a6a2baa7b16c37446ec8e6477c246c31f7b",
+  "scope_before_sha256": "28978d42fd46e16cd1920bd417c4e67b12c4f2b77c1d39f36b109dff072ea7c5",
+  "independently_rehashed_protected_files": 160,
+  "cleanup_claims_independently_docker_verified": false
+}

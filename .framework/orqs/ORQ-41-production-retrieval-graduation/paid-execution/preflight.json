@@ -1,0 +1,41 @@
+{
+  "status": "BLOCKED_CONTROLLED_G6_FAIL",
+  "campaign_opened": false,
+  "requests_admitted": 0,
+  "provider_calls": 0,
+  "spend_usd": "0",
+  "evidence": {
+    "runner_contract": "experiments/production_graduation/campaign_runner/README.md",
+    "approved_workload": "campaign-redesign/design.md#2-redesigned-workload-paid-part",
+    "environment_manifest": "environment/manifest.json"
+  },
+  "blockers": [
+    "Executable 168-entry paid campaign manifest and paired freshly seeded conversation/case identities not found; G123 fixtures are deterministic gate inputs, not campaign samples",
+    "Campaign pins.json with block container/image/config identities and complete source/artifact hashes not found",
+    "Existing approved environment is network-none/local-stub validation topology; no pinned live-provider API target or credential/egress configuration has been established",
+    "Shared durable real campaign budget directory and production ledger identity have not been established; simulated replay ledgers must not be reused as paid accounting"
+  ],
+  "external_calls_made": false,
+  "preparation": {
+    "slots": 168,
+    "draft": "paid-execution/request-slots.draft.json",
+    "budget_directory": "paid-execution/shared-budget",
+    "credential_presence": "paid-execution/credential-presence.json",
+    "manifest": "paid-execution/manifest.json",
+    "fixture_materialization": "paid-execution/materialization.json",
+    "fixture_review": "paid-execution/fixture-review/receipt.json",
+    "database": "paid-execution/database.json",
+    "seeded_fixture_verification": "paid-execution/fixture-review/seeded-verification.json",
+    "client_measurement_proposal": "paid-execution/client-measurement-proposal.md"
+  },
+  "tenant_amendment": "paid-execution/tenant-amendment-evidence/validation.json",
+  "tenant_amendment_status": "P5_TENANT_AMENDMENT_INDEPENDENT_REVIEW_PASS",
+  "tenant_amendment_review": "paid-execution/tenant-amendment-review/receipt.json",
+  "remaining_preconditions": [
+    "Resolve verified controlledG6 +5% relative preparation failure without threshold relaxation",
+    "Dedicated live-provider target and immutable block/measurement pins"
+  ],
+  "client_measurement_status": "CLIENT_MEASUREMENT_AMENDMENT_INDEPENDENT_REVIEW_PASS",
+  "client_measurement_review": "paid-execution/client-measurement-review/round2/receipt.json",
+  "controlled_g6_result": "paid-execution/controlled-g6/261106130053-rev2/result.json"
+}

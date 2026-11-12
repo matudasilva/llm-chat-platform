@@ -1,0 +1,44 @@
+{
+  "status": "CONTROLLED_G6_HARNESS_INDEPENDENT_REVIEW_PASS",
+  "reviewer": "/root/packet_review",
+  "plan_sha256": "d27e1cdabcd6bfdbf2fc43d22e510522d9c3f0f53db0bea6c14eefb7d940bee6",
+  "source_sha256": {
+    "experiments/production_graduation/gate_validation/controlled_latency.py": "a711e6161564e4f5fbf4f542c84bd6a3f1afb71df16760e4480cdae9073837f9",
+    "experiments/production_graduation/gate_validation/controlled_latency_worker.py": "a9f1996aadfe87406addbc9ba890ae291c186de76341b0f322aa2732b03804e8",
+    "experiments/production_graduation/gate_validation/controlled_latency_controller.py": "b77ab8466734b84f93d7ccf3476819054b674d0d6f98ae0402c7147d7b2656cd",
+    "experiments/production_graduation/gate_validation/local_api.py": "e9b8a886018ca60a7b77b2885b89fa813368373435464e455bd449589ea034eb",
+    "experiments/production_graduation/gate_validation/transports.py": "3c0f15acf79a08684fad8d89bfa7242d3779a980f89988a7f252e74cb7aef6e0",
+    "experiments/production_graduation/gate_validation/capture.py": "373dab408e467093a764720d6b9b6e5cd1617b7079e877c710b44cd3d24c68bf",
+    "experiments/production_graduation/gate_validation/fixtures.py": "ce7a3bc48939da71b4c3ac49829e9e21d9c686b5bdda7f72697c3ccbd14f1f0c",
+    "experiments/production_graduation/gate_validation/validate_g123.py": "d18aefea58b169264095466eafb81f5d1f0c259ae9e3ccb516c9534f228420c3",
+    "experiments/production_graduation/gate_validation/g9_controller.py": "4b3697b3d3eccf4eccb239060a50571bb91abe9bdd121143c6042b1ea91131ce"
+  },
+  "support_files_sha256": {
+    ".framework/orqs/ORQ-41-production-retrieval-graduation/environment/g123/execution-freeze/settings/inspect.py": "501ea364ae3bfc21de353a0b6b0c6667dea5d44f682b7c456e4b01a6f1fbeb45",
+    ".framework/orqs/ORQ-41-production-retrieval-graduation/campaign-redesign/p2_netguard/sitecustomize.py": "2810dd72b69aa1c383c512a2ed6fb2444248c438b9a4b947330042020288a2f5"
+  },
+  "fixtures_sha256": "b9ff964585126bbb13847832a1cbaad9444c5179d722f742501fff756075ab69",
+  "prepared_databases_verification_sha256": "16e230ec531a37d886bc82448273490f8229e318764263d642f35fa2db26642c",
+  "independent_tests_passed": 29,
+  "original_controls_passed": 23,
+  "novel_no_io_probes_passed": 6,
+  "review_files_sha256": {
+    "verify_prepared_databases.py": "8e365cdb89c0cfaffec30df93b23f5264daa6889abd1e5562b50d283f44f71e9",
+    "review.xml": "14d96719819dd7c056b557cf9abe10cca877a9cb03f06fff7609aedce8fe75e4",
+    "probes.xml": "8d0c33f43854107a8ca77bb03c165ea5b0fa93b9204a0c246ac545d2110f24e8",
+    "test_independent_probes.py": "d64bd2f622af16b52131a1047479e59457b4c32798ce81a7a94ef86ce7394796"
+  },
+  "open_blocker_high_medium_findings": [],
+  "resolved_findings": [
+    "G6-R1",
+    "G6-R2"
+  ],
+  "platform_api_calls": 0,
+  "gate_executed": false,
+  "reviewer_database_calls": 0,
+  "reviewer_privileged_requests": 0,
+  "external_calls": 0,
+  "spend_usd": "0",
+  "execution_scope": "Prospective controlled local G6 only; does not certify measured result or live absolute/provider bounds",
+  "limitation": "R=1, fixed arm order and host jitter; parent executed reviewer-authored read-only prepared DB/config verifier"
+}

@@ -1,0 +1,1250 @@
+{
+  "status": "AA_CALIBRATION_FAIL",
+  "cells": [
+    {
+      "language": "EN",
+      "protocol": "json",
+      "n_per_arm": 100,
+      "baseline_p50_ns": 11245137,
+      "candidate_p50_ns": 11235695,
+      "baseline_p95_ns": 14526087,
+      "candidate_p95_ns": 16773784,
+      "limit_percent": 5,
+      "baseline_p99_ns": 16607892,
+      "candidate_p99_ns": 18354353,
+      "baseline_max_ns": 16829835,
+      "candidate_max_ns": 19444403,
+      "status": "FAIL",
+      "payload_and_call_parity": true
+    },
+    {
+      "language": "EN",
+      "protocol": "sse",
+      "n_per_arm": 100,
+      "baseline_p50_ns": 11186576,
+      "candidate_p50_ns": 10860513,
+      "baseline_p95_ns": 16529449,
+      "candidate_p95_ns": 15881095,
+      "limit_percent": 5,
+      "baseline_p99_ns": 20375013,
+      "candidate_p99_ns": 19891895,
+      "baseline_max_ns": 22913958,
+      "candidate_max_ns": 22803635,
+      "status": "PASS",
+      "payload_and_call_parity": true
+    },
+    {
+      "language": "ES",
+      "protocol": "json",
+      "n_per_arm": 100,
+      "baseline_p50_ns": 11541943,
+      "candidate_p50_ns": 11697853,
+      "baseline_p95_ns": 14970033,
+      "candidate_p95_ns": 17069936,
+      "limit_percent": 5,
+      "baseline_p99_ns": 15862470,
+      "candidate_p99_ns": 17302001,
+      "baseline_max_ns": 18313010,
+      "candidate_max_ns": 25798198,
+      "status": "FAIL",
+      "payload_and_call_parity": true
+    },
+    {
+      "language": "ES",
+      "protocol": "sse",
+      "n_per_arm": 100,
+      "baseline_p50_ns": 10997106,
+      "candidate_p50_ns": 11712487,
+      "baseline_p95_ns": 14878458,
+      "candidate_p95_ns": 16016835,
+      "limit_percent": 5,
+      "baseline_p99_ns": 15943959,
+      "candidate_p99_ns": 17281571,
+      "baseline_max_ns": 17918887,
+      "candidate_max_ns": 25023792,
+      "status": "FAIL",
+      "payload_and_call_parity": true
+    }
+  ],
+  "external_calls": 0,
+  "spend_usd": "0",
+  "live_absolute_bounds_claimed": false,
+  "not_a_gate": true,
+  "symmetric_rule_percent": 5,
+  "accounting_instances": 840,
+  "official_g6_status": "CONTROLLED_G6_FAIL",
+  "plan_sha256": "f1552995b797fecef6e67f00635c85cede5c1938d19728d3b553b0df8ff0c8df",
+  "request_count": 840,
+  "postgres_cell_counters": [
+    {
+      "cell": "c0-EN-json",
+      "before": {
+        "affinity": [
+          4,
+          6
+        ],
+        "effective_cpuset": [
+          4,
+          6
+        ],
+        "cpu_max": "200000 100000",
+        "cpu_stat": {
+          "usage_usec": 10986091,
+          "user_usec": 9218295,
+          "system_usec": 1767795,
+          "nice_usec": 0,
+          "core_sched.force_idle_usec": 0,
+          "nr_periods": 577,
+          "nr_throttled": 0,
+          "throttled_usec": 0,
+          "nr_bursts": 0,
+          "burst_usec": 0
+        },
+        "topology": [
+          {
+            "cpu": 0,
+            "core_id": 0,
+            "siblings": [
+              0,
+              1
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 2,
+            "core_id": 4,
+            "siblings": [
+              2,
+              3
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 4,
+            "core_id": 8,
+            "siblings": [
+              4,
+              5
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 6,
+            "core_id": 12,
+            "siblings": [
+              6,
+              7
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          }
+        ]
+      },
+      "after": {
+        "affinity": [
+          4,
+          6
+        ],
+        "effective_cpuset": [
+          4,
+          6
+        ],
+        "cpu_max": "200000 100000",
+        "cpu_stat": {
+          "usage_usec": 11523986,
+          "user_usec": 9702397,
+          "system_usec": 1821588,
+          "nice_usec": 0,
+          "core_sched.force_idle_usec": 0,
+          "nr_periods": 601,
+          "nr_throttled": 0,
+          "throttled_usec": 0,
+          "nr_bursts": 0,
+          "burst_usec": 0
+        },
+        "topology": [
+          {
+            "cpu": 0,
+            "core_id": 0,
+            "siblings": [
+              0,
+              1
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 2,
+            "core_id": 4,
+            "siblings": [
+              2,
+              3
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 4,
+            "core_id": 8,
+            "siblings": [
+              4,
+              5
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 6,
+            "core_id": 12,
+            "siblings": [
+              6,
+              7
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          }
+        ]
+      },
+      "delta": {
+        "usage_usec": 537895,
+        "user_usec": 484102,
+        "system_usec": 53793,
+        "nice_usec": 0,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 24,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      }
+    },
+    {
+      "cell": "c1-EN-json",
+      "before": {
+        "affinity": [
+          4,
+          6
+        ],
+        "effective_cpuset": [
+          4,
+          6
+        ],
+        "cpu_max": "200000 100000",
+        "cpu_stat": {
+          "usage_usec": 11634013,
+          "user_usec": 9800135,
+          "system_usec": 1833878,
+          "nice_usec": 0,
+          "core_sched.force_idle_usec": 0,
+          "nr_periods": 605,
+          "nr_throttled": 0,
+          "throttled_usec": 0,
+          "nr_bursts": 0,
+          "burst_usec": 0
+        },
+        "topology": [
+          {
+            "cpu": 0,
+            "core_id": 0,
+            "siblings": [
+              0,
+              1
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 2,
+            "core_id": 4,
+            "siblings": [
+              2,
+              3
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 4,
+            "core_id": 8,
+            "siblings": [
+              4,
+              5
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 6,
+            "core_id": 12,
+            "siblings": [
+              6,
+              7
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          }
+        ]
+      },
+      "after": {
+        "affinity": [
+          4,
+          6
+        ],
+        "effective_cpuset": [
+          4,
+          6
+        ],
+        "cpu_max": "200000 100000",
+        "cpu_stat": {
+          "usage_usec": 12165952,
+          "user_usec": 10283509,
+          "system_usec": 1882442,
+          "nice_usec": 0,
+          "core_sched.force_idle_usec": 0,
+          "nr_periods": 629,
+          "nr_throttled": 0,
+          "throttled_usec": 0,
+          "nr_bursts": 0,
+          "burst_usec": 0
+        },
+        "topology": [
+          {
+            "cpu": 0,
+            "core_id": 0,
+            "siblings": [
+              0,
+              1
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 2,
+            "core_id": 4,
+            "siblings": [
+              2,
+              3
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 4,
+            "core_id": 8,
+            "siblings": [
+              4,
+              5
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 6,
+            "core_id": 12,
+            "siblings": [
+              6,
+              7
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          }
+        ]
+      },
+      "delta": {
+        "usage_usec": 531939,
+        "user_usec": 483374,
+        "system_usec": 48564,
+        "nice_usec": 0,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 24,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      }
+    },
+    {
+      "cell": "c1-EN-sse",
+      "before": {
+        "affinity": [
+          4,
+          6
+        ],
+        "effective_cpuset": [
+          4,
+          6
+        ],
+        "cpu_max": "200000 100000",
+        "cpu_stat": {
+          "usage_usec": 12277310,
+          "user_usec": 10380676,
+          "system_usec": 1896634,
+          "nice_usec": 0,
+          "core_sched.force_idle_usec": 0,
+          "nr_periods": 634,
+          "nr_throttled": 0,
+          "throttled_usec": 0,
+          "nr_bursts": 0,
+          "burst_usec": 0
+        },
+        "topology": [
+          {
+            "cpu": 0,
+            "core_id": 0,
+            "siblings": [
+              0,
+              1
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 2,
+            "core_id": 4,
+            "siblings": [
+              2,
+              3
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 4,
+            "core_id": 8,
+            "siblings": [
+              4,
+              5
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 6,
+            "core_id": 12,
+            "siblings": [
+              6,
+              7
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          }
+        ]
+      },
+      "after": {
+        "affinity": [
+          4,
+          6
+        ],
+        "effective_cpuset": [
+          4,
+          6
+        ],
+        "cpu_max": "200000 100000",
+        "cpu_stat": {
+          "usage_usec": 12846809,
+          "user_usec": 10881199,
+          "system_usec": 1965610,
+          "nice_usec": 0,
+          "core_sched.force_idle_usec": 0,
+          "nr_periods": 664,
+          "nr_throttled": 0,
+          "throttled_usec": 0,
+          "nr_bursts": 0,
+          "burst_usec": 0
+        },
+        "topology": [
+          {
+            "cpu": 0,
+            "core_id": 0,
+            "siblings": [
+              0,
+              1
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 2,
+            "core_id": 4,
+            "siblings": [
+              2,
+              3
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 4,
+            "core_id": 8,
+            "siblings": [
+              4,
+              5
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 6,
+            "core_id": 12,
+            "siblings": [
+              6,
+              7
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          }
+        ]
+      },
+      "delta": {
+        "usage_usec": 569499,
+        "user_usec": 500523,
+        "system_usec": 68976,
+        "nice_usec": 0,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 30,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      }
+    },
+    {
+      "cell": "c0-EN-sse",
+      "before": {
+        "affinity": [
+          4,
+          6
+        ],
+        "effective_cpuset": [
+          4,
+          6
+        ],
+        "cpu_max": "200000 100000",
+        "cpu_stat": {
+          "usage_usec": 12954262,
+          "user_usec": 10976143,
+          "system_usec": 1978118,
+          "nice_usec": 0,
+          "core_sched.force_idle_usec": 0,
+          "nr_periods": 668,
+          "nr_throttled": 0,
+          "throttled_usec": 0,
+          "nr_bursts": 0,
+          "burst_usec": 0
+        },
+        "topology": [
+          {
+            "cpu": 0,
+            "core_id": 0,
+            "siblings": [
+              0,
+              1
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 2,
+            "core_id": 4,
+            "siblings": [
+              2,
+              3
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 4,
+            "core_id": 8,
+            "siblings": [
+              4,
+              5
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 6,
+            "core_id": 12,
+            "siblings": [
+              6,
+              7
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          }
+        ]
+      },
+      "after": {
+        "affinity": [
+          4,
+          6
+        ],
+        "effective_cpuset": [
+          4,
+          6
+        ],
+        "cpu_max": "200000 100000",
+        "cpu_stat": {
+          "usage_usec": 13533170,
+          "user_usec": 11502591,
+          "system_usec": 2030579,
+          "nice_usec": 0,
+          "core_sched.force_idle_usec": 0,
+          "nr_periods": 698,
+          "nr_throttled": 0,
+          "throttled_usec": 0,
+          "nr_bursts": 0,
+          "burst_usec": 0
+        },
+        "topology": [
+          {
+            "cpu": 0,
+            "core_id": 0,
+            "siblings": [
+              0,
+              1
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 2,
+            "core_id": 4,
+            "siblings": [
+              2,
+              3
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 4,
+            "core_id": 8,
+            "siblings": [
+              4,
+              5
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 6,
+            "core_id": 12,
+            "siblings": [
+              6,
+              7
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          }
+        ]
+      },
+      "delta": {
+        "usage_usec": 578908,
+        "user_usec": 526448,
+        "system_usec": 52461,
+        "nice_usec": 0,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 30,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      }
+    },
+    {
+      "cell": "c0-ES-json",
+      "before": {
+        "affinity": [
+          4,
+          6
+        ],
+        "effective_cpuset": [
+          4,
+          6
+        ],
+        "cpu_max": "200000 100000",
+        "cpu_stat": {
+          "usage_usec": 13642980,
+          "user_usec": 11600004,
+          "system_usec": 2042976,
+          "nice_usec": 0,
+          "core_sched.force_idle_usec": 0,
+          "nr_periods": 702,
+          "nr_throttled": 0,
+          "throttled_usec": 0,
+          "nr_bursts": 0,
+          "burst_usec": 0
+        },
+        "topology": [
+          {
+            "cpu": 0,
+            "core_id": 0,
+            "siblings": [
+              0,
+              1
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 2,
+            "core_id": 4,
+            "siblings": [
+              2,
+              3
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 4,
+            "core_id": 8,
+            "siblings": [
+              4,
+              5
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 6,
+            "core_id": 12,
+            "siblings": [
+              6,
+              7
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          }
+        ]
+      },
+      "after": {
+        "affinity": [
+          4,
+          6
+        ],
+        "effective_cpuset": [
+          4,
+          6
+        ],
+        "cpu_max": "200000 100000",
+        "cpu_stat": {
+          "usage_usec": 14165184,
+          "user_usec": 12072634,
+          "system_usec": 2092549,
+          "nice_usec": 0,
+          "core_sched.force_idle_usec": 0,
+          "nr_periods": 724,
+          "nr_throttled": 0,
+          "throttled_usec": 0,
+          "nr_bursts": 0,
+          "burst_usec": 0
+        },
+        "topology": [
+          {
+            "cpu": 0,
+            "core_id": 0,
+            "siblings": [
+              0,
+              1
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 2,
+            "core_id": 4,
+            "siblings": [
+              2,
+              3
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 4,
+            "core_id": 8,
+            "siblings": [
+              4,
+              5
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 6,
+            "core_id": 12,
+            "siblings": [
+              6,
+              7
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          }
+        ]
+      },
+      "delta": {
+        "usage_usec": 522204,
+        "user_usec": 472630,
+        "system_usec": 49573,
+        "nice_usec": 0,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 22,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      }
+    },
+    {
+      "cell": "c1-ES-json",
+      "before": {
+        "affinity": [
+          4,
+          6
+        ],
+        "effective_cpuset": [
+          4,
+          6
+        ],
+        "cpu_max": "200000 100000",
+        "cpu_stat": {
+          "usage_usec": 14270016,
+          "user_usec": 12162791,
+          "system_usec": 2107225,
+          "nice_usec": 0,
+          "core_sched.force_idle_usec": 0,
+          "nr_periods": 728,
+          "nr_throttled": 0,
+          "throttled_usec": 0,
+          "nr_bursts": 0,
+          "burst_usec": 0
+        },
+        "topology": [
+          {
+            "cpu": 0,
+            "core_id": 0,
+            "siblings": [
+              0,
+              1
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 2,
+            "core_id": 4,
+            "siblings": [
+              2,
+              3
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 4,
+            "core_id": 8,
+            "siblings": [
+              4,
+              5
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 6,
+            "core_id": 12,
+            "siblings": [
+              6,
+              7
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          }
+        ]
+      },
+      "after": {
+        "affinity": [
+          4,
+          6
+        ],
+        "effective_cpuset": [
+          4,
+          6
+        ],
+        "cpu_max": "200000 100000",
+        "cpu_stat": {
+          "usage_usec": 14832038,
+          "user_usec": 12678400,
+          "system_usec": 2153638,
+          "nice_usec": 0,
+          "core_sched.force_idle_usec": 0,
+          "nr_periods": 752,
+          "nr_throttled": 0,
+          "throttled_usec": 0,
+          "nr_bursts": 0,
+          "burst_usec": 0
+        },
+        "topology": [
+          {
+            "cpu": 0,
+            "core_id": 0,
+            "siblings": [
+              0,
+              1
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 2,
+            "core_id": 4,
+            "siblings": [
+              2,
+              3
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 4,
+            "core_id": 8,
+            "siblings": [
+              4,
+              5
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 6,
+            "core_id": 12,
+            "siblings": [
+              6,
+              7
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          }
+        ]
+      },
+      "delta": {
+        "usage_usec": 562022,
+        "user_usec": 515609,
+        "system_usec": 46413,
+        "nice_usec": 0,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 24,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      }
+    },
+    {
+      "cell": "c1-ES-sse",
+      "before": {
+        "affinity": [
+          4,
+          6
+        ],
+        "effective_cpuset": [
+          4,
+          6
+        ],
+        "cpu_max": "200000 100000",
+        "cpu_stat": {
+          "usage_usec": 14944019,
+          "user_usec": 12775959,
+          "system_usec": 2168059,
+          "nice_usec": 0,
+          "core_sched.force_idle_usec": 0,
+          "nr_periods": 756,
+          "nr_throttled": 0,
+          "throttled_usec": 0,
+          "nr_bursts": 0,
+          "burst_usec": 0
+        },
+        "topology": [
+          {
+            "cpu": 0,
+            "core_id": 0,
+            "siblings": [
+              0,
+              1
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 2,
+            "core_id": 4,
+            "siblings": [
+              2,
+              3
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 4,
+            "core_id": 8,
+            "siblings": [
+              4,
+              5
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 6,
+            "core_id": 12,
+            "siblings": [
+              6,
+              7
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          }
+        ]
+      },
+      "after": {
+        "affinity": [
+          4,
+          6
+        ],
+        "effective_cpuset": [
+          4,
+          6
+        ],
+        "cpu_max": "200000 100000",
+        "cpu_stat": {
+          "usage_usec": 15492001,
+          "user_usec": 13270092,
+          "system_usec": 2221908,
+          "nice_usec": 0,
+          "core_sched.force_idle_usec": 0,
+          "nr_periods": 784,
+          "nr_throttled": 0,
+          "throttled_usec": 0,
+          "nr_bursts": 0,
+          "burst_usec": 0
+        },
+        "topology": [
+          {
+            "cpu": 0,
+            "core_id": 0,
+            "siblings": [
+              0,
+              1
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 2,
+            "core_id": 4,
+            "siblings": [
+              2,
+              3
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 4,
+            "core_id": 8,
+            "siblings": [
+              4,
+              5
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 6,
+            "core_id": 12,
+            "siblings": [
+              6,
+              7
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          }
+        ]
+      },
+      "delta": {
+        "usage_usec": 547982,
+        "user_usec": 494133,
+        "system_usec": 53849,
+        "nice_usec": 0,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 28,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      }
+    },
+    {
+      "cell": "c0-ES-sse",
+      "before": {
+        "affinity": [
+          4,
+          6
+        ],
+        "effective_cpuset": [
+          4,
+          6
+        ],
+        "cpu_max": "200000 100000",
+        "cpu_stat": {
+          "usage_usec": 15599336,
+          "user_usec": 13364249,
+          "system_usec": 2235086,
+          "nice_usec": 0,
+          "core_sched.force_idle_usec": 0,
+          "nr_periods": 788,
+          "nr_throttled": 0,
+          "throttled_usec": 0,
+          "nr_bursts": 0,
+          "burst_usec": 0
+        },
+        "topology": [
+          {
+            "cpu": 0,
+            "core_id": 0,
+            "siblings": [
+              0,
+              1
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 2,
+            "core_id": 4,
+            "siblings": [
+              2,
+              3
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 4,
+            "core_id": 8,
+            "siblings": [
+              4,
+              5
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 6,
+            "core_id": 12,
+            "siblings": [
+              6,
+              7
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          }
+        ]
+      },
+      "after": {
+        "affinity": [
+          4,
+          6
+        ],
+        "effective_cpuset": [
+          4,
+          6
+        ],
+        "cpu_max": "200000 100000",
+        "cpu_stat": {
+          "usage_usec": 16140879,
+          "user_usec": 13856593,
+          "system_usec": 2284286,
+          "nice_usec": 0,
+          "core_sched.force_idle_usec": 0,
+          "nr_periods": 819,
+          "nr_throttled": 0,
+          "throttled_usec": 0,
+          "nr_bursts": 0,
+          "burst_usec": 0
+        },
+        "topology": [
+          {
+            "cpu": 0,
+            "core_id": 0,
+            "siblings": [
+              0,
+              1
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 2,
+            "core_id": 4,
+            "siblings": [
+              2,
+              3
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 4,
+            "core_id": 8,
+            "siblings": [
+              4,
+              5
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          },
+          {
+            "cpu": 6,
+            "core_id": 12,
+            "siblings": [
+              6,
+              7
+            ],
+            "max_khz": 5600000,
+            "governor": "powersave"
+          }
+        ]
+      },
+      "delta": {
+        "usage_usec": 541543,
+        "user_usec": 492344,
+        "system_usec": 49200,
+        "nice_usec": 0,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 31,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      }
+    }
+  ],
+  "worker_receipts": {
+    "c1-ES-sse.json": "31401a08a079320cf88691c62aadbed9972e825ae72d5e6d64a4b906ec3cb058",
+    "c1-ES-json.json": "dcb08178e45bd266aaa5e6f9842409ddbffff8c3033df1a32f8d7bc1e8fe906a",
+    "c0-ES-json.json": "9e26a575d90814d2573902d56497aac977a937705c84cef92e6416c6db4d8281",
+    "c1-EN-sse.json": "d1d226f8403d99424192299fb8a7d4f9a2742ed2c79a29751087a88374778d29",
+    "c0-EN-json.json": "017d8c638b63f68297ca63f74d0d8939ff69c4ce5e51277e06a93d9245e8aaa0",
+    "c0-ES-sse.json": "04847f2eb84d512a692ae401c081b33b4441d194491eeb2a337e4262138f2249",
+    "c1-EN-json.json": "301c04fde404b44d995e5574b352a94b792d61b7051a7f0db83c65e6dca583ac",
+    "c0-EN-sse.json": "4ca060953978eb2f87a997195a31be77c8bd0be74e6bd1549a287f9051979bd2"
+  }
+}

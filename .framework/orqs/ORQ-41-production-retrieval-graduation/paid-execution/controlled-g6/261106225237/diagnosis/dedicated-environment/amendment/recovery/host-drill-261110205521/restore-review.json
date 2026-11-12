@@ -1,0 +1,15 @@
+{
+  "status": "ADMINISTRATIVE_RESTORE_REVIEW_FINDINGS",
+  "script_sha256": "a01cd01ecba246a5947c053dd394f37ece8d47344d57a8b0d6b49154d3e5de77",
+  "report_sha256": "cef30bb79ef6ea26e355537ff75a93c25fc3547c0175e529356527d14fa26975",
+  "findings": [
+    {
+      "id": "RESTORE-R1",
+      "severity": "HIGH",
+      "summary": "Manual intent/reset records are exclusive but no resume branch exists; interrupted restoration cannot be rerun",
+      "method": "Static deterministic control-flow reproduction, no host interruption"
+    }
+  ],
+  "host_operations": 0,
+  "source_edits": 0
+}

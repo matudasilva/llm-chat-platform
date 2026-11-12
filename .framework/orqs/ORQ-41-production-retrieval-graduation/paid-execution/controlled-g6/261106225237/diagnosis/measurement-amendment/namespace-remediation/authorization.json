@@ -1,0 +1,19 @@
+{
+  "status": "BLOCKED_AA_NAMESPACE_REMEDIATION_AUTHORIZED",
+  "date": "2026-11-09",
+  "operator_message": "ok, corregir el namspace y avanzar",
+  "authorized_files": [
+    "experiments/production_graduation/gate_validation/blocked_latency_worker.py",
+    "tests/experiments/test_orq41_blocked_latency.py"
+  ],
+  "scope": "FixR1 namespace encoding and actual startup regression, P2 tests, source review, then fresh disposable preparation/executable packet review. Do not resume the failed attempt.",
+  "stderr_capture_fix_authorized": false,
+  "shared_validator_changes_authorized": false,
+  "app_changes_authorized": false,
+  "prior_attempt": "261109141719",
+  "failed_attempt_review_sha256": "7719da74ec34cfdef8802ab22b71c357b58e9d3c7f1c7248f570e7ed23005a8d",
+  "fresh_packet_preparation_authorized": true,
+  "fresh_aa_execution_authorized": false,
+  "paid_admission_authorized": false,
+  "external_provider_calls_authorized": 0
+}

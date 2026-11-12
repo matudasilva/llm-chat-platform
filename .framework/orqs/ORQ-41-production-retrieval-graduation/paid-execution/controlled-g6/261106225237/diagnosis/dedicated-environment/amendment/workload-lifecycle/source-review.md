@@ -1,0 +1,13 @@
+# Independent lifecycle source review — final bounded closure
+
+Result: **WORKLOAD_LIFECYCLE_SOURCE_REVIEW_PASS**, source/P2 only. No executable packet, installation, live lifecycle, resource readiness or benchmark is reviewed or authorized.
+
+Earlier static review examined sealed loading, admission/STOP serialization, authentication, watchdog checks, restart/head-lag routing, drain deadlines, recovery lock, restore continuation and worker/controller finalization. Initial findings remain retained. Final review was deliberately limited to unresolved ACTION_RESULT durability and graceful-stop acknowledgement timing, avoiding another broad suite.
+
+LIFECYCLE-R1 is resolved: signal exceptions persist ACTION_RESULT false; true is committed only after successful acknowledgement AND exit observed within the acknowledgement-based30s window (also constrained by shared390s). An interrupted intent without a durable successful outcome remains ambiguous/failed after restart; no uncertain signal is replayed. Replay additionally prevents terminal PASS with any missing/false outcome. Restoration remains safe and independent from failed cleanup disposition. The original independent counterexample was rerun with updated expected outcome, without changing its historical file: both no-crash and crash/restart now return FAILED.
+
+Independent final focused execution under unshare-rn/env-i and the absolute P2 guard: -k 'crash_preserves or graceful_observation_clock',4PASS/70deselected in0.24s. One unrelated asyncio-marker collection warning occurred because plugin autoload was disabled; selected tests are synchronous fake-clock controls. This tests prior-error and ambiguous crash,31s late exit persisted across restart, and5s signal command plus29.9s after acknowledgement accepted. XML retained.
+
+All seven current technical hashes independently match scope-check.json. Parent regression-final.xml inspected:290PASS/0failure/0error/0skip; execution attributed to parent. Earlier reviewer broader attempt had123PASS/4IPC failures caused by sandbox EPERM; escalated repetition was aborted, not passed. Actual IPC coverage in this final verdict therefore relies on reviewed source plus parent's successful P2 suite, not a fabricated independent rerun. No remaining confirmed B/H/M source defect is identified within reviewed scope.
+
+Hard live-execution barrier remains. Source-only preallocation/installation/supervisor deployment is not an executable packet; a separately authorized reviewed no-benchmark lifecycle drill is still required. No host/systemctl/Docker/SQL/API/provider/network operation, technical source edit, new measurement, threshold/model/accounting change, G6PASS or paid admission is authorized by this receipt. G6FAIL/paidBLOCK remain unchanged.

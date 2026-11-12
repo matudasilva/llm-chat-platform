@@ -1,0 +1,114 @@
+{
+  "status": "REQUEST_FREE_LOCAL_PROOF_ANALYZED",
+  "explain_ms": {
+    "original/force_custom_plan/document": {
+      "n": 5,
+      "min_ms": 7.58,
+      "median_ms": 7.793,
+      "max_ms": 8.319
+    },
+    "candidate-2/force_custom_plan/document": {
+      "n": 5,
+      "min_ms": 7.727,
+      "median_ms": 7.846,
+      "max_ms": 7.986
+    },
+    "original/force_generic_plan/document": {
+      "n": 5,
+      "min_ms": 14.169,
+      "median_ms": 17.202,
+      "max_ms": 18.489
+    },
+    "candidate-2/force_generic_plan/document": {
+      "n": 5,
+      "min_ms": 7.994,
+      "median_ms": 8.037,
+      "max_ms": 8.378
+    },
+    "candidate-2/force_custom_plan/combined": {
+      "n": 5,
+      "min_ms": 7.904,
+      "median_ms": 7.996,
+      "max_ms": 8.069
+    },
+    "original/force_custom_plan/combined": {
+      "n": 5,
+      "min_ms": 7.367,
+      "median_ms": 7.613,
+      "max_ms": 8.03
+    },
+    "candidate-2/force_generic_plan/combined": {
+      "n": 5,
+      "min_ms": 8.212,
+      "median_ms": 8.255,
+      "max_ms": 8.536
+    },
+    "original/force_generic_plan/combined": {
+      "n": 5,
+      "min_ms": 23.074,
+      "median_ms": 25.014,
+      "max_ms": 26.94
+    }
+  },
+  "driver": {
+    "original": {
+      "selected_plan_counts": {
+        "custom": 5,
+        "generic": 25
+      },
+      "diagnostic_ms_by_category": {
+        "document": {
+          "n": 5,
+          "min_ms": 11.868933,
+          "median_ms": 14.521143,
+          "max_ms": 16.113221
+        },
+        "combined": {
+          "n": 5,
+          "min_ms": 20.280821,
+          "median_ms": 22.183151,
+          "max_ms": 25.015968
+        }
+      },
+      "all_successful": 30,
+      "actual_bind_types": [
+        "{vector,bigint,text,bigint}"
+      ]
+    },
+    "candidate-2": {
+      "selected_plan_counts": {
+        "custom": 5,
+        "generic": 25
+      },
+      "diagnostic_ms_by_category": {
+        "document": {
+          "n": 5,
+          "min_ms": 5.127156,
+          "median_ms": 5.482884,
+          "max_ms": 12.015615
+        },
+        "combined": {
+          "n": 5,
+          "min_ms": 5.270291,
+          "median_ms": 5.33558,
+          "max_ms": 8.004175
+        }
+      },
+      "all_successful": 30,
+      "actual_bind_types": [
+        "{vector,bigint,text,bigint}"
+      ]
+    }
+  },
+  "ordered_driver_projections_equal": true,
+  "semantic_and_lexical_producer_loops_one_all_candidate_plans": true,
+  "not_a_gate": true,
+  "historical_aa_cause_certified": false,
+  "official_g6_status": "CONTROLLED_G6_FAIL",
+  "paid_admission": "BLOCKED_CONTROLLED_G6_FAIL",
+  "limitations": [
+    "R=1, state/order effects are not randomized away.",
+    "EXPLAIN instrumentation and adapter intervals differ.",
+    "No new A/A or formal G6 was executed."
+  ]
+}

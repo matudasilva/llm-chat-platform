@@ -1,0 +1,508 @@
+{
+  "status": "BLOCKED_AA_EXECUTION_INDEPENDENT_REPLAY_VERIFIED_FAIL",
+  "reviewer": "/root/packet_review",
+  "plan_sha256": "e3f6f8efae1de5858e3402ee131cead41a28a42050b7115ded5c08a26f53eb54",
+  "fixtures_sha256": "f1e1a885de667410d59ed1840cfcda9cc0b22f2c08fea9a47b1b725012690a24",
+  "prospective_review_sha256": "9783d238f83f37b55abb7f72f41db20643ddb504e6777a1bcbbe4ffe3fba5d0c",
+  "result_sha256": "592c5136dfbc4fa5106c5906c112fc6f056b764312af264615c25e9dd7005207",
+  "verifier_sha256": "868fde2afefc87019d28ebc94af75e93b3f314c51ca7c789e2188e9306ed4752",
+  "worker_receipts": {
+    "c0-EN-json-b0.json": "3ad14c69930754ead6badd69369a5264f31593b336049082cf1374912b25cf60",
+    "c1-EN-json-b0.json": "acce9e9d6e53f72af1d1d25e1b00641d71a77f8e76bd9071708b5b7a99660064",
+    "c1-EN-json-b1.json": "04e4bec73d00919c1e2f2c03333db23d480f74dd2ad9316a8f8c6a420f4261a9",
+    "c0-EN-json-b1.json": "b3fc0ff37615d3a87a7ca447dc5b0a9e4d1d54609136f69e255c672aaf564584",
+    "c1-EN-json-b2.json": "bb393b8321a90f89489a288598264330fd38561d0a3e931f47c8a5dcdc7c4d75",
+    "c0-EN-json-b2.json": "a8b225e9f83303506201176e5f4ba7d086c1d07784b59f92b2e7cb1628d824fd",
+    "c0-EN-json-b3.json": "a583ea706c3223b5ef8df03357672ec2cc8875b26ccfb91505424dfacc3334a3",
+    "c1-EN-json-b3.json": "682b8e3a0385063f9e2d93e9ecd400a213fd4678d1548a80efd600d74a3be1ec",
+    "c1-EN-sse-b0.json": "67f433afbc36702c1d7f98aad700b0e9aa1a398be8e6828ae1a9e7c6ac3db916",
+    "c0-EN-sse-b0.json": "29237e1cbf19cb8387eed90b9c430c961d16df4718bc0649fea481a95d28906e",
+    "c0-EN-sse-b1.json": "9ddbfa06a2a70778431611f94aaea5453cd58d8c54d6c28a9448f5be6f963921",
+    "c1-EN-sse-b1.json": "f576c9bd125014744403309f970052c467a7e5ad3465e6e1d61f2958e1baddff",
+    "c0-EN-sse-b2.json": "0170a3ac05c1e3d57de940d3e210282f4d4086bb9b5f345392e6f103911241a5",
+    "c1-EN-sse-b2.json": "2db5f61517e6b18cf683a814264d73e87323e8e0a2b77b523a68a60d695cd2fb",
+    "c1-EN-sse-b3.json": "8c08f4220de3b58348d437e77052cdccf558fc6988c3229fef39a61b8371f7cf",
+    "c0-EN-sse-b3.json": "da7e9b813ccbad0ec7b01b1f2bcc7da363eab43ebd814b5acd711fa37af64d3a",
+    "c0-ES-json-b0.json": "7b3f6f94fcad256f657041b760c09af68ac10e34dc32f63a802a6f03080aacaa",
+    "c1-ES-json-b0.json": "d8c85c92e4c7589a4d3746fd78f00925d66484476fc657b2e2187e46a7adab96",
+    "c1-ES-json-b1.json": "bbeb92e8ea7cfc43e2e908286dac621080a02f9ab5329a68e9ceabd97f8eb111",
+    "c0-ES-json-b1.json": "aaaed15532149492e5eb4ec70332eb55e32dcc8866e3d2b00dc04ed39b1e11d1",
+    "c1-ES-json-b2.json": "13415d77a8cad491b9c3f146df31035dbed8ba70ed6c3bdef1299108e4e12704",
+    "c0-ES-json-b2.json": "264007f35aa8a3d44c7a7e189a0843e9802f33df9cf4b3af3a80c4c637214951",
+    "c0-ES-json-b3.json": "62c6d29c2788cd041249292627ad93659bfa4fa8f78829a9631ec5452721e2fc",
+    "c1-ES-json-b3.json": "db0e1eede274b5ba6fa3ce76ff904c8696977fab1399a3333ff8b10831b0d630",
+    "c1-ES-sse-b0.json": "3f5b56dae53fe7d03dbfd298ec05647b4c4e2c11698f290c9b883a9b83e4c624",
+    "c0-ES-sse-b0.json": "8a648e9438a444e72c5c6ca0246591bafd92c66bdb38bba02af443b648e38754",
+    "c0-ES-sse-b1.json": "479387aecdf6004bee0210c3c2e6bf6f939189e0201362b80eba41a504654790",
+    "c1-ES-sse-b1.json": "76de5cedd9aeb4bde08d93c5dca7eee316e890618c7686f9208b3565ae9a970e",
+    "c0-ES-sse-b2.json": "4e24d68f6e489bd9f7e8e5ea2f96966b8b79bea4a427b016190f8282262cddd7",
+    "c1-ES-sse-b2.json": "f4b20814710aa9011c449f9c1fa3688d0ed0df96b2fbe614c09dcd6c4f4304bb",
+    "c1-ES-sse-b3.json": "c817fc3a767ea50a879016c2bec593aa554302b1c555e7de24616ff338bac42f",
+    "c0-ES-sse-b3.json": "3529ae68e5d2a492bd3c5c142b305f43a66a7d90b4bc7363488cf9cde7941959"
+  },
+  "observation_receipts": {
+    "c0-EN-json-b0-observations.json": "5c019fbb8dac526373d3be60e7b35d25866162d84d8e920d8caadd4eaef0402e",
+    "c1-EN-json-b0-observations.json": "05834b3a2a22c0ab3466ca0810e32ccda2a416c410f41afd094d86245c784f7c",
+    "c1-EN-json-b1-observations.json": "9662a8b39c371c4097fc81c3e71ae16df9a85ccf308a4f8ff0af0258b26b61a7",
+    "c0-EN-json-b1-observations.json": "82d3a769636b511456623abd820a8713ab92c865b2089c0ec56e195f42c64eb4",
+    "c1-EN-json-b2-observations.json": "22bf94e53a6fa405fcb4d12cba247492c9a4c01881435eba56d42b82ff0f874a",
+    "c0-EN-json-b2-observations.json": "e9fc44fc477e90a49b67a9a81412eac620f25ec8545ab466604f9d9c0dca7bfa",
+    "c0-EN-json-b3-observations.json": "841b4892e3d65934c2761acd55c5026fdc3cacbf06538c74a17e35a245e49e25",
+    "c1-EN-json-b3-observations.json": "da0be6e33001c036ae59d273bbd240cf78f8a40e8e77772bd77c204ce8510e5c",
+    "c1-EN-sse-b0-observations.json": "20bacf4058872929fe88d42016d5ac37e440671e0c378df6f96c0063f9856c64",
+    "c0-EN-sse-b0-observations.json": "54ca86056a3d07a9def29d68df466267d922b083e14611d1256569f2ef4eb5be",
+    "c0-EN-sse-b1-observations.json": "f93dfc471ac8a58c635dda8c0bd657aa8f9a16e9eb9cf8ddee70058aadc2c9f4",
+    "c1-EN-sse-b1-observations.json": "ca12e49f370a3e31dd770dc425a68e648ab99dfc67f8d38bc5445d9efc73170c",
+    "c0-EN-sse-b2-observations.json": "7a5372a67841827c4a4ea02f39f6bf35a58652c36fbf5771fd682f45f3c75580",
+    "c1-EN-sse-b2-observations.json": "8fa558444832792f1b979482955d8ea6e2c196d9c272c5f1744a18922cd83fe0",
+    "c1-EN-sse-b3-observations.json": "4640dd84ac251a2ea88b915a795e8bd6358c266db5ff230ec04efd78110fdfbc",
+    "c0-EN-sse-b3-observations.json": "e671a936e019f486e571f1e31e2a203d3a7af3982f0cefacfef63c4e6359829f",
+    "c0-ES-json-b0-observations.json": "ed77f80f2e16bb6a7efa7b328978f1800c74dffc5eafb438e37db6b22e6f6ad0",
+    "c1-ES-json-b0-observations.json": "8151fb90faa58caf13fc5aa57ab52e8663a9ea67e4b48f88889361027c7c8522",
+    "c1-ES-json-b1-observations.json": "8acb9c7bf864df8bd4270e4c27cdfaedb61d27a9b42f4d955ba4434d6169467a",
+    "c0-ES-json-b1-observations.json": "b04989d7911df846a62c85e3774f611f46a3f2f0f1713de32dd551ab88220885",
+    "c1-ES-json-b2-observations.json": "055f3e7e899bfe0e2f9d42f06f1ea7540f1d7d3d637d4440566f51531fb39718",
+    "c0-ES-json-b2-observations.json": "d6bce9965010d1c97a63f4cb479f5f8291d3974cb9a7b297471d8650cfa2ad51",
+    "c0-ES-json-b3-observations.json": "8bde7774fbca5dd070e3b9d11c4add2ed560b2615efe4af5ac3e1668ea9c8c78",
+    "c1-ES-json-b3-observations.json": "4dafc54848773dcf267eb9b1e2c5db3369b6939412bfa2ea7ddcd81546b429d4",
+    "c1-ES-sse-b0-observations.json": "69fee5eb859509935536004ba996c3b23b0f32ccdb46df824ec07903db0fce24",
+    "c0-ES-sse-b0-observations.json": "529648c81a99ee319a6262ecae5005b577f7860eba3a20cb89c3f6f8e97b3a79",
+    "c0-ES-sse-b1-observations.json": "f5dbde4624207ec7d147691b56ca5afebfe7b3091a1ec4a1e9321d3851b30e5f",
+    "c1-ES-sse-b1-observations.json": "66ff1718749254e99155c49ca527fbc04d1f14274f1531cef5fd889e7c0ec884",
+    "c0-ES-sse-b2-observations.json": "3b001ec352b029bc477a083dc83924448ae334e0886696bf36e898c225a73ea3",
+    "c1-ES-sse-b2-observations.json": "e333a03c5c293e19ba950e975b9b0da0a0f466b2a6aebee39502573fe0038093",
+    "c1-ES-sse-b3-observations.json": "4f6ee9d38be05a8ac518ecbe74101b806b4c2681da595a51548ca669769748fa",
+    "c0-ES-sse-b3-observations.json": "e36ed0baa3ec2f9f9a18fba6b619a8adf6d0f1a703a5b4f76780dbc201909929"
+  },
+  "cells": [
+    {
+      "cell": "EN-json",
+      "a_p95_ns": 14642350,
+      "b_p95_ns": 14444318,
+      "signed_percent": -1.3524604998514582,
+      "status": "PASS"
+    },
+    {
+      "cell": "EN-sse",
+      "a_p95_ns": 15134931,
+      "b_p95_ns": 14790465,
+      "signed_percent": -2.275966768530362,
+      "status": "PASS"
+    },
+    {
+      "cell": "ES-json",
+      "a_p95_ns": 16155431,
+      "b_p95_ns": 14904832,
+      "signed_percent": -7.741043863206126,
+      "status": "FAIL"
+    },
+    {
+      "cell": "ES-sse",
+      "a_p95_ns": 14462488,
+      "b_p95_ns": 16463800,
+      "signed_percent": 13.837950980495195,
+      "status": "FAIL"
+    }
+  ],
+  "requests": 1440,
+  "measured": 800,
+  "warmups": 640,
+  "unique_c1_instances": 1440,
+  "all_resource_host_database_deltas_independently_recomputed": true,
+  "throttling_deltas": [
+    [
+      "api",
+      "c0-EN-json-b0",
+      0,
+      0
+    ],
+    [
+      "pg",
+      "c0-EN-json-b0",
+      0,
+      0
+    ],
+    [
+      "api",
+      "c1-EN-json-b0",
+      0,
+      0
+    ],
+    [
+      "pg",
+      "c1-EN-json-b0",
+      0,
+      0
+    ],
+    [
+      "api",
+      "c1-EN-json-b1",
+      0,
+      0
+    ],
+    [
+      "pg",
+      "c1-EN-json-b1",
+      0,
+      0
+    ],
+    [
+      "api",
+      "c0-EN-json-b1",
+      0,
+      0
+    ],
+    [
+      "pg",
+      "c0-EN-json-b1",
+      0,
+      0
+    ],
+    [
+      "api",
+      "c1-EN-json-b2",
+      0,
+      0
+    ],
+    [
+      "pg",
+      "c1-EN-json-b2",
+      0,
+      0
+    ],
+    [
+      "api",
+      "c0-EN-json-b2",
+      0,
+      0
+    ],
+    [
+      "pg",
+      "c0-EN-json-b2",
+      0,
+      0
+    ],
+    [
+      "api",
+      "c0-EN-json-b3",
+      0,
+      0
+    ],
+    [
+      "pg",
+      "c0-EN-json-b3",
+      0,
+      0
+    ],
+    [
+      "api",
+      "c1-EN-json-b3",
+      0,
+      0
+    ],
+    [
+      "pg",
+      "c1-EN-json-b3",
+      0,
+      0
+    ],
+    [
+      "api",
+      "c1-EN-sse-b0",
+      0,
+      0
+    ],
+    [
+      "pg",
+      "c1-EN-sse-b0",
+      0,
+      0
+    ],
+    [
+      "api",
+      "c0-EN-sse-b0",
+      0,
+      0
+    ],
+    [
+      "pg",
+      "c0-EN-sse-b0",
+      0,
+      0
+    ],
+    [
+      "api",
+      "c0-EN-sse-b1",
+      0,
+      0
+    ],
+    [
+      "pg",
+      "c0-EN-sse-b1",
+      0,
+      0
+    ],
+    [
+      "api",
+      "c1-EN-sse-b1",
+      0,
+      0
+    ],
+    [
+      "pg",
+      "c1-EN-sse-b1",
+      0,
+      0
+    ],
+    [
+      "api",
+      "c0-EN-sse-b2",
+      0,
+      0
+    ],
+    [
+      "pg",
+      "c0-EN-sse-b2",
+      0,
+      0
+    ],
+    [
+      "api",
+      "c1-EN-sse-b2",
+      0,
+      0
+    ],
+    [
+      "pg",
+      "c1-EN-sse-b2",
+      0,
+      0
+    ],
+    [
+      "api",
+      "c1-EN-sse-b3",
+      0,
+      0
+    ],
+    [
+      "pg",
+      "c1-EN-sse-b3",
+      0,
+      0
+    ],
+    [
+      "api",
+      "c0-EN-sse-b3",
+      0,
+      0
+    ],
+    [
+      "pg",
+      "c0-EN-sse-b3",
+      0,
+      0
+    ],
+    [
+      "api",
+      "c0-ES-json-b0",
+      0,
+      0
+    ],
+    [
+      "pg",
+      "c0-ES-json-b0",
+      0,
+      0
+    ],
+    [
+      "api",
+      "c1-ES-json-b0",
+      0,
+      0
+    ],
+    [
+      "pg",
+      "c1-ES-json-b0",
+      0,
+      0
+    ],
+    [
+      "api",
+      "c1-ES-json-b1",
+      0,
+      0
+    ],
+    [
+      "pg",
+      "c1-ES-json-b1",
+      0,
+      0
+    ],
+    [
+      "api",
+      "c0-ES-json-b1",
+      0,
+      0
+    ],
+    [
+      "pg",
+      "c0-ES-json-b1",
+      0,
+      0
+    ],
+    [
+      "api",
+      "c1-ES-json-b2",
+      0,
+      0
+    ],
+    [
+      "pg",
+      "c1-ES-json-b2",
+      0,
+      0
+    ],
+    [
+      "api",
+      "c0-ES-json-b2",
+      0,
+      0
+    ],
+    [
+      "pg",
+      "c0-ES-json-b2",
+      0,
+      0
+    ],
+    [
+      "api",
+      "c0-ES-json-b3",
+      0,
+      0
+    ],
+    [
+      "pg",
+      "c0-ES-json-b3",
+      0,
+      0
+    ],
+    [
+      "api",
+      "c1-ES-json-b3",
+      0,
+      0
+    ],
+    [
+      "pg",
+      "c1-ES-json-b3",
+      0,
+      0
+    ],
+    [
+      "api",
+      "c1-ES-sse-b0",
+      0,
+      0
+    ],
+    [
+      "pg",
+      "c1-ES-sse-b0",
+      0,
+      0
+    ],
+    [
+      "api",
+      "c0-ES-sse-b0",
+      0,
+      0
+    ],
+    [
+      "pg",
+      "c0-ES-sse-b0",
+      0,
+      0
+    ],
+    [
+      "api",
+      "c0-ES-sse-b1",
+      0,
+      0
+    ],
+    [
+      "pg",
+      "c0-ES-sse-b1",
+      0,
+      0
+    ],
+    [
+      "api",
+      "c1-ES-sse-b1",
+      0,
+      0
+    ],
+    [
+      "pg",
+      "c1-ES-sse-b1",
+      0,
+      0
+    ],
+    [
+      "api",
+      "c0-ES-sse-b2",
+      0,
+      0
+    ],
+    [
+      "pg",
+      "c0-ES-sse-b2",
+      0,
+      0
+    ],
+    [
+      "api",
+      "c1-ES-sse-b2",
+      0,
+      0
+    ],
+    [
+      "pg",
+      "c1-ES-sse-b2",
+      0,
+      0
+    ],
+    [
+      "api",
+      "c1-ES-sse-b3",
+      0,
+      0
+    ],
+    [
+      "pg",
+      "c1-ES-sse-b3",
+      0,
+      0
+    ],
+    [
+      "api",
+      "c0-ES-sse-b3",
+      0,
+      0
+    ],
+    [
+      "pg",
+      "c0-ES-sse-b3",
+      0,
+      0
+    ]
+  ],
+  "protected_files_independently_rehashed": 505,
+  "parent_post_execution_proof_pending": true,
+  "final_database_receipt_sha256": "24054eb4fd896681512be62da34af3184dd98c559a674513fb8f7e0f4945c3a7",
+  "reviewer_api_calls": 0,
+  "reviewer_database_calls": 0,
+  "reviewer_docker_calls": 0,
+  "external_provider_calls": 0,
+  "spend_usd": "0",
+  "official_g6_status": "CONTROLLED_G6_FAIL",
+  "new_blocker_high_medium_findings": []
+}

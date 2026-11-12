@@ -1,0 +1,36 @@
+{
+  "status": "CLIENT_MEASUREMENT_AMENDMENT_INDEPENDENT_REVIEW_PASS",
+  "reviewer": "/root/g9_final_distinct_reviewer",
+  "author_of_fix": false,
+  "independent_tests_passed": 84,
+  "independent_new_probes": 6,
+  "author_supporting_tests_passed": 202,
+  "original_binding_findings_resolved": true,
+  "timing_probe_ms": {
+    "headers": 500,
+    "first_event": 1000,
+    "first_content": 3000,
+    "done": 4000,
+    "validated_full_body": 9000
+  },
+  "replay168_usd": "4.15355688",
+  "hard_cap_usd": "5.00",
+  "new_paid_requests": 0,
+  "api_calls": 0,
+  "external_calls": 0,
+  "egress_attempts": 0,
+  "spend_usd": "0",
+  "findings_pending": [],
+  "source_hashes": {
+    "experiments/production_graduation/campaign_runner/measurements.py": "e2b7630b8fd0bd97ca9b3771aa648b60ecef3fe30c10dcbe38e4b668b54292b1",
+    "experiments/production_graduation/campaign_runner/preflight.py": "b762457cb852da531565db583734bd3d17ab86a3c25c20c36c44334ec1014dc5",
+    "experiments/production_graduation/campaign_runner/runner.py": "bc852c2a2d52bb95aad4c39b9b41f2ed5531d924d5b1c6781eebcbb90cf79a05",
+    "tests/experiments/test_orq41_client_measurements.py": "e8e17f537599c235ab922913482129926c49fedc83ed518660998679b0273678",
+    "tests/experiments/test_orq41_p5_remaining_fixes.py": "e12183595bd7bb40ec06a9ed1824e6e4c243a9ff6bbe01c2a7b5b22704000a94"
+  },
+  "limits": [
+    "Pure in-memory reviewer transports; author202 P2 Unix transport regression inspected separately",
+    "Closes measurement capability gap only; no actual live deployment/config/network pins or controlled/live G6/G7 gate PASS",
+    "Measurement receipt observations must reconcile durable economic ledger before any gate analysis"
+  ]
+}

@@ -1,0 +1,458 @@
+...............................................................FFF...... [ 38%]
+........................................................................ [ 77%]
+.......................+++++++++++++++++++++++++++++++++++ Timeout ++++++++++++++++++++++++++++++++++++
+~~~~~~~~~~~~~~~~~~~~~ Stack of asyncio_0 (139356277204672) ~~~~~~~~~~~~~~~~~~~~~
+  File "/home/matias/miniconda3/lib/python3.13/threading.py", line 1014, in _bootstrap
+    self._bootstrap_inner()
+  File "/home/matias/miniconda3/lib/python3.13/threading.py", line 1043, in _bootstrap_inner
+    self.run()
+  File "/home/matias/miniconda3/lib/python3.13/threading.py", line 994, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/matias/miniconda3/lib/python3.13/concurrent/futures/thread.py", line 90, in _worker
+    work_item = work_queue.get(block=True)
++++++++++++++++++++++++++++++++++++ Timeout ++++++++++++++++++++++++++++++++++++
+
+=================================== FAILURES ===================================
+_____________ test_local_stub_api_both_transports[normal-COMPLETE] _____________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-23/test_local_stub_api_both_trans0')
+packet = ({'entries': [{'block': 'EN-C1', 'language': 'EN', 'payload': {'message': 'Local synthetic fixture', 'stream': False},...17e56b94450339950599d4f', ...}, 'manifest_sha256': '0c1781f1b1b05fc06b364c28b71a761e99f487a1e625b605a3b687aec16e2ee8'})
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7ebe697ae190>
+mode = 'normal', state = <State.COMPLETE: 'COMPLETE'>
+
+    @pytest.mark.parametrize("mode,state", [
+        ("normal", State.COMPLETE), ("retry", State.INCOMPLETE_STOP_RETRY),
+        ("evaluator", State.INCOMPLETE_STOP_EVALUATOR),
+    ])
+    def test_local_stub_api_both_transports(tmp_path, packet, monkeypatch, mode, state):
+        manifest, pins = copy.deepcopy(packet)
+        # A stream-first request verifies stop detection on SSE as well as completion
+        # for both paths. The second request is admitted only in the normal dry run.
+        manifest["entries"][0]["payload"]["stream"] = True
+        manifest["entries"][0]["tenant_id"] = "orq41-history-en"
+        second = copy.deepcopy(manifest["entries"][0])
+        second["seq"] = 1
+        second["payload"]["stream"] = False
+        second["tenant_id"] = "orq41-empty-es"
+        manifest["entries"].append(second)
+        pins["manifest_sha256"] = digest(manifest)
+        output = io.StringIO()
+        handler = logging.StreamHandler(output)
+        production = next(h for h in logging.getLogger().handlers
+                          if h.formatter and "tenant_id=" in h.formatter._fmt)
+        handler.setFormatter(production.formatter)
+        for log_filter in production.filters:
+            handler.addFilter(log_filter)
+        logging.getLogger().addHandler(handler)
+        sent = []
+    
+        class Ports:
+            async def embed_one(self, text):
+                return [0.1]
+    
+            async def hybrid_search(self, *args, **kwargs):
+                return [RetrievedChunk(chunk_id=uuid.uuid4(), document_id=uuid.uuid4(),
+                                       text="local fixture", score=1.0)]
+    
+            async def rerank(self, request):
+                return [RankedDocument(index=0, rank=1)]
+    
+        class FakeRuntime:
+            attempts = 0
+    
+            def converse(self, **kwargs):
+                self.attempts += 1
+                if self.attempts == 1:
+                    raise TimeoutError("local retry fixture")
+                return {"output": {"message": {"content": [{"text": "ok"}]}}, "usage": {}}
+    
+        async def run_request(body, rid):
+            ports = Ports()
+            pipeline = RetrievalPipeline(provider=StubProvider(), embedding=ports,
+                                         vector_store=ports, reranker=ports,
+                                         min_reranked_results=5 if mode == "evaluator" else 1)
+            await pipeline.retrieve(request_id=uuid.UUID(rid), query=body["message"])
+            input = ProviderInput(request_id=uuid.UUID(rid),
+                                  messages=[ChatMessage(role="user", content=body["message"])])
+            if mode == "retry":
+                provider = BedrockProvider(BedrockProviderConfig(region="us-east-1", model="local-stub",
+                                           timeout_s=1, max_attempts=2, backoff_base_ms=0, backoff_max_ms=0),
+                                           runtime_client=FakeRuntime())
+                result = await provider.generate(input)
+                return result.content
+            provider = StubProvider()
+            if body["stream"]:
+                session = await provider.stream(input)
+                content = "".join([chunk async for chunk in session.chunks])
+                await session.get_final_result()
+                return content
+            return (await provider.generate(input)).content
+    
+        class API(BaseHTTPRequestHandler):
+            def log_message(self, *args):
+                pass
+    
+            def do_POST(self):
+                assert self.path == "/chat"
+                expected_tenant = "orq41-history-en" if not sent else "orq41-empty-es"
+                assert self.headers["X-Tenant-ID"] == expected_tenant
+                output.seek(0)
+                output.truncate()
+                body = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
+                rid = self.headers["X-Request-ID"]
+                sent.append(rid)
+                from app.core.observability.retry_evidence import request_evidence
+                with request_evidence(rid):
+                    content = asyncio.run(run_request(body, rid))
+                terminal = {"status": "success", "request_id": rid, "assistant_content": content}
+                if body["stream"]:
+                    payload = f"event: token\ndata: {content}\n\nevent: done\ndata: {json.dumps(terminal)}\n\n".encode()
+                    content_type = "text/event-stream"
+                else:
+                    payload = json.dumps(terminal).encode()
+                    content_type = "application/json"
+                self.send_response(200)
+                self.send_header("Content-Type", content_type)
+                self.send_header("Content-Length", str(len(payload)))
+                self.end_headers()
+                self.wfile.write(payload)
+    
+        path = str(tmp_path / "api.sock")
+    
+        class UnixConnection(http.client.HTTPConnection):
+            def connect(self):
+                self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+                self.sock.settimeout(self.timeout)
+                self.sock.connect(path)
+    
+        monkeypatch.setattr(http.client, "HTTPConnection", UnixConnection)
+>       server = socketserver.UnixStreamServer(path, API)
+
+tests/experiments/test_orq41_campaign_runner_local.py:136: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../miniconda3/lib/python3.13/socketserver.py:457: in __init__
+    self.server_bind()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <socketserver.UnixStreamServer object at 0x7ebe69a7f770>
+
+    def server_bind(self):
+        """Called by constructor to bind the socket.
+    
+        May be overridden.
+    
+        """
+        if self.allow_reuse_address and hasattr(socket, "SO_REUSEADDR"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        # Since Linux 6.12.9, SO_REUSEPORT is not allowed
+        # on other address families than AF_INET/AF_INET6.
+        if (
+            self.allow_reuse_port and hasattr(socket, "SO_REUSEPORT")
+            and self.address_family in (socket.AF_INET, socket.AF_INET6)
+        ):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+>       self.socket.bind(self.server_address)
+E       PermissionError: [Errno 1] Operation not permitted
+
+../../miniconda3/lib/python3.13/socketserver.py:478: PermissionError
+_______ test_local_stub_api_both_transports[retry-INCOMPLETE_STOP_RETRY] _______
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-23/test_local_stub_api_both_trans1')
+packet = ({'entries': [{'block': 'EN-C1', 'language': 'EN', 'payload': {'message': 'Local synthetic fixture', 'stream': False},...17e56b94450339950599d4f', ...}, 'manifest_sha256': '0c1781f1b1b05fc06b364c28b71a761e99f487a1e625b605a3b687aec16e2ee8'})
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7ebe69731240>
+mode = 'retry', state = <State.INCOMPLETE_STOP_RETRY: 'INCOMPLETE_STOP_RETRY'>
+
+    @pytest.mark.parametrize("mode,state", [
+        ("normal", State.COMPLETE), ("retry", State.INCOMPLETE_STOP_RETRY),
+        ("evaluator", State.INCOMPLETE_STOP_EVALUATOR),
+    ])
+    def test_local_stub_api_both_transports(tmp_path, packet, monkeypatch, mode, state):
+        manifest, pins = copy.deepcopy(packet)
+        # A stream-first request verifies stop detection on SSE as well as completion
+        # for both paths. The second request is admitted only in the normal dry run.
+        manifest["entries"][0]["payload"]["stream"] = True
+        manifest["entries"][0]["tenant_id"] = "orq41-history-en"
+        second = copy.deepcopy(manifest["entries"][0])
+        second["seq"] = 1
+        second["payload"]["stream"] = False
+        second["tenant_id"] = "orq41-empty-es"
+        manifest["entries"].append(second)
+        pins["manifest_sha256"] = digest(manifest)
+        output = io.StringIO()
+        handler = logging.StreamHandler(output)
+        production = next(h for h in logging.getLogger().handlers
+                          if h.formatter and "tenant_id=" in h.formatter._fmt)
+        handler.setFormatter(production.formatter)
+        for log_filter in production.filters:
+            handler.addFilter(log_filter)
+        logging.getLogger().addHandler(handler)
+        sent = []
+    
+        class Ports:
+            async def embed_one(self, text):
+                return [0.1]
+    
+            async def hybrid_search(self, *args, **kwargs):
+                return [RetrievedChunk(chunk_id=uuid.uuid4(), document_id=uuid.uuid4(),
+                                       text="local fixture", score=1.0)]
+    
+            async def rerank(self, request):
+                return [RankedDocument(index=0, rank=1)]
+    
+        class FakeRuntime:
+            attempts = 0
+    
+            def converse(self, **kwargs):
+                self.attempts += 1
+                if self.attempts == 1:
+                    raise TimeoutError("local retry fixture")
+                return {"output": {"message": {"content": [{"text": "ok"}]}}, "usage": {}}
+    
+        async def run_request(body, rid):
+            ports = Ports()
+            pipeline = RetrievalPipeline(provider=StubProvider(), embedding=ports,
+                                         vector_store=ports, reranker=ports,
+                                         min_reranked_results=5 if mode == "evaluator" else 1)
+            await pipeline.retrieve(request_id=uuid.UUID(rid), query=body["message"])
+            input = ProviderInput(request_id=uuid.UUID(rid),
+                                  messages=[ChatMessage(role="user", content=body["message"])])
+            if mode == "retry":
+                provider = BedrockProvider(BedrockProviderConfig(region="us-east-1", model="local-stub",
+                                           timeout_s=1, max_attempts=2, backoff_base_ms=0, backoff_max_ms=0),
+                                           runtime_client=FakeRuntime())
+                result = await provider.generate(input)
+                return result.content
+            provider = StubProvider()
+            if body["stream"]:
+                session = await provider.stream(input)
+                content = "".join([chunk async for chunk in session.chunks])
+                await session.get_final_result()
+                return content
+            return (await provider.generate(input)).content
+    
+        class API(BaseHTTPRequestHandler):
+            def log_message(self, *args):
+                pass
+    
+            def do_POST(self):
+                assert self.path == "/chat"
+                expected_tenant = "orq41-history-en" if not sent else "orq41-empty-es"
+                assert self.headers["X-Tenant-ID"] == expected_tenant
+                output.seek(0)
+                output.truncate()
+                body = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
+                rid = self.headers["X-Request-ID"]
+                sent.append(rid)
+                from app.core.observability.retry_evidence import request_evidence
+                with request_evidence(rid):
+                    content = asyncio.run(run_request(body, rid))
+                terminal = {"status": "success", "request_id": rid, "assistant_content": content}
+                if body["stream"]:
+                    payload = f"event: token\ndata: {content}\n\nevent: done\ndata: {json.dumps(terminal)}\n\n".encode()
+                    content_type = "text/event-stream"
+                else:
+                    payload = json.dumps(terminal).encode()
+                    content_type = "application/json"
+                self.send_response(200)
+                self.send_header("Content-Type", content_type)
+                self.send_header("Content-Length", str(len(payload)))
+                self.end_headers()
+                self.wfile.write(payload)
+    
+        path = str(tmp_path / "api.sock")
+    
+        class UnixConnection(http.client.HTTPConnection):
+            def connect(self):
+                self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+                self.sock.settimeout(self.timeout)
+                self.sock.connect(path)
+    
+        monkeypatch.setattr(http.client, "HTTPConnection", UnixConnection)
+>       server = socketserver.UnixStreamServer(path, API)
+
+tests/experiments/test_orq41_campaign_runner_local.py:136: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../miniconda3/lib/python3.13/socketserver.py:457: in __init__
+    self.server_bind()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <socketserver.UnixStreamServer object at 0x7ebe69735590>
+
+    def server_bind(self):
+        """Called by constructor to bind the socket.
+    
+        May be overridden.
+    
+        """
+        if self.allow_reuse_address and hasattr(socket, "SO_REUSEADDR"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        # Since Linux 6.12.9, SO_REUSEPORT is not allowed
+        # on other address families than AF_INET/AF_INET6.
+        if (
+            self.allow_reuse_port and hasattr(socket, "SO_REUSEPORT")
+            and self.address_family in (socket.AF_INET, socket.AF_INET6)
+        ):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+>       self.socket.bind(self.server_address)
+E       PermissionError: [Errno 1] Operation not permitted
+
+../../miniconda3/lib/python3.13/socketserver.py:478: PermissionError
+___ test_local_stub_api_both_transports[evaluator-INCOMPLETE_STOP_EVALUATOR] ___
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-23/test_local_stub_api_both_trans2')
+packet = ({'entries': [{'block': 'EN-C1', 'language': 'EN', 'payload': {'message': 'Local synthetic fixture', 'stream': False},...17e56b94450339950599d4f', ...}, 'manifest_sha256': '0c1781f1b1b05fc06b364c28b71a761e99f487a1e625b605a3b687aec16e2ee8'})
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7ebe69732430>
+mode = 'evaluator'
+state = <State.INCOMPLETE_STOP_EVALUATOR: 'INCOMPLETE_STOP_EVALUATOR'>
+
+    @pytest.mark.parametrize("mode,state", [
+        ("normal", State.COMPLETE), ("retry", State.INCOMPLETE_STOP_RETRY),
+        ("evaluator", State.INCOMPLETE_STOP_EVALUATOR),
+    ])
+    def test_local_stub_api_both_transports(tmp_path, packet, monkeypatch, mode, state):
+        manifest, pins = copy.deepcopy(packet)
+        # A stream-first request verifies stop detection on SSE as well as completion
+        # for both paths. The second request is admitted only in the normal dry run.
+        manifest["entries"][0]["payload"]["stream"] = True
+        manifest["entries"][0]["tenant_id"] = "orq41-history-en"
+        second = copy.deepcopy(manifest["entries"][0])
+        second["seq"] = 1
+        second["payload"]["stream"] = False
+        second["tenant_id"] = "orq41-empty-es"
+        manifest["entries"].append(second)
+        pins["manifest_sha256"] = digest(manifest)
+        output = io.StringIO()
+        handler = logging.StreamHandler(output)
+        production = next(h for h in logging.getLogger().handlers
+                          if h.formatter and "tenant_id=" in h.formatter._fmt)
+        handler.setFormatter(production.formatter)
+        for log_filter in production.filters:
+            handler.addFilter(log_filter)
+        logging.getLogger().addHandler(handler)
+        sent = []
+    
+        class Ports:
+            async def embed_one(self, text):
+                return [0.1]
+    
+            async def hybrid_search(self, *args, **kwargs):
+                return [RetrievedChunk(chunk_id=uuid.uuid4(), document_id=uuid.uuid4(),
+                                       text="local fixture", score=1.0)]
+    
+            async def rerank(self, request):
+                return [RankedDocument(index=0, rank=1)]
+    
+        class FakeRuntime:
+            attempts = 0
+    
+            def converse(self, **kwargs):
+                self.attempts += 1
+                if self.attempts == 1:
+                    raise TimeoutError("local retry fixture")
+                return {"output": {"message": {"content": [{"text": "ok"}]}}, "usage": {}}
+    
+        async def run_request(body, rid):
+            ports = Ports()
+            pipeline = RetrievalPipeline(provider=StubProvider(), embedding=ports,
+                                         vector_store=ports, reranker=ports,
+                                         min_reranked_results=5 if mode == "evaluator" else 1)
+            await pipeline.retrieve(request_id=uuid.UUID(rid), query=body["message"])
+            input = ProviderInput(request_id=uuid.UUID(rid),
+                                  messages=[ChatMessage(role="user", content=body["message"])])
+            if mode == "retry":
+                provider = BedrockProvider(BedrockProviderConfig(region="us-east-1", model="local-stub",
+                                           timeout_s=1, max_attempts=2, backoff_base_ms=0, backoff_max_ms=0),
+                                           runtime_client=FakeRuntime())
+                result = await provider.generate(input)
+                return result.content
+            provider = StubProvider()
+            if body["stream"]:
+                session = await provider.stream(input)
+                content = "".join([chunk async for chunk in session.chunks])
+                await session.get_final_result()
+                return content
+            return (await provider.generate(input)).content
+    
+        class API(BaseHTTPRequestHandler):
+            def log_message(self, *args):
+                pass
+    
+            def do_POST(self):
+                assert self.path == "/chat"
+                expected_tenant = "orq41-history-en" if not sent else "orq41-empty-es"
+                assert self.headers["X-Tenant-ID"] == expected_tenant
+                output.seek(0)
+                output.truncate()
+                body = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
+                rid = self.headers["X-Request-ID"]
+                sent.append(rid)
+                from app.core.observability.retry_evidence import request_evidence
+                with request_evidence(rid):
+                    content = asyncio.run(run_request(body, rid))
+                terminal = {"status": "success", "request_id": rid, "assistant_content": content}
+                if body["stream"]:
+                    payload = f"event: token\ndata: {content}\n\nevent: done\ndata: {json.dumps(terminal)}\n\n".encode()
+                    content_type = "text/event-stream"
+                else:
+                    payload = json.dumps(terminal).encode()
+                    content_type = "application/json"
+                self.send_response(200)
+                self.send_header("Content-Type", content_type)
+                self.send_header("Content-Length", str(len(payload)))
+                self.end_headers()
+                self.wfile.write(payload)
+    
+        path = str(tmp_path / "api.sock")
+    
+        class UnixConnection(http.client.HTTPConnection):
+            def connect(self):
+                self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+                self.sock.settimeout(self.timeout)
+                self.sock.connect(path)
+    
+        monkeypatch.setattr(http.client, "HTTPConnection", UnixConnection)
+>       server = socketserver.UnixStreamServer(path, API)
+
+tests/experiments/test_orq41_campaign_runner_local.py:136: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../miniconda3/lib/python3.13/socketserver.py:457: in __init__
+    self.server_bind()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <socketserver.UnixStreamServer object at 0x7ebe69736210>
+
+    def server_bind(self):
+        """Called by constructor to bind the socket.
+    
+        May be overridden.
+    
+        """
+        if self.allow_reuse_address and hasattr(socket, "SO_REUSEADDR"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        # Since Linux 6.12.9, SO_REUSEPORT is not allowed
+        # on other address families than AF_INET/AF_INET6.
+        if (
+            self.allow_reuse_port and hasattr(socket, "SO_REUSEPORT")
+            and self.address_family in (socket.AF_INET, socket.AF_INET6)
+        ):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+>       self.socket.bind(self.server_address)
+E       PermissionError: [Errno 1] Operation not permitted
+
+../../miniconda3/lib/python3.13/socketserver.py:478: PermissionError
+=============================== warnings summary ===============================
+.venv/lib/python3.13/site-packages/_pytest/config/__init__.py:1441
+  /home/matias/Cursor/llm-chat-platform/.venv/lib/python3.13/site-packages/_pytest/config/__init__.py:1441: PytestConfigWarning: Unknown config option: cache_dir
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+----------- generated xml file: /tmp/orq41-tenant-p2/regression.xml ------------
+=========================== short test summary info ============================
+FAILED tests/experiments/test_orq41_campaign_runner_local.py::test_local_stub_api_both_transports[normal-COMPLETE]
+FAILED tests/experiments/test_orq41_campaign_runner_local.py::test_local_stub_api_both_transports[retry-INCOMPLETE_STOP_RETRY]
+FAILED tests/experiments/test_orq41_campaign_runner_local.py::test_local_stub_api_both_transports[evaluator-INCOMPLETE_STOP_EVALUATOR]
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! KeyboardInterrupt !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+/home/matias/miniconda3/lib/python3.13/selectors.py:452: KeyboardInterrupt
+(to show a full traceback on KeyboardInterrupt use --full-trace)
+3 failed, 164 passed, 1 warning in 128.54s (0:02:08)

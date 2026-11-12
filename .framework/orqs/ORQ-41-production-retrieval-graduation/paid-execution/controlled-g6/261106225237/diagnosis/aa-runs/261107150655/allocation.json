@@ -1,0 +1,30 @@
+{
+  "containers": {
+    "postgres": "orq41-aa-261107150655-postgres",
+    "redis": "orq41-aa-261107150655-redis",
+    "collector": "orq41-aa-261107150655-collector"
+  },
+  "images": {
+    "c0": "sha256:4e68ccdca15b97f7fd573034c74575d88a156d21ca7f4ff2251affc5db55e707",
+    "c1": "sha256:4e68ccdca15b97f7fd573034c74575d88a156d21ca7f4ff2251affc5db55e707"
+  },
+  "postgres_image": "sha256:8e5355e9ff399a002fa46148399a1ac22fb3e9b2d390f857296e6da6b5559ba1",
+  "auxiliary_images": {
+    "redis": "sha256:13105d2858ded45aedf7b24f0870e6a4e7ce4964924bffce68e562ca72149f1e",
+    "collector": "sha256:50dccac76879873148242bb98c6472404f3af3388c318ef270a6912b855c2dbc"
+  },
+  "private_state": "/tmp/orq41-aa-261107150655-oqqa8q79",
+  "resources": {
+    "api_cpus": [
+      0,
+      2
+    ],
+    "postgres_cpus": [
+      4,
+      6
+    ],
+    "nano_cpus": 2000000000,
+    "memory_bytes": 2147483648
+  },
+  "api_requests": 0
+}

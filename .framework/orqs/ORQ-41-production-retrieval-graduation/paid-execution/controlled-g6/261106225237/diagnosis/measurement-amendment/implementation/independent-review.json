@@ -1,0 +1,37 @@
+{
+  "status": "BLOCKED_AA_SOURCE_REVIEW_PASS",
+  "reviewer": "/root/packet_review",
+  "source_only": true,
+  "not_executable_packet_review": true,
+  "files_sha256": {
+    "experiments/production_graduation/gate_validation/blocked_latency.py": "f0aa8e5211a0b2285d455a98784e9d7e75f0ef6e7b702de156e6ebdf8e57091b",
+    "experiments/production_graduation/gate_validation/blocked_latency_worker.py": "25f8eaeba98e532617ac084ee5d0f1cbb8db779de152b7e0075f2727b16167c4",
+    "tests/experiments/test_orq41_blocked_latency.py": "4b2c198f973e212f56ae36739227cc272938180a59d01641ed265301cd5ebfbb"
+  },
+  "proposal_sha256": "143bafe92cf8fd4b295a9213f9ddf7ae90f51d99dd5b12175dbd56e37ee3ff9b",
+  "contract_sha256": "12f9032a4361170238bb710b5903c43160797c86d9b7be0c6b382d685fef670d",
+  "implementation_authorization_sha256": "3081301b03fe7172ee68cd8b422c53135fcdcea28fd9712c030bb9c319ec2034",
+  "source_manifest_sha256": "509cd8f40ce8228ddf47323fb17953dc0b92f69e9f23be7617e4c6b82b005eec",
+  "author_final_xml_sha256": "997938f9d69d48d5f074a87287a482c24912c91a1b6d8a065d1877a1105ac615",
+  "review_sha256": "a845aaf1b1dbd1549b6d422bd2fc02ef5a4c4e6f86b158aad7d91b7441617671",
+  "independent_pure_tests_passed": 67,
+  "independent_thread_cases_deselected": 10,
+  "parent_image_tests_passed": 167,
+  "parent_image_tests_skipped": 0,
+  "new_blocker_high_medium_findings": [],
+  "reviewer_api_calls": 0,
+  "reviewer_database_calls": 0,
+  "reviewer_docker_calls": 0,
+  "reviewer_external_calls": 0,
+  "environment_preparation_authorized_by_review": false,
+  "aa_execution_authorized_by_review": false,
+  "formal_g6_authorized_by_review": false,
+  "paid_admission_authorized_by_review": false,
+  "performance_gain_established": false,
+  "official_g6_status": "CONTROLLED_G6_FAIL",
+  "limitations": [
+    "Source/tests only, no executablepacket/environmentreview",
+    "Ten actualnativeSDKthreadcases parentimageexecuted not hostrerun",
+    "Freshpacket+separatepreparation/executionauthorizationrequired"
+  ]
+}

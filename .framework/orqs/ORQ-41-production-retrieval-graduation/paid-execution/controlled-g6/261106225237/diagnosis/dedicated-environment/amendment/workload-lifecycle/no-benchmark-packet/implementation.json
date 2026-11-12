@@ -1,0 +1,25 @@
+{
+  "status": "OFFLINE_ADAPTER_IMPLEMENTED_DEPLOYMENT_BLOCKED",
+  "technical_and_evidence_sha256": {
+    ".framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106225237/diagnosis/dedicated-environment/amendment/workload-lifecycle/no-benchmark-packet/synthetic_worker.py": "f4e1885d3c1b7b0d247b20750b241cc30a9d055c94d4720649c7a2a304f4d622",
+    ".framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106225237/diagnosis/dedicated-environment/amendment/workload-lifecycle/no-benchmark-packet/synthetic_controller.py": "a5052396f434dc124656bbddebc90046f75258449eed7cc71f54065117aa1ab3",
+    ".framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106225237/diagnosis/dedicated-environment/amendment/workload-lifecycle/no-benchmark-packet/synthetic_packet.py": "75e3fc47e9a4fa2e08060f74b6273e62e42c25e0df65cf3b4874ff5ffed164ce",
+    ".framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106225237/diagnosis/dedicated-environment/amendment/workload-lifecycle/no-benchmark-packet/implementation.md": "8a85b243ed8a2ba5a745a3d05e3e3f4596d7156c102a149ce1228a3978c08695",
+    ".framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106225237/diagnosis/dedicated-environment/amendment/workload-lifecycle/no-benchmark-packet/focused-p2.xml": "c2e943dcba653929b8b96c4dcace5b86e81c11464e44efae7acfba6a0a79f0cb",
+    "tests/experiments/test_orq41_synthetic_packet.py": "f01a3b31865815a0d3055f4a75b5b0c857fcc27c7757005ba9aa4dd7da3f3bcd"
+  },
+  "validation": {
+    "author_focused_p2_passed": 11,
+    "parent_review": "Static review and XML/source identity verification; no independent test rerun",
+    "existing_reviewed_sources_unchanged": 7
+  },
+  "execution_ready": false,
+  "host_actions": 0,
+  "provider_calls": 0,
+  "remaining": [
+    "Isolated Python bootstrap/import and actual image interpreter must be pinned and validated.",
+    "Synthetic sources must be bound in the deployment preparation without weakening the existing sealed helper.",
+    "No executable installer or live staging/execution authorization exists."
+  ],
+  "global_state": "Implement / DECISION_FREEZE_PASS; P5 CLOSED; G6 FAIL; paid admission blocked"
+}

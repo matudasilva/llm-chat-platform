@@ -1,0 +1,45 @@
+{
+  "status": "DIAGNOSTIC_AGGREGATE_HARNESS_REVIEW_PASS",
+  "reviewer": "/root/packet_review",
+  "plan_sha256": "fafa3fe071b734d55c06b08bae85c699acbe96f151138c0ca0377829dd29e35f",
+  "harness_sha256": {
+    "experiments/production_graduation/gate_validation/controlled_latency.py": "a711e6161564e4f5fbf4f542c84bd6a3f1afb71df16760e4480cdae9073837f9",
+    "experiments/production_graduation/gate_validation/controlled_latency_worker.py": "a9f1996aadfe87406addbc9ba890ae291c186de76341b0f322aa2732b03804e8",
+    "experiments/production_graduation/gate_validation/controlled_latency_controller.py": "b77ab8466734b84f93d7ccf3476819054b674d0d6f98ae0402c7147d7b2656cd",
+    "experiments/production_graduation/gate_validation/local_api.py": "e9b8a886018ca60a7b77b2885b89fa813368373435464e455bd449589ea034eb",
+    "experiments/production_graduation/gate_validation/transports.py": "3c0f15acf79a08684fad8d89bfa7242d3779a980f89988a7f252e74cb7aef6e0",
+    "experiments/production_graduation/gate_validation/capture.py": "373dab408e467093a764720d6b9b6e5cd1617b7079e877c710b44cd3d24c68bf",
+    "experiments/production_graduation/gate_validation/fixtures.py": "ce7a3bc48939da71b4c3ac49829e9e21d9c686b5bdda7f72697c3ccbd14f1f0c",
+    "experiments/production_graduation/gate_validation/validate_g123.py": "d18aefea58b169264095466eafb81f5d1f0c259ae9e3ccb516c9534f228420c3",
+    "experiments/production_graduation/gate_validation/g9_controller.py": "4b3697b3d3eccf4eccb239060a50571bb91abe9bdd121143c6042b1ea91131ce",
+    "experiments/production_graduation/gate_validation/controlled_latency_aggregate.py": "06a6181c3461587c2ccf46f2af04dbbd2b462e19f90dd4a568c664a518ce831a",
+    "experiments/production_graduation/gate_validation/controlled_latency_aggregate_worker.py": "8fd5c6db976c1b30df127948c51f46f64ccd0a45c5e4823cbd384909f7df1f6b"
+  },
+  "support_files_sha256": {
+    ".framework/orqs/ORQ-41-production-retrieval-graduation/environment/g123/execution-freeze/settings/inspect.py": "501ea364ae3bfc21de353a0b6b0c6667dea5d44f682b7c456e4b01a6f1fbeb45",
+    ".framework/orqs/ORQ-41-production-retrieval-graduation/campaign-redesign/p2_netguard/sitecustomize.py": "2810dd72b69aa1c383c512a2ed6fb2444248c438b9a4b947330042020288a2f5",
+    ".framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106130053-rev2/diagnosis/receipt-copy-proposal/implementation/image-pin/receipt.json": "15fbd41517ebd30ddc86a60aa95a30c976573fcc80d43ee8efb51739caae2a79",
+    ".framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106130053-rev2/diagnosis/receipt-copy-proposal/implementation/image-pin/candidate-app-inventory.json": "6de25acd40bd5aadf2275f9bd63cfb88f005b95f074fa7a5d2d01a366b76ddeb",
+    ".framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106130053-rev2/diagnosis/receipt-copy-proposal/implementation/image-pin/parent-app-inventory.json": "6132df5408b6c944b4fee444103353da221a71959bad9d6aacad68deb756f75d"
+  },
+  "fixtures_sha256": "d284d5ce2389ea127fc655b7d2d22299c0ff6d9518594a8af8a21efa7d5beb36",
+  "candidate_image": "sha256:4e68ccdca15b97f7fd573034c74575d88a156d21ca7f4ff2251affc5db55e707",
+  "candidate_app_source_sha256": "32490a738e58d2499b6f3a2bac9ee961f6d060a486830752d7b5207b5398ba20",
+  "database_verifier_receipt_sha256": "bcc3d647cadecf93cee633966999f444a6a738e17654fcb0ce70521d236b8b74",
+  "review_sha256": "17df155337e0a2dc4f07c6473f90d90abd55cfa02944775ddb3d0e427cf7919d",
+  "open_blocker_high_medium_findings": [],
+  "review_scope": "Prospective new image/pin/amendment/fresh inputs; unchanged aggregate harness carries prior independent review",
+  "new_test_runs_by_reviewer": 0,
+  "operator_authorized_scope": "One local 40-request diagnostic, not official G6 or paid campaign",
+  "reviewer_api_calls": 0,
+  "reviewer_database_calls": 0,
+  "reviewer_docker_calls": 0,
+  "external_calls": 0,
+  "spend_usd": "0",
+  "official_g6_status": "CONTROLLED_G6_FAIL",
+  "limitations": [
+    "Historical old/new C1 timing is not randomized causal optimization proof",
+    "Process CPU includes all threads/background work",
+    "Parent executed image/inventory/config/DB verification; reviewer inspected artifacts"
+  ]
+}

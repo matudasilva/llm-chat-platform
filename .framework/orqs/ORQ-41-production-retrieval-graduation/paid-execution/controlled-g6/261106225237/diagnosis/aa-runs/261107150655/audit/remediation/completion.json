@@ -1,0 +1,25 @@
+{
+  "status": "AA_RETENTION_FIX_INDEPENDENT_REVIEW_PASS",
+  "finding": "AA-AUDIT-R1",
+  "finding_state": "RESOLVED_IN_REVIEWED_IMPLEMENTATION",
+  "independent_review_sha256": "2449b8f728955bbede7e3c338beb47f6d460955511e479053686dbb7e67af382",
+  "files_sha256": {
+    "experiments/production_graduation/gate_validation/performance_cleanup.py": "66a4089429b668c17a00457dbbda837d5400e2975a44ed208c02274d79c68016",
+    "experiments/production_graduation/gate_validation/aa_calibration_worker.py": "312322db6c63e4e9cba280f022a41b77559822f67f48f197e3d810d9015a87a7",
+    "experiments/production_graduation/gate_validation/controlled_latency_worker.py": "bbd38eacdeac85f4f408a47727dc62e3420375c4043a49735c27e8f20aee82cb",
+    "experiments/production_graduation/gate_validation/controlled_latency_controller.py": "a769fae216c70b6057276d5da55697ac52d8fd83b39fc39924e5c5754da76747",
+    "tests/experiments/test_orq41_performance_cleanup.py": "9e9c025700414bc107c43db62fce340b6ba5b2537dcff1fa059912221fb42619"
+  },
+  "author_tests_passed": 90,
+  "author_tests_skipped": 0,
+  "independent_pure_tests_passed": 29,
+  "independent_host_thread_tests_deselected": 6,
+  "performance_effect": "NOT_MEASURED",
+  "new_calibration_executed": false,
+  "old_aa_status": "AA_CALIBRATION_FAIL",
+  "official_g6_status": "CONTROLLED_G6_FAIL",
+  "campaign_requests": 0,
+  "external_provider_calls": 0,
+  "paid_spend_usd": "0",
+  "future_execution_requires_fresh_plan": true
+}

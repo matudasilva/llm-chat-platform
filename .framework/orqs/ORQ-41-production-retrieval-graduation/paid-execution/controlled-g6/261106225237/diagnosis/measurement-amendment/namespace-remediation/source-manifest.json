@@ -1,0 +1,27 @@
+{
+  "status": "BLOCKED_AA_NAMESPACE_FIX_IMPLEMENTED_AWAITING_SOURCE_REVIEW",
+  "finding": "BLOCKED-AA-R1",
+  "files_sha256": {
+    "experiments/production_graduation/gate_validation/blocked_latency_worker.py": "da7e37aed740daeadc6f9f5364b01ba9b074eaec2858f87d577e90ce17888108",
+    "tests/experiments/test_orq41_blocked_latency.py": "3dbca037a1707be59b87941353691181baf9aa48606c324855181ca265afdd80"
+  },
+  "unchanged_controller_sha256": "f0aa8e5211a0b2285d455a98784e9d7e75f0ef6e7b702de156e6ebdf8e57091b",
+  "unchanged_shared_validator_sha256": "e9b8a886018ca60a7b77b2885b89fa813368373435464e455bd449589ea034eb",
+  "previous_sources_sha256": {
+    "experiments/production_graduation/gate_validation/blocked_latency_worker.py": "25f8eaeba98e532617ac084ee5d0f1cbb8db779de152b7e0075f2727b16167c4",
+    "tests/experiments/test_orq41_blocked_latency.py": "4b2c198f973e212f56ae36739227cc272938180a59d01641ed265301cd5ebfbb"
+  },
+  "unchanged_existing_source_files": 498,
+  "red_startup_tests_failed_as_expected": 2,
+  "green_startup_and_namespace_tests_passed": 3,
+  "final_tests": 170,
+  "final_skips": 0,
+  "final_xml_sha256": "b974dd548882c30447d48fd1365d8ec97bf550d5822d85eb0c018dd1034ade05",
+  "runtime_or_app_changes": false,
+  "shared_validator_changes": false,
+  "stderr_capture_changed": false,
+  "residual_low": "BLOCKED-AA-R2 manual Docker stderr recovery remains documented",
+  "failed_attempt_resumed": false,
+  "new_aa_execution_authorized": false,
+  "paid_spend_usd": "0"
+}

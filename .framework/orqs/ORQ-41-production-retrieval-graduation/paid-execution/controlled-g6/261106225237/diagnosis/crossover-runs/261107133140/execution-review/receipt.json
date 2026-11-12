@@ -1,0 +1,645 @@
+{
+  "status": "DIAGNOSTIC_CROSSOVER_EXECUTION_INDEPENDENT_REVIEW_PASS",
+  "reviewer": "/root/packet_review",
+  "not_a_gate": true,
+  "plan_sha256": "bcd882d10e1bf57b359135dc7b2eb408c55eed8412dbf717aa6f097f016c4f4b",
+  "result_sha256": "9b25938af4d6dc16a8617935aaacef7a2191650bd82bb828bb31808e94777663",
+  "analysis_sha256": "a734cc9c7615c4564da07114003fad1223115c193103a9c8eddbd4abed312ceb",
+  "analyzer_sha256": "469f3da6586cbe0927deec7deb5808bea452ec4e606dd86a44500d1766796722",
+  "verifier_sha256": "acc8c46f362ee77856217bf5612e519b1ffeca0085af14bbdaf0184a9e0099a6",
+  "worker_receipts": {
+    "c1-EN-json-b0.json": "fbb3f23c39c29040598e37d058adb402d8ae68b03747a5bfbfd79e6044005e40",
+    "c0-EN-json-b0.json": "773c26f649a59f307e161006b39339c82eb398ef0a19aea3ac08bde110694d07",
+    "c1-ES-json-b0.json": "2e37a393cbeb8488841b2ce2c583696cb9721295a02b7782244a050137f8a99f",
+    "c1-ES-sse-b1.json": "124110da99ee8654aead1fdd70778ce4731554b20255f6813fab4f4d87c1bbc9",
+    "c1-EN-sse-b0.json": "dc8626f3a287dbb8c09547cd31e0cde45a81a0281bad029d1b8331fd58c0603d",
+    "c0-EN-sse-b0.json": "f5a71024f677ba157f0a2e32974a3d856ac890cb4ddd4c3751df6331ff30b4f7",
+    "c0-EN-json-b1.json": "49f5c5776c6a1eeda337de6c8bcc970ba36653f03733ca7d25b8a1710f00d176",
+    "c1-ES-sse-b0.json": "ca6908ebb6cabc47483a0919ef6835b9d773685f6b285192c0b060fd31b9f5dd",
+    "c0-ES-sse-b0.json": "ff22b579a3eaf434231197c491d03ce21374eda2d0f56cd8e9b74c9dd5bc7019",
+    "c0-ES-json-b0.json": "8885135236cebab66bae5de228aeb98bf6f9a2ee8804d325ef0ddfc641d00b03",
+    "c1-EN-sse-b1.json": "a0d72fb471c1d458b92680ad8b36c650ee4e581c5171fd0dd8c42393811cded4",
+    "c0-ES-json-b1.json": "30f0e14faf818d31b4faaafbb335138b71b5a3643422fb941075012ad3109603",
+    "c0-EN-sse-b1.json": "41cf8868bb384b69472c137b380584ae922086d1c9870c3eaf5f3b6528bda1f4",
+    "c1-ES-json-b1.json": "4cf9891255a59372c2e619f201b7d44c6f91bcccf0cbf939e63b3d0cdf21785a",
+    "c1-EN-json-b1.json": "c9ca0ee03f81f3e032d2fc85952d0e6b6496499fa10e098628a2e58db5fcabda",
+    "c0-ES-sse-b1.json": "cb2f43ee0314e249886925dcada6921ee404e2f5be0a046d34a58eecdb42bbb4"
+  },
+  "database_verification_sha256": "353ef99f766c43162f2d2fcb8e59514be095ff79baae3a584feaf11255e43a52",
+  "requests": 64,
+  "measured": 32,
+  "warmups": 32,
+  "candidate_accounting_instances": 32,
+  "event_counts": {
+    "gc": 170,
+    "sdk": 512,
+    "sql": 512
+  },
+  "complete_interval_counts": {
+    "gc": 85,
+    "sdk": 128,
+    "sql": 256
+  },
+  "interval_validation_and_unions_independently_reconstructed": true,
+  "contrasts": [
+    {
+      "cell": "EN-json",
+      "category": "combined",
+      "case_id": "EN-combined-02",
+      "source": {
+        "sql_union_ns": -7794573.5,
+        "gc_union_ns": -1959080.5,
+        "sdk_queue_union_ns": -72050.5,
+        "sdk_execution_union_ns": -2478050.5,
+        "sdk_return_union_ns": -164803.5,
+        "wall_ns": -18308947.5,
+        "cpu_ns": -14789453.0,
+        "all_captured_union_ns": -12468558.5
+      },
+      "order": {
+        "sql_union_ns": 1230104.5,
+        "gc_union_ns": -205019.5,
+        "sdk_queue_union_ns": 1641.5,
+        "sdk_execution_union_ns": -1261264.5,
+        "sdk_return_union_ns": 46461.5,
+        "wall_ns": -3352724.5,
+        "cpu_ns": -6097756.0,
+        "all_captured_union_ns": -188076.5
+      }
+    },
+    {
+      "cell": "EN-json",
+      "category": "empty",
+      "case_id": "EN-empty-02",
+      "source": {
+        "sql_union_ns": -4362455.5,
+        "gc_union_ns": 0.0,
+        "sdk_queue_union_ns": -56377.0,
+        "sdk_execution_union_ns": -1175635.0,
+        "sdk_return_union_ns": -84791.5,
+        "wall_ns": -11727525.0,
+        "cpu_ns": -10432397.5,
+        "all_captured_union_ns": -5679259.0
+      },
+      "order": {
+        "sql_union_ns": -4957105.5,
+        "gc_union_ns": 0.0,
+        "sdk_queue_union_ns": -22087.0,
+        "sdk_execution_union_ns": -1379049.0,
+        "sdk_return_union_ns": -66097.5,
+        "wall_ns": -12634798.0,
+        "cpu_ns": -11004181.5,
+        "all_captured_union_ns": -6424339.0
+      }
+    },
+    {
+      "cell": "EN-sse",
+      "category": "combined",
+      "case_id": "EN-combined-02",
+      "source": {
+        "sql_union_ns": -26846339.5,
+        "gc_union_ns": 489095.0,
+        "sdk_queue_union_ns": -260754.5,
+        "sdk_execution_union_ns": -2649266.5,
+        "sdk_return_union_ns": -217750.5,
+        "wall_ns": -36869137.0,
+        "cpu_ns": -14870814.0,
+        "all_captured_union_ns": -29974111.0
+      },
+      "order": {
+        "sql_union_ns": -4573366.5,
+        "gc_union_ns": -56243.0,
+        "sdk_queue_union_ns": 34379.5,
+        "sdk_execution_union_ns": 1104932.5,
+        "sdk_return_union_ns": 13275.5,
+        "wall_ns": -4058690.0,
+        "cpu_ns": -972890.0,
+        "all_captured_union_ns": -3420779.0
+      }
+    },
+    {
+      "cell": "EN-sse",
+      "category": "empty",
+      "case_id": "EN-empty-02",
+      "source": {
+        "sql_union_ns": -6064682.5,
+        "gc_union_ns": 0.0,
+        "sdk_queue_union_ns": -128361.5,
+        "sdk_execution_union_ns": -2266715.5,
+        "sdk_return_union_ns": -198312.0,
+        "wall_ns": -15421223.0,
+        "cpu_ns": -13404341.0,
+        "all_captured_union_ns": -8658071.5
+      },
+      "order": {
+        "sql_union_ns": 1055470.5,
+        "gc_union_ns": 0.0,
+        "sdk_queue_union_ns": 145547.5,
+        "sdk_execution_union_ns": -393441.5,
+        "sdk_return_union_ns": 16345.0,
+        "wall_ns": 3453318.0,
+        "cpu_ns": 3166177.0,
+        "all_captured_union_ns": 823921.5
+      }
+    },
+    {
+      "cell": "ES-json",
+      "category": "combined",
+      "case_id": "ES-combined-02",
+      "source": {
+        "sql_union_ns": -2843659.5,
+        "gc_union_ns": -540952.5,
+        "sdk_queue_union_ns": -113291.5,
+        "sdk_execution_union_ns": 60977.0,
+        "sdk_return_union_ns": -14868.5,
+        "wall_ns": -1166751.0,
+        "cpu_ns": 1943829.0,
+        "all_captured_union_ns": -3451795.0
+      },
+      "order": {
+        "sql_union_ns": 2902738.5,
+        "gc_union_ns": 43845.5,
+        "sdk_queue_union_ns": 107074.5,
+        "sdk_execution_union_ns": 167268.0,
+        "sdk_return_union_ns": 105619.5,
+        "wall_ns": 6369542.0,
+        "cpu_ns": 3744270.0,
+        "all_captured_union_ns": 3326546.0
+      }
+    },
+    {
+      "cell": "ES-json",
+      "category": "empty",
+      "case_id": "ES-empty-02",
+      "source": {
+        "sql_union_ns": 3303088.0,
+        "gc_union_ns": 0.0,
+        "sdk_queue_union_ns": -49376.0,
+        "sdk_execution_union_ns": 1047231.5,
+        "sdk_return_union_ns": 59060.0,
+        "wall_ns": 9305718.0,
+        "cpu_ns": 8470295.5,
+        "all_captured_union_ns": 4360003.5
+      },
+      "order": {
+        "sql_union_ns": 4754995.0,
+        "gc_union_ns": 0.0,
+        "sdk_queue_union_ns": 88647.0,
+        "sdk_execution_union_ns": 627779.5,
+        "sdk_return_union_ns": 60660.0,
+        "wall_ns": 9578161.0,
+        "cpu_ns": 7267648.5,
+        "all_captured_union_ns": 5532081.5
+      }
+    },
+    {
+      "cell": "ES-sse",
+      "category": "combined",
+      "case_id": "ES-combined-02",
+      "source": {
+        "sql_union_ns": -21749391.0,
+        "gc_union_ns": 300758.0,
+        "sdk_queue_union_ns": -334952.0,
+        "sdk_execution_union_ns": -3555389.0,
+        "sdk_return_union_ns": -129226.5,
+        "wall_ns": -33544711.0,
+        "cpu_ns": -15753859.5,
+        "all_captured_union_ns": -25768958.5
+      },
+      "order": {
+        "sql_union_ns": 3047170.0,
+        "gc_union_ns": -59353.0,
+        "sdk_queue_union_ns": -6064.0,
+        "sdk_execution_union_ns": -613145.0,
+        "sdk_return_union_ns": -1187.5,
+        "wall_ns": 2477314.0,
+        "cpu_ns": 973185.5,
+        "all_captured_union_ns": 2426773.5
+      }
+    },
+    {
+      "cell": "ES-sse",
+      "category": "empty",
+      "case_id": "ES-empty-02",
+      "source": {
+        "sql_union_ns": -6704252.0,
+        "gc_union_ns": 0.0,
+        "sdk_queue_union_ns": -333587.0,
+        "sdk_execution_union_ns": -1811713.5,
+        "sdk_return_union_ns": -152298.5,
+        "wall_ns": -17351899.0,
+        "cpu_ns": -14869165.0,
+        "all_captured_union_ns": -9001851.0
+      },
+      "order": {
+        "sql_union_ns": 305624.0,
+        "gc_union_ns": 0.0,
+        "sdk_queue_union_ns": -19194.0,
+        "sdk_execution_union_ns": -147123.5,
+        "sdk_return_union_ns": 26075.5,
+        "wall_ns": 242063.0,
+        "cpu_ns": -180233.0,
+        "all_captured_union_ns": 165382.0
+      }
+    }
+  ],
+  "contrast_summary": {
+    "combined": {
+      "source": {
+        "sql_union_ns": {
+          "median_ms": -14.77198225,
+          "range_ms": [
+            -26.8463395,
+            -2.8436595
+          ]
+        },
+        "gc_union_ns": {
+          "median_ms": -0.12009725,
+          "range_ms": [
+            -1.9590805,
+            0.489095
+          ]
+        },
+        "sdk_queue_union_ns": {
+          "median_ms": -0.187023,
+          "range_ms": [
+            -0.334952,
+            -0.0720505
+          ]
+        },
+        "sdk_execution_union_ns": {
+          "median_ms": -2.5636585,
+          "range_ms": [
+            -3.555389,
+            0.060977
+          ]
+        },
+        "sdk_return_union_ns": {
+          "median_ms": -0.147015,
+          "range_ms": [
+            -0.2177505,
+            -0.0148685
+          ]
+        },
+        "wall_ns": {
+          "median_ms": -25.92682925,
+          "range_ms": [
+            -36.869137,
+            -1.166751
+          ]
+        },
+        "cpu_ns": {
+          "median_ms": -14.8301335,
+          "range_ms": [
+            -15.7538595,
+            1.943829
+          ]
+        },
+        "all_captured_union_ns": {
+          "median_ms": -19.1187585,
+          "range_ms": [
+            -29.974111,
+            -3.451795
+          ]
+        }
+      },
+      "order": {
+        "sql_union_ns": {
+          "median_ms": 2.0664215,
+          "range_ms": [
+            -4.5733665,
+            3.04717
+          ]
+        },
+        "gc_union_ns": {
+          "median_ms": -0.057798,
+          "range_ms": [
+            -0.2050195,
+            0.0438455
+          ]
+        },
+        "sdk_queue_union_ns": {
+          "median_ms": 0.0180105,
+          "range_ms": [
+            -0.006064,
+            0.1070745
+          ]
+        },
+        "sdk_execution_union_ns": {
+          "median_ms": -0.2229385,
+          "range_ms": [
+            -1.2612645,
+            1.1049325
+          ]
+        },
+        "sdk_return_union_ns": {
+          "median_ms": 0.0298685,
+          "range_ms": [
+            -0.0011875,
+            0.1056195
+          ]
+        },
+        "wall_ns": {
+          "median_ms": -0.43770525,
+          "range_ms": [
+            -4.05869,
+            6.369542
+          ]
+        },
+        "cpu_ns": {
+          "median_ms": 0.00014775,
+          "range_ms": [
+            -6.097756,
+            3.74427
+          ]
+        },
+        "all_captured_union_ns": {
+          "median_ms": 1.1193485,
+          "range_ms": [
+            -3.420779,
+            3.326546
+          ]
+        }
+      }
+    },
+    "empty": {
+      "source": {
+        "sql_union_ns": {
+          "median_ms": -5.213569,
+          "range_ms": [
+            -6.704252,
+            3.303088
+          ]
+        },
+        "gc_union_ns": {
+          "median_ms": 0.0,
+          "range_ms": [
+            0.0,
+            0.0
+          ]
+        },
+        "sdk_queue_union_ns": {
+          "median_ms": -0.09236925,
+          "range_ms": [
+            -0.333587,
+            -0.049376
+          ]
+        },
+        "sdk_execution_union_ns": {
+          "median_ms": -1.49367425,
+          "range_ms": [
+            -2.2667155,
+            1.0472315
+          ]
+        },
+        "sdk_return_union_ns": {
+          "median_ms": -0.118545,
+          "range_ms": [
+            -0.198312,
+            0.05906
+          ]
+        },
+        "wall_ns": {
+          "median_ms": -13.574374,
+          "range_ms": [
+            -17.351899,
+            9.305718
+          ]
+        },
+        "cpu_ns": {
+          "median_ms": -11.91836925,
+          "range_ms": [
+            -14.869165,
+            8.4702955
+          ]
+        },
+        "all_captured_union_ns": {
+          "median_ms": -7.16866525,
+          "range_ms": [
+            -9.001851,
+            4.3600035
+          ]
+        }
+      },
+      "order": {
+        "sql_union_ns": {
+          "median_ms": 0.68054725,
+          "range_ms": [
+            -4.9571055,
+            4.754995
+          ]
+        },
+        "gc_union_ns": {
+          "median_ms": 0.0,
+          "range_ms": [
+            0.0,
+            0.0
+          ]
+        },
+        "sdk_queue_union_ns": {
+          "median_ms": 0.0347265,
+          "range_ms": [
+            -0.022087,
+            0.1455475
+          ]
+        },
+        "sdk_execution_union_ns": {
+          "median_ms": -0.2702825,
+          "range_ms": [
+            -1.379049,
+            0.6277795
+          ]
+        },
+        "sdk_return_union_ns": {
+          "median_ms": 0.02121025,
+          "range_ms": [
+            -0.0660975,
+            0.06066
+          ]
+        },
+        "wall_ns": {
+          "median_ms": 1.8476905,
+          "range_ms": [
+            -12.634798,
+            9.578161
+          ]
+        },
+        "cpu_ns": {
+          "median_ms": 1.492972,
+          "range_ms": [
+            -11.0041815,
+            7.2676485
+          ]
+        },
+        "all_captured_union_ns": {
+          "median_ms": 0.49465175,
+          "range_ms": [
+            -6.424339,
+            5.5320815
+          ]
+        }
+      }
+    }
+  },
+  "signed_pair_summary": {
+    "combined": {
+      "sql_union_ns": {
+        "median_ms": -13.8634495,
+        "range_ms": [
+          -31.419706,
+          0.059079
+        ]
+      },
+      "gc_union_ns": {
+        "median_ms": -0.127851,
+        "range_ms": [
+          -2.1641,
+          0.545338
+        ]
+      },
+      "sdk_queue_union_ns": {
+        "median_ms": -0.2233705,
+        "range_ms": [
+          -0.341016,
+          -0.006217
+        ]
+      },
+      "sdk_execution_union_ns": {
+        "median_ms": -2.243289,
+        "range_ms": [
+          -4.168534,
+          0.228245
+        ]
+      },
+      "sdk_return_union_ns": {
+        "median_ms": -0.1292265,
+        "range_ms": [
+          -0.231026,
+          0.090751
+        ]
+      },
+      "wall_ns": {
+        "median_ms": -26.3645345,
+        "range_ms": [
+          -40.927827,
+          5.202791
+        ]
+      },
+      "cpu_ns": {
+        "median_ms": -14.339299,
+        "range_ms": [
+          -20.887209,
+          5.688099
+        ]
+      },
+      "all_captured_union_ns": {
+        "median_ms": -17.99941,
+        "range_ms": [
+          -33.39489,
+          -0.125249
+        ]
+      }
+    },
+    "empty": {
+      "sql_union_ns": {
+        "median_ms": -5.70392,
+        "range_ms": [
+          -9.319561,
+          8.058083
+        ]
+      },
+      "gc_union_ns": {
+        "median_ms": 0.0,
+        "range_ms": [
+          0.0,
+          0.0
+        ]
+      },
+      "sdk_queue_union_ns": {
+        "median_ms": -0.1082435,
+        "range_ms": [
+          -0.352781,
+          0.039271
+        ]
+      },
+      "sdk_execution_union_ns": {
+        "median_ms": -1.768932,
+        "range_ms": [
+          -2.660157,
+          1.675011
+        ]
+      },
+      "sdk_return_union_ns": {
+        "median_ms": -0.138556,
+        "range_ms": [
+          -0.214657,
+          0.11972
+        ]
+      },
+      "wall_ns": {
+        "median_ms": -14.5388705,
+        "range_ms": [
+          -24.362323,
+          18.883879
+        ]
+      },
+      "cpu_ns": {
+        "median_ms": -12.463548,
+        "range_ms": [
+          -21.436579,
+          15.737944
+        ]
+      },
+      "all_captured_union_ns": {
+        "median_ms": -8.3353095,
+        "range_ms": [
+          -12.103598,
+          9.892085
+        ]
+      }
+    }
+  },
+  "order_medians_ms": {
+    "c0_first": {
+      "sql_union_ns": -6.4815485,
+      "gc_union_ns": 0.0,
+      "sdk_queue_union_ns": -0.0744365,
+      "sdk_execution_union_ns": -2.2567605,
+      "sdk_return_union_ns": -0.1283185,
+      "wall_ns": -19.385754,
+      "cpu_ns": -14.915036,
+      "all_captured_union_ns": -10.4700335
+    },
+    "c1_first": {
+      "sql_union_ns": -7.0650145,
+      "gc_union_ns": 0.0,
+      "sdk_queue_union_ns": -0.2471375,
+      "sdk_execution_union_ns": -1.440688,
+      "sdk_return_union_ns": -0.1532065,
+      "wall_ns": -16.2750925,
+      "cpu_ns": -11.2948105,
+      "all_captured_union_ns": -9.324613
+    }
+  },
+  "official_g6_status": "CONTROLLED_G6_FAIL",
+  "reviewer_api_calls": 0,
+  "reviewer_database_calls": 0,
+  "reviewer_docker_calls": 0,
+  "external_calls": 0,
+  "observed_guard_attempts": 0,
+  "spend_usd": "0",
+  "causal_order_or_wait_share_established": false,
+  "limitations": [
+    "Two-block within-cell crossover is descriptive; time/block/interactions may violate stable additive assumptions",
+    "SQL helper spans and SDK helper handoffs are not all server/scheduler waits",
+    "GC tape association is process-global, not request causation",
+    "Raw candidate chains validated by reviewed worker but not retained for separate raw replay",
+    "Parent executed final read-only DB verifier; reviewer inspected source/receipt"
+  ],
+  "review_sha256": "df61367344ad48f038d2872ba998aae9cb4b8e0f1063a40688d6fcff8dc59f80",
+  "final_database_verifier_source_sha256": "0c0b07b13d961314d05ab8dc47dbbf98d1554291dc91fe5817909af6743b31d3",
+  "new_blocker_high_medium_findings": [],
+  "author_report_reviewed": true,
+  "author_report_sha256": "e0d6121ffc35362b877a9c741dec46dc7cd34bc012eff79819e32ce5259e8cfd",
+  "report_numbers_and_limits_checked": true
+}

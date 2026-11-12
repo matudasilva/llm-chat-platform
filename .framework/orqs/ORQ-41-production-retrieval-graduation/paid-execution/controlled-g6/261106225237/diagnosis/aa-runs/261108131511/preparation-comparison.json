@@ -1,0 +1,54 @@
+{
+  "status": "FRESH_AA_PROTOCOL_AND_PIN_COMPARISON_PASS",
+  "plan_sha256": "f1552995b797fecef6e67f00635c85cede5c1938d19728d3b553b0df8ff0c8df",
+  "previous_plan_sha256": "f5dbe8d18bded1666f98d53403b9d613a731ca7089307897e5c2c9312979a659",
+  "unchanged_keys": [
+    "schema",
+    "not_a_gate",
+    "warmups_per_cell_arm",
+    "n_per_cell_arm",
+    "request_deadline_s",
+    "sample_attempts",
+    "symmetric_limit_percent",
+    "full_c1_both_arms",
+    "boundary",
+    "arm_cell_order",
+    "images",
+    "postgres_image",
+    "auxiliary_images",
+    "cpu_topology",
+    "resources",
+    "casefile_sha256",
+    "source_schema_sha256",
+    "database_locale",
+    "support_files_sha256"
+  ],
+  "unchanged_sample_population_order_and_history": true,
+  "fresh_request_and_conversation_ids": true,
+  "changed_harness_files": {
+    "experiments/production_graduation/gate_validation/controlled_latency_worker.py": {
+      "previous": "a9f1996aadfe87406addbc9ba890ae291c186de76341b0f322aa2732b03804e8",
+      "current": "bbd38eacdeac85f4f408a47727dc62e3420375c4043a49735c27e8f20aee82cb"
+    },
+    "experiments/production_graduation/gate_validation/controlled_latency_controller.py": {
+      "previous": "914e48832b1848f72194a64251c5440651c8842808ad8482ebec1d17a6d6e0d6",
+      "current": "a769fae216c70b6057276d5da55697ac52d8fd83b39fc39924e5c5754da76747"
+    },
+    "experiments/production_graduation/gate_validation/performance_cleanup.py": {
+      "previous": null,
+      "current": "66a4089429b668c17a00457dbbda837d5400e2975a44ed208c02274d79c68016"
+    },
+    "experiments/production_graduation/gate_validation/aa_calibration_worker.py": {
+      "previous": "0352e2cdda6202a6b69356319f5a17a40e23b8cccf3a6b301c9af802d16774fe",
+      "current": "312322db6c63e4e9cba280f022a41b77559822f67f48f197e3d810d9015a87a7"
+    }
+  },
+  "retention_fix_review_sha256": "2449b8f728955bbede7e3c338beb47f6d460955511e479053686dbb7e67af382",
+  "controls_origin": ".framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106225237/diagnosis/aa-runs/261107150655/audit/remediation/final.xml",
+  "controls_sha256": "1faf5756d2632f6f67e204a7eaded32d785fce3a990e141bdf7ce5384d0bc763",
+  "controls_tests": 90,
+  "controls_skips": 0,
+  "controls_rerun_this_turn": false,
+  "preparation_api_calls": 0,
+  "external_calls": 0
+}

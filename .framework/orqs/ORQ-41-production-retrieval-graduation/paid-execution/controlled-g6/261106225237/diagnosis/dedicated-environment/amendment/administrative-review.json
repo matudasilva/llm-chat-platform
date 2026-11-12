@@ -1,0 +1,42 @@
+{
+  "status": "ADMINISTRATIVE_PROCEDURE_REVIEW_FINDINGS",
+  "reviewer": "/root/packet_review",
+  "administrative_procedure_sha256": "3b5be2fb07bb4f6d61981da872a82f437b44f638d6c5ef5ae81ddb69be58b8b5",
+  "host_impact_authorization_sha256": "8fab84128c5d51e92c434bef4d4dcd493a8c981a1ec7656bc38ca55b071c51c6",
+  "review_sha256": "6f1bda8d2c072306451718d407ff44a5a7753dd5959b0ec8749e41ea237c4afa",
+  "new_blocker_high_medium_findings": [
+    {
+      "id": "ADMIN-R1",
+      "severity": "HIGH",
+      "file": "administrative-procedure.md",
+      "lines": "53-68;97-108",
+      "cause": "No durable apply-state/ownership journal or recovery independent of the modifying administrator session",
+      "static_reproduction": "Create/start bench slice; successfully restrict user.slice and machine.slice; lose admin session or kill orchestration before next command. Nonzero-command handling is never reached, no scheduled recovery or committed operation log exists.",
+      "impact": "Shared editor/Codex/services remain under a partially applied placement indefinitely; recovery cannot safely distinguish applied, unknown-in-flight or concurrent administrative changes.",
+      "minimal_fix": "Before first mutation, root-controlled durable baseline/ownership manifest and serialized maintenance lock; write-ahead intent and readback per operation; exact idempotent partial/crash recovery algorithm with separate privileged recovery path/watchdog and tested cancellation/disarm conditions. Abort on concurrent drift; do not retry mutations blindly."
+    },
+    {
+      "id": "ADMIN-R2",
+      "severity": "HIGH",
+      "file": "administrative-procedure.md",
+      "lines": "111-123;128-130",
+      "cause": "Exact runtime property-fragment ownership/restoration is deferred; final daemon-reload occurs before later fragment restoration/removal",
+      "static_reproduction": "Baseline has no DropInPaths. set-property creates runtime fragments. Rollback set-property AllowedCPUs= creates/changes fragments too. Listed daemon-reload runs after bench-unit deletion, then text instructs restoring/removing property files without a further mandatory reload. Runtime readback may show empty AllowedCPUs while on-disk ownership/parity is unresolved.",
+      "impact": "No executable proof that only owned files are removed/restored, manager state agrees with restored files, or pre-existing/concurrent runtime configuration survives; false baseline recovery can be claimed.",
+      "minimal_fix": "Freeze actual set-property fragment discovery/write locations and a root-owned allowlist before application; record pre/post bytes/hashes/ownership (including rollback writes); restore only owned exact deltas, refuse unknown changes, then daemon-reload once after all file restoration and verify FragmentPath/DropInPaths, Allowed/Startup/effective CPUs and file parity. Require an explicit empty-descendant check before stopping bench slice."
+    }
+  ],
+  "review_method": "Read-only document/source ordering analysis; no host reproduction",
+  "host_application_ready": false,
+  "environment_readiness": "BLOCKED_TECHNICAL_ROLLBACK_RECOVERY_GAPS",
+  "shared_slice_impact_approval_acknowledged": true,
+  "repeat_operator_impact_consent_requested": false,
+  "reviewer_host_operations": 0,
+  "reviewer_docker_calls": 0,
+  "reviewer_database_calls": 0,
+  "reviewer_api_calls": 0,
+  "reviewer_external_calls": 0,
+  "benchmark_authorized_by_review": false,
+  "official_g6_status": "CONTROLLED_G6_FAIL",
+  "paid_admission": "BLOCKED_CONTROLLED_G6_FAIL"
+}

@@ -1,0 +1,38 @@
+{
+  "status": "OFFLINE_DESIGN_REVIEW_COMPLETE_NOT_IMPLEMENTED",
+  "scope": "Controller receipt access, exclusive installation transaction and worker API/mount-order design only",
+  "user_authorization": "Offline preparation and review only; no probe or staging",
+  "files_sha256": {
+    "offline-solution-design.md": "7980d5cff893c0b1b79d674a08cf5cd2cadb53b805263eff95b40d78c2a8a809",
+    "offline-worker-create-variants.json": "afa8c4b873b6c283c7c77fd6b8fc5c09945e97452b35b975931f5bef50c03535"
+  },
+  "independent_review": {
+    "agent": "/root/offline_staging_review",
+    "model": "gpt-6-luna",
+    "read_only": true,
+    "finding": "Specify exact privilege reacquisition mechanism and capability readbacks",
+    "remediation": "Drop bounding set while privileged, clear capability state, permanently drop groups/gid/uid, PR_SET_NO_NEW_PRIVS=1, verify NoNewPrivs and five capability sets before controller code",
+    "disposition": "Reviewer confirmed wording gap closed",
+    "mount_order_correction": "Earlier reviewer suggestion to precreate public directory was rejected against unchanged host_helper exclusive mkdir; revised review accepts conditional unselected variants only",
+    "remaining_actionable_document_findings": []
+  },
+  "validation": {
+    "kind": "Document/JSON integrity checks only",
+    "previous_adapter_source_hashes_unchanged": true,
+    "previous_inventory_index_hashes_unchanged": true,
+    "tests_run": false,
+    "host_or_docker_calls": false
+  },
+  "unresolved": [
+    "Launcher/broker/installer not implemented or tested",
+    "Permanent privilege drop and receipt descriptor access not exercised live",
+    "Persistent dormant controller needs explicit later staging scope and bounded lease",
+    "Engine absent-source and inspect projection timing untested; neither API variant selected",
+    "Image probe and full lifecycle integration unexecuted",
+    "Fresh run/controller/container identities and deployment-bound authorization absent"
+  ],
+  "g6": "FAIL",
+  "paid_execution": "BLOCKED",
+  "staging_authorized": false,
+  "execution_ready": false
+}

@@ -1,0 +1,146 @@
+{
+  "timestamp_utc": "2026-11-10T21:46:14.824110+00:00",
+  "read_only": true,
+  "units": {
+    "system.slice": {
+      "ControlGroup": "/system.slice",
+      "EffectiveCPUs": "0-31",
+      "AllowedCPUs": "",
+      "StartupAllowedCPUs": "",
+      "ActiveState": "active",
+      "FragmentPath": "",
+      "DropInPaths": ""
+    },
+    "user.slice": {
+      "ControlGroup": "/user.slice",
+      "EffectiveCPUs": "0-31",
+      "AllowedCPUs": "",
+      "StartupAllowedCPUs": "",
+      "ActiveState": "active",
+      "FragmentPath": "/usr/lib/systemd/system/user.slice",
+      "DropInPaths": ""
+    },
+    "machine.slice": {
+      "ControlGroup": "/machine.slice",
+      "EffectiveCPUs": "0-31",
+      "AllowedCPUs": "",
+      "StartupAllowedCPUs": "",
+      "ActiveState": "active",
+      "FragmentPath": "/usr/lib/systemd/system/machine.slice",
+      "DropInPaths": ""
+    },
+    "init.scope": {
+      "ControlGroup": "/init.scope",
+      "EffectiveCPUs": "0-31",
+      "AllowedCPUs": "",
+      "StartupAllowedCPUs": "",
+      "ActiveState": "active",
+      "FragmentPath": "",
+      "DropInPaths": ""
+    },
+    "orq41bench.slice": {
+      "ControlGroup": "",
+      "EffectiveCPUs": "",
+      "AllowedCPUs": "",
+      "StartupAllowedCPUs": "",
+      "ActiveState": "inactive",
+      "FragmentPath": "",
+      "DropInPaths": ""
+    }
+  },
+  "watchdog": {
+    "timer": {
+      "Result": "success",
+      "LoadState": "not-found",
+      "ActiveState": "inactive",
+      "SubState": "dead"
+    },
+    "service": {
+      "Result": "success",
+      "LoadState": "not-found",
+      "ActiveState": "inactive",
+      "SubState": "dead"
+    }
+  },
+  "runtime_files": {
+    "/run/systemd/system/orq41bench.slice": "ABSENT",
+    "/run/systemd/system.control/user.slice.d/50-AllowedCPUs.conf": "ABSENT",
+    "/run/systemd/system.control/machine.slice.d/50-AllowedCPUs.conf": "ABSENT",
+    "/run/systemd/system.control/system.slice.d/50-AllowedCPUs.conf": "ABSENT",
+    "/run/systemd/system.control/init.scope.d/50-AllowedCPUs.conf": "ABSENT",
+    "/run/systemd/transient/init.scope.d/50-AllowedCPUs.conf": "ABSENT"
+  },
+  "inventory": {
+    "containers": [
+      {
+        "Id": "2fe3ac8882eb38d50404c4fd5dc6ab1169016af60230dffd89f9ce5f77af9f6c",
+        "Name": "/orq41-paid-pg",
+        "RestartCount": 0,
+        "pid": 1003056,
+        "started": "2026-11-06T11:32:02.24119901Z",
+        "status": "running"
+      },
+      {
+        "Id": "7ffc345f9c8efa3b1b0c63441db6d30821142ec7d5041cab40e77bfc266eba4f",
+        "Name": "/orq41-env-pg",
+        "RestartCount": 0,
+        "pid": 688975,
+        "started": "2026-11-03T12:44:08.64481316Z",
+        "status": "running"
+      },
+      {
+        "Id": "5ce776396694d48362c7fcc29ed98865686313da054f62f94db80321a4bebb6a",
+        "Name": "/orq41-env-redis",
+        "RestartCount": 0,
+        "pid": 711844,
+        "started": "2026-11-03T13:00:36.496078841Z",
+        "status": "running"
+      },
+      {
+        "Id": "02211355a815471ada9fe1104c48f11f192e6de32a9f941c46bbb39ebf7514ad",
+        "Name": "/orq41-env-otel",
+        "RestartCount": 0,
+        "pid": 711964,
+        "started": "2026-11-03T13:00:36.900255308Z",
+        "status": "running"
+      }
+    ],
+    "power": {
+      "/sys/devices/system/cpu/cpu0/cpufreq/energy_performance_preference": "performance",
+      "/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor": "powersave",
+      "/sys/devices/system/cpu/cpu2/cpufreq/energy_performance_preference": "performance",
+      "/sys/devices/system/cpu/cpu2/cpufreq/scaling_governor": "powersave",
+      "/sys/devices/system/cpu/cpu4/cpufreq/energy_performance_preference": "performance",
+      "/sys/devices/system/cpu/cpu4/cpufreq/scaling_governor": "powersave",
+      "/sys/devices/system/cpu/cpu6/cpufreq/energy_performance_preference": "performance",
+      "/sys/devices/system/cpu/cpu6/cpufreq/scaling_governor": "powersave"
+    }
+  },
+  "effective_cpus": {
+    "system.slice": "0-31",
+    "user.slice": "0-31",
+    "machine.slice": "0-31",
+    "init.scope": "0-31"
+  },
+  "checks": {
+    "system.slice_baseline_parity": true,
+    "user.slice_baseline_parity": true,
+    "machine.slice_baseline_parity": true,
+    "init.scope_baseline_parity": true,
+    "orq41bench.slice_baseline_parity": true,
+    "system.slice_kernel_cpus": true,
+    "user.slice_kernel_cpus": true,
+    "machine.slice_kernel_cpus": true,
+    "init.scope_kernel_cpus": true,
+    "timer_inactive": true,
+    "service_inactive": true,
+    "/run/systemd/system/orq41bench.slice_absent": true,
+    "/run/systemd/system.control/user.slice.d/50-AllowedCPUs.conf_absent": true,
+    "/run/systemd/system.control/machine.slice.d/50-AllowedCPUs.conf_absent": true,
+    "/run/systemd/system.control/system.slice.d/50-AllowedCPUs.conf_absent": true,
+    "/run/systemd/system.control/init.scope.d/50-AllowedCPUs.conf_absent": true,
+    "/run/systemd/transient/init.scope.d/50-AllowedCPUs.conf_absent": true,
+    "container_and_power_parity": true
+  },
+  "status": "RESTORED_HOST_READBACK_PASS"
+}

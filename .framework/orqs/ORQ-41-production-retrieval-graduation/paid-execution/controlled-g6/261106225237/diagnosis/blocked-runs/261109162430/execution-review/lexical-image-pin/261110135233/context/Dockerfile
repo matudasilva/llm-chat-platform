@@ -1,0 +1,2 @@
+FROM sha256:4e68ccdca15b97f7fd573034c74575d88a156d21ca7f4ff2251affc5db55e707
+COPY pgvector_store.py /app/app/core/providers/pgvector_store.py

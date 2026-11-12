@@ -1,0 +1,28 @@
+{
+  "status": "DEDICATED_BINDING_SOURCE_REVIEW_FINDINGS",
+  "findings": [
+    {
+      "id": "BINDING-R1",
+      "severity": "MEDIUM",
+      "file": "experiments/production_graduation/gate_validation/dedicated_environment.py",
+      "line": 168,
+      "summary": "Contradictory unit/shared-cgroup and root/descendant masks accepted",
+      "reproduction": "Use test plan/proof wrapped fixtures; shared system.slice effective0-31 with populatedFalse or root effective8-31 passes validate_snapshot"
+    }
+  ],
+  "technical_files_sha256": {
+    "experiments/production_graduation/gate_validation/blocked_latency.py": "640a80da7bb556c3828221906e39e91cf1375023087dce5324bf9043405ff08f",
+    "experiments/production_graduation/gate_validation/dedicated_environment.py": "c93992490154348621495e3835f6f63d0492604a2015f996eb98fd194a90726d",
+    "tests/experiments/test_orq41_dedicated_environment.py": "60f0283d1a2e3141495431798e344ef1b06e1dda934284090b620f3c4771c4d9"
+  },
+  "authorization_sha256": "95ab7b44301cfeab0c030f96a67c906d20ac3c198ea21165b9be7da65ea8f495",
+  "report_sha256": "776145e6685ff5e116acad9f3661800c9b145ae58d9ce89ee23318e6e93c9938",
+  "execution_barrier_present": true,
+  "host_operations": 0,
+  "independent_xml_sha256": "2dbeaff8e51c8b5dfdad5fb075180a18b0d06c5a4dbc2005bd83a9dfc63ff8d9",
+  "independent_tests": {
+    "passed": 49,
+    "warnings": 3,
+    "seconds": 1.63
+  }
+}

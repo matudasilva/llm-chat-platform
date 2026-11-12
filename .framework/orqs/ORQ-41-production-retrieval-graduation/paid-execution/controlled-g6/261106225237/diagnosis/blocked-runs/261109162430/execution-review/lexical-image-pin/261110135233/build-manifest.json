@@ -1,0 +1,29 @@
+{
+  "parent_image_id": "sha256:4e68ccdca15b97f7fd573034c74575d88a156d21ca7f4ff2251affc5db55e707",
+  "tag": "orq41-local:lexical-sql-261110135233",
+  "context_sha256": {
+    "Dockerfile": "1d8f7124346f3aae65a348057fd5debdcd064ac28fe60198fe4385c832c7767a",
+    "pgvector_store.py": "81a41cba1227be5bceff0b34051b7f976b6a4db65a6853a51616935ff6b8b9b3"
+  },
+  "controller_sha256": "4cd4da4aba1039387b3dc7b369ea76eddafba25612d2be5f24319fe31c032198",
+  "inventory_probe_sha256": "190285752d794195355c11db86a6f56f41d2d74649b452cc5800dc9055f25099",
+  "authorization_sha256": "ef826e3063d8c1c17004edb4f37c9c22d976f492365e111d5345dbca1926e754",
+  "source_git_head": "c75fb707f5a8f236846131f0da8f5a0c23b9d969",
+  "source_inventory_sha256": "83c29bc27622300b6886e20af505dbd885035049c360a0a21350b00c18bdc2d0",
+  "build_command": [
+    "docker",
+    "--host",
+    "unix:///var/run/docker.sock",
+    "build",
+    "--pull=false",
+    "--network=none",
+    "-t",
+    "orq41-local:lexical-sql-261110135233",
+    "/home/matias/Cursor/llm-chat-platform/.framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106225237/diagnosis/blocked-runs/261109162430/execution-review/lexical-image-pin/261110135233/context"
+  ],
+  "build_environment_override": {
+    "DOCKER_BUILDKIT": "0"
+  },
+  "downloads": 0,
+  "aa_g6_campaign_authorized": false
+}

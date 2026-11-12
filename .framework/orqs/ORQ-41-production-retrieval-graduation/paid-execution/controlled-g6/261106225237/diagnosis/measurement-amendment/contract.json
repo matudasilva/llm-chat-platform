@@ -1,0 +1,403 @@
+{
+  "schema": "orq41-g6-measurement-amendment-design-v1",
+  "status": "MEASUREMENT_AMENDMENT_PROPOSED_AWAITING_APPROVAL",
+  "date": "2026-11-08",
+  "executable": false,
+  "authorization": {
+    "design_preparation": true,
+    "harness_implementation": false,
+    "service_or_database_operations": false,
+    "aa_execution": false,
+    "formal_g6_execution": false,
+    "paid_campaign_admission": false
+  },
+  "mode": "aa_full_c1_both_arms",
+  "protocol_id": "orq41-balanced-blocks-v1-proposed",
+  "repetitions": 1,
+  "concurrency": 1,
+  "attempts_per_identity": 1,
+  "request_deadline_s": 300,
+  "cleanup_bound_s": 10,
+  "cell_order": [
+    "EN-json",
+    "EN-sse",
+    "ES-json",
+    "ES-sse"
+  ],
+  "categories": [
+    "document",
+    "history",
+    "combined",
+    "empty"
+  ],
+  "case_order_by_language_category": {
+    "EN": {
+      "document": [
+        "EN-document-01",
+        "EN-document-02",
+        "EN-document-03",
+        "EN-document-04",
+        "EN-document-05"
+      ],
+      "history": [
+        "EN-history-01",
+        "EN-history-02",
+        "EN-history-03",
+        "EN-history-04",
+        "EN-history-05"
+      ],
+      "combined": [
+        "EN-combined-01",
+        "EN-combined-02",
+        "EN-combined-03",
+        "EN-combined-04",
+        "EN-combined-05"
+      ],
+      "empty": [
+        "EN-empty-01",
+        "EN-empty-02",
+        "EN-empty-03",
+        "EN-empty-04",
+        "EN-empty-05"
+      ]
+    },
+    "ES": {
+      "document": [
+        "ES-document-01",
+        "ES-document-02",
+        "ES-document-03",
+        "ES-document-04",
+        "ES-document-05"
+      ],
+      "history": [
+        "ES-history-01",
+        "ES-history-02",
+        "ES-history-03",
+        "ES-history-04",
+        "ES-history-05"
+      ],
+      "combined": [
+        "ES-combined-01",
+        "ES-combined-02",
+        "ES-combined-03",
+        "ES-combined-04",
+        "ES-combined-05"
+      ],
+      "empty": [
+        "ES-empty-01",
+        "ES-empty-02",
+        "ES-empty-03",
+        "ES-empty-04",
+        "ES-empty-05"
+      ]
+    }
+  },
+  "block_count_per_arm_cell": 4,
+  "measured_per_block_arm": 25,
+  "warmups_per_block_arm": 20,
+  "block_arm_order": {
+    "EN-json": [
+      [
+        "A",
+        "B"
+      ],
+      [
+        "B",
+        "A"
+      ],
+      [
+        "B",
+        "A"
+      ],
+      [
+        "A",
+        "B"
+      ]
+    ],
+    "EN-sse": [
+      [
+        "B",
+        "A"
+      ],
+      [
+        "A",
+        "B"
+      ],
+      [
+        "A",
+        "B"
+      ],
+      [
+        "B",
+        "A"
+      ]
+    ],
+    "ES-json": [
+      [
+        "A",
+        "B"
+      ],
+      [
+        "B",
+        "A"
+      ],
+      [
+        "B",
+        "A"
+      ],
+      [
+        "A",
+        "B"
+      ]
+    ],
+    "ES-sse": [
+      [
+        "B",
+        "A"
+      ],
+      [
+        "A",
+        "B"
+      ],
+      [
+        "A",
+        "B"
+      ],
+      [
+        "B",
+        "A"
+      ]
+    ]
+  },
+  "warmup_rule": "For case index 0..4, visit document,history,combined,empty; choose that category sorted case at the index; fresh identities in every slot.",
+  "measurement_rule": "For block b=0..3 and slot j=0..24 choose category[(b+j)%4], then sorted category case[measured_occurrence_in_category%5], counting across blocks in that cell.",
+  "worker_lifetime": "Fresh worker for each arm/cell/block;20warmups then25measurements;complete quiescence/guarded cleanup and teardown before next worker.",
+  "counts": {
+    "cells": 4,
+    "arms": 2,
+    "workers": 32,
+    "measured_per_arm_cell": 100,
+    "category_measured_per_arm_cell": 25,
+    "occurrences_per_business_case_per_measured_arm_cell": 5,
+    "warmups_per_arm_cell": 80,
+    "measured": 800,
+    "warmups": 640,
+    "requests": 1440,
+    "requests_per_arm": 720,
+    "unique_c1_accounting_instances": 1440,
+    "extra_requests_vs_previous": 600
+  },
+  "fixture_projection_per_arm": {
+    "prepared_conversations": 720,
+    "prepared_history_messages": 17280,
+    "final_conversations": 720,
+    "final_messages": 18720,
+    "new_messages": 1440
+  },
+  "process": {
+    "PYTHONHASHSEED": "41",
+    "gc": "unchanged_enabled",
+    "seed_verification": "environment before interpreter startup plus equal non-secret string hash probe; not runtime RNG determinism"
+  },
+  "postgres_preparation": {
+    "cluster": "new_disposable_only",
+    "paired_databases": true,
+    "ordinary_public_tables": [
+      "alembic_version",
+      "chunks",
+      "conversations",
+      "documents",
+      "messages",
+      "rag_request_metrics",
+      "usage_events"
+    ],
+    "analyze_once_per_database": [
+      "ANALYZE \"public\".\"alembic_version\";",
+      "ANALYZE \"public\".\"chunks\";",
+      "ANALYZE \"public\".\"conversations\";",
+      "ANALYZE \"public\".\"documents\";",
+      "ANALYZE \"public\".\"messages\";",
+      "ANALYZE \"public\".\"rag_request_metrics\";",
+      "ANALYZE \"public\".\"usage_events\";"
+    ],
+    "settings": "unchanged_statistics_autovacuum_planner",
+    "cache_flush": false,
+    "physical_cache_equality_claimed": false,
+    "maintenance_observation": [
+      "pg_stat_database",
+      "pg_stat_user_tables"
+    ]
+  },
+  "host_observation": {
+    "when": "before_and_after_each_worker_outside_request_timing",
+    "proc_stat_cpus": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "reported_scaling_cur_freq_cpus": [
+      0,
+      2,
+      4,
+      6
+    ],
+    "continuous_sampling": false,
+    "timing_adjustment": false,
+    "load_or_frequency_exclusion_threshold": null,
+    "exclusive_cpu_or_constant_frequency_claimed": false
+  },
+  "timing": {
+    "boundary": "ASGI ingress to primary native send entry; before capture bookkeeping",
+    "primary_metric": "pooled100rawdurations_per_arm_cell_nearest_rank_p95",
+    "p95_index_zero_based": 94,
+    "block_p95_averaging": false,
+    "outlier_exclusion": false,
+    "new_statistical_gate": false
+  },
+  "acceptance": {
+    "aa_rule": "a*100<=b*105 AND b*100<=a*105",
+    "all_four_cells_required": true,
+    "zero_rule": "zero requires zero",
+    "formal_g6_rule_unchanged": "candidate_p95*100<=baseline_p95*105",
+    "valid_complete_failure": "AA_CALIBRATION_FAIL",
+    "valid_complete_success": "AA_CALIBRATION_PASS",
+    "incomplete": "No valid calibration PASS;stop admission;retain failures;no automatic resume",
+    "after_aa_pass": "Independent result review then separately approved formal C0/C1 packet;no automatic formal run"
+  },
+  "identities": {
+    "images": {
+      "c0": "sha256:4e68ccdca15b97f7fd573034c74575d88a156d21ca7f4ff2251affc5db55e707",
+      "c1": "sha256:4e68ccdca15b97f7fd573034c74575d88a156d21ca7f4ff2251affc5db55e707"
+    },
+    "postgres_image": "sha256:8e5355e9ff399a002fa46148399a1ac22fb3e9b2d390f857296e6da6b5559ba1",
+    "auxiliary_images": {
+      "redis": "sha256:13105d2858ded45aedf7b24f0870e6a4e7ce4964924bffce68e562ca72149f1e",
+      "collector": "sha256:50dccac76879873148242bb98c6472404f3af3388c318ef270a6912b855c2dbc"
+    },
+    "resources": {
+      "api_cpus": [
+        0,
+        2
+      ],
+      "postgres_cpus": [
+        4,
+        6
+      ],
+      "nano_cpus": 2000000000,
+      "memory_bytes": 2147483648,
+      "memory_swap_bytes": 2147483648
+    },
+    "cpu_topology_reference": [
+      {
+        "cpu": 0,
+        "core_id": 0,
+        "siblings": [
+          0,
+          1
+        ],
+        "max_khz": 5600000,
+        "governor": "powersave"
+      },
+      {
+        "cpu": 2,
+        "core_id": 4,
+        "siblings": [
+          2,
+          3
+        ],
+        "max_khz": 5600000,
+        "governor": "powersave"
+      },
+      {
+        "cpu": 4,
+        "core_id": 8,
+        "siblings": [
+          4,
+          5
+        ],
+        "max_khz": 5600000,
+        "governor": "powersave"
+      },
+      {
+        "cpu": 6,
+        "core_id": 12,
+        "siblings": [
+          6,
+          7
+        ],
+        "max_khz": 5600000,
+        "governor": "powersave"
+      }
+    ],
+    "model": "nvidia.nemotron-nano-3-30b",
+    "region": "us-east-1",
+    "corpus_fingerprint": "787ae13719ef23c5043449d7d2e84bd489e5896e18d0fe5a035f76e8c6df0999",
+    "corpus_content_sha256": "9fa959aeeb5d332882d61f60528eaa72468f110705c51ce05b70e213dd168506",
+    "fresh_manifest_fixtures_uuids_required": true
+  },
+  "restrictions": {
+    "external_provider_calls": 0,
+    "egress": 0,
+    "external_spend_usd": "0",
+    "paid_campaign_bound_usd": "4.15355688",
+    "paid_hard_cap_usd": "5.00",
+    "historical_fails_preserved": true,
+    "app_changes": false,
+    "p5_changes": false,
+    "global_env_changes": false,
+    "host_tuning": false,
+    "notion": false,
+    "commits": false
+  },
+  "future_new_files": [
+    "experiments/production_graduation/gate_validation/blocked_latency.py",
+    "experiments/production_graduation/gate_validation/blocked_latency_worker.py",
+    "tests/experiments/test_orq41_blocked_latency.py"
+  ],
+  "source_evidence_sha256": {
+    "paid-execution/controlled-g6/261106225237/diagnosis/aa-runs/261108131511/plan.json": "f1552995b797fecef6e67f00635c85cede5c1938d19728d3b553b0df8ff0c8df",
+    "paid-execution/controlled-g6/261106225237/diagnosis/aa-runs/261108131511/result.json": "6838699f4f177facf43fb00353f3051088e248da9b55c75da0b98a15352d07b6",
+    "paid-execution/controlled-g6/261106225237/diagnosis/aa-runs/261108131511/execution-review/receipt.json": "f65e53b97cd7ea0ef7d51b3157c4f0a50805ea6cd8bc1d8646ea6d81795b4167",
+    "paid-execution/controlled-g6/261106225237/diagnosis/aa-runs/261107150655/audit/remediation/completion.json": "6459b7c014ef683c407ee4326637d7ec4eed62dca4e8ba99879e52bb8819941e",
+    "paid-execution/controlled-g6/261106225237/diagnosis/aa-runs/261107150655/audit/remediation/independent-review.json": "2449b8f728955bbede7e3c338beb47f6d460955511e479053686dbb7e67af382",
+    "paid-execution/cases.json": "6fc36930fc98a008764a2bda2c2fbc02ce98e68243ed9269dec2c9568445b0e6",
+    "corpus-snapshot/corpus-snapshot.json": "4adecc686e3f081d3b25a1654a5178960d9feeb72c9676068fea0dfb1559c5f6",
+    "paid-execution/controlled-g6/261106225237/diagnosis/aa-runs/261107141146/setup-failure/source-schema.sql": "bbb4b743f29a4eb3e995e56dcccafa68a7ffb3f9934fb7c04a77a672fab4703a",
+    "paid-execution/controlled-g6/261106130053-rev2/diagnosis/receipt-copy-proposal/implementation/image-pin/receipt.json": "15fbd41517ebd30ddc86a60aa95a30c976573fcc80d43ee8efb51739caae2a79"
+  },
+  "reviewed_helpers_sha256": {
+    "experiments/production_graduation/gate_validation/controlled_latency.py": "a711e6161564e4f5fbf4f542c84bd6a3f1afb71df16760e4480cdae9073837f9",
+    "experiments/production_graduation/gate_validation/local_api.py": "e9b8a886018ca60a7b77b2885b89fa813368373435464e455bd449589ea034eb",
+    "experiments/production_graduation/gate_validation/transports.py": "3c0f15acf79a08684fad8d89bfa7242d3779a980f89988a7f252e74cb7aef6e0",
+    "experiments/production_graduation/gate_validation/capture.py": "373dab408e467093a764720d6b9b6e5cd1617b7079e877c710b44cd3d24c68bf",
+    "experiments/production_graduation/gate_validation/performance_cleanup.py": "66a4089429b668c17a00457dbbda837d5400e2975a44ed208c02274d79c68016",
+    "experiments/production_graduation/gate_validation/aa_calibration.py": "b4ea4bdcf346698450688a0550ae97c39fead801825906898fa3ad7a39f1a217",
+    "experiments/production_graduation/gate_validation/aa_calibration_resources.py": "b338be9fdd227f20c794a192e59148d6c9994bfd4213596c1786de1bc8200a19"
+  },
+  "governance": {
+    "state": "In Progress",
+    "phase": "Implement",
+    "decision_freeze": "DECISION_FREEZE_PASS",
+    "official_g6_status": "CONTROLLED_G6_FAIL",
+    "paid_execution_status": "BLOCKED_CONTROLLED_G6_FAIL"
+  },
+  "protected_sources_during_design": {
+    "roots": [
+      "app",
+      "experiments",
+      "tests"
+    ],
+    "include_global_env_if_present": true,
+    "exclude": [
+      "__pycache__",
+      "*.pyc"
+    ],
+    "count": 497,
+    "inventory_sha256": "2584efbe399efc6ece8aaa853c235de12fd4b663a95756997698d2903f6e20dd"
+  }
+}

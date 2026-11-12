@@ -1,0 +1,56 @@
+{
+  "status": "WORKLOAD_LIFECYCLE_SOURCE_REVIEW_PASS",
+  "scope": "Reviewed source and bounded P2 controls only; no live/executable readiness",
+  "technical_files_sha256": {
+    "experiments/production_graduation/gate_validation/blocked_latency.py": "6080f2806ae30e57d19fee342492fdb053a65613039755378714e57c61da96ec",
+    "experiments/production_graduation/gate_validation/blocked_latency_worker.py": "8c63e41ccdfd6dc583cfb7beb404ee12cb12164f808976887f158cd215714cd1",
+    "experiments/production_graduation/gate_validation/dedicated_environment.py": "e5102864824c465a0cbb11dcf052554cad31ec7a0e5a929038a5bbdb73879610",
+    "experiments/production_graduation/gate_validation/dedicated_lifecycle.py": "9d8547bd60265c883ae46a1987776f6138f7c1a62dacb2f07dba26d8fc488545",
+    "experiments/production_graduation/gate_validation/dedicated_lifecycle_host.py": "dca3279c64ab8b26633e67b7416bfca6a7f17fc43a602299e11571d2570c66a6",
+    ".framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106225237/diagnosis/dedicated-environment/amendment/workload-lifecycle/host_helper.py": "191900073be79d0d139e8853512ea683f5539a2ae7969fd813fa4191f29c9d13",
+    "tests/experiments/test_orq41_dedicated_lifecycle.py": "880aeb1e4cebbb4664b417f1dc4ec4e8e401aa00e5acf8c6f9df030985c8da60"
+  },
+  "new_blocker_high_medium_findings": [],
+  "resolved_findings": [
+    "LIFECYCLE-R1"
+  ],
+  "independent_final_validation": {
+    "tests_passed": 4,
+    "deselected": 70,
+    "warnings": 1,
+    "xml_sha256": "e8f52e4da5e4923d4be27b982317fd5182fcaa0ee5bbb718ce23e387f2ba3559",
+    "original_probe_updated_expectation": [
+      "crash=False FAILED",
+      "crash=True FAILED"
+    ]
+  },
+  "parent_regression": {
+    "attribution": "parent execution, reviewer XML inspected",
+    "suites": [
+      {
+        "name": "pytest",
+        "errors": "0",
+        "failures": "0",
+        "skipped": "0",
+        "tests": "290",
+        "time": "13.478",
+        "timestamp": "2026-11-11T14:14:35.635897-03:00",
+        "hostname": "matias-Sword-16-HX-B14VFKG"
+      }
+    ],
+    "xml_sha256": "1e67965c39b913ea139bcef2e18d065b6f4194efef41b90a5dac34fa095b852c"
+  },
+  "evidence_sha256": {
+    "scope-check.json": "f94c05a9a3e7f9d3e61c95bf582eec73c187316cb96a2983726837939420d432",
+    "authorization.json": "bc3788053c67ca4a9cafff491d71d1b86ab41af4e97a8a0d554854e9a3d99550",
+    "design-review.json": "6c8cfe5ad066ad77ac3485e12caf4f0d1e7d8eab751d0e6bfabd78f136154f8b",
+    "findings-round1.json": "e1823f0dc9dc3d444225501dead85bf9d3f2f23cda965c3bff3e82cdc1e7c234",
+    "final-review.md": "2b96007a8dfc9ae6d62512126fc695eadbf9fa38561be0570f20aceeee25ae50"
+  },
+  "independent_ipc_rerun": "Not completed: sandbox EPERM; escalation aborted. Parent successful suite credited explicitly.",
+  "execution_barrier_present": true,
+  "environment_ready": false,
+  "host_operations": 0,
+  "source_edits": 0,
+  "benchmark_authorized": false
+}

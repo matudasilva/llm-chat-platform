@@ -1,0 +1,196 @@
+{
+  "status": "DIAGNOSTIC_WAITS_EXECUTION_INDEPENDENT_REVIEW_PASS",
+  "reviewer": "/root/packet_review",
+  "not_a_gate": true,
+  "plan_sha256": "56e110e4dd374948106579c46dbc17fe70206cef5709120221d0217194174ec9",
+  "result_sha256": "d1e8e76bf3910b40e3635dbe229d85563ea9c7cc4e8ceae803bf935a25a8b403",
+  "analysis_sha256": "300926c8a95ef7509aa9cd667a1aa88245cd7a78ca476da4bcb629bce1c3200b",
+  "analyzer_sha256": "a327e15dd2e526dd7220b54e9013f773eb8f46b0b6e04de12baa042d28f79f14",
+  "verifier_sha256": "aafb2abd5463175f48b4efc2fb132bccc7f491893ce7a3062eb90af4f2789040",
+  "worker_receipts": {
+    "c1-ES-sse.json": "39ec1f30c8746f82cc4f88d326f52569ac8ed8fd1fe951e2e5709488e9483074",
+    "c1-ES-json.json": "2a1f8771bf26c6a152d9847b0e584280c6560fcda3566d018070d0d8d3928747",
+    "c0-ES-json.json": "a43950c5951e87ed0910c63553021fc5e3b0c96359ef0e6570d8a10ac0699541",
+    "c1-EN-sse.json": "41080309718ac030e7da46be5c29906646639336bca251a4abc18f98f790d652",
+    "c0-EN-json.json": "29b78c920cbe587200157b11f4cdd08fc29b5f5dd30c7bceb2954151b4efab6a",
+    "c0-ES-sse.json": "01ae9d36dd73b4a5a037d6f50c98bdb2826a46c683635e650bf33cd957618662",
+    "c1-EN-json.json": "9c6ec8c4389b36e571cadc365b7446df34b12ba1afe5496acb4d4c54996301a3",
+    "c0-EN-sse.json": "929db33545d86fc6241cdb2bcfb299ce83d41c8ffe1f516afbb16a73ebf7023c"
+  },
+  "database_verification_sha256": "106de863e15787ff24f8005f5a7c03ad58e465ae333f3360e82256c7d25540ba",
+  "requests": 40,
+  "measured": 32,
+  "warmups": 8,
+  "candidate_accounting_instances": 20,
+  "event_counts": {
+    "gc": 92,
+    "sdk": 320,
+    "sql": 320
+  },
+  "complete_interval_counts": {
+    "gc": 46,
+    "sdk": 80,
+    "sql": 160
+  },
+  "interval_validation_and_unions_independently_reconstructed": true,
+  "signed_pair_summary": {
+    "combined": {
+      "sql_union_ns": {
+        "median_ms": -5.8725645,
+        "range_ms": [
+          -18.182286,
+          11.360823
+        ]
+      },
+      "gc_union_ns": {
+        "median_ms": 0.085813,
+        "range_ms": [
+          -0.824361,
+          0.476806
+        ]
+      },
+      "sdk_queue_union_ns": {
+        "median_ms": -0.053883,
+        "range_ms": [
+          -0.309901,
+          0.317092
+        ]
+      },
+      "sdk_execution_union_ns": {
+        "median_ms": -1.0284595,
+        "range_ms": [
+          -4.173273,
+          2.208023
+        ]
+      },
+      "sdk_return_union_ns": {
+        "median_ms": -0.0427725,
+        "range_ms": [
+          -0.246881,
+          0.221432
+        ]
+      },
+      "wall_ns": {
+        "median_ms": -7.814806,
+        "range_ms": [
+          -29.721497,
+          26.490335
+        ]
+      },
+      "cpu_ns": {
+        "median_ms": -4.2833985,
+        "range_ms": [
+          -15.06749,
+          18.834816
+        ]
+      },
+      "all_captured_union_ns": {
+        "median_ms": -7.2770805,
+        "range_ms": [
+          -22.54886,
+          13.711289
+        ]
+      }
+    },
+    "empty": {
+      "sql_union_ns": {
+        "median_ms": -4.247753,
+        "range_ms": [
+          -10.086387,
+          10.752421
+        ]
+      },
+      "gc_union_ns": {
+        "median_ms": 0.0,
+        "range_ms": [
+          -1.346541,
+          0.0
+        ]
+      },
+      "sdk_queue_union_ns": {
+        "median_ms": -0.0072575,
+        "range_ms": [
+          -0.716182,
+          0.547395
+        ]
+      },
+      "sdk_execution_union_ns": {
+        "median_ms": -0.397593,
+        "range_ms": [
+          -4.41186,
+          2.357744
+        ]
+      },
+      "sdk_return_union_ns": {
+        "median_ms": 0.027053,
+        "range_ms": [
+          -0.276908,
+          0.187806
+        ]
+      },
+      "wall_ns": {
+        "median_ms": -8.529583,
+        "range_ms": [
+          -30.065005,
+          29.261399
+        ]
+      },
+      "cpu_ns": {
+        "median_ms": -6.671464,
+        "range_ms": [
+          -26.95739,
+          24.366547
+        ]
+      },
+      "all_captured_union_ns": {
+        "median_ms": -4.6155895,
+        "range_ms": [
+          -15.040421,
+          12.695955
+        ]
+      }
+    }
+  },
+  "order_medians_ms": {
+    "c0_first": {
+      "sql_union_ns": -6.7165705,
+      "gc_union_ns": 0.0,
+      "sdk_queue_union_ns": -0.053883,
+      "sdk_execution_union_ns": -1.2730095,
+      "sdk_return_union_ns": -0.0947245,
+      "wall_ns": -10.623564,
+      "cpu_ns": -6.241606,
+      "all_captured_union_ns": -8.0043925
+    },
+    "c1_first": {
+      "sql_union_ns": 9.331074,
+      "gc_union_ns": 0.0,
+      "sdk_queue_union_ns": 0.0116385,
+      "sdk_execution_union_ns": 1.52198,
+      "sdk_return_union_ns": 0.047089,
+      "wall_ns": 17.903914,
+      "cpu_ns": 10.2273045,
+      "all_captured_union_ns": 11.84535
+    }
+  },
+  "official_g6_status": "CONTROLLED_G6_FAIL",
+  "reviewer_api_calls": 0,
+  "reviewer_database_calls": 0,
+  "reviewer_docker_calls": 0,
+  "external_calls": 0,
+  "observed_guard_attempts": 0,
+  "spend_usd": "0",
+  "causal_order_or_wait_share_established": false,
+  "limitations": [
+    "Fixed source order is confounded with language/path cells",
+    "SQL helper spans and SDK helper handoffs are not all server/scheduler waits",
+    "GC tape association is process-global, not request causation",
+    "Raw candidate chains validated by reviewed worker but not retained for separate raw replay",
+    "Parent executed final read-only DB verifier; reviewer inspected source/receipt"
+  ],
+  "author_report_sha256": "92682e33f49c5cd056adb3a8ae838063332416dd103d4fe18238228f99de060f",
+  "review_sha256": "96284d961c123f835dcfea23eec8afeec5b2123d5a5fd46b170811b3eef829c4",
+  "final_database_verifier_source_sha256": "f2e6ed35e69e79e22b1725656cb5051ed085c7dff2557560682d9329bf01badb",
+  "report_numbers_and_limits_checked": true,
+  "new_blocker_high_medium_findings": []
+}

@@ -1,0 +1,729 @@
+{
+  "status": "BLOCKED_AA_ENVIRONMENT_BINDING_PASS",
+  "plan_sha256": "b3d7cbe4aa4587ca20a3dadd79e2a10d7813981b8a33550d661c58af6f19026b",
+  "containers": {
+    "postgres": {
+      "name": "orq41-blocked-261109162430-postgres",
+      "id": "91b462f53423ad5a5de7b4e7ebb2d6d951dce2a28c4c3673cab9e261cd5f37a7",
+      "image": "sha256:8e5355e9ff399a002fa46148399a1ac22fb3e9b2d390f857296e6da6b5559ba1",
+      "running": true,
+      "network_mode": "none",
+      "port_bindings": {},
+      "cpuset": "4,6",
+      "nano_cpus": 2000000000,
+      "memory_bytes": 2147483648,
+      "memory_swap_bytes": 2147483648
+    },
+    "redis": {
+      "name": "orq41-blocked-261109162430-redis",
+      "id": "fc4516c6c4403be37cf0ed0de085638511e144342bb5286f4ecd3b2e31a31c6c",
+      "image": "sha256:13105d2858ded45aedf7b24f0870e6a4e7ce4964924bffce68e562ca72149f1e",
+      "running": true,
+      "network_mode": "container:91b462f53423ad5a5de7b4e7ebb2d6d951dce2a28c4c3673cab9e261cd5f37a7",
+      "port_bindings": {},
+      "cpuset": "",
+      "nano_cpus": 500000000,
+      "memory_bytes": 268435456,
+      "memory_swap_bytes": 268435456
+    },
+    "collector": {
+      "name": "orq41-blocked-261109162430-collector",
+      "id": "daa4d8564662689a87aa84a6c6fc92d247f889e93798f66e159eb31e57c394e2",
+      "image": "sha256:50dccac76879873148242bb98c6472404f3af3388c318ef270a6912b855c2dbc",
+      "running": true,
+      "network_mode": "container:91b462f53423ad5a5de7b4e7ebb2d6d951dce2a28c4c3673cab9e261cd5f37a7",
+      "port_bindings": {},
+      "cpuset": "",
+      "nano_cpus": 500000000,
+      "memory_bytes": 268435456,
+      "memory_swap_bytes": 268435456
+    }
+  },
+  "postgres_resources": {
+    "affinity": [
+      4,
+      6
+    ],
+    "effective_cpuset": [
+      4,
+      6
+    ],
+    "cpu_max": "200000 100000",
+    "cpu_stat": {
+      "usage_usec": 14513163,
+      "user_usec": 11380433,
+      "system_usec": 3132730,
+      "nice_usec": 0,
+      "core_sched.force_idle_usec": 0,
+      "nr_periods": 1253,
+      "nr_throttled": 0,
+      "throttled_usec": 0,
+      "nr_bursts": 0,
+      "burst_usec": 0
+    },
+    "topology": [
+      {
+        "cpu": 0,
+        "core_id": 0,
+        "siblings": [
+          0,
+          1
+        ],
+        "max_khz": 5600000,
+        "governor": "powersave"
+      },
+      {
+        "cpu": 2,
+        "core_id": 4,
+        "siblings": [
+          2,
+          3
+        ],
+        "max_khz": 5600000,
+        "governor": "powersave"
+      },
+      {
+        "cpu": 4,
+        "core_id": 8,
+        "siblings": [
+          4,
+          5
+        ],
+        "max_khz": 5600000,
+        "governor": "powersave"
+      },
+      {
+        "cpu": 6,
+        "core_id": 12,
+        "siblings": [
+          6,
+          7
+        ],
+        "max_khz": 5600000,
+        "governor": "powersave"
+      }
+    ]
+  },
+  "host_before": {
+    "start_ns": 589646465743650,
+    "end_ns": 589646466041516,
+    "cpu_ticks": {
+      "cpu0": [
+        1046590,
+        1126,
+        484708,
+        56079751,
+        13727,
+        0,
+        12873,
+        0,
+        111282,
+        0
+      ],
+      "cpu1": [
+        115941,
+        470,
+        32026,
+        58544580,
+        11892,
+        0,
+        6569,
+        0,
+        9924,
+        0
+      ],
+      "cpu2": [
+        1559458,
+        1498,
+        626587,
+        56260000,
+        16478,
+        0,
+        7010,
+        0,
+        157434,
+        0
+      ],
+      "cpu3": [
+        139523,
+        172,
+        40209,
+        58733806,
+        886,
+        0,
+        5225,
+        0,
+        13801,
+        0
+      ],
+      "cpu4": [
+        1691309,
+        1491,
+        719820,
+        55840896,
+        12535,
+        0,
+        8326,
+        0,
+        173028,
+        0
+      ],
+      "cpu5": [
+        148151,
+        200,
+        69254,
+        58366676,
+        938,
+        0,
+        20888,
+        0,
+        13798,
+        0
+      ],
+      "cpu6": [
+        1724051,
+        1560,
+        735644,
+        55910618,
+        21222,
+        0,
+        7013,
+        0,
+        182411,
+        0
+      ],
+      "cpu7": [
+        151994,
+        139,
+        44167,
+        58675209,
+        693,
+        0,
+        33503,
+        0,
+        19713,
+        0
+      ]
+    },
+    "reported_frequency_khz": {
+      "0": 1122172,
+      "2": 4619415,
+      "4": 1033435,
+      "6": 800000
+    }
+  },
+  "host_after": {
+    "start_ns": 589647132493741,
+    "end_ns": 589647132884333,
+    "cpu_ticks": {
+      "cpu0": [
+        1046593,
+        1126,
+        484709,
+        56079810,
+        13727,
+        0,
+        12873,
+        0,
+        111282,
+        0
+      ],
+      "cpu1": [
+        115941,
+        470,
+        32026,
+        58544646,
+        11892,
+        0,
+        6569,
+        0,
+        9924,
+        0
+      ],
+      "cpu2": [
+        1559459,
+        1498,
+        626587,
+        56260064,
+        16478,
+        0,
+        7010,
+        0,
+        157434,
+        0
+      ],
+      "cpu3": [
+        139523,
+        172,
+        40209,
+        58733872,
+        886,
+        0,
+        5225,
+        0,
+        13801,
+        0
+      ],
+      "cpu4": [
+        1691323,
+        1491,
+        719824,
+        55840944,
+        12535,
+        0,
+        8326,
+        0,
+        173028,
+        0
+      ],
+      "cpu5": [
+        148151,
+        200,
+        69254,
+        58366743,
+        938,
+        0,
+        20888,
+        0,
+        13798,
+        0
+      ],
+      "cpu6": [
+        1724068,
+        1560,
+        735647,
+        55910663,
+        21222,
+        0,
+        7014,
+        0,
+        182411,
+        0
+      ],
+      "cpu7": [
+        151994,
+        139,
+        44168,
+        58675275,
+        693,
+        0,
+        33503,
+        0,
+        19713,
+        0
+      ]
+    },
+    "reported_frequency_khz": {
+      "0": 2805392,
+      "2": 800000,
+      "4": 800000,
+      "6": 3759205
+    }
+  },
+  "host_delta": {
+    "cpu0": [
+      3,
+      0,
+      1,
+      59,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "cpu1": [
+      0,
+      0,
+      0,
+      66,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "cpu2": [
+      1,
+      0,
+      0,
+      64,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "cpu3": [
+      0,
+      0,
+      0,
+      66,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "cpu4": [
+      14,
+      0,
+      4,
+      48,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "cpu5": [
+      0,
+      0,
+      0,
+      67,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "cpu6": [
+      17,
+      0,
+      3,
+      45,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0
+    ],
+    "cpu7": [
+      0,
+      0,
+      1,
+      66,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "database_before": {
+    "c0": {
+      "counters": {
+        "datid": "16389",
+        "datname": "orq41_blocked_261109162430_c0",
+        "stats_reset": null,
+        "xact_commit": 200,
+        "xact_rollback": 38,
+        "blks_read": 2153,
+        "blks_hit": 3853537,
+        "tup_returned": 345870,
+        "tup_fetched": 125855,
+        "tup_inserted": 30707,
+        "tup_updated": 91,
+        "tup_deleted": 21,
+        "deadlocks": 0
+      },
+      "maintenance": [
+        {
+          "relname": "alembic_version",
+          "last_analyze": "2026-11-09 16:24:37.462286+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": null
+        },
+        {
+          "relname": "chunks",
+          "last_analyze": "2026-11-09 16:24:37.554755+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": "2026-11-09 16:25:52.587929+00"
+        },
+        {
+          "relname": "conversations",
+          "last_analyze": "2026-11-09 16:24:37.625286+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": null
+        },
+        {
+          "relname": "documents",
+          "last_analyze": "2026-11-09 16:24:37.716422+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": null
+        },
+        {
+          "relname": "messages",
+          "last_analyze": "2026-11-09 16:24:37.803438+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": "2026-11-09 16:25:52.598651+00"
+        },
+        {
+          "relname": "rag_request_metrics",
+          "last_analyze": "2026-11-09 16:24:37.884679+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": null
+        },
+        {
+          "relname": "usage_events",
+          "last_analyze": "2026-11-09 16:24:37.953391+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": null
+        }
+      ]
+    },
+    "c1": {
+      "counters": {
+        "datid": "18975",
+        "datname": "orq41_blocked_261109162430_c1",
+        "stats_reset": null,
+        "xact_commit": 200,
+        "xact_rollback": 38,
+        "blks_read": 2153,
+        "blks_hit": 3857588,
+        "tup_returned": 345870,
+        "tup_fetched": 125855,
+        "tup_inserted": 30707,
+        "tup_updated": 91,
+        "tup_deleted": 21,
+        "deadlocks": 0
+      },
+      "maintenance": [
+        {
+          "relname": "alembic_version",
+          "last_analyze": "2026-11-09 16:24:42.22026+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": null
+        },
+        {
+          "relname": "chunks",
+          "last_analyze": "2026-11-09 16:24:42.303307+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": "2026-11-09 16:26:04.592275+00"
+        },
+        {
+          "relname": "conversations",
+          "last_analyze": "2026-11-09 16:24:42.3752+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": null
+        },
+        {
+          "relname": "documents",
+          "last_analyze": "2026-11-09 16:24:42.459142+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": null
+        },
+        {
+          "relname": "messages",
+          "last_analyze": "2026-11-09 16:24:42.536336+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": "2026-11-09 16:26:04.602935+00"
+        },
+        {
+          "relname": "rag_request_metrics",
+          "last_analyze": "2026-11-09 16:24:42.604352+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": null
+        },
+        {
+          "relname": "usage_events",
+          "last_analyze": "2026-11-09 16:24:42.673493+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": null
+        }
+      ]
+    }
+  },
+  "database_after": {
+    "c0": {
+      "counters": {
+        "datid": "16389",
+        "datname": "orq41_blocked_261109162430_c0",
+        "stats_reset": null,
+        "xact_commit": 202,
+        "xact_rollback": 40,
+        "blks_read": 2153,
+        "blks_hit": 3854710,
+        "tup_returned": 347021,
+        "tup_fetched": 126546,
+        "tup_inserted": 30707,
+        "tup_updated": 91,
+        "tup_deleted": 21,
+        "deadlocks": 0
+      },
+      "maintenance": [
+        {
+          "relname": "alembic_version",
+          "last_analyze": "2026-11-09 16:24:37.462286+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": null
+        },
+        {
+          "relname": "chunks",
+          "last_analyze": "2026-11-09 16:24:37.554755+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": "2026-11-09 16:25:52.587929+00"
+        },
+        {
+          "relname": "conversations",
+          "last_analyze": "2026-11-09 16:24:37.625286+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": null
+        },
+        {
+          "relname": "documents",
+          "last_analyze": "2026-11-09 16:24:37.716422+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": null
+        },
+        {
+          "relname": "messages",
+          "last_analyze": "2026-11-09 16:24:37.803438+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": "2026-11-09 16:25:52.598651+00"
+        },
+        {
+          "relname": "rag_request_metrics",
+          "last_analyze": "2026-11-09 16:24:37.884679+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": null
+        },
+        {
+          "relname": "usage_events",
+          "last_analyze": "2026-11-09 16:24:37.953391+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": null
+        }
+      ]
+    },
+    "c1": {
+      "counters": {
+        "datid": "18975",
+        "datname": "orq41_blocked_261109162430_c1",
+        "stats_reset": null,
+        "xact_commit": 202,
+        "xact_rollback": 40,
+        "blks_read": 2153,
+        "blks_hit": 3858761,
+        "tup_returned": 347021,
+        "tup_fetched": 126546,
+        "tup_inserted": 30707,
+        "tup_updated": 91,
+        "tup_deleted": 21,
+        "deadlocks": 0
+      },
+      "maintenance": [
+        {
+          "relname": "alembic_version",
+          "last_analyze": "2026-11-09 16:24:42.22026+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": null
+        },
+        {
+          "relname": "chunks",
+          "last_analyze": "2026-11-09 16:24:42.303307+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": "2026-11-09 16:26:04.592275+00"
+        },
+        {
+          "relname": "conversations",
+          "last_analyze": "2026-11-09 16:24:42.3752+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": null
+        },
+        {
+          "relname": "documents",
+          "last_analyze": "2026-11-09 16:24:42.459142+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": null
+        },
+        {
+          "relname": "messages",
+          "last_analyze": "2026-11-09 16:24:42.536336+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": "2026-11-09 16:26:04.602935+00"
+        },
+        {
+          "relname": "rag_request_metrics",
+          "last_analyze": "2026-11-09 16:24:42.604352+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": null
+        },
+        {
+          "relname": "usage_events",
+          "last_analyze": "2026-11-09 16:24:42.673493+00",
+          "last_autoanalyze": null,
+          "last_vacuum": null,
+          "last_autovacuum": null
+        }
+      ]
+    }
+  },
+  "database_delta": {
+    "c0": {
+      "xact_commit": 2,
+      "xact_rollback": 2,
+      "blks_read": 0,
+      "blks_hit": 1173,
+      "tup_returned": 1151,
+      "tup_fetched": 691,
+      "tup_inserted": 0,
+      "tup_updated": 0,
+      "tup_deleted": 0,
+      "deadlocks": 0
+    },
+    "c1": {
+      "xact_commit": 2,
+      "xact_rollback": 2,
+      "blks_read": 0,
+      "blks_hit": 1173,
+      "tup_returned": 1151,
+      "tup_fetched": 691,
+      "tup_inserted": 0,
+      "tup_updated": 0,
+      "tup_deleted": 0,
+      "deadlocks": 0
+    }
+  },
+  "source_postgres_id": "7ffc345f9c8efa3b1b0c63441db6d30821142ec7d5041cab40e77bfc266eba4f",
+  "source_postgres_access": "read-only dump/queries",
+  "worker_containers_created": 0,
+  "application_requests": 0,
+  "external_provider_calls": 0,
+  "spend_usd": "0"
+}

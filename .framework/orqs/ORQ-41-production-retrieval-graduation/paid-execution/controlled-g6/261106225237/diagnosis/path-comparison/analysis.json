@@ -1,0 +1,312 @@
+{
+  "status": "PATH_COMPARISON_AND_SCOPE_CALIBRATION_COMPLETE_NOT_A_GATE",
+  "normalized_ast_equal_after_observer_removal": {
+    "api/deps.py": true,
+    "core/domain/added_context_budget.py": true,
+    "core/domain/chat_memory.py": true,
+    "core/domain/context_packer.py": true,
+    "core/domain/provider_prompt.py": true,
+    "core/domain/rag_generation.py": true,
+    "core/domain/retrieval_pipeline.py": true,
+    "http/middleware/request_context.py": true
+  },
+  "python_equal": true,
+  "packages_equal": true,
+  "summary": {
+    "baseline": {
+      "median_cpu_ms": 0.00159067,
+      "range_cpu_ms": [
+        0.001545689,
+        0.0016336739999999999
+      ]
+    },
+    "candidate_passive": {
+      "median_cpu_ms": 0.018072098999999998,
+      "range_cpu_ms": [
+        0.017691145000000002,
+        0.018377637999999998
+      ]
+    },
+    "request_only": {
+      "median_cpu_ms": 0.009445753000000001,
+      "range_cpu_ms": [
+        0.009113702999999999,
+        0.009805699000000001
+      ]
+    },
+    "candidate_active": {
+      "median_cpu_ms": 0.050295874000000004,
+      "range_cpu_ms": [
+        0.049245767999999995,
+        0.057975818
+      ]
+    }
+  },
+  "batches": [
+    {
+      "batch": 0,
+      "mode": "baseline",
+      "workloads": 1000,
+      "cpu_ns": 1590670,
+      "wall_ns": 1590010
+    },
+    {
+      "batch": 0,
+      "mode": "candidate_passive",
+      "workloads": 1000,
+      "cpu_ns": 18377638,
+      "wall_ns": 18391692
+    },
+    {
+      "batch": 0,
+      "mode": "request_only",
+      "workloads": 1000,
+      "cpu_ns": 9113703,
+      "wall_ns": 9113880
+    },
+    {
+      "batch": 0,
+      "mode": "candidate_active",
+      "workloads": 1000,
+      "cpu_ns": 49245768,
+      "wall_ns": 49246304
+    },
+    {
+      "batch": 1,
+      "mode": "candidate_passive",
+      "workloads": 1000,
+      "cpu_ns": 17691145,
+      "wall_ns": 17691691
+    },
+    {
+      "batch": 1,
+      "mode": "request_only",
+      "workloads": 1000,
+      "cpu_ns": 9445753,
+      "wall_ns": 9446160
+    },
+    {
+      "batch": 1,
+      "mode": "candidate_active",
+      "workloads": 1000,
+      "cpu_ns": 49742885,
+      "wall_ns": 49743417
+    },
+    {
+      "batch": 1,
+      "mode": "baseline",
+      "workloads": 1000,
+      "cpu_ns": 1546646,
+      "wall_ns": 1546678
+    },
+    {
+      "batch": 2,
+      "mode": "request_only",
+      "workloads": 1000,
+      "cpu_ns": 9350102,
+      "wall_ns": 9350341
+    },
+    {
+      "batch": 2,
+      "mode": "candidate_active",
+      "workloads": 1000,
+      "cpu_ns": 49717726,
+      "wall_ns": 49722795
+    },
+    {
+      "batch": 2,
+      "mode": "baseline",
+      "workloads": 1000,
+      "cpu_ns": 1633674,
+      "wall_ns": 1633604
+    },
+    {
+      "batch": 2,
+      "mode": "candidate_passive",
+      "workloads": 1000,
+      "cpu_ns": 17941835,
+      "wall_ns": 17942128
+    },
+    {
+      "batch": 3,
+      "mode": "candidate_active",
+      "workloads": 1000,
+      "cpu_ns": 50450889,
+      "wall_ns": 50451310
+    },
+    {
+      "batch": 3,
+      "mode": "baseline",
+      "workloads": 1000,
+      "cpu_ns": 1580004,
+      "wall_ns": 1579971
+    },
+    {
+      "batch": 3,
+      "mode": "candidate_passive",
+      "workloads": 1000,
+      "cpu_ns": 18349188,
+      "wall_ns": 18349698
+    },
+    {
+      "batch": 3,
+      "mode": "request_only",
+      "workloads": 1000,
+      "cpu_ns": 9355845,
+      "wall_ns": 9355951
+    },
+    {
+      "batch": 4,
+      "mode": "baseline",
+      "workloads": 1000,
+      "cpu_ns": 1595010,
+      "wall_ns": 1595033
+    },
+    {
+      "batch": 4,
+      "mode": "candidate_passive",
+      "workloads": 1000,
+      "cpu_ns": 18097886,
+      "wall_ns": 18105253
+    },
+    {
+      "batch": 4,
+      "mode": "request_only",
+      "workloads": 1000,
+      "cpu_ns": 9522507,
+      "wall_ns": 9522680
+    },
+    {
+      "batch": 4,
+      "mode": "candidate_active",
+      "workloads": 1000,
+      "cpu_ns": 57975818,
+      "wall_ns": 57976239
+    },
+    {
+      "batch": 5,
+      "mode": "candidate_passive",
+      "workloads": 1000,
+      "cpu_ns": 18201221,
+      "wall_ns": 18201510
+    },
+    {
+      "batch": 5,
+      "mode": "request_only",
+      "workloads": 1000,
+      "cpu_ns": 9805699,
+      "wall_ns": 9805864
+    },
+    {
+      "batch": 5,
+      "mode": "candidate_active",
+      "workloads": 1000,
+      "cpu_ns": 51597143,
+      "wall_ns": 51598041
+    },
+    {
+      "batch": 5,
+      "mode": "baseline",
+      "workloads": 1000,
+      "cpu_ns": 1613469,
+      "wall_ns": 1613467
+    },
+    {
+      "batch": 6,
+      "mode": "request_only",
+      "workloads": 1000,
+      "cpu_ns": 9611897,
+      "wall_ns": 9612223
+    },
+    {
+      "batch": 6,
+      "mode": "candidate_active",
+      "workloads": 1000,
+      "cpu_ns": 50295874,
+      "wall_ns": 50303601
+    },
+    {
+      "batch": 6,
+      "mode": "baseline",
+      "workloads": 1000,
+      "cpu_ns": 1587554,
+      "wall_ns": 1587533
+    },
+    {
+      "batch": 6,
+      "mode": "candidate_passive",
+      "workloads": 1000,
+      "cpu_ns": 17912679,
+      "wall_ns": 17920149
+    },
+    {
+      "batch": 7,
+      "mode": "candidate_active",
+      "workloads": 1000,
+      "cpu_ns": 49972298,
+      "wall_ns": 49972604
+    },
+    {
+      "batch": 7,
+      "mode": "baseline",
+      "workloads": 1000,
+      "cpu_ns": 1545689,
+      "wall_ns": 1545694
+    },
+    {
+      "batch": 7,
+      "mode": "candidate_passive",
+      "workloads": 1000,
+      "cpu_ns": 17948236,
+      "wall_ns": 17948915
+    },
+    {
+      "batch": 7,
+      "mode": "request_only",
+      "workloads": 1000,
+      "cpu_ns": 9587159,
+      "wall_ns": 9587356
+    },
+    {
+      "batch": 8,
+      "mode": "baseline",
+      "workloads": 1000,
+      "cpu_ns": 1599998,
+      "wall_ns": 1600119
+    },
+    {
+      "batch": 8,
+      "mode": "candidate_passive",
+      "workloads": 1000,
+      "cpu_ns": 18072099,
+      "wall_ns": 18072395
+    },
+    {
+      "batch": 8,
+      "mode": "request_only",
+      "workloads": 1000,
+      "cpu_ns": 9322858,
+      "wall_ns": 9323285
+    },
+    {
+      "batch": 8,
+      "mode": "candidate_active",
+      "workloads": 1000,
+      "cpu_ns": 50454194,
+      "wall_ns": 50454691
+    }
+  ],
+  "evaluator_sha256": "99bd8e4ab00f07f67664eb9aa2c1f9eff376709eb6b9f7a2c16444d637f8e6b6",
+  "scope_source_sha256": "3c0f15acf79a08684fad8d89bfa7242d3779a980f89988a7f252e74cb7aef6e0",
+  "limitations": [
+    "source normalization confirms syntactic differences only; no blanket semantic proof",
+    "host interpreter, no ASGI task/thread scheduling, SQL or providers",
+    "scope calibration excludes payload receipts/Capture/SDK and includes full request end",
+    "no subtraction from G6 p95 or prediction of a PASS"
+  ],
+  "api_requests": 0,
+  "database_queries": 0,
+  "provider_calls": 0,
+  "external_calls": 0,
+  "spend_usd": "0"
+}

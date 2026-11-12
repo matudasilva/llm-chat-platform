@@ -1,0 +1,419 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="3" skipped="0" tests="78" time="12.123" timestamp="2026-11-05T23:45:03.847745-03:00" hostname="matias-Sword-16-HX-B14VFKG"><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_terminal_states_and_conservative_settlement[normal-COMPLETE]" time="0.055" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_terminal_states_and_conservative_settlement[retry-INCOMPLETE_STOP_RETRY]" time="0.156" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_terminal_states_and_conservative_settlement[evaluator-INCOMPLETE_STOP_EVALUATOR]" time="0.165" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_terminal_states_and_conservative_settlement[evaluator_failed-INCOMPLETE_STOP_EVALUATOR]" time="0.147" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_terminal_states_and_conservative_settlement[both-INCOMPLETE_STOP_RETRY]" time="0.157" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_terminal_states_and_conservative_settlement[wrong-FAILED]" time="0.153" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_terminal_states_and_conservative_settlement[ambiguous-FAILED]" time="0.140" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_terminal_states_and_conservative_settlement[duplicate-FAILED]" time="0.158" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_terminal_states_and_conservative_settlement[incomplete-FAILED]" time="0.118" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_terminal_states_and_conservative_settlement[timeout-FAILED]" time="0.174" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_terminal_states_and_conservative_settlement[failure-FAILED]" time="0.170" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_stop_prevents_next_admission[retry]" time="0.155" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_stop_prevents_next_admission[evaluator]" time="0.166" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_stop_prevents_next_admission[wrong]" time="0.157" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_stop_prevents_next_admission[ambiguous]" time="0.129" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_ledger_hash_chain_fsync_and_duplicates" time="0.021" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_corrupt_ledger_fails_closed[hash]" time="0.050" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_corrupt_ledger_fails_closed[truncated]" time="0.054" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_corrupt_ledger_fails_closed[garbage]" time="0.044" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_corrupt_ledger_fails_closed[whole_line]" time="0.054" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_corrupt_ledger_fails_closed[deleted]" time="0.056" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_admission_boundary" time="0.001" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_crash_recovery_no_resend" time="0.075" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_head_can_lag_durable_admission_after_crash" time="0.079" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_single_runner_lock_and_stale_lock" time="0.047" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_budget_cumulative_across_campaigns" time="2.788" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_full_manifest_complete_and_block_revalidation" time="2.259" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_worst_case_168_request_replay" time="2.224" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_preflight_failures_no_admission[manifest]" time="0.052" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_preflight_failures_no_admission[hash]" time="0.052" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_preflight_failures_no_admission[fallback]" time="0.085" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_preflight_failures_no_admission[shadow]" time="0.072" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_preflight_failures_no_admission[routing]" time="0.033" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_preflight_failures_no_admission[otel]" time="0.022" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_preflight_failures_no_admission[source]" time="0.014" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_block_configuration_drift_stops" time="0.316" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_call_counts_do_not_infer_evaluator" time="0.000" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_invalid_state_transition" time="0.000" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_evidence_identity_order_and_real_text[wrong_logger]" time="0.000" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_evidence_identity_order_and_real_text[wrong_order]" time="0.000" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_evidence_identity_order_and_real_text[garbled]" time="0.000" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_evidence_identity_order_and_real_text[docker_timestamp]" time="0.000" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_undercharged_stop_is_rejected" time="0.009" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_missing_admission_is_rejected" time="0.009" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_closed_campaign_is_refused" time="0.160" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_log_source_change_is_failed" time="0.159" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_failed_cli_inputs_print_terminal_json" time="0.004" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_credentials_rejected_without_reading_values" time="0.053" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_local_api_rejects_external_endpoint" time="0.001" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_s1_from_actual_bedrock_retry_path" time="0.005" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_crash_process_leaves_lock_and_recovers" time="0.201" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_invalid_pinned_tenant_refused_before_admission[None]" time="0.099" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_invalid_pinned_tenant_refused_before_admission[]" time="0.092" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_invalid_pinned_tenant_refused_before_admission[ padded]" time="0.075" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_invalid_pinned_tenant_refused_before_admission[trailing ]" time="0.069" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_invalid_pinned_tenant_refused_before_admission[a\r\nX-Evil: yes]" time="0.061" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_invalid_pinned_tenant_refused_before_admission[\xfc]" time="0.053" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_invalid_pinned_tenant_refused_before_admission[aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa]" time="0.046" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_invalid_pinned_tenant_refused_before_admission[1]" time="0.047" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_invalid_pinned_tenant_refused_before_admission[False]" time="0.048" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_invalid_pinned_tenant_refused_before_admission[tenant9]" time="0.048" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_invalid_pinned_tenant_refused_before_admission[tenant10]" time="0.039" /><testcase classname="tests.experiments.test_orq41_campaign_runner" name="test_tenant_is_part_of_manifest_and_request_identity" time="0.025" /><testcase classname="tests.experiments.test_orq41_campaign_runner_local" name="test_local_stub_api_both_transports[normal-COMPLETE]" time="0.009"><failure message="PermissionError: [Errno 1] Operation not permitted">tmp_path = PosixPath('/tmp/pytest-of-root/pytest-24/test_local_stub_api_both_trans0')
+packet = ({'entries': [{'block': 'EN-C1', 'language': 'EN', 'payload': {'message': 'Local synthetic fixture', 'stream': False},...17e56b94450339950599d4f', ...}, 'manifest_sha256': '0c1781f1b1b05fc06b364c28b71a761e99f487a1e625b605a3b687aec16e2ee8'})
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x73b4ee435400&gt;
+mode = 'normal', state = &lt;State.COMPLETE: 'COMPLETE'&gt;
+
+    @pytest.mark.parametrize("mode,state", [
+        ("normal", State.COMPLETE), ("retry", State.INCOMPLETE_STOP_RETRY),
+        ("evaluator", State.INCOMPLETE_STOP_EVALUATOR),
+    ])
+    def test_local_stub_api_both_transports(tmp_path, packet, monkeypatch, mode, state):
+        manifest, pins = copy.deepcopy(packet)
+        # A stream-first request verifies stop detection on SSE as well as completion
+        # for both paths. The second request is admitted only in the normal dry run.
+        manifest["entries"][0]["payload"]["stream"] = True
+        manifest["entries"][0]["tenant_id"] = "orq41-history-en"
+        second = copy.deepcopy(manifest["entries"][0])
+        second["seq"] = 1
+        second["payload"]["stream"] = False
+        second["tenant_id"] = "orq41-empty-es"
+        manifest["entries"].append(second)
+        pins["manifest_sha256"] = digest(manifest)
+        output = io.StringIO()
+        handler = logging.StreamHandler(output)
+        production = next(h for h in logging.getLogger().handlers
+                          if h.formatter and "tenant_id=" in h.formatter._fmt)
+        handler.setFormatter(production.formatter)
+        for log_filter in production.filters:
+            handler.addFilter(log_filter)
+        logging.getLogger().addHandler(handler)
+        sent = []
+    
+        class Ports:
+            async def embed_one(self, text):
+                return [0.1]
+    
+            async def hybrid_search(self, *args, **kwargs):
+                return [RetrievedChunk(chunk_id=uuid.uuid4(), document_id=uuid.uuid4(),
+                                       text="local fixture", score=1.0)]
+    
+            async def rerank(self, request):
+                return [RankedDocument(index=0, rank=1)]
+    
+        class FakeRuntime:
+            attempts = 0
+    
+            def converse(self, **kwargs):
+                self.attempts += 1
+                if self.attempts == 1:
+                    raise TimeoutError("local retry fixture")
+                return {"output": {"message": {"content": [{"text": "ok"}]}}, "usage": {}}
+    
+        async def run_request(body, rid):
+            ports = Ports()
+            pipeline = RetrievalPipeline(provider=StubProvider(), embedding=ports,
+                                         vector_store=ports, reranker=ports,
+                                         min_reranked_results=5 if mode == "evaluator" else 1)
+            await pipeline.retrieve(request_id=uuid.UUID(rid), query=body["message"])
+            input = ProviderInput(request_id=uuid.UUID(rid),
+                                  messages=[ChatMessage(role="user", content=body["message"])])
+            if mode == "retry":
+                provider = BedrockProvider(BedrockProviderConfig(region="us-east-1", model="local-stub",
+                                           timeout_s=1, max_attempts=2, backoff_base_ms=0, backoff_max_ms=0),
+                                           runtime_client=FakeRuntime())
+                result = await provider.generate(input)
+                return result.content
+            provider = StubProvider()
+            if body["stream"]:
+                session = await provider.stream(input)
+                content = "".join([chunk async for chunk in session.chunks])
+                await session.get_final_result()
+                return content
+            return (await provider.generate(input)).content
+    
+        class API(BaseHTTPRequestHandler):
+            def log_message(self, *args):
+                pass
+    
+            def do_POST(self):
+                assert self.path == "/chat"
+                expected_tenant = "orq41-history-en" if not sent else "orq41-empty-es"
+                assert self.headers["X-Tenant-ID"] == expected_tenant
+                output.seek(0)
+                output.truncate()
+                body = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
+                rid = self.headers["X-Request-ID"]
+                sent.append(rid)
+                from app.core.observability.retry_evidence import request_evidence
+                with request_evidence(rid):
+                    content = asyncio.run(run_request(body, rid))
+                terminal = {"status": "success", "request_id": rid, "assistant_content": content}
+                if body["stream"]:
+                    payload = f"event: token\ndata: {content}\n\nevent: done\ndata: {json.dumps(terminal)}\n\n".encode()
+                    content_type = "text/event-stream"
+                else:
+                    payload = json.dumps(terminal).encode()
+                    content_type = "application/json"
+                self.send_response(200)
+                self.send_header("Content-Type", content_type)
+                self.send_header("Content-Length", str(len(payload)))
+                self.end_headers()
+                self.wfile.write(payload)
+    
+        path = str(tmp_path / "api.sock")
+    
+        class UnixConnection(http.client.HTTPConnection):
+            def connect(self):
+                self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+                self.sock.settimeout(self.timeout)
+                self.sock.connect(path)
+    
+        monkeypatch.setattr(http.client, "HTTPConnection", UnixConnection)
+&gt;       server = socketserver.UnixStreamServer(path, API)
+
+tests/experiments/test_orq41_campaign_runner_local.py:136: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../miniconda3/lib/python3.13/socketserver.py:457: in __init__
+    self.server_bind()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;socketserver.UnixStreamServer object at 0x73b4ee66a660&gt;
+
+    def server_bind(self):
+        """Called by constructor to bind the socket.
+    
+        May be overridden.
+    
+        """
+        if self.allow_reuse_address and hasattr(socket, "SO_REUSEADDR"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        # Since Linux 6.12.9, SO_REUSEPORT is not allowed
+        # on other address families than AF_INET/AF_INET6.
+        if (
+            self.allow_reuse_port and hasattr(socket, "SO_REUSEPORT")
+            and self.address_family in (socket.AF_INET, socket.AF_INET6)
+        ):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+&gt;       self.socket.bind(self.server_address)
+E       PermissionError: [Errno 1] Operation not permitted
+
+../../miniconda3/lib/python3.13/socketserver.py:478: PermissionError</failure></testcase><testcase classname="tests.experiments.test_orq41_campaign_runner_local" name="test_local_stub_api_both_transports[retry-INCOMPLETE_STOP_RETRY]" time="0.008"><failure message="PermissionError: [Errno 1] Operation not permitted">tmp_path = PosixPath('/tmp/pytest-of-root/pytest-24/test_local_stub_api_both_trans1')
+packet = ({'entries': [{'block': 'EN-C1', 'language': 'EN', 'payload': {'message': 'Local synthetic fixture', 'stream': False},...17e56b94450339950599d4f', ...}, 'manifest_sha256': '0c1781f1b1b05fc06b364c28b71a761e99f487a1e625b605a3b687aec16e2ee8'})
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x73b4ee5c26d0&gt;
+mode = 'retry', state = &lt;State.INCOMPLETE_STOP_RETRY: 'INCOMPLETE_STOP_RETRY'&gt;
+
+    @pytest.mark.parametrize("mode,state", [
+        ("normal", State.COMPLETE), ("retry", State.INCOMPLETE_STOP_RETRY),
+        ("evaluator", State.INCOMPLETE_STOP_EVALUATOR),
+    ])
+    def test_local_stub_api_both_transports(tmp_path, packet, monkeypatch, mode, state):
+        manifest, pins = copy.deepcopy(packet)
+        # A stream-first request verifies stop detection on SSE as well as completion
+        # for both paths. The second request is admitted only in the normal dry run.
+        manifest["entries"][0]["payload"]["stream"] = True
+        manifest["entries"][0]["tenant_id"] = "orq41-history-en"
+        second = copy.deepcopy(manifest["entries"][0])
+        second["seq"] = 1
+        second["payload"]["stream"] = False
+        second["tenant_id"] = "orq41-empty-es"
+        manifest["entries"].append(second)
+        pins["manifest_sha256"] = digest(manifest)
+        output = io.StringIO()
+        handler = logging.StreamHandler(output)
+        production = next(h for h in logging.getLogger().handlers
+                          if h.formatter and "tenant_id=" in h.formatter._fmt)
+        handler.setFormatter(production.formatter)
+        for log_filter in production.filters:
+            handler.addFilter(log_filter)
+        logging.getLogger().addHandler(handler)
+        sent = []
+    
+        class Ports:
+            async def embed_one(self, text):
+                return [0.1]
+    
+            async def hybrid_search(self, *args, **kwargs):
+                return [RetrievedChunk(chunk_id=uuid.uuid4(), document_id=uuid.uuid4(),
+                                       text="local fixture", score=1.0)]
+    
+            async def rerank(self, request):
+                return [RankedDocument(index=0, rank=1)]
+    
+        class FakeRuntime:
+            attempts = 0
+    
+            def converse(self, **kwargs):
+                self.attempts += 1
+                if self.attempts == 1:
+                    raise TimeoutError("local retry fixture")
+                return {"output": {"message": {"content": [{"text": "ok"}]}}, "usage": {}}
+    
+        async def run_request(body, rid):
+            ports = Ports()
+            pipeline = RetrievalPipeline(provider=StubProvider(), embedding=ports,
+                                         vector_store=ports, reranker=ports,
+                                         min_reranked_results=5 if mode == "evaluator" else 1)
+            await pipeline.retrieve(request_id=uuid.UUID(rid), query=body["message"])
+            input = ProviderInput(request_id=uuid.UUID(rid),
+                                  messages=[ChatMessage(role="user", content=body["message"])])
+            if mode == "retry":
+                provider = BedrockProvider(BedrockProviderConfig(region="us-east-1", model="local-stub",
+                                           timeout_s=1, max_attempts=2, backoff_base_ms=0, backoff_max_ms=0),
+                                           runtime_client=FakeRuntime())
+                result = await provider.generate(input)
+                return result.content
+            provider = StubProvider()
+            if body["stream"]:
+                session = await provider.stream(input)
+                content = "".join([chunk async for chunk in session.chunks])
+                await session.get_final_result()
+                return content
+            return (await provider.generate(input)).content
+    
+        class API(BaseHTTPRequestHandler):
+            def log_message(self, *args):
+                pass
+    
+            def do_POST(self):
+                assert self.path == "/chat"
+                expected_tenant = "orq41-history-en" if not sent else "orq41-empty-es"
+                assert self.headers["X-Tenant-ID"] == expected_tenant
+                output.seek(0)
+                output.truncate()
+                body = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
+                rid = self.headers["X-Request-ID"]
+                sent.append(rid)
+                from app.core.observability.retry_evidence import request_evidence
+                with request_evidence(rid):
+                    content = asyncio.run(run_request(body, rid))
+                terminal = {"status": "success", "request_id": rid, "assistant_content": content}
+                if body["stream"]:
+                    payload = f"event: token\ndata: {content}\n\nevent: done\ndata: {json.dumps(terminal)}\n\n".encode()
+                    content_type = "text/event-stream"
+                else:
+                    payload = json.dumps(terminal).encode()
+                    content_type = "application/json"
+                self.send_response(200)
+                self.send_header("Content-Type", content_type)
+                self.send_header("Content-Length", str(len(payload)))
+                self.end_headers()
+                self.wfile.write(payload)
+    
+        path = str(tmp_path / "api.sock")
+    
+        class UnixConnection(http.client.HTTPConnection):
+            def connect(self):
+                self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+                self.sock.settimeout(self.timeout)
+                self.sock.connect(path)
+    
+        monkeypatch.setattr(http.client, "HTTPConnection", UnixConnection)
+&gt;       server = socketserver.UnixStreamServer(path, API)
+
+tests/experiments/test_orq41_campaign_runner_local.py:136: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../miniconda3/lib/python3.13/socketserver.py:457: in __init__
+    self.server_bind()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;socketserver.UnixStreamServer object at 0x73b4ee37ce10&gt;
+
+    def server_bind(self):
+        """Called by constructor to bind the socket.
+    
+        May be overridden.
+    
+        """
+        if self.allow_reuse_address and hasattr(socket, "SO_REUSEADDR"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        # Since Linux 6.12.9, SO_REUSEPORT is not allowed
+        # on other address families than AF_INET/AF_INET6.
+        if (
+            self.allow_reuse_port and hasattr(socket, "SO_REUSEPORT")
+            and self.address_family in (socket.AF_INET, socket.AF_INET6)
+        ):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+&gt;       self.socket.bind(self.server_address)
+E       PermissionError: [Errno 1] Operation not permitted
+
+../../miniconda3/lib/python3.13/socketserver.py:478: PermissionError</failure></testcase><testcase classname="tests.experiments.test_orq41_campaign_runner_local" name="test_local_stub_api_both_transports[evaluator-INCOMPLETE_STOP_EVALUATOR]" time="0.008"><failure message="PermissionError: [Errno 1] Operation not permitted">tmp_path = PosixPath('/tmp/pytest-of-root/pytest-24/test_local_stub_api_both_trans2')
+packet = ({'entries': [{'block': 'EN-C1', 'language': 'EN', 'payload': {'message': 'Local synthetic fixture', 'stream': False},...17e56b94450339950599d4f', ...}, 'manifest_sha256': '0c1781f1b1b05fc06b364c28b71a761e99f487a1e625b605a3b687aec16e2ee8'})
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x73b4ee5c3a80&gt;
+mode = 'evaluator'
+state = &lt;State.INCOMPLETE_STOP_EVALUATOR: 'INCOMPLETE_STOP_EVALUATOR'&gt;
+
+    @pytest.mark.parametrize("mode,state", [
+        ("normal", State.COMPLETE), ("retry", State.INCOMPLETE_STOP_RETRY),
+        ("evaluator", State.INCOMPLETE_STOP_EVALUATOR),
+    ])
+    def test_local_stub_api_both_transports(tmp_path, packet, monkeypatch, mode, state):
+        manifest, pins = copy.deepcopy(packet)
+        # A stream-first request verifies stop detection on SSE as well as completion
+        # for both paths. The second request is admitted only in the normal dry run.
+        manifest["entries"][0]["payload"]["stream"] = True
+        manifest["entries"][0]["tenant_id"] = "orq41-history-en"
+        second = copy.deepcopy(manifest["entries"][0])
+        second["seq"] = 1
+        second["payload"]["stream"] = False
+        second["tenant_id"] = "orq41-empty-es"
+        manifest["entries"].append(second)
+        pins["manifest_sha256"] = digest(manifest)
+        output = io.StringIO()
+        handler = logging.StreamHandler(output)
+        production = next(h for h in logging.getLogger().handlers
+                          if h.formatter and "tenant_id=" in h.formatter._fmt)
+        handler.setFormatter(production.formatter)
+        for log_filter in production.filters:
+            handler.addFilter(log_filter)
+        logging.getLogger().addHandler(handler)
+        sent = []
+    
+        class Ports:
+            async def embed_one(self, text):
+                return [0.1]
+    
+            async def hybrid_search(self, *args, **kwargs):
+                return [RetrievedChunk(chunk_id=uuid.uuid4(), document_id=uuid.uuid4(),
+                                       text="local fixture", score=1.0)]
+    
+            async def rerank(self, request):
+                return [RankedDocument(index=0, rank=1)]
+    
+        class FakeRuntime:
+            attempts = 0
+    
+            def converse(self, **kwargs):
+                self.attempts += 1
+                if self.attempts == 1:
+                    raise TimeoutError("local retry fixture")
+                return {"output": {"message": {"content": [{"text": "ok"}]}}, "usage": {}}
+    
+        async def run_request(body, rid):
+            ports = Ports()
+            pipeline = RetrievalPipeline(provider=StubProvider(), embedding=ports,
+                                         vector_store=ports, reranker=ports,
+                                         min_reranked_results=5 if mode == "evaluator" else 1)
+            await pipeline.retrieve(request_id=uuid.UUID(rid), query=body["message"])
+            input = ProviderInput(request_id=uuid.UUID(rid),
+                                  messages=[ChatMessage(role="user", content=body["message"])])
+            if mode == "retry":
+                provider = BedrockProvider(BedrockProviderConfig(region="us-east-1", model="local-stub",
+                                           timeout_s=1, max_attempts=2, backoff_base_ms=0, backoff_max_ms=0),
+                                           runtime_client=FakeRuntime())
+                result = await provider.generate(input)
+                return result.content
+            provider = StubProvider()
+            if body["stream"]:
+                session = await provider.stream(input)
+                content = "".join([chunk async for chunk in session.chunks])
+                await session.get_final_result()
+                return content
+            return (await provider.generate(input)).content
+    
+        class API(BaseHTTPRequestHandler):
+            def log_message(self, *args):
+                pass
+    
+            def do_POST(self):
+                assert self.path == "/chat"
+                expected_tenant = "orq41-history-en" if not sent else "orq41-empty-es"
+                assert self.headers["X-Tenant-ID"] == expected_tenant
+                output.seek(0)
+                output.truncate()
+                body = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
+                rid = self.headers["X-Request-ID"]
+                sent.append(rid)
+                from app.core.observability.retry_evidence import request_evidence
+                with request_evidence(rid):
+                    content = asyncio.run(run_request(body, rid))
+                terminal = {"status": "success", "request_id": rid, "assistant_content": content}
+                if body["stream"]:
+                    payload = f"event: token\ndata: {content}\n\nevent: done\ndata: {json.dumps(terminal)}\n\n".encode()
+                    content_type = "text/event-stream"
+                else:
+                    payload = json.dumps(terminal).encode()
+                    content_type = "application/json"
+                self.send_response(200)
+                self.send_header("Content-Type", content_type)
+                self.send_header("Content-Length", str(len(payload)))
+                self.end_headers()
+                self.wfile.write(payload)
+    
+        path = str(tmp_path / "api.sock")
+    
+        class UnixConnection(http.client.HTTPConnection):
+            def connect(self):
+                self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+                self.sock.settimeout(self.timeout)
+                self.sock.connect(path)
+    
+        monkeypatch.setattr(http.client, "HTTPConnection", UnixConnection)
+&gt;       server = socketserver.UnixStreamServer(path, API)
+
+tests/experiments/test_orq41_campaign_runner_local.py:136: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../miniconda3/lib/python3.13/socketserver.py:457: in __init__
+    self.server_bind()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;socketserver.UnixStreamServer object at 0x73b4ee37da90&gt;
+
+    def server_bind(self):
+        """Called by constructor to bind the socket.
+    
+        May be overridden.
+    
+        """
+        if self.allow_reuse_address and hasattr(socket, "SO_REUSEADDR"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        # Since Linux 6.12.9, SO_REUSEPORT is not allowed
+        # on other address families than AF_INET/AF_INET6.
+        if (
+            self.allow_reuse_port and hasattr(socket, "SO_REUSEPORT")
+            and self.address_family in (socket.AF_INET, socket.AF_INET6)
+        ):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+&gt;       self.socket.bind(self.server_address)
+E       PermissionError: [Errno 1] Operation not permitted
+
+../../miniconda3/lib/python3.13/socketserver.py:478: PermissionError</failure></testcase><testcase classname=".framework.orqs.ORQ-41-production-retrieval-graduation.paid-execution.tenant-amendment-review.test_reviewer_probes" name="test_ascii_tenant_alphabet_matches_runtime_without_coercion" time="0.000" /><testcase classname=".framework.orqs.ORQ-41-production-retrieval-graduation.paid-execution.tenant-amendment-review.test_reviewer_probes" name="test_valid_boundary_identity_not_rewritten[AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA]" time="0.000" /><testcase classname=".framework.orqs.ORQ-41-production-retrieval-graduation.paid-execution.tenant-amendment-review.test_reviewer_probes" name="test_valid_boundary_identity_not_rewritten[a_9-Z]" time="0.000" /><testcase classname=".framework.orqs.ORQ-41-production-retrieval-graduation.paid-execution.tenant-amendment-review.test_reviewer_probes" name="test_valid_boundary_identity_not_rewritten[orq37-t23]" time="0.000" /><testcase classname=".framework.orqs.ORQ-41-production-retrieval-graduation.paid-execution.tenant-amendment-review.test_reviewer_probes" name="test_invalid_direct_transport_never_calls_request[AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA]" time="0.000" /><testcase classname=".framework.orqs.ORQ-41-production-retrieval-graduation.paid-execution.tenant-amendment-review.test_reviewer_probes" name="test_invalid_direct_transport_never_calls_request[\uff21]" time="0.000" /><testcase classname=".framework.orqs.ORQ-41-production-retrieval-graduation.paid-execution.tenant-amendment-review.test_reviewer_probes" name="test_invalid_direct_transport_never_calls_request[a\x00b]" time="0.000" /><testcase classname=".framework.orqs.ORQ-41-production-retrieval-graduation.paid-execution.tenant-amendment-review.test_reviewer_probes" name="test_invalid_direct_transport_never_calls_request[a\r\nb]" time="0.000" /><testcase classname=".framework.orqs.ORQ-41-production-retrieval-graduation.paid-execution.tenant-amendment-review.test_reviewer_probes" name="test_invalid_direct_transport_never_calls_request[None]" time="0.000" /><testcase classname=".framework.orqs.ORQ-41-production-retrieval-graduation.paid-execution.tenant-amendment-review.test_reviewer_probes" name="test_invalid_direct_transport_never_calls_request[False]" time="0.000" /><testcase classname=".framework.orqs.ORQ-41-production-retrieval-graduation.paid-execution.tenant-amendment-review.test_reviewer_probes" name="test_invalid_direct_transport_never_calls_request[ padded ]" time="0.000" /><testcase classname=".framework.orqs.ORQ-41-production-retrieval-graduation.paid-execution.tenant-amendment-review.test_reviewer_probes" name="test_default_compatibility_and_explicit_tenant_hash_binding" time="0.001" /></testsuite></testsuites>

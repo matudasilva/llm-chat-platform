@@ -1,0 +1,13 @@
+# Bounded diagnostic profiling proposal — approval before implementation
+
+Objective: partition the already observed overhead without changing or rerunning the official G6 result.
+
+- 32 measured local diagnostic requests: four categories x two languages x two paths x two source arms. Eight separate document warmups, one per source/language/path;40 requests total, generation/embedding/rerank fully stubbed, zero provider spend. This is not an inferential timing population or a substitute for N100.
+- Use fresh dedicated diagnostic conversations/databases, the existing pinned C0/C1 images and equal resource limits. Preserve paid fixtures and both G6 databases/receipts unchanged. Freeze diagnostic identities and source hashes before execution.
+- Add lightweight standard-library observation wrappers only in a new campaign harness module, with tests; no app/, P5, provider/retry behavior, schema, model or thresholds changed. Keep all C1 accounting and independent evidence checks active; do not disable observers to obtain a passing comparison.
+- Retain per-request phase/thread-correlated call counts, inclusive/exclusive wall and thread CPU for runtime C1 recording, test-only Capture processing/copies, invocation/log-handler scopes and SDK hooks. Separate rewrite from primary and before/after-primary-dispatch. Preserve the ASGI-to-primary endpoint and record actual serialized body hashes/call counts to detect instrumentation side effects. Do not sum overlapping inclusive spans or confuse wait time with CPU.
+- Use P2, no credentials/egress, actual PostgreSQL and the same native in-memory transports. Request300s and cleanup10s bounds remain. Profiled timings never certify G6; instrumentation overhead is disclosed.
+- Expected affected files: new experiments/production_graduation/gate_validation/controlled_latency_profile.py, focused tests/experiments/test_orq41_controlled_latency_profile.py, and diagnostic manifests/receipts under this diagnosis directory. Reuse approved fixtures/transport seams; propose any extra surface before editing.
+- Independent review before execution and of resulting attribution. Output: measured cause/breakdown plus the smallest justified remediation proposal. If harness bookkeeping dominates, propose symmetric validated capture/method correction; if actual runtime accounting dominates, obtain explicit authorization for a minimal runtime optimization preserving receipt integrity and best effort. No automatic code optimization, threshold relaxation or new official G6 run.
+
+Approval would expand this diagnosis from read-only analysis to new isolated stub requests/instrumentation. Paid campaign authorization remains recorded, but paid admission stays blocked by CONTROLLED_G6_FAIL.

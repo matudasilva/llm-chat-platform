@@ -1,0 +1,16 @@
+{
+  "status": "AUTHOR_DOCUMENT_VALIDATOR_ASSUMPTION_ERROR",
+  "failed_check": "Expected exactly one header line in /proc/net/route",
+  "observed": {
+    "dotenv": "",
+    "route_lines": []
+  },
+  "cause": "The empty network namespace exposes an empty route file, not a mandatory header. No route entries or connection attempt existed.",
+  "correction": "Validate zero route entries, accepting either an empty file or a header-only file; also require the loopback-only interface list.",
+  "harness_changes": false,
+  "services_started": 0,
+  "database_operations": 0,
+  "application_requests": 0,
+  "external_calls": 0,
+  "spend_usd": "0"
+}

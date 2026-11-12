@@ -1,0 +1,25 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 203, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/app/experiments/production_graduation/gate_validation/blocked_latency_worker.py", line 151, in <module>
+    asyncio.run(main())
+    ~~~~~~~~~~~^^^^^^^^
+  File "/usr/local/lib/python3.13/asyncio/runners.py", line 196, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "/usr/local/lib/python3.13/asyncio/runners.py", line 119, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/usr/local/lib/python3.13/asyncio/base_events.py", line 726, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "/app/experiments/production_graduation/gate_validation/blocked_latency_worker.py", line 131, in main
+    asgi, lifecycle, scoped = install(app, provider=provider, candidate=True,
+                              ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        cache_namespace=f'orq41:g123:{plan["run_id"]}:{key}:')
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/experiments/production_graduation/gate_validation/local_api.py", line 254, in install
+    cache = NamespacedRedis(chat_response_cache.redis_client, cache_namespace)
+  File "/app/experiments/production_graduation/gate_validation/local_api.py", line 150, in __init__
+    raise HarnessError("invalid run cache namespace")
+experiments.production_graduation.gate_validation.fixtures.HarnessError: invalid run cache namespace

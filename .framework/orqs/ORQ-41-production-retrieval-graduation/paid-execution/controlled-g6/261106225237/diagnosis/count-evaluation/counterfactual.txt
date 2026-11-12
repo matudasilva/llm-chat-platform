@@ -1,0 +1,22 @@
+def _add(self, stage, data):
+    if self.closed:
+        self.valid = False
+        return
+    def count(value):
+        if isinstance(value, list):
+            return len(value) + sum(count(v) for v in value if isinstance(v, (list, dict)))
+        if isinstance(value, dict):
+            return sum(count(v) for v in value.values() if isinstance(v, (list, dict)))
+        return 0
+    item_count = count(data)
+    record = dict(ordinal=len(self.records), stage=stage, data=data,
+                  invocation=_invocation.get(), purpose=_purpose.get(),
+                  previous=self.records[-1]["hash"] if self.records else "0" * 64)
+    raw = encoded(record)
+    if self.items + item_count + 1 > MAX_ITEMS or self.size + len(raw) > MAX_BYTES:
+        self.valid = False
+        return
+    record["hash"] = digest(raw)
+    self.records.append(record)
+    self.size += len(raw)
+    self.items += item_count + 1

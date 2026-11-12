@@ -1,0 +1,186 @@
+{
+  "index": 8,
+  "slot_id": "287fce80-e8bb-58f2-8070-cacec8c65df9",
+  "phase": "warmup",
+  "case_id": "ES-document-03",
+  "category": "document",
+  "tenant_id": "orq37-t23",
+  "query_text": "Explic\u00e1 el aislamiento por tenant en retrieval.",
+  "expected_rows": 20,
+  "status": "PASS",
+  "error": null,
+  "adapter_call_begun": true,
+  "checkout_wall_ns": 249905,
+  "checkout_cpu_ns": 234821,
+  "before": {
+    "pid": 2329,
+    "current_user": "rag_app",
+    "session_user": "rag_app",
+    "read_only": "on",
+    "row_security": "on",
+    "tenant": "orq37-t23",
+    "plan_cache_mode": "auto",
+    "superuser": false,
+    "bypass_rls": false,
+    "hybrid_cached": [
+      {
+        "name": "__asyncpg_stmt_9__",
+        "statement": "\n                WITH semantic AS (\n                    SELECT id, document_id, text, metadata,\n                           row_number() OVER (ORDER BY embedding <=> CAST($1 AS vector), id) AS rank\n                    FROM chunks\n                    ORDER BY embedding <=> CAST($1 AS vector), id\n                    LIMIT $2\n                ),\n                keyword AS (\n                    SELECT id, document_id, text, metadata,\n                           row_number() OVER (ORDER BY ts_rank(search_vector, plainto_tsquery('english', $3)) DESC, id) AS rank\n                    FROM chunks\n                    WHERE search_vector @@ plainto_tsquery('english', $3)\n                    ORDER BY ts_rank(search_vector, plainto_tsquery('english', $3)) DESC, id\n                    LIMIT $2\n                ),\n                fused AS (\n                    SELECT\n                        COALESCE(semantic.id, keyword.id) AS id,\n                        COALESCE(semantic.document_id, keyword.document_id) AS document_id,\n                        COALESCE(semantic.text, keyword.text) AS text,\n                        COALESCE(semantic.metadata, keyword.metadata) AS metadata,\n                        COALESCE(1.0 / ($4 + semantic.rank), 0.0)\n                            + COALESCE(1.0 / ($4 + keyword.rank), 0.0) AS score\n                    FROM semantic\n                    FULL OUTER JOIN keyword ON semantic.id = keyword.id\n                )\n                SELECT id, document_id, text, metadata, score\n                FROM fused\n                ORDER BY score DESC, id\n                LIMIT $2\n                ",
+        "parameter_types": "{vector,bigint,text,bigint}",
+        "custom_plans": 5,
+        "generic_plans": 3,
+        "from_sql": false
+      }
+    ]
+  },
+  "adapter_wall_ns": 12021220,
+  "adapter_cpu_ns": 443451,
+  "after": {
+    "pid": 2329,
+    "current_user": "rag_app",
+    "session_user": "rag_app",
+    "read_only": "on",
+    "row_security": "on",
+    "tenant": "orq37-t23",
+    "plan_cache_mode": "auto",
+    "superuser": false,
+    "bypass_rls": false,
+    "hybrid_cached": [
+      {
+        "name": "__asyncpg_stmt_9__",
+        "statement": "\n                WITH semantic AS (\n                    SELECT id, document_id, text, metadata,\n                           row_number() OVER (ORDER BY embedding <=> CAST($1 AS vector), id) AS rank\n                    FROM chunks\n                    ORDER BY embedding <=> CAST($1 AS vector), id\n                    LIMIT $2\n                ),\n                keyword AS (\n                    SELECT id, document_id, text, metadata,\n                           row_number() OVER (ORDER BY ts_rank(search_vector, plainto_tsquery('english', $3)) DESC, id) AS rank\n                    FROM chunks\n                    WHERE search_vector @@ plainto_tsquery('english', $3)\n                    ORDER BY ts_rank(search_vector, plainto_tsquery('english', $3)) DESC, id\n                    LIMIT $2\n                ),\n                fused AS (\n                    SELECT\n                        COALESCE(semantic.id, keyword.id) AS id,\n                        COALESCE(semantic.document_id, keyword.document_id) AS document_id,\n                        COALESCE(semantic.text, keyword.text) AS text,\n                        COALESCE(semantic.metadata, keyword.metadata) AS metadata,\n                        COALESCE(1.0 / ($4 + semantic.rank), 0.0)\n                            + COALESCE(1.0 / ($4 + keyword.rank), 0.0) AS score\n                    FROM semantic\n                    FULL OUTER JOIN keyword ON semantic.id = keyword.id\n                )\n                SELECT id, document_id, text, metadata, score\n                FROM fused\n                ORDER BY score DESC, id\n                LIMIT $2\n                ",
+        "parameter_types": "{vector,bigint,text,bigint}",
+        "custom_plans": 5,
+        "generic_plans": 4,
+        "from_sql": false
+      }
+    ]
+  },
+  "output_rows": 20,
+  "result_sha256": "32d919f928d2e5ac24211f7a06ac055de7dd6ec3639a4794c62753e2c405c12d",
+  "output_projection": [
+    {
+      "chunk_id": "2ef8113a-3044-45aa-ae87-c8511937f6da",
+      "document_id": "f5340e36-f49c-402c-865a-519f6a330bce",
+      "text_sha256": "6488ccec48aea500857d908cc8d8ce8c4c19b9a1f872e898c90421c4efd935a7",
+      "score": "0.01639344262295081967"
+    },
+    {
+      "chunk_id": "a75b66f4-c1dc-437c-959c-60a571ed2604",
+      "document_id": "d0d0cfae-b416-4f26-b3d8-af8a5f774754",
+      "text_sha256": "9931158425b26cb5643da7d80e95bc70aad1dd788a7681418399b2e946584878",
+      "score": "0.01612903225806451613"
+    },
+    {
+      "chunk_id": "9aea8e76-850f-44e2-b725-120ab44892eb",
+      "document_id": "8a3eb5e4-5293-484c-aedf-9ca92c09c277",
+      "text_sha256": "e48a48a541d80e260b8444c4a8240da84c449ad9cc88257de2e5f2bff264af5a",
+      "score": "0.01587301587301587302"
+    },
+    {
+      "chunk_id": "4d184ff2-cfc2-4672-b1f8-24f35faa66ff",
+      "document_id": "1fadd6e4-0ea1-4520-828c-f9da9bc529dc",
+      "text_sha256": "0a397736fbb4afd999df055fac8436ca44e046c8804f9efed39a696131a44a50",
+      "score": "0.01562500000000000000"
+    },
+    {
+      "chunk_id": "f5bb571f-f9b9-483f-8da7-2691f254d3fe",
+      "document_id": "1fadd6e4-0ea1-4520-828c-f9da9bc529dc",
+      "text_sha256": "231db061ce28a5b73866110b0e38e6a2ff0384d03e1527dba6cdf82f7b4d0965",
+      "score": "0.01538461538461538462"
+    },
+    {
+      "chunk_id": "09bad4e2-a3fa-4579-b7fa-66dec3f524a6",
+      "document_id": "90a60e90-930a-4982-81d0-5850a525ea47",
+      "text_sha256": "5d1479c30951683c97b4979685ec5fd7d2a103d5c8edb02e837bc8ce926b30af",
+      "score": "0.01515151515151515152"
+    },
+    {
+      "chunk_id": "39c56ea4-7cbe-4130-a6c0-aef637a677e9",
+      "document_id": "f5340e36-f49c-402c-865a-519f6a330bce",
+      "text_sha256": "bc8815e037a962c9d279b840f54036cea0c25839ccef07b8597eebf9d2994744",
+      "score": "0.01492537313432835821"
+    },
+    {
+      "chunk_id": "228c2cb7-262c-473b-8d1f-65c37863a514",
+      "document_id": "9849a7df-a54f-4de6-96eb-800b10b63abb",
+      "text_sha256": "fc9d5973e5443a1c2d3d0edd0cd37e9e713baeaaa24bca0125b428ff792c98aa",
+      "score": "0.01470588235294117647"
+    },
+    {
+      "chunk_id": "d423330d-ae0c-4139-8414-0e7ec4cfb77c",
+      "document_id": "79110f21-9e00-4957-991a-47f5146880e5",
+      "text_sha256": "0474caeba7ac0e9e3c8b043379a3d9a7c1cf0459b868d47038b92fe8c3b5560e",
+      "score": "0.01449275362318840580"
+    },
+    {
+      "chunk_id": "842bb4d4-ffc1-4a56-ab52-ec6f8eb58d20",
+      "document_id": "a7b02918-dcbc-4c07-b054-236394e7b22c",
+      "text_sha256": "c45378b921f459d6ef157fc6781541f22ecc16c21f864d8745de181575cb725f",
+      "score": "0.01428571428571428571"
+    },
+    {
+      "chunk_id": "57c62c47-0f46-4217-9daf-52a54662b7d4",
+      "document_id": "37dec3e6-82a0-4059-aad1-f606e1ab5682",
+      "text_sha256": "5e53da5e0e53922a19da89b961668a1bda45e99207078f655d3f29c2183b6540",
+      "score": "0.01408450704225352113"
+    },
+    {
+      "chunk_id": "b0b62257-0b89-49e2-92e7-84a7df2bfc1a",
+      "document_id": "daedfcd3-bfd0-4f6b-ada1-6fa9a09c46f7",
+      "text_sha256": "72685325c3263e6126d3fae332c432180cdcdb7ffc57ed69f851707c38df425f",
+      "score": "0.01388888888888888889"
+    },
+    {
+      "chunk_id": "a0ff6426-5c63-4139-a875-c26a54f3389a",
+      "document_id": "37dec3e6-82a0-4059-aad1-f606e1ab5682",
+      "text_sha256": "dee3b5e7000b6cbdefe951af5310b8637d3cb5291c7176c0d037fd4032f888ee",
+      "score": "0.01369863013698630137"
+    },
+    {
+      "chunk_id": "255891ea-d52c-401a-9805-1fa5d0d26a91",
+      "document_id": "97ee1808-4410-4e28-92d3-462391cbb53a",
+      "text_sha256": "46269e0fefaddb1d045d3fd105807a19c73876749912fa2f7ea35801bb94fce7",
+      "score": "0.01351351351351351351"
+    },
+    {
+      "chunk_id": "cd347410-c65e-4008-8b16-dead42df8485",
+      "document_id": "a7b02918-dcbc-4c07-b054-236394e7b22c",
+      "text_sha256": "c7e27187039e8468d6ebeb24e8a42588b8a4e063b6c4a61d84374a89de0f1319",
+      "score": "0.01333333333333333333"
+    },
+    {
+      "chunk_id": "b06d21be-f40e-41a0-904e-c5a160ea864d",
+      "document_id": "16967076-d716-43d9-b8bc-c78fe37a9324",
+      "text_sha256": "7c40d633f63603a5a55ca77dedf94cea35c9d89eac4bca172ee5d176a5d22cc6",
+      "score": "0.01315789473684210526"
+    },
+    {
+      "chunk_id": "f264854a-5ec4-406e-9b08-e2d009aebe03",
+      "document_id": "d11b3766-ec0e-4db0-9873-84806f92a41f",
+      "text_sha256": "985145deca9db845491eec2e9b447c15479f3cab430d8bf7123b42b151083c31",
+      "score": "0.01298701298701298701"
+    },
+    {
+      "chunk_id": "2a817388-3f74-4ae5-873a-93ba7b057e48",
+      "document_id": "02c83b43-54e0-4e59-b216-2a1805dce0a4",
+      "text_sha256": "f5801f704ef525daeaf3478b055085c4857085ce0320342a87956a4c09e3c20b",
+      "score": "0.01282051282051282051"
+    },
+    {
+      "chunk_id": "5f8e89f1-9d88-49b3-a4af-92c3d12c545f",
+      "document_id": "97ee1808-4410-4e28-92d3-462391cbb53a",
+      "text_sha256": "5fcd47813e4335dcfb651cc8637603d2db92b152bad7d406046d14bd3e099f09",
+      "score": "0.01265822784810126582"
+    },
+    {
+      "chunk_id": "4dc9df63-1a55-47ea-be52-fe38212e1eec",
+      "document_id": "1fadd6e4-0ea1-4520-828c-f9da9bc529dc",
+      "text_sha256": "e10f1975afbbc42102ba3b71c1d7acc63facaec42ba0c7ae6bffb3e03f303aa1",
+      "score": "0.01250000000000000000"
+    }
+  ],
+  "chosen_mode": "generic",
+  "rollback_wall_ns": 322276,
+  "rollback_cpu_ns": 129904
+}

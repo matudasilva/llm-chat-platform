@@ -1,0 +1,66 @@
+{
+  "status": "BLOCKED_AA_POST_FAILURE_PREPARED_DATA_UNCHANGED",
+  "plan_sha256": "ae37ecfb95379e52c8feff53fedfaabb83a99b2b3b6a7d61521cd58aaa7177bc",
+  "database_projection": [
+    {
+      "arm": "c0",
+      "database": "orq41_blocked_261109141719_c0",
+      "conversations": 720,
+      "messages": 17280,
+      "generated_message_ids": 0,
+      "normalized_business_sha256": "68f1ef7218bc00c5dd0b4b4b05c4b9e4b448a66005949ba7514481b350b54541",
+      "rls": {
+        "": 0,
+        "blocked-unknown": 0,
+        "orq37-t23": 2146,
+        "orq41-6b2ab547-en-empty": 0,
+        "orq41-6b2ab547-en-history": 0,
+        "orq41-6b2ab547-es-empty": 0,
+        "orq41-6b2ab547-es-history": 0
+      },
+      "corpus_content_sha256": "9fa959aeeb5d332882d61f60528eaa72468f110705c51ce05b70e213dd168506"
+    },
+    {
+      "arm": "c1",
+      "database": "orq41_blocked_261109141719_c1",
+      "conversations": 720,
+      "messages": 17280,
+      "generated_message_ids": 0,
+      "normalized_business_sha256": "68f1ef7218bc00c5dd0b4b4b05c4b9e4b448a66005949ba7514481b350b54541",
+      "rls": {
+        "": 0,
+        "blocked-unknown": 0,
+        "orq37-t23": 2146,
+        "orq41-6b2ab547-en-empty": 0,
+        "orq41-6b2ab547-en-history": 0,
+        "orq41-6b2ab547-es-empty": 0,
+        "orq41-6b2ab547-es-history": 0
+      },
+      "corpus_content_sha256": "9fa959aeeb5d332882d61f60528eaa72468f110705c51ce05b70e213dd168506"
+    }
+  ],
+  "equals_preparation": true,
+  "auxiliary_tables": {
+    "c0": {
+      "usage_events": 0,
+      "rag_request_metrics": 0
+    },
+    "c1": {
+      "usage_events": 0,
+      "rag_request_metrics": 0
+    }
+  },
+  "worker_containers_started": 1,
+  "failed_workers": 1,
+  "worker_exit_code": 1,
+  "app_lifespan_entered": false,
+  "application_requests_executed": 0,
+  "measured": 0,
+  "warmups": 0,
+  "provider_operations_executed": 0,
+  "external_provider_calls": 0,
+  "spend_usd": "0",
+  "failure": "NamespacedRedis validation during install before app lifespan/run_block",
+  "traceback_source": "worker-stderr.log",
+  "controller_stdout_log_omits_stderr": true
+}

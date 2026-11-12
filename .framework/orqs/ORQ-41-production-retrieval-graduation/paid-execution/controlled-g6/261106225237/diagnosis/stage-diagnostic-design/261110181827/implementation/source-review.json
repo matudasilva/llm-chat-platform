@@ -1,0 +1,42 @@
+{
+  "status": "STAGE_DIAGNOSTIC_SOURCE_REVIEW_PASS",
+  "reviewer": "/root/packet_review",
+  "approval_sha256": "b2206dfbcc3df75c9db0dfc73081691fb46b54128be37c800f41fde2b100cb9c",
+  "technical_files_sha256": {
+    "experiments/production_graduation/gate_validation/stage_latency.py": "0b7c7de7607eff413002ea6e078f2964ec65f274057c323d79f3a94ce4d59bb4",
+    "experiments/production_graduation/gate_validation/stage_latency_worker.py": "0a94fd8cfda8af5876c507fea1cad5852b270eb9c2526ceaaae5a09bbd37c7e1",
+    "experiments/production_graduation/gate_validation/stage_latency_observer.py": "6a81f4a5b968c0b348f889b476ec4afb0b5d61371b35effcba9564726bbb922c",
+    "tests/experiments/test_orq41_stage_latency.py": "f6a6e84c2e472a77ac047f5806d3b553e65ca4f32315620b39d7df0b1bdf3f34"
+  },
+  "new_blocker_high_medium_findings": [],
+  "resolved_findings": [
+    "STAGE-R1",
+    "STAGE-R2"
+  ],
+  "initial_findings_receipt_sha256": "84d406ecde11956957efb2e072ddc45e34672d8833d38ede776f1764b004e11c",
+  "review_sha256": "331124f607e5711d75bb9c0a9c820a48a9b1b8562b94c8784560d80e18e601c9",
+  "probe_sha256": "8194a646ab95e5ddcb89d8ce149b0694d8c7895ed259ff17b1dabde694412bb4",
+  "focused_final_xml_sha256": "fa34589e33dc80ce065e4dd386d527f07a3e0835ed3d6de425aa19e21e87d8b6",
+  "regression_final_xml_sha256": "f882a9e593edbe7bcc7d11858be755849ba135e6cba3e7c55401132b110f6ed2",
+  "independent_safe_pure_tests_passed": 37,
+  "independent_native_cases_deselected": 27,
+  "independent_remediation_counterexamples_closed": 2,
+  "final_frozen_plan_and_source_hash_checks_passed": true,
+  "parent_final_focused_passed": 64,
+  "parent_final_regression_passed": 309,
+  "parent_final_skipped": 0,
+  "reviewer_api_calls": 0,
+  "reviewer_database_calls": 0,
+  "reviewer_docker_calls": 0,
+  "reviewer_external_calls": 0,
+  "source_only": true,
+  "exact_prepared_packet_review_required": true,
+  "diagnostic_result_established": false,
+  "official_g6_status": "CONTROLLED_G6_FAIL",
+  "limitations": [
+    "Parent pinned-image native tests inspected, not independently Docker executed",
+    "Source proof only; real preparation/exact packet and postrun reviews remain",
+    "Proc and stage observation overhead real and uncorrected",
+    "No causal/exclusive CPU/statistical equivalence/G6 or paid readiness claim"
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "status": "ADMINISTRATIVE_RECOVERY_REVIEW_PASS_HOST_VALIDATION_PENDING",
+  "author_tests_passed": 201,
+  "author_tests_failed": 0,
+  "validation_command": "sh .framework/orqs/ORQ-41-production-retrieval-graduation/paid-execution/controlled-g6/261106225237/diagnosis/dedicated-environment/amendment/recovery/run-tests.sh",
+  "p2": {
+    "network_namespace": "unshare -rn",
+    "environment": "env -i; provider credential paths nonexistent; pytest plugin autoload disabled",
+    "backend": "fake plus temp filesystem only",
+    "host_mutations": 0,
+    "systemctl_calls": 0,
+    "docker_calls": 0,
+    "database_calls": 0,
+    "api_requests": 0,
+    "provider_calls": 0,
+    "spend_usd": "0"
+  },
+  "technical_sha256": {
+    "admin_recovery.py": "9025f3924dfcc49a6debbe82a835be0bd42e4e3eebeec9fb4f672d512742a2e6",
+    "test_admin_recovery.py": "f53630031e0e79d312969a04ba69a4bbebba9f8c36b8c67e0708df9c03e94278",
+    "run-tests.sh": "e54cd30d7126afffdca578fa0ee5fc9beb0d02dad3544ddd4a7c2acb02a29b20",
+    "README.md": "64d2a261bc22e2e3173f9dad3f97f273e92401dba92c842ee06dc963525dcd14"
+  },
+  "focused_xml_sha256": "f9a48dc423a9b7fbbc2bece47414cb120dc585b73541496a465f0f524d84f515",
+  "host_readiness": false,
+  "g6_status": "FAIL",
+  "paid_admission": "BLOCKED_CONTROLLED_G6_FAIL",
+  "final_independent_review_sha256": "6a8174850210e02b92309b7478e30fac16346e31a15f0caa6a1c4fcf125728de"
+}

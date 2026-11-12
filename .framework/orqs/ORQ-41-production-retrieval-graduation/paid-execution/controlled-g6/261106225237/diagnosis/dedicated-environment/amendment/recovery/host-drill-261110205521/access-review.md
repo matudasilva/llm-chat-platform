@@ -1,0 +1,9 @@
+# Independent access/install procedure review
+
+Result: **ADMINISTRATIVE_ACCESS_INSTALL_REVIEW_PASS**, static review only.
+
+Reviewed authorize-local.sh. The local user invokes sudo interactively in their own terminal; no password is requested in chat or embedded in the script. Root installation copies the helper into a new root-owned mode0700 directory and checks the installed bytes against the exact independently reviewed SHA before publishing sudo access. Existing base/rule paths and symlinks are rejected. The rule contains four fixed Python isolated-mode action/argument combinations, fixed journal tar extraction, and deletion of only this temporary rule. No wildcard, general shell, arbitrary argument grant, CPU/service operation or workload command is installed. Sudoers syntax is validated before and after publication; installed files and relevant directories are fsynced. The agent must not execute this installer.
+
+No blocking issue was identified in this bounded static permission procedure. It grants the already-authorized administrative helper actions, not benchmark execution. Actual sudo policy and filesystem ownership remain host prerequisites. This review did not execute sudo/visudo, install files, change host configuration or establish successful privileged access. The script must remain the reviewed bytes when run locally.
+
+Residual operational limits: interruption can leave a partial root-owned installation or a published rule even if the success message is absent. Do not rerun blindly: its exclusive path guards deliberately reject that state; inspect/reconcile manually. Removing the sudoers rule is not a rollback of CPU placement: recover and verify first, retain the root-owned helper/journal for watchdog recovery, then remove the temporary access grant. The script itself must not be presented as applying or validating the drill, environment readiness, G6 PASS or paid admission.

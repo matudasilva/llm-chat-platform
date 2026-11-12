@@ -1,0 +1,24 @@
+# Candidate 2 isolated design review — semantic dependency
+
+**LEXICAL_SQL_CANDIDATE_2_DESIGN_REVIEW_PASS**, conditional permission to test the isolated fixture within the existing authorized SQL remediation scope, not runtime patch acceptance. No new architecture or wider file/behavior scope is required by this adjustment. Candidate1 remains rejected; do not reinterpret its changed error as acceptable.
+
+## Observed defect and proposed minimal adjustment
+
+Inspected retained candidate-1-error-parity.xml:32tests/31PASS/1FAIL, deep-text-dimension-visible-force_generic_plan compares candidateSQLSTATE54000 against reference22000. This is real error-precedence drift, not merely message-position formatting. Previous independentdesign review correctly required rejection on such drift; application must remain untouched.
+
+Proposed candidate2 retains the same one-row MATERIALIZED lexicalCTE, but makes its producer read `(SELECT count(*) FROM semantic) AS semantic_ready`. This is a narrowly targeted dependency intended to consume unchangedsemanticresults before genericruntime lexicalconstruction. Because semantic is then referenced by fused and lexicaldependency, PostgreSQL's ordinary multiply-referenced CTE materialization can prevent duplicate semanticdistancework. Count produces one row even whensemanticisempty, so it does not intentionally filterkeyword-onlyresults. ExistingSQLstring-only/two-file authorization covers testing this alternative; no new architecture/settings/provider/control-plane change proposed.
+
+However textualdependency, count(*) and multiplyreferencedCTE are not themselves proof of runtime evaluation/error order. The count value is unused, so actualplanner projection/pruning/folding must be observed. Do not assert ordering fromSQLtext alone. Generic plan must show semanticproducer materialized once, aggregate/dependency consuming it, lexicalvaluecomputedafterdependency and once, reusedfilter/rank without repeatedperchunk plainto_tsquery. Customconstantfolding can stillraisebeforeexecutor and must matchreference. Addedmaterialization must not change HNSW/index-dependent candidate membership/ranks for approvedcorpus; exact fulloutput comparison remains mandatory.
+
+## Required acceptance conditions before app mutation
+
+- Freeze candidate2SQL/hash separately; preserve candidate1source/XML/failedcase and allpriorresults. No patch toapp until isolatedrealPG equivalence/error/planproof passes. No newperformanceobservations beyond the predeclared amendedlocalproofvolume without prospectivefreeze.
+- Re-run the complete error matrix custom/generic against unmodifiedreference, including the exact131072lexeme+1535dimension visibletenant counterexample. Cover emptyphysicalcorpus/emptytenant/unknown/foreign/missingtenant scopes; validandinvalidvectors with deeptext; top_k0/1/larger/null(ifexistingallowed)/negative. Check both individualerrors and simultaneousinvalidinputs whereevaluationplacement matters, using same exceptionclass/SQLSTATE and expectedtransactionrollback/recovery rather than unstableSQLpositiontext. If anychangedresult/error/isolation appears, rejectcandidate2/STOP; do not relaxcontract or sharedtests.
+- Emptysemanticresult must stillallowpositivekeyword-onlymatches: seed distinctpositivelexical-only candidates outsidesemantic top_k, semantic-only andoverlap groups, allrank/LIMIT/finalRRFties, lexicalNULL/search_vectorNULL if permitted. IncludeEN/ES,stopwords/punctuation/quotedinputs andtop_kboundary. Count0must not accidentallysuppresskeywords. Verify complete ordered IDs/documentIDs/text/metadata/exactRRFscores and allfive ORDERBY/id clauses unchanged.
+- Prove one semanticproducer/evaluation (no doubledvectorscan), intended lexicalplacement/atmostoneproducer, no per-chunkrepeatedtsquery in actualcustom/generic EXPLAIN. PreserveSQLAlchemy/asyncpgrealparameterinference/autopreparedbehavior and oneretrievalSELECT/roundtrip/errornormalization. Do not forcecustom inruntime or adjustdriverpool/cache/PGsettings/index/schema/RLSpolicy.
+- Testmaterializationacross populatedtop_k/ties and pinnedP3/HNSW plans; a differentaccessplan must not be accepted if observedmembership/order/scores differ. ExistingADR006RLS andADR009deterministicranking remain binding. Counts/queryshape alone insufficient.
+- Finalindependentpatchreview still required; no imagebuild/A/A/G6/paidcampaign/sourcepin acceptance by thisreceipt. If candidate2proof fails, report rather than extendingtechnicalscope silently.
+
+## Reviewer actions and limits
+
+Read-onlyinspection of proposal/currentSQL and retainedcandidate1XML, SQLreasoning only;0DB/Docker/API/network/provider/tests. No app/test/candidate/proposal/history edits byreviewer. This review finds adjustment defensible as an isolated nextcandidate, not provenequivalent, performant or causally related to priorAAFAIL. AllhistoricalFAILs and candidate1rejection retained; CONTROLLED_G6_FAIL/paidblock unchanged.

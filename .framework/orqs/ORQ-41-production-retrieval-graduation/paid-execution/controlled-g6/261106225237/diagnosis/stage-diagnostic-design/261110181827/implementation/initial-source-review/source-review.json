@@ -1,0 +1,45 @@
+{
+  "status": "STAGE_DIAGNOSTIC_SOURCE_REVIEW_FINDINGS",
+  "reviewer": "/root/packet_review",
+  "approval_sha256": "b2206dfbcc3df75c9db0dfc73081691fb46b54128be37c800f41fde2b100cb9c",
+  "technical_files_sha256": {
+    "experiments/production_graduation/gate_validation/stage_latency.py": "f5d4537484eea092f81abe27e278731690d241f1d5d6297e6b086cad32609f50",
+    "experiments/production_graduation/gate_validation/stage_latency_worker.py": "87aa5fa2f694cf139ccade29bec471ed1a18f584c6c3a5a56bed129e3fe978e3",
+    "experiments/production_graduation/gate_validation/stage_latency_observer.py": "3acc06e2a9515126b6ea69e74a7d7c86e1b1f22ce1aad43d4b14cec5172d55ee",
+    "tests/experiments/test_orq41_stage_latency.py": "f2b87030f53845311d166ffa721f2884a7b20c649aec144cb15b8efe76d420ec"
+  },
+  "new_blocker_high_medium_findings": [
+    {
+      "id": "STAGE-R1",
+      "severity": "MEDIUM",
+      "file": "experiments/production_graduation/gate_validation/stage_latency_worker.py",
+      "line": 26,
+      "cause": "RUSAGE_THREAD measures reader: ingress eventloopthread versus primary native-send SDKworkerthread",
+      "reproduction": "Pure patched thread-sensitive getrusage endpoint call from main and plain joined worker yields unrelated/decreasing counters; actualBedrock_call_client usesasyncio.to_thread",
+      "impact": "Counters falsely described as same eventloopthread; invalid subtraction or legitimate run rejected after45requests",
+      "minimal_fix": "Capture ingressnativeTID, read thattargetthread counters atboth endpoints without scheduling/sampler; retain target/readerTIDs and validate same target before nextadmission; maintainprocessCPUallthreads"
+    },
+    {
+      "id": "STAGE-R2",
+      "severity": "MEDIUM",
+      "file": "experiments/production_graduation/gate_validation/stage_latency_worker.py",
+      "line": 48,
+      "cause": "First endpoint wallclock calls are outsidebest-effort guard atsent/ingress",
+      "reproduction": "Actualsentcallback extracted viaAST withwallclock raisingRuntimeError escapes and originalcapture/transport invocationcount0",
+      "impact": "Observationfailure changesfunctionalsend/request result, potentially providererror/retry; violates additiveobserverfailure requirement",
+      "minimal_fix": "First-operation safe-wall-read marksdiagnosticinvalid onfailure but callsoriginalASGI/capture exactlyonce unchanged; avoidNonearithmetic; validateallclock/counterdata postquiescencebeforePASS/newrequest"
+    }
+  ],
+  "review_sha256": "8ea9c12dcba0501ae9bab225087f8e27ede1b7eb21051909ac2b0f46cce2ab32",
+  "probe_sha256": "5f22fa1ce52a6f05ff112529fadd1391d7f7645e6a8d1c7fc613e0742ad3c997",
+  "source_snapshot_sha256": "a535aee9adaa9f28fd6b44487794b5bed5d57722e8757e739458ec016005b01f",
+  "independent_pure_counterexamples_passed": 2,
+  "earlier_version_pure_tests_passed": 30,
+  "earlier_version_native_cases_deselected": 6,
+  "reviewer_api_calls": 0,
+  "reviewer_database_calls": 0,
+  "reviewer_docker_calls": 0,
+  "reviewer_external_calls": 0,
+  "provisioning_blocked_by_review": true,
+  "official_g6_status": "CONTROLLED_G6_FAIL"
+}

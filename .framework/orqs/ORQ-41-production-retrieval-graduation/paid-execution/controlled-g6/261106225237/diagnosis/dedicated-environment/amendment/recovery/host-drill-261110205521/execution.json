@@ -1,0 +1,78 @@
+{
+  "started_utc": "2026-11-10T21:28:04.029088+00:00",
+  "requests": 0,
+  "provider_calls": 0,
+  "spend_usd": "0",
+  "operations": [
+    {
+      "name": "apply",
+      "argv": [
+        "sudo",
+        "-n",
+        "/usr/bin/python3",
+        "-I",
+        "/var/lib/orq41-cpuset/261110205521/helper.py",
+        "apply",
+        "/var/lib/orq41-cpuset/261110205521"
+      ],
+      "elapsed_start_s": 8.700881153345108e-07,
+      "returncode": 1,
+      "stderr": "Traceback (most recent call last):\n  File \"/var/lib/orq41-cpuset/261110205521/helper.py\", line 255, in apply\n    backend.verify_one(index)\n  File \"/var/lib/orq41-cpuset/261110205521/helper.py\", line 443, in verify_one\n    require(self.file(unit) == base64.b64encode(expected).decode(), 'Unrecognized systemd fragment')\n  File \"/var/lib/orq41-cpuset/261110205521/helper.py\", line 31, in require\n    raise RuntimeError(message)\nRuntimeError: Unrecognized systemd fragment\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/var/lib/orq41-cpuset/261110205521/helper.py\", line 555, in <module>\n    apply(state, backend)\n  File \"/var/lib/orq41-cpuset/261110205521/helper.py\", line 260, in apply\n    recover_locked(store, backend)\n  File \"/var/lib/orq41-cpuset/261110205521/helper.py\", line 277, in recover_locked\n    backend.validate_recoverable(baseline, intended, rows)\n  File \"/var/lib/orq41-cpuset/261110205521/helper.py\", line 486, in validate_recoverable\n    require(p['DropInPaths'] in allowed_dropins, 'Foreign runtime override')\n  File \"/var/lib/orq41-cpuset/261110205521/helper.py\", line 31, in require\n    raise RuntimeError(message)\nRuntimeError: Foreign runtime override\n",
+      "duration_s": 0.7323573179310188
+    },
+    {
+      "name": "recover",
+      "argv": [
+        "sudo",
+        "-n",
+        "/usr/bin/python3",
+        "-I",
+        "/var/lib/orq41-cpuset/261110205521/helper.py",
+        "recover",
+        "/var/lib/orq41-cpuset/261110205521"
+      ],
+      "elapsed_start_s": 0.7323634120402858,
+      "returncode": 1,
+      "stderr": "Traceback (most recent call last):\n  File \"/var/lib/orq41-cpuset/261110205521/helper.py\", line 557, in <module>\n    recover(state, backend)\n  File \"/var/lib/orq41-cpuset/261110205521/helper.py\", line 306, in recover\n    recover_locked(store, backend)\n  File \"/var/lib/orq41-cpuset/261110205521/helper.py\", line 277, in recover_locked\n    backend.validate_recoverable(baseline, intended, rows)\n  File \"/var/lib/orq41-cpuset/261110205521/helper.py\", line 486, in validate_recoverable\n    require(p['DropInPaths'] in allowed_dropins, 'Foreign runtime override')\n  File \"/var/lib/orq41-cpuset/261110205521/helper.py\", line 31, in require\n    raise RuntimeError(message)\nRuntimeError: Foreign runtime override\n",
+      "duration_s": 0.10416497197002172
+    },
+    {
+      "name": "verify",
+      "argv": [
+        "sudo",
+        "-n",
+        "/usr/bin/python3",
+        "-I",
+        "/var/lib/orq41-cpuset/261110205521/helper.py",
+        "verify",
+        "/var/lib/orq41-cpuset/261110205521"
+      ],
+      "elapsed_start_s": 0.8365321171004325,
+      "returncode": 1,
+      "stderr": "Traceback (most recent call last):\n  File \"/var/lib/orq41-cpuset/261110205521/helper.py\", line 561, in <module>\n    backend.verify_baseline(state.baseline())\n  File \"/var/lib/orq41-cpuset/261110205521/helper.py\", line 516, in verify_baseline\n    require(current['files'] == baseline['files'], 'Runtime file parity failed')\n  File \"/var/lib/orq41-cpuset/261110205521/helper.py\", line 31, in require\n    raise RuntimeError(message)\nRuntimeError: Runtime file parity failed\n",
+      "duration_s": 0.11013809591531754
+    },
+    {
+      "name": "final-journal",
+      "argv": [
+        "sudo",
+        "-n",
+        "/usr/bin/tar",
+        "-cf",
+        "-",
+        "-C",
+        "/var/lib/orq41-cpuset",
+        "261110205521"
+      ],
+      "elapsed_start_s": 0.9466740500647575,
+      "returncode": 0,
+      "stderr": "",
+      "duration_s": 0.005700965994037688
+    }
+  ],
+  "applied": false,
+  "recovered": false,
+  "verified": false,
+  "duration_s": 0.9523829750251025,
+  "status": "ADMINISTRATIVE_DRILL_FAILED"
+}

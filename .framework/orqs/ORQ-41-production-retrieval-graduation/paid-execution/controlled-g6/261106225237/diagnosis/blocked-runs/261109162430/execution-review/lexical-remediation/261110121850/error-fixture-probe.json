@@ -1,0 +1,23 @@
+[
+  {
+    "lexemes": 16384,
+    "nodes": 32767,
+    "result": "ok"
+  },
+  {
+    "lexemes": 32768,
+    "nodes": 65535,
+    "result": "ok"
+  },
+  {
+    "lexemes": 65536,
+    "nodes": 131071,
+    "result": "ok"
+  },
+  {
+    "lexemes": 131072,
+    "result": "error",
+    "sqlstate": "54000",
+    "message": "value is too big in tsquery: \"lexeme0 lexeme1 lexeme2 lexeme3 lexeme4 lexeme5 lexeme6 lexeme7 lexeme8 lexeme9 lexeme10 lexeme11 lexeme12 lexeme13 lexeme14 lexeme15 lexeme16 lexeme17 lexeme18 lexeme19 lexeme20 lexeme21 lexeme22 lexeme23 lexeme24 lexem"
+  }
+]

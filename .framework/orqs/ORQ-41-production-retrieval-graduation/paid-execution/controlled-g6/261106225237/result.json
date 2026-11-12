@@ -1,0 +1,83 @@
+{
+  "status": "CONTROLLED_G6_FAIL",
+  "cells": [
+    {
+      "language": "EN",
+      "protocol": "json",
+      "n_per_arm": 100,
+      "baseline_p50_ns": 52495910,
+      "candidate_p50_ns": 52444104,
+      "baseline_p95_ns": 75138562,
+      "candidate_p95_ns": 81882634,
+      "limit_percent": 5,
+      "baseline_p99_ns": 79005844,
+      "candidate_p99_ns": 94513424,
+      "baseline_max_ns": 82454430,
+      "candidate_max_ns": 113914362,
+      "status": "FAIL",
+      "payload_and_call_parity": true
+    },
+    {
+      "language": "EN",
+      "protocol": "sse",
+      "n_per_arm": 100,
+      "baseline_p50_ns": 39470574,
+      "candidate_p50_ns": 47706539,
+      "baseline_p95_ns": 73304663,
+      "candidate_p95_ns": 77105101,
+      "limit_percent": 5,
+      "baseline_p99_ns": 77769160,
+      "candidate_p99_ns": 83275590,
+      "baseline_max_ns": 79663297,
+      "candidate_max_ns": 114676293,
+      "status": "FAIL",
+      "payload_and_call_parity": true
+    },
+    {
+      "language": "ES",
+      "protocol": "json",
+      "n_per_arm": 100,
+      "baseline_p50_ns": 49950119,
+      "candidate_p50_ns": 58561090,
+      "baseline_p95_ns": 79389852,
+      "candidate_p95_ns": 85783142,
+      "limit_percent": 5,
+      "baseline_p99_ns": 82790194,
+      "candidate_p99_ns": 89197925,
+      "baseline_max_ns": 85605505,
+      "candidate_max_ns": 96254311,
+      "status": "FAIL",
+      "payload_and_call_parity": true
+    },
+    {
+      "language": "ES",
+      "protocol": "sse",
+      "n_per_arm": 100,
+      "baseline_p50_ns": 41531356,
+      "candidate_p50_ns": 49918112,
+      "baseline_p95_ns": 70150033,
+      "candidate_p95_ns": 77309276,
+      "limit_percent": 5,
+      "baseline_p99_ns": 72232091,
+      "candidate_p99_ns": 83515176,
+      "baseline_max_ns": 107977754,
+      "candidate_max_ns": 89187600,
+      "status": "FAIL",
+      "payload_and_call_parity": true
+    }
+  ],
+  "external_calls": 0,
+  "spend_usd": "0",
+  "live_absolute_bounds_claimed": false,
+  "plan_sha256": "cdc785a3ccfb9538882d66f327e71c978ebc85e910cf2a0fa68e21ca6853fbf7",
+  "worker_receipts": {
+    "c1-ES-sse.json": "2f57a0224542ca669f57c2cd98f7a10a69ceaabece98ff7d2a12407763eaf1e1",
+    "c1-ES-json.json": "ed13680f1e7ebb181676493d881c009f73d30febe2e646260c98895411af5ce8",
+    "c0-ES-json.json": "43e05cecf6cfd70e41b79264082f41a59e25162ba713b8e25b110edc019cab4d",
+    "c1-EN-sse.json": "eb2912c1cf220f5fbb112c60138aeeb67cf3f110b87c8222a2f5ee2c8b0e2985",
+    "c0-EN-json.json": "a3a4992583e283560c55cd1b66f730567dd1b0ca7a34d840b4e2ece16f4906b3",
+    "c0-ES-sse.json": "64b45823f19aa8e0e8ca7bc261b2eb051229fadeac6c727422a234d020b467d9",
+    "c1-EN-json.json": "cc24696eeec43e47ec4ba9c015ae73910bfbf1c624657f13f932c988e03f661f",
+    "c0-EN-sse.json": "bf8133a7682dc1ffee0b3c82e98008e73eb3dc536a5998684f4b14ec59c30337"
+  }
+}
