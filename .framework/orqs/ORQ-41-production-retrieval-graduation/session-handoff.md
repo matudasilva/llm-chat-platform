@@ -1,3 +1,26 @@
+## Current: ORQ-41 Fully Synced (2026-11-12)
+
+Paid campaign outcome COMPLETE (168/168, USD 4.00469664 settled). Notion
+Dashboard, Prompt Library closure entry, Framework Learning and Master Project
+Document were updated and read back; links in notion-sync-2026-11-12.json.
+Independent validation of the campaign and full synthetic installer/controller
+integration remain separate limitations, not implied by governance sync.
+Prior GovernancePending and Planned entries below are historical. No new paid
+requests, host operations or commits were made in this sync.
+
+## Current reconciliation: campaign complete; governance sync pending
+
+The paid campaign result is COMPLETE (168 requests, retained ledger closing
+entry 338, no close reasons). Framework synchronization remains pending, so the
+local lifecycle is GovernancePending and fully synchronized closure is not claimed.
+This supersedes earlier top-level wording that called the ORQ formally closed.
+The separate synthetic installer/launcher/create seams have only focused offline
+P2 results (4 installer and 60 launcher/create tests); no independent implementation
+review or real installer/controller/Engine integration has been recorded. The
+minimal supervisor trial below is historical and narrower than the real lifecycle.
+No paid requests, host operations, Docker actions, Notion writes or commits were
+performed in this reconciliation.
+
 ## Current: ORQ-41 paid campaign COMPLETE (2026-11-12)
 
 **🎉 CAMPAIGN COMPLETE — USD 4.00 of $5.00 cap, 168 requests, no errors.**

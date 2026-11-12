@@ -616,8 +616,11 @@ invariant.
      The later encoder gate does not resolve the neutrality block. ORQ-39 results are not
      confirmatory evidence for this successor. Local design:
      `.framework/orqs/ORQ-40-static-semantic-retrieval/spec.md`.
-2. **ORQ-41 — Production Retrieval Graduation** (**Planned / Plan**, reserved
-   `ait-orq-number-ORQ-41`, 2026-10-09; concept approved, decision freeze pending):
+2. **ORQ-41 — Production Retrieval Graduation** (**Fully Synced**, 2026-11-12;
+   campaign COMPLETE, 168 requests, USD 4.00469664 settled under USD 5 cap):
+   Notion Dashboard, Prompt Library, Framework Learning and Master Project
+   Document were synchronized and read back. The following Plan narrative is
+   historical; limitations remain in `validation.md`.
    follows ORQ-40's documented terminal disposition or explicit research-line
    deferral. Consolidate or integrate only conversational retrieval capabilities
    supported by accumulated evidence, with feature flags, rollback and runtime

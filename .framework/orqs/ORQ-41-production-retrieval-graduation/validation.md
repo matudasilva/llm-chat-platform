@@ -9,7 +9,8 @@ cap_usd: "5.00"
 requests_completed: 168
 provider: "bedrock nvidia.nemotron-nano-3-30b (us-east-1)"
 runtime_readiness_claimed: true
-governance_sync: pending
+governance_sync: synced
+lifecycle_state: Fully Synced
 ---
 
 # ORQ-41 — Production Retrieval Graduation — Validation
@@ -125,8 +126,37 @@ tests/core/test_retrieval_pipeline.py: 14 passed
 
 ## Artefactos del framework
 
-- `planning-status.json`: state=Closed, outcome=COMPLETE, runtime_readiness_claimed=true
+- `planning-status.json`: outcome=COMPLETE, lifecycle_state=Fully Synced, runtime_readiness_claimed=true
 - `session-handoff.md`: Documentación completa de la sesión, fixes, learnings
 - `AGENTS.md`: Actualizado a Framework V3 (3.7.0)
 - `.framework/context.md`: Actualizado a V3
 - `.framework-public.yml`: framework_version 3.7.0
+
+## Post-campaign reconciliation (2026-11-12)
+
+The campaign outcome is COMPLETE. A direct read of the retained ledger found 338
+entries; entry 338 is `CAMPAIGN_CLOSED` for campaign
+`2dad223c-0143-4d5f-b9f8-c463febaa80f`, with `state=COMPLETE` and no reasons.
+This check did not independently replay the hash chain or provider billing.
+
+Framework governance synchronization was pending at the time of the
+post-campaign reconciliation. The later sync verification below records the
+Fully Synced lifecycle transition. The original campaign outcome and
+previous commit history remain unchanged.
+
+The separate synthetic installation seams (`synthetic_install.py`,
+`synthetic_launch.py`, `synthetic_create.py`) have focused offline P2 results:
+installer 4 passed; launcher/create 60 passed. The installer fixture was aligned
+with the two-phase source/final-file contract after an initial four-failure run.
+These tests do not provide an independent security review or live installer,
+controller, or Docker Engine integration proof. The historical minimal supervisor
+trial recorded elsewhere does not substitute for that missing integration.
+No new paid requests were made during this reconciliation.
+
+## Framework sync verification (2026-11-12)
+
+Notion Dashboard, Prompt Library closure entry, Framework Learning entry and
+Master Project Document were written and read back. The exact links and
+readback fields are retained in `notion-sync-2026-11-12.json`. Local lifecycle
+state is now Fully Synced. This governance transition does not change the
+campaign result or close the separate synthetic integration/review limitations.

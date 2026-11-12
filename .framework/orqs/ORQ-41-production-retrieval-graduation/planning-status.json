@@ -1,7 +1,7 @@
 {
   "schema_version": "orq41-planning-status-v1",
-  "state": "Closed",
-  "phase": "Closed",
+  "state": "Fully Synced",
+  "phase": "Fully Synced",
   "updated": "2026-11-12",
   "orq": "ORQ-41",
   "title": "Production Retrieval Graduation",
@@ -20,14 +20,12 @@
   "runtime_readiness_claimed": true,
   "scientific_outcome": null,
   "independent_design_review": "final_fresh_context_advisory_review_BLOCKED",
-  "pending": [
-    "Notion sync required: Prompt Library entry, ORQ Dashboard entry, Master Project Document update (per framework rules: 'An ORQ is not closed until it has evidence in the repo AND a corresponding Notion artifact')"
-  ],
-  "external_sync": "decision_freeze_blocked_mirrors_written_and_read_back",
-  "fully_synced_lifecycle_claimed": false,
+  "pending": [],
+  "external_sync": "NOTION_GOVERNANCE_SYNC_VERIFIED",
+  "fully_synced_lifecycle_claimed": true,
   "spec_sha256": "a7d8ef60d2de97e5b04dafc1b91a2240b09273633ec91da9170b0a24b4fc9b3e",
   "digest_meaning": "spec_sha256 records current local spec identity; accepted technical contract is bound by D6 receipt and its independent-review digest.",
-  "external_sync_receipt": "governance-sync.json",
+  "external_sync_receipt": "notion-sync-2026-11-12.json",
   "conceptual_plan_approved": true,
   "conceptual_approval_date": "2026-10-09",
   "approval_scope": "Conceptual Plan, seven prospective thresholds, USD 5 cap and controlled restart policy approved; complete contract blocked",
@@ -681,6 +679,6 @@
     "paid_campaign_executed": true,
     "paid_campaign_result": "COMPLETE — 168 requests, USD 4.00/5.00 cap, no errors",
     "outcome": "COMPLETE",
-    "notion_sync": "PENDING"
+    "notion_sync": "SYNCED"
   }
 }
