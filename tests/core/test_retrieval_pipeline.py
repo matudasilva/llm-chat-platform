@@ -7,6 +7,7 @@ records).
 
 from __future__ import annotations
 
+import io
 import logging
 import uuid
 from typing import Sequence
@@ -144,17 +145,22 @@ async def test_evaluator_triggered_when_reranked_results_are_thin():
 
 
 @pytest.mark.asyncio
-async def test_evaluator_not_triggered_when_reranked_results_meet_minimum():
+async def test_evaluator_not_triggered_when_reranked_results_meet_minimum(caplog):
     candidates = [_chunk(i) for i in range(5)]
     provider = _FakeProvider(rewritten=_REWRITTEN)
     vector_store = _FakeVectorStore(candidates)
     reranker = _FakeReranker(results=[RankedDocument(index=i, rank=i + 1) for i in range(5)])
     pipeline = _pipeline(provider=provider, vector_store=vector_store, reranker=reranker, min_reranked_results=5)
 
-    result = await pipeline.retrieve(request_id=uuid.uuid4(), query=_QUERY)
+    with caplog.at_level(logging.INFO, logger="app.core.domain.retrieval_pipeline"):
+        result = await pipeline.retrieve(request_id=uuid.uuid4(), query=_QUERY)
 
     assert result.evaluator_triggered is False
     assert provider.calls == ["rewrite"]
+    assert not any(
+        getattr(record, "event", None) == "retrieval_pipeline.evaluator_triggered"
+        for record in caplog.records
+    )
 
 
 @pytest.mark.asyncio
@@ -221,3 +227,146 @@ async def test_telemetry_excludes_query_and_chunk_content(caplog):
         assert _QUERY not in payload
         assert _REWRITTEN not in payload
         assert "secret document content" not in payload
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("evaluator_fails", [False, True])
+async def test_evaluator_activation_is_correlated_once_before_provider_call(
+    caplog, evaluator_fails
+):
+    request_id = uuid.UUID("00000000-0000-4000-8000-000000000041")
+    event = "retrieval_pipeline.evaluator_triggered"
+
+    class _ActivationCheckingProvider(_FakeProvider):
+        async def generate(self, input):
+            if "SUFFICIENT" in input.messages[0].content:
+                activations = [
+                    record for record in caplog.records
+                    if getattr(record, "event", None) == event
+                ]
+                assert len(activations) == 1
+                assert activations[0].request_id == str(input.request_id)
+            return await super().generate(input)
+
+    provider = _ActivationCheckingProvider(
+        rewritten=_REWRITTEN, evaluator_verdict="INSUFFICIENT",
+        fail_on={"evaluator"} if evaluator_fails else set(),
+    )
+    pipeline = _pipeline(
+        provider=provider, vector_store=_FakeVectorStore([_chunk(0)]),
+        reranker=_FakeReranker(results=[RankedDocument(index=0, rank=1)]),
+    )
+    # Reuse the handler installed by app.main, including its actual formatter
+    # and tenant filter. Do not construct a hypothetical JSON representation.
+    production_handler = next(
+        handler for handler in logging.getLogger().handlers
+        if handler.formatter and "tenant_id=" in handler.formatter._fmt
+    )
+    output = io.StringIO()
+    handler = logging.StreamHandler(output)
+    handler.setFormatter(production_handler.formatter)
+    for log_filter in production_handler.filters:
+        handler.addFilter(log_filter)
+    pipeline_logger = logging.getLogger("app.core.domain.retrieval_pipeline")
+    pipeline_logger.addHandler(handler)
+    try:
+        with caplog.at_level(logging.INFO, logger=pipeline_logger.name):
+            result = await pipeline.retrieve(request_id=request_id, query=_QUERY)
+    finally:
+        pipeline_logger.removeHandler(handler)
+        handler.close()
+
+    activations = [record for record in caplog.records if getattr(record, "event", None) == event]
+    assert len(activations) == 1
+    assert activations[0].request_id == str(request_id)
+    assert result.evaluator_triggered is True
+    assert result.evaluator_verdict == (None if evaluator_fails else "INSUFFICIENT")
+    assert result.rewritten_query == _REWRITTEN
+    assert [chunk.rank for chunk in result.chunks] == [1]
+    assert provider.calls == ["rewrite", "evaluator"]
+    lines = [line for line in output.getvalue().splitlines() if event in line]
+    assert len(lines) == 1
+    assert f" INFO {pipeline_logger.name} {event} request_id={request_id} tenant_id=" in lines[0]
+    completion = [line for line in output.getvalue().splitlines()
+                  if "retrieval_pipeline.completed" in line]
+    assert len(completion) == 1
+    assert f"request_id={request_id} evaluator_triggered=true" in completion[0]
+    assert _QUERY not in output.getvalue()
+    assert _REWRITTEN not in output.getvalue()
+    if evaluator_fails:
+        messages = [record.getMessage() for record in caplog.records]
+        assert messages.index(activations[0].getMessage()) < messages.index(
+            "retrieval_pipeline.evaluator_failed"
+        )
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("evaluator_fails", [False, True])
+async def test_evaluator_activation_handler_failure_preserves_result(evaluator_fails):
+    provider = _FakeProvider(
+        rewritten=_REWRITTEN, evaluator_verdict="INSUFFICIENT",
+        fail_on={"evaluator"} if evaluator_fails else set(),
+    )
+    pipeline = _pipeline(
+        provider=provider, vector_store=_FakeVectorStore([_chunk(0)]),
+        reranker=_FakeReranker(results=[RankedDocument(index=0, rank=1)]),
+    )
+    request_id = uuid.uuid4()
+    baseline = await pipeline.retrieve(request_id=request_id, query=_QUERY)
+
+    class _FailingActivationHandler(logging.Handler):
+        attempts = 0
+
+        def emit(self, record):
+            if getattr(record, "event", None) == "retrieval_pipeline.evaluator_triggered":
+                self.attempts += 1
+                raise RuntimeError("local log sink unavailable")
+
+    handler = _FailingActivationHandler()
+    pipeline_logger = logging.getLogger("app.core.domain.retrieval_pipeline")
+    original_level = pipeline_logger.level
+    pipeline_logger.setLevel(logging.INFO)
+    pipeline_logger.addHandler(handler)
+    try:
+        observed = await pipeline.retrieve(request_id=request_id, query=_QUERY)
+    finally:
+        pipeline_logger.removeHandler(handler)
+        pipeline_logger.setLevel(original_level)
+        handler.close()
+
+    assert handler.attempts == 1
+    assert observed == baseline
+    assert provider.calls == ["rewrite", "evaluator", "rewrite", "evaluator"]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("triggered", [False, True])
+async def test_completion_sink_failure_preserves_functional_result(triggered, monkeypatch):
+    count = 1 if triggered else 5
+    provider = _FakeProvider(rewritten=_REWRITTEN, evaluator_verdict="INSUFFICIENT")
+    pipeline = _pipeline(
+        provider=provider, vector_store=_FakeVectorStore([_chunk(i) for i in range(count)]),
+        reranker=_FakeReranker(results=[RankedDocument(index=i, rank=i + 1) for i in range(count)]),
+    )
+    rid = uuid.uuid4()
+    baseline = await pipeline.retrieve(request_id=rid, query=_QUERY)
+
+    class FailedSink(io.StringIO):
+        def write(self, text):
+            raise OSError("local stdout unavailable")
+
+    # The existing StreamHandler catches sink failures. Preserve that behavior;
+    # no new runtime exception handling or logging framework is introduced.
+    handler = logging.StreamHandler(FailedSink())
+    production = next(h for h in logging.getLogger().handlers
+                      if h.formatter and "tenant_id=" in h.formatter._fmt)
+    handler.setFormatter(production.formatter)
+    for item in production.filters:
+        handler.addFilter(item)
+    log = logging.getLogger("app.core.domain.retrieval_pipeline")
+    monkeypatch.setattr(log, "handlers", [handler])
+    monkeypatch.setattr(log, "propagate", False)
+    monkeypatch.setattr(log, "level", logging.INFO)
+    monkeypatch.setattr(logging, "raiseExceptions", False)
+    result = await pipeline.retrieve(request_id=rid, query=_QUERY)
+    assert result == baseline and result.evaluator_triggered == triggered

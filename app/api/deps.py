@@ -7,6 +7,8 @@ from typing import Sequence
 
 from fastapi import Request
 
+from app.core.observability import context_evidence as c1
+
 from app.core.domain.bm25_ranking import pack_selected_events, query_tokens, rank_events
 from app.core.domain.chat_memory import ChatMemoryContext, RetrievedMemoryEvent
 from app.core.domain.conversation_history import (
@@ -59,6 +61,7 @@ def get_chat_service() -> ChatService:
 
 
 async def get_chat_rag_context(payload: ChatRequest, request: Request) -> RagGenerationContext:
+    c1.bind_scope(lambda: (get_tenant_id(), payload.conversation_id))
     if not settings.chat_rag_augmentation_enabled:
         # AC24: the flag is only visible here, so `skipped` is the dependency's
         # to record. The domain never learns the feature exists.
@@ -127,7 +130,9 @@ async def get_chat_memory_context(
     captures `ProviderInput` for exactly that reason.
 
     """
+    c1.bind_scope(lambda: (get_tenant_id(), payload.conversation_id))
     if not settings.conversation_history_enabled:
+        c1.observe("window.outcome", lambda _: {"outcome": "disabled"})
         return ChatMemoryContext()
 
     # The RAW payload value, never the handler's derived `conversation_id`.
@@ -233,6 +238,7 @@ async def get_chat_memory_context(
     # request. Tracked explicitly rather than calling `_record_memory_outcome`
     # twice, which would let the final unconditional call silently clobber
     # whichever of these two fired (`record()` is last-write-wins).
+    c1.observe("episodic.mode", lambda _: {"enabled": settings.ebm25_enabled})
     mode_b_outcome: str | None = None
     if settings.ebm25_enabled:
         # H9: Mode B runs inside its own degradation boundary.
@@ -253,7 +259,9 @@ async def get_chat_memory_context(
         # the same direction `budget_starved` degrades.
         try:
             corpus = RetrievalCorpus.from_partition(partition)
+            c1.episodic("episodic.retrieved", corpus.events)
             if corpus.is_empty:
+                c1.episodic("episodic.selected", ())
                 # §Diseño 8's first inert state: the snapped window already
                 # covers the whole conversation, so there is nothing left to
                 # retrieve.
@@ -275,7 +283,9 @@ async def get_chat_memory_context(
                       len(m.content) for m in context.messages
                   )
                   ranked = rank_events(corpus.events, query_tokens(payload.message))
+                  c1.episodic("episodic.ranked", ranked, ranked=True)
                   selected, _ = pack_selected_events(ranked, max_chars=max(remaining_budget, 0))
+                  c1.episodic("episodic.selected", selected)
                   set_attribute(rank_span, "memory.selected_count", len(selected))
                   if not selected:
                       # §Diseño 8's second inert state: evidence existed and was
@@ -366,12 +376,14 @@ async def _materialize_window(adapter, assembler, conversation_id, tenant_id):
     # and -- since T12 -- the call that applies the SQL row cap
     # (`conversation_history_max_rows`), not the assembler.
     all_messages = await adapter.fetch_ordered(conversation_id, tenant_id)
+    c1.history("window.read", all_messages)
     assembled = await assembler.assemble(
         _PrefetchedHistoryPort(all_messages), conversation_id, tenant_id
     )
     partition = build_materialized_window(
         all_messages=all_messages, bounded_messages=assembled.messages
     )
+    c1.history("window.bounded", partition.window)
     # AC36: the cap is reached when the SQL read returned exactly the limit --
     # not "close to it", since a shorter conversation legitimately returns
     # fewer rows than the cap without ever having been bounded.
@@ -394,6 +406,7 @@ async def _materialize_window(adapter, assembler, conversation_id, tenant_id):
     return partition, truncated, cap_reached
 
 
+@c1.outcome("documents.outcome")
 async def _record_retrieval_outcome(outcome: str | None) -> None:
     """AC24's field, recorded with the same containment N-2 gave the others.
 
@@ -449,6 +462,7 @@ async def _record_ebm25_selected_count(count: int) -> None:
         pass
 
 
+@c1.outcome("window.outcome")
 async def _record_memory_outcome(outcome: str) -> None:
     # Uses only the collector T8 already shipped. Nothing here writes a row:
     # the `rag_request_metrics` table and its write sites are T14's.

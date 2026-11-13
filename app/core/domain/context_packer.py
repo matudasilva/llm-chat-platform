@@ -33,6 +33,8 @@ all, which is what keeps it untouched by construction.
 
 from __future__ import annotations
 
+from app.core.observability import context_evidence as c1
+
 from dataclasses import dataclass, replace
 from typing import Sequence
 
@@ -55,6 +57,7 @@ class PackedWindow:
     truncated: bool
 
 
+@c1.packed_window
 def pack_recent_window(
     messages: Sequence[ChatMessage], *, max_chars: int, reserved_chars: int = 0
 ) -> PackedWindow:
