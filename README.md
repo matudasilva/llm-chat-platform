@@ -20,6 +20,7 @@ This project models how AI-powered workloads should be integrated and operated i
 ![LLM Chat Platform architecture](docs/rendered/architecture/module-boundaries-v2.svg)
 
 See [`docs/rendered/architecture/`](docs/rendered/architecture/) for the request flow, provider abstraction and streaming sequence diagrams.
+The [RAG lifecycle diagram](docs/rendered/architecture/rag-lifecycle-v1.svg) shows offline corpus ingestion and request-time retrieval separately.
 
 ---
 
@@ -532,6 +533,15 @@ same bounded, untrusted-evidence system context without provider-specific route 
 Non-stream JSON and the existing SSE `done` event expose only `citation`, `document_id`, `chunk_id`,
 and `rank`. When augmentation is enabled, Redis response-cache reads and writes are bypassed.
 
+### Conversation history (ORQ-38 substrate / ORQ-37 rollout)
+
+`CONVERSATION_HISTORY_ENABLED=false` by default controls whether `/chat` loads a bounded,
+tenant-scoped window of prior messages and sends it to the provider before the current message.
+The assembler limits this window to 20 messages and 12,000 characters. History loading uses the
+separate operational database role through `DATABASE_URL_OPS`; read failures degrade to empty
+history. This feature is independent of document RAG (`CHAT_RAG_AUGMENTATION_ENABLED`) and the
+E-BM25 memory channel (`EBM25_ENABLED`).
+
 Lightweight feedback updates the successful assistant `UsageEvent` through
 `PUT /chat/messages/{message_id}/feedback` with `{"rating":"up"}` or `{"rating":"down"}`.
 The target is tenant-scoped; identical retries are no-ops, and no Conversation or Message is
@@ -575,12 +585,20 @@ resolution or acceptable documented bounds for query/fact-template lexical
 alignment, completed human entailment and EN/ES review, and explicit operator
 reauthorization. ORQ-40 provides zero scientifically usable evidence for a new
 capability; static facts remain disabled. No automatic reopening or follow-up
-is initiated. The next proposed step is Production Retrieval Graduation
-(unreserved ORQ-41), using only prior accumulated evidence-backed retrieval
-capabilities, with unsupported capabilities disabled and runtime readiness
-explicitly unclaimed until demonstrated there. See
+is initiated. At that 2026-10-08 planning point, the next proposed step was
+Production Retrieval Graduation (ORQ-41). See
 [Appendix AG](docs/lld_apendix.md#appendix-ag--orq-39-closure-and-orq-40-status)
 for evidence and claim boundaries.
+
+### Current retrieval roadmap status (updated 2026-11-12)
+
+ORQ-41 Production Retrieval Graduation completed and reached **Fully Synced** on
+2026-11-12. Its paid operational campaign completed 168 requests within the approved
+USD 5 cap. This result covers the approved operational workload; it does not establish
+scientific retrieval quality or general runtime readiness.
+The next proposed step is ORQ-42, Routing Evidence Dataset; it remains an unreserved
+roadmap placeholder. The Offline ML Routing Baseline remains conditional on ORQ-42
+showing useful signal.
 
 ### External Read Capabilities (Completed)
 
@@ -610,7 +628,7 @@ for evidence and claim boundaries.
 
 - **Data models:** `tenant_id VARCHAR(64) NOT NULL DEFAULT 'default'` on `conversations` and `messages`; composite index `(tenant_id, created_at)`.
 - **Request context:** `TenantMiddleware` (pure ASGI — *not* `BaseHTTPMiddleware`, which resets ContextVars before SSE body is consumed). Extraction priority: `X-Tenant-ID` header → JWT Bearer claim `tenant_id` → fallback `"default"`. At the time of this ORQ it was the outermost middleware layer; as of ORQ-19.6, `CORSMiddleware` is now outermost (see below) — `TenantMiddleware` is unaffected otherwise.
-- **Cache isolation:** Redis key format is `chat:response:{tenant_id}:{sha256}`; fingerprint covers the full message history (not just the last message).
+- **Cache isolation:** Redis key format is `chat:response:{tenant_id}:{sha256}`; its fingerprint covers the assembled message window passed to the cache (bounded prior messages plus the current message), not an unbounded conversation. Provider metadata is not part of the key; document RAG and E-BM25 augmentation therefore bypass cache reads and writes.
 - **Telemetry:** `TenantContextFilter` on the root log handler injects `tenant_id` into every `provider.*`, `chat.*`, and `cache.*` log record without touching those modules.
 - **Cross-tenant enforcement:** App-layer guard — `conv.tenant_id != tenant_id → 404` in both streaming and non-streaming paths.
 - **Deferred:** Full RLS enforcement and corpus scoping (ORQ-21). See [ADR-003](docs/adr/003-multitenancy-transversal-foundation.md).
