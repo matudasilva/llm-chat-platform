@@ -22,6 +22,7 @@ vacuous result impossible to reach again.
 from __future__ import annotations
 
 import importlib.util
+import json
 import re
 import subprocess
 import sys
@@ -107,7 +108,16 @@ def test_the_real_sweep_scans_the_repository_and_is_clean() -> None:
     tracked = subprocess.run(
         ["git", "ls-files"], cwd=REPO_ROOT, capture_output=True, text=True, check=True
     ).stdout.splitlines()
-    assert files == len([line for line in tracked if line.strip()])
+    readable_tracked = 0
+    for line in tracked:
+        if not line.strip():
+            continue
+        try:
+            (REPO_ROOT / line).read_text(encoding="utf-8")
+        except (UnicodeDecodeError, FileNotFoundError, IsADirectoryError):
+            continue
+        readable_tracked += 1
+    assert files == readable_tracked
     assert chars > 100_000, "the repository cannot plausibly hold this little text"
 
 
@@ -164,6 +174,32 @@ def test_the_default_scan_reads_real_versioned_files(
     tracked = _module._tracked_files()
     assert [p.name for p in tracked] == ["note.md"]
     assert _module.main([]) == 0
+
+
+def test_archived_json_sources_keep_file_boundaries() -> None:
+    """An archived source bundle must not join unrelated file contents."""
+    bundle = json.dumps(
+        {
+            "files": {
+                "status.md": f"{_E} remains unvalidated.",
+                "notes.md": "Other material was validated.",
+            }
+        }
+    )
+
+    assert _module._findings(bundle, "archive.json") != []
+    assert _module._source_findings(bundle, "archive.json") == []
+
+
+def test_archived_json_sources_still_report_a_claim_inside_a_file() -> None:
+    bundle = json.dumps(
+        {"files": {"report.md": f"{_E} was scientifically validated."}}
+    )
+
+    findings = _module._source_findings(bundle, "archive.json")
+
+    assert findings
+    assert "archive.json:report.md" in findings[0]
 
 
 def test_the_tracked_listing_refuses_to_swallow_a_git_failure(
