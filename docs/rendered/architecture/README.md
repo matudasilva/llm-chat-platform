@@ -1,12 +1,13 @@
 # Architecture diagrams
 
-Four hand-authored SVGs, each covering one concern. They are the source of truth for
+Five hand-authored SVGs, each covering one concern. They are the source of truth for
 themselves: there is no Mermaid source behind them anymore, so there is nothing to
 regenerate and nothing that can silently diverge from a render.
 
 | File | Concern |
 |---|---|
 | `chat-request-flow-v2.svg` | End-to-end path of a `/chat` request: middleware stack, tenant resolution, orchestration, persistence and cache |
+| `rag-lifecycle-v1.svg` | Offline corpus ingestion and the document retrieval path through `/chat`, including independent feature flags |
 | `module-boundaries-v2.svg` | Package boundaries and the allowed direction of dependency |
 | `provider-abstraction-v1.svg` | `ProviderPort`, the factory, `ResilientProvider` and the concrete adapters |
 | `streaming-fallback-sequence-v1.svg` | SSE sequence and the three streaming outcomes, including where fallback is forbidden |

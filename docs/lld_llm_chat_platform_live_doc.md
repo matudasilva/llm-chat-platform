@@ -24,12 +24,14 @@ Reopening requires demonstrated conceptual-group independence, an acceptable
 resolution or bound for query/fact-template lexical alignment, completed human
 entailment and EN/ES review, and explicit operator reauthorization. ORQ-40
 provides zero scientifically usable evidence for a new capability; static facts
-remain disabled, with no automatic reopening. The next proposed step is
-Production Retrieval Graduation (proposed, unreserved ORQ-41), which may use only prior
-accumulated evidence-backed retrieval capabilities. Unsupported capabilities
-remain disabled; runtime readiness is not claimed and must be demonstrated in
-graduation. No new research, runtime measurement or traffic splitting has
-started. See [Appendix AG](lld_apendix.md#appendix-ag--orq-39-closure-and-orq-40-status).
+remain disabled, with no automatic reopening. At the 2026-10-08 planning point,
+Production Retrieval Graduation (ORQ-41) was the next proposed step. ORQ-41
+completed and reached **Fully Synced** on 2026-11-12 after its 168-request
+operational campaign. The next proposed step is ORQ-42, Routing Evidence Dataset,
+which remains an unreserved roadmap placeholder. The Offline ML Routing Baseline
+remains conditional on useful signal from ORQ-42. ORQ-41's remaining independent
+review and live integration evidence gaps are recorded in its validation record.
+See [Appendix AG](lld_apendix.md#appendix-ag--orq-39-closure-and-orq-40-status).
 
 The LLM Chat Platform implements the following core capabilities:
 
@@ -744,7 +746,23 @@ Successful non-stream responses and SSE `done` payloads expose a `sources` array
 current Redis response cache is bypassed for every request while chat RAG is enabled, including
 degraded and no-result executions, because its key has no corpus/source identity.
 
-### 15.9 Lightweight chat feedback (ORQ-25)
+### 15.9 Conversation history (ORQ-38 substrate / ORQ-37 rollout)
+
+`CONVERSATION_HISTORY_ENABLED` is `false` by default and independently controls
+whether `/chat` loads prior messages for the supplied conversation. The tenant-scoped
+read uses the separate operational role configured by `DATABASE_URL_OPS`; failures
+degrade to empty history. `ConversationHistoryAssembler` bounds the prior-message
+window to 20 messages and 12,000 characters, before the current user message. The
+combined added-context budget is enforced separately. This message-based history
+channel is independent of document RAG (`CHAT_RAG_AUGMENTATION_ENABLED`) and the
+E-BM25 memory channel (`EBM25_ENABLED`).
+
+Prior messages are supplied before the current message on both streaming and
+non-streaming `/chat` paths. Because the Redis key fingerprints the assembled message
+list, this bounded history is represented in the key. Provider metadata is not; the
+cache is bypassed when document RAG or E-BM25 augmentation is enabled.
+
+### 15.10 Lightweight chat feedback (ORQ-25)
 
 `PUT /chat/messages/{message_id}/feedback` accepts `rating: "up" | "down"` and updates nullable
 `feedback` and `feedback_updated_at` fields on the existing successful `UsageEvent` linked to an
@@ -1590,7 +1608,7 @@ A minimal best-effort Redis response cache has been implemented for non-streamin
 
 **Request context:** `TenantMiddleware` implemented as a pure ASGI class (not `BaseHTTPMiddleware`). The `BaseHTTPMiddleware` approach was ruled out because its `dispatch()` `finally` block resets the ContextVar before the SSE response body is consumed by the client. Pure ASGI `await self.app(scope, receive, send)` does not return until the full body is sent, keeping the ContextVar valid for the lifetime of any streaming response. Extraction priority: `X-Tenant-ID` request header → JWT Bearer `tenant_id` claim (best-effort, no signature verification) → fallback `"default"`. At the time of this ORQ, `TenantMiddleware` was registered last in `app/main.py` (Starlette LIFO ordering → outermost layer). **Superseded by ORQ-19.6:** `CORSMiddleware` is now registered after it and is the new outermost layer — see the CORS addendum below.
 
-**Cache isolation:** Cache key format changed from `chat:response:{sha256}` to `chat:response:{tenant_id}:{sha256}`. Fingerprint now covers the full message list (previously only the last message — bug fixed in this ORQ).
+**Cache isolation:** The key is tenant-namespaced as `chat:response:{tenant_id}:{sha256}`. At this ORQ, the fingerprint covered the message list available to `/chat`; current behavior fingerprints the assembled bounded prior-message window plus the current message, not an unbounded conversation. Provider metadata is not part of the key, so document RAG and E-BM25 augmentation bypass cache reads and writes.
 
 **Telemetry:** `TenantContextFilter` (a `logging.Filter` subclass) attached to the root `StreamHandler`. Python's `callHandlers()` applies handler-level filters to propagated records from all child loggers, so `provider.*`, `chat.*`, and `cache.*` events receive `tenant_id` automatically without modifying those modules.
 
