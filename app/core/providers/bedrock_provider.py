@@ -17,6 +17,7 @@ from app.core.domain.provider import (
 from app.core.domain.provider_errors import ProviderError, ProviderErrorKind
 from app.core.domain.provider_prompt import messages_for_provider
 from app.core.utils.retry import RetryPolicy, retry_async
+from app.core.observability.retry_evidence import announce
 
 
 _STREAM_END = object()
@@ -103,6 +104,7 @@ class BedrockProvider(ProviderPort):
                         },
                     )
                     if attempt < policy.max_attempts and perr.retryable:
+                        announce()
                         logger.info(
                             "provider.retry",
                             extra={
@@ -280,6 +282,7 @@ class BedrockProvider(ProviderPort):
                         },
                     )
                     if attempt < policy.max_attempts and perr.retryable:
+                        announce()
                         logger.info(
                             "provider.retry",
                             extra={

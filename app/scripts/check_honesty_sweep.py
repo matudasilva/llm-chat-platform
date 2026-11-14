@@ -39,6 +39,7 @@ code from a repository that is genuinely clean.
 from __future__ import annotations
 
 import argparse
+import json
 import pathlib
 import re
 import subprocess
@@ -201,6 +202,34 @@ def _findings(text: str, source: str) -> list[str]:
     return findings
 
 
+def _source_findings(text: str, source: str) -> list[str]:
+    """Scan archived source bundles by file, without joining file boundaries.
+
+    Some tracked JSON evidence packages store complete repository files under
+    a top-level ``files`` mapping. Scanning the serialized JSON joins those
+    files through escaped newlines and quotes, creating text that no reader
+    sees in any individual artifact. Preserve the sweep over every archived
+    file, while treating each embedded file as its own text boundary.
+    """
+    try:
+        payload = json.loads(text) if source.lower().endswith(".json") else None
+    except json.JSONDecodeError:
+        payload = None
+
+    if not isinstance(payload, dict) or not isinstance(payload.get("files"), dict):
+        return _findings(text, source)
+
+    findings: list[str] = []
+    metadata = {key: value for key, value in payload.items() if key != "files"}
+    if metadata:
+        findings.extend(_findings(json.dumps(metadata, ensure_ascii=False), source))
+    for filename, content in payload["files"].items():
+        findings.extend(_findings(str(filename), f"{source} (path)"))
+        embedded = content if isinstance(content, str) else json.dumps(content, ensure_ascii=False)
+        findings.extend(_findings(embedded, f"{source}:{filename}"))
+    return findings
+
+
 def _git_diff_text(base: str) -> str:
     result = subprocess.run(
         ["git", "diff", f"{base}..HEAD", "--", "."],
@@ -273,7 +302,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     all_findings: list[str] = []
     for source, text in sources.items():
-        all_findings.extend(_findings(text, source))
+        all_findings.extend(_source_findings(text, source))
 
     summary = f"mode={mode}, {scanned_files} files, {scanned_chars} chars"
 

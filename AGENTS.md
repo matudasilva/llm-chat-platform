@@ -205,9 +205,9 @@ Unless explicitly requested otherwise:
 - prefer testability over cleverness
 - prefer additive hardening over redesign
 
-## Governance sources (AI Together Framework V2)
+## Governance sources (AI Together Framework V3)
 
-This project is governed under **AI Together Framework V2**. Before starting
+This project is governed under **AI Together Framework V3** (3.7.0). Before starting
 any session, planning, or ORQ, consult these two Notion pages as the sources
 of truth:
 

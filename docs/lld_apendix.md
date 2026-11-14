@@ -2252,16 +2252,28 @@ automatic reopening. ORQ-40 provides zero scientifically usable evidence for a
 new capability; static facts remain disabled. No research follow-up, runtime
 measurement or traffic splitting is initiated. The approved sequence remains
 ORQ-40 → Production Retrieval Graduation → Routing Evidence Dataset → Offline
-ML Routing Baseline (only if signal) → AI Green. Production Retrieval
-Graduation is the next proposed step, unreserved ORQ-41, and may use only prior
-accumulated evidence-backed retrieval capabilities. Unsupported capabilities
-remain disabled; flags and rollback are mandatory, and runtime readiness is
-explicitly not claimed until demonstrated in graduation. Carry ORQ-37 debt
+ML Routing Baseline (only if signal) → AI Green. As of 2026-10-08, Production
+Retrieval Graduation was the next proposed step, unreserved ORQ-41, and could
+use only prior accumulated evidence-backed retrieval capabilities. Unsupported
+capabilities remained disabled; flags and rollback were mandatory, and runtime
+readiness was explicitly unclaimed until demonstrated in graduation. Carry ORQ-37 debt
 forward: failed or unmeasured gates remain failed or unmeasured. Define
 operational acceptance criteria before measuring isolation, context delivery,
 failure behavior, latency, cost, streaming and rollback. The administrative
 deferral records all three conditions: concrete blockers (the three evidence
 items above), unsupported capabilities remain disabled, and no runtime
 readiness claim. All system invariants remain unchanged.
+
+### Post-ORQ-41 status (2026-11-12)
+
+ORQ-41 Production Retrieval Graduation completed its authorized 168-request
+operational campaign: USD 4.00469664 settled under the USD 5.00 cap, with 338
+ledger entries and a `CAMPAIGN_CLOSED` receipt. Governance was read back as
+Fully Synced. This operational result is not a scientific graduation claim;
+the result supports only the approved operational workload and does not claim
+scientific retrieval quality or general runtime readiness. ORQ-42 Routing
+Evidence Dataset is the next proposed step and remains an unreserved roadmap
+placeholder. The Offline ML Routing Baseline remains conditional on ORQ-42
+producing useful signal.
 
 **End of appendix — complements the live LLD document**
