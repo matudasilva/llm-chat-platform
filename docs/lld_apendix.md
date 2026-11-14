@@ -2276,4 +2276,14 @@ Evidence Dataset is the next proposed step and remains an unreserved roadmap
 placeholder. The Offline ML Routing Baseline remains conditional on ORQ-42
 producing useful signal.
 
+### Routing planning update (2026-11-14)
+
+ORQ-42 Routing Evidence Dataset is now reserved at `46a1b45` on
+`orq/ORQ-42-routing-evidence-dataset`. Its scope is bounded offline evidence:
+capability eligibility, calibrated quality and cost/latency comparison against
+a fixed-model baseline. Planning does not authorize implementation, candidate
+models, paid measurements or production policy activation. Existing static
+routing and retry/fallback/SSE behavior remain unchanged. ORQ-43 remains
+conditional; RAG remediation and future AI Green work remain separate.
+
 **End of appendix — complements the live LLD document**

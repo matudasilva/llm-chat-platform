@@ -27,9 +27,10 @@ provides zero scientifically usable evidence for a new capability; static facts
 remain disabled, with no automatic reopening. At the 2026-10-08 planning point,
 Production Retrieval Graduation (ORQ-41) was the next proposed step. ORQ-41
 completed and reached **Fully Synced** on 2026-11-12 after its 168-request
-operational campaign. The next proposed step is ORQ-42, Routing Evidence Dataset,
-which remains an unreserved roadmap placeholder. The Offline ML Routing Baseline
-remains conditional on useful signal from ORQ-42. ORQ-41's campaign result
+operational campaign. ORQ-42, Routing Evidence Dataset, was reserved on
+2026-11-14 for bounded offline planning; no runtime policy activation, candidate
+model selection or paid campaign is authorized by that plan. The Offline ML
+Routing Baseline remains conditional on useful signal from ORQ-42. ORQ-41's campaign result
 supports only the approved operational workload, not scientific retrieval
 quality or general runtime readiness.
 See [Appendix AG](lld_apendix.md#appendix-ag--orq-39-closure-and-orq-40-status).

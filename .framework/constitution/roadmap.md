@@ -625,9 +625,13 @@ invariant.
    limitations are summarized in Appendix AG. ORQ-41 followed ORQ-40's explicit
    research-line deferral, preserved ORQ-37 debt, and evaluated only existing
    evidence-backed capabilities. Its completion permits routing work to proceed.
-3. **ORQ-42 — Routing evidence dataset** (unreserved placeholder): `RoutingPolicy`
-   interface with heuristic and static implementations by default; collect real
-   signal before any model. Numbered ORQ-22 in the original plan, then ORQ-28
+3. **ORQ-42 — Routing evidence dataset** (reserved for offline planning on
+   2026-11-14 at `46a1b45`, branch `orq/ORQ-42-routing-evidence-dataset`):
+   compare the fixed-model baseline with capability eligibility and calibrated
+   quality-constrained cost/latency selection. Existing static/heuristic policies
+   and generation fallback are the reference; no runtime activation, model
+   selection or paid campaign is authorized by this plan. Numbered ORQ-22 in the
+   original plan, then ORQ-28
    before the 2026-08-07 split, then ORQ-32 before the 2026-08-20 replan, then
    ORQ-33 before the 2026-08-25 replan's first pass, then ORQ-34 after the
    Memory-closure candidates were inserted ahead of it (2026-08-25), then
@@ -637,9 +641,8 @@ invariant.
    took ORQ-38 (2026-09-01), then ORQ-40 when Conversational Semantic Memory took ORQ-39 (2026-09-22), then ORQ-41 when Static Semantic Retrieval
    reserved ORQ-40 (2026-10-06), then ORQ-42 when Production Retrieval Graduation
    was inserted as an unreserved predecessor (2026-10-08).
-   Convergence note: the Agentic RAG LLM router is
-   conceptually the same classifier, so once ORQ-42/ORQ-43 produce real signal,
-   the RAG router design follows at no extra cost.
+   Any future Agentic RAG router needs its own evidence and design; this dataset
+   does not establish classifier equivalence or integration at no extra cost.
 4. **ORQ-43 — Offline ML routing baseline** (unreserved placeholder): a simple,
    explainable model, and only if ORQ-42's evidence dataset shows real signal.
    Numbered ORQ-23 in the original plan, then ORQ-29, then ORQ-33 before the
@@ -660,9 +663,10 @@ that worked. Relevant here because project documentation is bilingual.
 
 Current sequence: **ORQ-40 → Production Retrieval Graduation → Routing Evidence
 Dataset → Offline ML Routing Baseline (only with signal) → AI Green**.
-ORQ-41 was reserved on 2026-10-09 and completed on 2026-11-12; numbers 42–44
-remain unreserved roadmap placeholders, not claims of remote availability. The
-reservation helper determines actual next numbers. Existing reserved ORQs keep
+ORQ-41 was reserved on 2026-10-09 and completed on 2026-11-12; ORQ-42 was reserved
+on 2026-11-14. Numbers 43–44 remain unreserved roadmap placeholders, not claims
+of remote availability. The reservation helper determines actual next numbers.
+Existing reserved ORQs keep
 their identities.
 
 ORQ-40 is the final scientific gate of the current conversational retrieval /
