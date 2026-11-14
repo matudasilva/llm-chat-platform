@@ -231,3 +231,8 @@ Rules:
 - An ORQ is not closed until it has evidence in the repo (commits/tests/CI)
   AND a corresponding Notion artifact (Prompt Library entry, ORQ Dashboard
   entry, and — for state changes — the Master Project Document).
+
+<!-- AIT V3 shared runtime contract -->
+To verify runtime packages are complete:
+python3 .framework/local-tools/fw_runtime_packages.py .
+See also: .framework/context.md and ORQ implementation.md
