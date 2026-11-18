@@ -44,6 +44,7 @@ from app.services.conversation_query_service import ConversationQueryService
 from app.schemas.chat import ChatRequest
 from app.services.notion_write import NotionWriteService
 from app.services.routing_signals import build_routing_context_builder
+from app.services.chat_cache_policy import execution_configuration_id
 
 logger = logging.getLogger(__name__)
 
@@ -53,10 +54,12 @@ def get_provider() -> ProviderPort:
 
 
 def get_chat_service() -> ChatService:
+    configuration = settings.model_copy(deep=True)
     return ChatService(
-        provider_resolver=build_provider_resolver(settings),
-        routing_context_builder=build_routing_context_builder(settings),
-        timeout_s=settings.provider_timeout_s,
+        provider_resolver=build_provider_resolver(configuration),
+        routing_context_builder=build_routing_context_builder(configuration),
+        timeout_s=configuration.provider_timeout_s,
+        execution_configuration_id=execution_configuration_id(configuration),
     )
 
 

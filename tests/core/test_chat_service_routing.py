@@ -27,8 +27,9 @@ class TrackingProvider(ProviderPort):
         raise AssertionError("stream not expected in this test")
 
 
-def make_routing_context(*, request_id, messages, stream) -> RoutingContext:
-    message_text = messages[-1].content
+def make_routing_context(*, provider_input, stream) -> RoutingContext:
+    request_id = provider_input.request_id
+    message_text = provider_input.messages[-1].content
     return RoutingContext(
         request_id=request_id,
         stream=stream,
@@ -119,3 +120,60 @@ async def test_chat_service_passes_stream_flag_to_provider_resolver() -> None:
     assert seen_contexts and seen_contexts[0].stream is True
     assert chunks == ["hello"]
     assert result.assistant_message.content == "hello"
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("stream", [False, True])
+async def test_resolver_and_actual_provider_share_same_input(stream):
+    from app.core.domain.provider import ProviderStreamResult, ProviderStreamSession
+
+    observed = []
+    delivered = []
+    class Provider:
+        async def generate(self, input):
+            delivered.append(input)
+            return ProviderResult(content="ok", provider="stub", model_version="m", prompt_version="v1")
+
+        async def stream(self, input):
+            delivered.append(input)
+            async def chunks():
+                yield "ok"
+            async def final():
+                return ProviderStreamResult(content="ok", provider_result=ProviderResult(content="ok", provider="stub", model_version="m", prompt_version="v1"))
+            return ProviderStreamSession(chunks=chunks(), get_final_result=final)
+
+    def builder(*, provider_input, stream):
+        observed.append((provider_input, stream))
+        return make_routing_context(provider_input=provider_input, stream=stream)
+
+    service = ChatService(provider_resolver=lambda context: ResolvedProvider(provider=Provider(), decision=RoutingDecision(provider="stub", model=None, model_tier="balanced", rationale="static_default")), routing_context_builder=builder, timeout_s=1)
+    metadata = {"test": ["value"]}
+    messages = [ChatMessage(role="user", content="hello")]
+    if stream:
+        session = await service.stream_chat(request_id=uuid.uuid4(), messages=messages, provider_metadata=metadata)
+        assert [part async for part in session.chunks] == ["ok"]
+        await session.get_final_result()
+    else:
+        await service.run(request_id=uuid.uuid4(), messages=messages, provider_metadata=metadata)
+    assert observed == [(delivered[0], stream)]
+    assert observed[0][0] is delivered[0]
+    assert delivered[0].messages is messages and delivered[0].metadata is metadata
+
+
+@pytest.mark.asyncio
+async def test_stream_compatibility_fallback_resolves_again_for_run():
+    seen = []
+    class Provider:
+        async def stream(self, input):
+            return None
+        async def generate(self, input):
+            assert input is seen[1][0]
+            return ProviderResult(content="ok", provider="stub", model_version="m", prompt_version="v1")
+    def builder(*, provider_input, stream):
+        seen.append((provider_input, stream))
+        return make_routing_context(provider_input=provider_input, stream=stream)
+    service = ChatService(provider_resolver=lambda context: ResolvedProvider(provider=Provider(), decision=RoutingDecision(provider="stub", model=None, model_tier="balanced", rationale="static_default")), routing_context_builder=builder, timeout_s=1)
+    session = await service.stream_chat(request_id=uuid.uuid4(), messages=[ChatMessage(role="user", content="x")])
+    assert [part async for part in session.chunks] == ["ok"]
+    assert [flag for _, flag in seen] == [True, False]
+    assert seen[0][0] is not seen[1][0]

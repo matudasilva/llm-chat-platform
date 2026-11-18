@@ -53,6 +53,15 @@ class Settings(BaseSettings):
     bedrock_backoff_base_ms: int = 200
     bedrock_backoff_max_ms: int = 2000
 
+    vertex_project_id: str | None = None
+    vertex_location: str | None = None
+    vertex_model: str | None = None
+    vertex_max_output_tokens: int | None = None
+    vertex_prompt_version: str = "v1"
+    vertex_max_attempts: int = 3
+    vertex_backoff_base_ms: int = 200
+    vertex_backoff_max_ms: int = 2000
+
     aws_access_key_id: str | None = None
     aws_secret_access_key: str | None = None
     aws_session_token: str | None = None
@@ -572,25 +581,60 @@ class Settings(BaseSettings):
             raise ValueError("stub_simulated_latency_ms must be >= 0")
         return value
 
-    @field_validator("openai_max_attempts", "bedrock_max_attempts")
+    @field_validator("openai_max_attempts", "bedrock_max_attempts", "vertex_max_attempts")
     @classmethod
     def validate_provider_max_attempts(cls, value: int) -> int:
         if value < 1:
             raise ValueError("provider max attempts must be >= 1")
         return value
 
-    @field_validator("openai_backoff_base_ms", "bedrock_backoff_base_ms")
+    @field_validator("openai_backoff_base_ms", "bedrock_backoff_base_ms", "vertex_backoff_base_ms")
     @classmethod
     def validate_provider_backoff_base_ms(cls, value: int) -> int:
         if value < 0:
             raise ValueError("provider backoff base ms must be >= 0")
         return value
 
-    @field_validator("openai_backoff_max_ms", "bedrock_backoff_max_ms")
+    @field_validator("openai_backoff_max_ms", "bedrock_backoff_max_ms", "vertex_backoff_max_ms")
     @classmethod
     def validate_provider_backoff_max_ms(cls, value: int) -> int:
         if value < 0:
             raise ValueError("provider backoff max ms must be >= 0")
+        return value
+
+    @field_validator("vertex_project_id", "vertex_location", "vertex_model", "vertex_prompt_version")
+    @classmethod
+    def validate_vertex_text(cls, value: str | None) -> str | None:
+        if value is not None and (not value.strip() or value != value.strip()):
+            raise ValueError("Vertex settings must be non-empty and have no surrounding whitespace")
+        return value
+
+    @field_validator("vertex_max_output_tokens", mode="before")
+    @classmethod
+    def validate_vertex_output_token_type(cls, value: Any) -> Any:
+        if value is not None and (isinstance(value, bool) or not isinstance(value, (int, str))):
+            raise ValueError("vertex_max_output_tokens must be an integer")
+        return value
+
+    @field_validator("vertex_max_output_tokens")
+    @classmethod
+    def validate_vertex_max_output_tokens(cls, value: int | None) -> int | None:
+        if value is not None and value <= 0:
+            raise ValueError("vertex_max_output_tokens must be > 0")
+        return value
+
+    @field_validator("vertex_max_attempts")
+    @classmethod
+    def validate_vertex_attempt_limit(cls, value: int) -> int:
+        if value > 5:
+            raise ValueError("vertex_max_attempts must be <= 5")
+        return value
+
+    @field_validator("vertex_backoff_base_ms", "vertex_backoff_max_ms")
+    @classmethod
+    def validate_vertex_backoff_limit(cls, value: int) -> int:
+        if value > 60_000:
+            raise ValueError("vertex backoff must be <= 60000 ms")
         return value
 
     @field_validator(
@@ -617,6 +661,8 @@ class Settings(BaseSettings):
             raise ValueError("openai_backoff_max_ms must be >= openai_backoff_base_ms")
         if self.bedrock_backoff_max_ms < self.bedrock_backoff_base_ms:
             raise ValueError("bedrock_backoff_max_ms must be >= bedrock_backoff_base_ms")
+        if self.vertex_backoff_max_ms < self.vertex_backoff_base_ms:
+            raise ValueError("vertex_backoff_max_ms must be >= vertex_backoff_base_ms")
         return self
 
     @property

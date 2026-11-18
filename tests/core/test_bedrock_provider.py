@@ -283,3 +283,207 @@ async def test_bedrock_provider_normalizes_stream_startup_timeout_for_runtime_cl
 
     assert exc.value.kind == ProviderErrorKind.timeout
     assert exc.value.retryable is True
+
+
+@pytest.mark.asyncio
+async def test_inline_close_before_pull_releases_stream_and_final_waiter() -> None:
+    import asyncio
+
+    class EventStream:
+        closed = 0
+        def __iter__(self):
+            return iter([])
+        def close(self):
+            self.closed += 1
+
+    stream = EventStream()
+    client = _FakeBedrockClient(converse_stream_response={"stream": stream})
+    provider = BedrockProvider(_provider(), runtime_client=client)
+    session = await provider.stream(_provider_input())
+    waiter = asyncio.create_task(session.get_final_result())
+    await asyncio.gather(session.chunks.aclose(), session.chunks.aclose())
+    with pytest.raises(ProviderError, match="incomplete"):
+        await waiter
+    with pytest.raises(StopAsyncIteration):
+        await anext(session.chunks)
+    assert stream.closed == 1
+
+
+@pytest.mark.asyncio
+async def test_worker_acquisition_cancellation_closes_late_response_and_client() -> None:
+    import asyncio
+    import threading
+
+    entered, release, cleaned = threading.Event(), threading.Event(), threading.Event()
+    class Stream:
+        def close(self):
+            cleaned.set()
+    class Client:
+        closed = False
+        def converse_stream(self, **kwargs):
+            entered.set()
+            release.wait()
+            return {"stream": Stream()}
+        def close(self):
+            self.closed = True
+
+    client = Client()
+    provider = BedrockProvider(_provider())
+    provider._build_client = lambda: client
+    task = asyncio.create_task(provider.stream(_provider_input()))
+    await asyncio.to_thread(entered.wait)
+    task.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await task
+    release.set()
+    await asyncio.wait_for(asyncio.to_thread(cleaned.wait), 1)
+    for _ in range(100):
+        if client.closed:
+            break
+        await asyncio.sleep(0.001)
+    assert client.closed
+
+
+@pytest.mark.asyncio
+async def test_worker_close_before_first_pull_cancels_final_waiter_and_closes_resources() -> None:
+    import asyncio
+    import threading
+
+    started, release = threading.Event(), threading.Event()
+    class Stream:
+        closed = False
+        def __iter__(self):
+            started.set()
+            release.wait()
+            return iter([])
+        def close(self):
+            self.closed = True
+            release.set()
+    class Client:
+        closed = False
+        def __init__(self):
+            self.stream = Stream()
+        def converse_stream(self, **kwargs):
+            return {"stream": self.stream}
+        def close(self):
+            self.closed = True
+    client = Client()
+    provider = BedrockProvider(_provider())
+    provider._build_client = lambda: client
+    session = await provider.stream(_provider_input())
+    waiter = asyncio.create_task(session.get_final_result())
+    await session.chunks.aclose()
+    with pytest.raises(asyncio.CancelledError):
+        await waiter
+    assert client.stream.closed and client.closed
+
+
+@pytest.mark.asyncio
+async def test_inline_close_after_fragment_releases_stream_and_keeps_shared_client() -> None:
+    import asyncio
+
+    class Stream:
+        closed = 0
+        def __iter__(self):
+            return iter([{"contentBlockDelta": {"delta": {"text": "one"}}}, {"contentBlockDelta": {"delta": {"text": "two"}}}])
+        def close(self):
+            self.closed += 1
+    class Client(_FakeBedrockClient):
+        closed = False
+        def close(self):
+            self.closed = True
+    stream = Stream()
+    client = Client(converse_stream_response={"stream": stream})
+    session = await BedrockProvider(_provider(), runtime_client=client).stream(_provider_input())
+    assert await anext(session.chunks) == "one"
+    one = asyncio.create_task(session.get_final_result())
+    two = asyncio.create_task(session.get_final_result())
+    await asyncio.sleep(0)
+    one.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await one
+    await session.chunks.aclose()
+    with pytest.raises(ProviderError, match="incomplete"):
+        await two
+    assert stream.closed == 1 and not client.closed
+
+
+@pytest.mark.asyncio
+async def test_worker_normal_completion_preserves_final_result_and_closes_resources() -> None:
+    class Stream:
+        closed = False
+        def __iter__(self):
+            return iter([{"contentBlockDelta": {"delta": {"text": "ok"}}}])
+        def close(self):
+            self.closed = True
+    class Client:
+        closed = False
+        def __init__(self):
+            self.stream = Stream()
+        def converse_stream(self, **kwargs):
+            return {"stream": self.stream}
+        def close(self):
+            self.closed = True
+    client = Client()
+    provider = BedrockProvider(_provider())
+    provider._build_client = lambda: client
+    session = await provider.stream(_provider_input())
+    assert [part async for part in session.chunks] == ["ok"]
+    assert (await session.get_final_result()).content == "ok"
+    assert client.stream.closed and client.closed
+
+
+@pytest.mark.asyncio
+async def test_worker_final_waiter_terminates_while_stream_close_stalls() -> None:
+    import asyncio
+    import threading
+
+    cleanup_started, release = threading.Event(), threading.Event()
+    class Stream:
+        def __iter__(self):
+            release.wait()
+            return iter([])
+        def close(self):
+            cleanup_started.set()
+            release.wait()
+    class Client:
+        def converse_stream(self, **kwargs):
+            return {"stream": Stream()}
+        def close(self):
+            pass
+    provider = BedrockProvider(_provider())
+    provider._build_client = lambda: Client()
+    session = await provider.stream(_provider_input())
+    waiter = asyncio.create_task(session.get_final_result())
+    closer = asyncio.create_task(session.chunks.aclose())
+    await asyncio.wait_for(asyncio.to_thread(cleanup_started.wait), 1)
+    with pytest.raises(asyncio.CancelledError):
+        await asyncio.wait_for(waiter, 1)
+    assert not closer.done()
+    release.set()
+    await closer
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("failure", [False, True])
+async def test_worker_client_close_failure_preserves_result_or_provider_error(failure) -> None:
+    class Client:
+        def converse_stream(self, **kwargs):
+            events = ([{"throttlingException": {"message": "private"}}] if failure else
+                      [{"contentBlockDelta": {"delta": {"text": "ok"}}}])
+            return {"stream": events}
+        def close(self):
+            raise RuntimeError("client close failed")
+
+    provider = BedrockProvider(_provider())
+    provider._build_client = lambda: Client()
+    session = await provider.stream(_provider_input())
+    chunks = [part async for part in session.chunks]
+    if failure:
+        assert chunks == []
+        with pytest.raises(ProviderError) as exc:
+            await session.get_final_result()
+        assert exc.value.kind == ProviderErrorKind.rate_limit
+    else:
+        assert chunks == ["ok"]
+        assert (await session.get_final_result()).content == "ok"

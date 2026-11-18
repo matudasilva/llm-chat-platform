@@ -299,6 +299,9 @@ async def test_openai_provider_stream_maps_sse_error_payload():
     assert exc.value.error_code == "rate_limit_exceeded"
 
     await client.aclose()
+    # Finalize nested httpx async generators before pytest closes this test's loop.
+    import asyncio
+    await asyncio.get_running_loop().shutdown_asyncgens()
 
 
 @pytest.mark.asyncio
@@ -340,3 +343,163 @@ async def test_openai_provider_stream_normalizes_transport_errors():
     assert exc.value.kind == ProviderErrorKind.upstream
 
     await client.aclose()
+
+class _OwnedResponse:
+    status_code = 200
+
+    def __init__(self, fragment=False):
+        import asyncio
+        self.fragment = fragment
+        self.started = asyncio.Event()
+
+    async def aiter_lines(self):
+        if self.fragment:
+            yield 'data: {"type":"response.output_text.delta","delta":"hello"}'
+            yield ''
+        self.started.set()
+        import asyncio
+        await asyncio.Event().wait()
+
+
+class _OwnedContext:
+    def __init__(self, *, fragment=False, block_enter=False, block_close=False):
+        import asyncio
+        self.response = _OwnedResponse(fragment)
+        self.entered = asyncio.Event()
+        self.close_started = asyncio.Event()
+        self.allow_close = asyncio.Event()
+        if not block_close:
+            self.allow_close.set()
+        self.block_enter = block_enter
+        self.closes = 0
+
+    async def __aenter__(self):
+        import asyncio
+        self.entered.set()
+        if self.block_enter:
+            await asyncio.Event().wait()
+        return self.response
+
+    async def __aexit__(self, *args):
+        self.closes += 1
+        self.close_started.set()
+        await self.allow_close.wait()
+
+
+class _OwnedClient:
+    def __init__(self, context):
+        self.context = context
+        self.closed = False
+
+    def stream(self, *args, **kwargs):
+        return self.context
+
+    async def aclose(self):
+        self.closed = True
+
+
+def _owned_provider(context):
+    client = _OwnedClient(context)
+    provider = OpenAIProvider(
+        OpenAIProviderConfig(api_key="k", model="gpt-4o-mini", timeout_s=1.0),
+        http_client=client,
+    )
+    input = ProviderInput(request_id=uuid4(), messages=[type("M", (), {"role": "user", "content": "hi"})()])
+    return provider, client, input
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("fragment", [False, True])
+async def test_openai_stream_close_owns_response_and_wakes_waiters(fragment):
+    import asyncio
+    context = _OwnedContext(fragment=fragment)
+    provider, client, input = _owned_provider(context)
+    session = await provider.stream(input)
+    if fragment:
+        assert await anext(session.chunks) == "hello"
+        await context.response.started.wait()
+    waiter = asyncio.create_task(session.get_final_result())
+    pull = asyncio.create_task(anext(session.chunks))
+    await asyncio.sleep(0)
+    await asyncio.gather(session.chunks.aclose(), session.chunks.aclose())
+    with pytest.raises(StopAsyncIteration):
+        await pull
+    with pytest.raises(StopAsyncIteration):
+        await anext(session.chunks)
+    with pytest.raises(asyncio.CancelledError):
+        await waiter
+    assert context.closes == 1
+    assert not client.closed
+
+
+@pytest.mark.asyncio
+async def test_openai_stream_cancel_during_acquisition_closes_context():
+    import asyncio
+    context = _OwnedContext(block_enter=True)
+    provider, client, input = _owned_provider(context)
+    acquisition = asyncio.create_task(provider.stream(input))
+    await context.entered.wait()
+    acquisition.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await acquisition
+    await context.close_started.wait()
+    assert context.closes == 1
+    assert not client.closed
+
+
+@pytest.mark.asyncio
+async def test_openai_stream_stalled_cleanup_and_isolated_final_waiters():
+    import asyncio
+    context = _OwnedContext(block_close=True)
+    provider, client, input = _owned_provider(context)
+    session = await provider.stream(input)
+    await context.response.started.wait()
+    first = asyncio.create_task(session.get_final_result())
+    second = asyncio.create_task(session.get_final_result())
+    await asyncio.sleep(0)
+    first.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await first
+    assert not second.done()
+    close = asyncio.create_task(session.chunks.aclose())
+    await context.close_started.wait()
+    with pytest.raises(asyncio.CancelledError):
+        await asyncio.wait_for(second, 1)
+    with pytest.raises(asyncio.CancelledError):
+        await asyncio.wait_for(session.get_final_result(), 1)
+    assert not close.done()
+    context.allow_close.set()
+    await close
+    assert context.closes == 1
+    assert not client.closed
+
+@pytest.mark.asyncio
+async def test_openai_resilience_waits_for_cleanup_before_eof():
+    import asyncio
+    from app.core.providers.resilient_provider import ResilientProvider
+
+    class CompleteResponse(_OwnedResponse):
+        async def aiter_lines(self):
+            yield 'data: {"type":"response.output_text.delta","delta":"hello"}'
+            yield ''
+            yield 'data: {"type":"response.completed","response":{"model":"gpt-4o-mini","output":[]}}'
+            yield ''
+
+    context = _OwnedContext(block_close=True)
+    context.response = CompleteResponse()
+    primary, client, input = _owned_provider(context)
+    provider = ResilientProvider(primary, primary)
+    session = await provider.stream(input)
+    assert session is not None
+    assert await anext(session.chunks) == "hello"
+    await context.close_started.wait()
+    pending_end = asyncio.create_task(anext(session.chunks))
+    await asyncio.sleep(0)
+    assert not pending_end.done()
+    context.allow_close.set()
+    with pytest.raises(StopAsyncIteration):
+        await pending_end
+    final = await session.get_final_result()
+    assert final.content == "hello"
+    assert context.closes == 1
+    assert not client.closed

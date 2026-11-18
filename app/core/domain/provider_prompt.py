@@ -51,6 +51,17 @@ def messages_for_provider(input: ProviderInput) -> Sequence[ChatMessage]:
     (Bedrock) lists them in exactly that order, and a non-hoisting provider
     (OpenAI) sees them inline in the same order at the head of the turn list.
     """
+    messages, memory_events, sources, prefix_count = _render_provider_messages(input)
+    c1.prompt_mapping(input, memory_events, sources, prefix_count)
+    return messages
+
+
+def preview_messages_for_provider(input: ProviderInput) -> Sequence[ChatMessage]:
+    """Render the canonical prompt without recording dispatch observations."""
+    return _render_provider_messages(input)[0]
+
+
+def _render_provider_messages(input: ProviderInput):
     prefix: list[ChatMessage] = []
 
     memory_events = _validated_memory_events(input.metadata)
@@ -65,10 +76,8 @@ def messages_for_provider(input: ProviderInput) -> Sequence[ChatMessage]:
             ChatMessage(role="system", content=render_rag_sources_block(sources))
         )
 
-    c1.prompt_mapping(input, memory_events, sources, len(prefix))
-    if not prefix:
-        return input.messages
-    return (*prefix, *input.messages)
+    messages = (*prefix, *input.messages) if prefix else input.messages
+    return messages, memory_events, sources, len(prefix)
 
 
 def render_memory_events_block(memory_events: list[dict[str, Any]]) -> str:
