@@ -625,12 +625,64 @@ invariant.
    limitations are summarized in Appendix AG. ORQ-41 followed ORQ-40's explicit
    research-line deferral, preserved ORQ-37 debt, and evaluated only existing
    evidence-backed capabilities. Its completion permits routing work to proceed.
-3. **ORQ-42 — Routing evidence dataset** (reserved for offline planning on
-   2026-11-14 at `46a1b45`, branch `orq/ORQ-42-routing-evidence-dataset`):
-   compare the fixed-model baseline with capability eligibility and calibrated
-   quality-constrained cost/latency selection. Existing static/heuristic policies
-   and generation fallback are the reference; no runtime activation, model
-   selection or paid campaign is authorized by this plan. Numbered ORQ-22 in the
+3. **ORQ-42 — Deterministic LLM Routing and Vertex Chat Configuration**
+   (reserved on 2026-11-14 at `46a1b45`; scope revised on 2026-11-16;
+   In Progress / Implement on 2026-11-18 after a blocked validation identified
+   missing candidate eligibility (AC12) and capacity-boundary/unreachable-trigger
+   tests (AC15). Their isolated remediation uses caller-trusted synthetic
+   capability records and test-only capacity units; real candidate eligibility
+   and trigger reachability remain unknown,
+   branch `orq/ORQ-42-routing-evidence-dataset`): plan a small reversible policy,
+   static by default, with at most one objective pre-generation alternative and
+   independently configured Vertex text generation. Bedrock/Vertex form the first
+   selection table; OpenAI stays operational outside it. Vertex reranking does
+   not establish generation eligibility. The alternative requires a real signal
+   from the assembled exchange and bounded quality evidence; otherwise KEEP_STATIC.
+   The former offline campaign spec/R1/checkpoint are historical, not approval of
+   this revision. A fresh limited authorization and valid revised Plan checkpoint
+   permitted isolated T10-T11 configuration/authentication/adapter preparation.
+   A subsequent next-step approval and fresh reviewed checkpoint extended only
+   to T12 preparation, completed with 271 joint hermetic tests and a new bounded
+   implementation review. The full-input observation seam and standalone policy
+   remain dormant; default application observation is off and Settings/direct
+   composition reject the new active/shadow mode. Settings still rejects Vertex
+   runtime primary/fallback, with direct factory construction disabled. A fresh
+   explicit T13 approval and renewed checkpoint then authorized bounded cache
+   protection and best-effort routing evidence. T13 adds a private request
+   Settings snapshot, revalidated cache admission, null cached usage, and
+   allowlisted generation/cache-hit evidence; it completed with 319 joint tests
+   and a fresh bounded implementation review. The operator then authorized
+   T14 stream ownership correction; route, service, resilience and existing
+   OpenAI/Bedrock adapters now have explicit cleanup ownership. The bounded
+   hermetic regression passed 231 tests and fresh native review passed with
+   reduced same-provider independence. Stalled cleanup may hold normal EOF and
+   an already-running SDK worker may continue after cancellation. T15's bounded
+   source assessment retains KEEP_STATIC: request output reservation, real
+   capacity certification and trigger-specific quality evidence are absent; the
+   trigger's actual reachability remains unknown. T16 reconciled documentation
+   and reviewed the bounded preparation; legacy cache keys still omit routing
+   policy/heuristic parameters. The subsequent bounded correction versions the
+   cache fingerprint and binds policy, thresholds, configured availability and
+   Bedrock region; legacy entries become cold misses. Account identity, dynamic
+   health and actual fallback provenance remain outside the key, so AC17 is not
+   fully established across active policies. The operator chose to retain this
+   bounded correction and defer broader cache identity and fallback/availability
+   semantics to a future unnumbered ORQ candidate; prioritization and scope are
+   not yet decided. On 2026-11-18 AC17 was amended to the tested bounded cache
+   identity and admission guarantees, preserving the prior broader criterion and
+   partial review as historical evidence. The amendment does not certify account
+   identity, live health or actual fallback provenance. Paid comparison, model choice,
+   production activation, deployment, commits and closure remain
+   unauthorized. T9 design on 2026-11-17 retains KEEP_STATIC pending
+   certified input/output capacity and bounded quality evidence, and specifies
+   independent Vertex ADC/REST configuration, conservative cache bypass and
+   neutral stream-cleanup ownership. A fresh Terra review approved the corrected
+   T9 design on 2026-11-17; a separate fresh Terra review approved the subsequent
+   bounded T10-T11 grant before its checkpoint. T10-T11 completed as isolated
+   preparation on 2026-11-17: 133 joint hermetic tests passed and a fresh
+   implementation review approved only the disabled-runtime subdelivery.
+   Vertex remains ineligible for `/chat`; no live capability or quality claim
+   follows. Numbered ORQ-22 in the
    original plan, then ORQ-28
    before the 2026-08-07 split, then ORQ-32 before the 2026-08-20 replan, then
    ORQ-33 before the 2026-08-25 replan's first pass, then ORQ-34 after the
@@ -641,10 +693,12 @@ invariant.
    took ORQ-38 (2026-09-01), then ORQ-40 when Conversational Semantic Memory took ORQ-39 (2026-09-22), then ORQ-41 when Static Semantic Retrieval
    reserved ORQ-40 (2026-10-06), then ORQ-42 when Production Retrieval Graduation
    was inserted as an unreserved predecessor (2026-10-08).
-   Any future Agentic RAG router needs its own evidence and design; this dataset
+   Any future Agentic RAG router needs its own evidence and design; this policy
    does not establish classifier equivalence or integration at no extra cost.
-4. **ORQ-43 — Offline ML routing baseline** (unreserved placeholder): a simple,
-   explainable model, and only if ORQ-42's evidence dataset shows real signal.
+4. **ORQ-43 — Offline ML routing baseline** (unreserved, conditional placeholder):
+   consider a simple explainable model only if measured evidence demonstrates a
+   stable residual gap beyond deterministic rules. No ML follows automatically
+   from ORQ-42; defer it if static/simple routing suffices or evidence is weak.
    Numbered ORQ-23 in the original plan, then ORQ-29, then ORQ-33 before the
    2026-08-20 replan, then ORQ-34 before the 2026-08-25 replan's first pass,
    then ORQ-35 after the Memory-closure candidates were inserted ahead of it
@@ -661,8 +715,11 @@ that worked. Relevant here because project documentation is bilingual.
 
 ### Production Retrieval Graduation — scope proposal
 
-Current sequence: **ORQ-40 → Production Retrieval Graduation → Routing Evidence
-Dataset → Offline ML Routing Baseline (only with signal) → AI Green**.
+Current sequence: **ORQ-40 → Production Retrieval Graduation → Deterministic LLM
+Routing and Vertex Chat Configuration → Offline ML Routing Baseline (only with
+demonstrated residual signal) → AI Green**. RAG improvements remain separate debt;
+this routing scope excludes Katanemo/ML, OpenRouter/gateways, web search in chat,
+images and AI Green work.
 ORQ-41 was reserved on 2026-10-09 and completed on 2026-11-12; ORQ-42 was reserved
 on 2026-11-14. Numbers 43–44 remain unreserved roadmap placeholders, not claims
 of remote availability. The reservation helper determines actual next numbers.

@@ -54,6 +54,15 @@ Providers implement an async-first contract:
 - `ProviderPort.generate(input: ProviderInput) -> ProviderResult`
 - `ProviderPort.stream(input: ProviderInput) -> ProviderStreamSession`
 
+#### Vertex adapter preparation (ORQ-42 T10-T11)
+
+The isolated Vertex generation adapter and optional `VERTEX_*` settings are
+preparatory only. The runtime provider selection set remains `stub`, `openai`,
+and `bedrock`; Settings rejects Vertex as a primary or fallback provider, and
+direct factory construction returns a disabled provider. ADC discovery and
+refresh are lazy inside the adapter. These changes do not make Vertex eligible
+for `/chat` or runtime fallback.
+
 `ChatService` orchestrates execution but:
 
 * Has no DB access
@@ -89,6 +98,13 @@ Guarantees:
 * Fallback remains provider-local and invisible to `ChatService`
 * Streaming fallback is allowed only before the first emitted token
 * No provider fallback occurs after partial stream emission
+
+Stream sessions are closed across the route, service, resilience layer and
+OpenAI/Bedrock adapters, including before the first pull. The route waits up to
+one second for cleanup and retains an unfinished cleanup task for observation.
+A stalled cleanup or blocking SDK thread can continue beyond cancellation; this
+does not establish that remote generation has stopped. See
+[Appendix AK](docs/lld_apendix.md#appendix-ak--orq-42-bounded-t14-stream-ownership-2026-11-17).
 
 ---
 
@@ -454,6 +470,18 @@ The platform includes a config-gated routing seam with multiple modes:
 * `heuristic`: Signal-based model selection based on provider-agnostic request signals
 * Shadow divergence logging: Best-effort logging of routing signal divergence for observability
 
+T12 preparation adds an opt-in canonical envelope preview and a standalone dormant
+deterministic policy. The application builder defaults observation off, and runtime
+policy selection rejects the new mode.
+
+T13 adds configuration-bound admission guards to the existing non-stream response
+cache and best-effort, content-free routing evidence for generation and accepted
+cache hits. RAG/EBM25 and streaming retain their existing bypasses; deterministic
+routing and Vertex primary/fallback configuration also bypass cache admission while
+remaining runtime-ineligible. A cache hit carries no current inference usage, and
+the legacy usage writer records its null token counts as zero. No routing mode is
+activated.
+
 **Note:** ML-based routing (logistic regression for cheap-vs-smart model selection) is deferred. The current runtime uses only the heuristic routing seam with `static` as the default policy.
 
 ## Migrations
@@ -590,15 +618,35 @@ Production Retrieval Graduation (ORQ-41). See
 [Appendix AG](docs/lld_apendix.md#appendix-ag--orq-39-closure-and-orq-40-status)
 for evidence and claim boundaries.
 
-### Current retrieval roadmap status (updated 2026-11-12)
+### Current retrieval and ORQ-42 status (updated 2026-11-18)
 
 ORQ-41 Production Retrieval Graduation completed and reached **Fully Synced** on
 2026-11-12. Its paid operational campaign completed 168 requests within the approved
 USD 5 cap. This result covers the approved operational workload; it does not establish
-scientific retrieval quality or general runtime readiness.
-The next proposed step is ORQ-42, Routing Evidence Dataset; it remains an unreserved
-roadmap placeholder. The Offline ML Routing Baseline remains conditional on ORQ-42
-showing useful signal.
+scientific retrieval quality or general runtime readiness. ORQ-42's scope was revised
+on 2026-11-16 to deterministic LLM routing and Vertex chat configuration. It is
+In Progress / Implement as of 2026-11-18 after the blocked validation of AC12
+and AC15. Their isolated remediation adds a candidate-record matcher and
+synthetic policy boundary tests; real candidate eligibility and trigger
+reachability remain unknown. T10-T11 prepared passive Vertex settings,
+lazy ADC authentication and an isolated generation adapter. Bounded T12 preparation
+adds test-opt-in neutral envelope observation and a standalone dormant deterministic
+policy. The application observer defaults off, Settings/direct composition reject
+the new policy mode, and Vertex primary/fallback selection remains disabled. T13
+adds request-snapshot-bound cache admission and best-effort generation/cache-hit
+evidence; it does not enable deterministic routing or Vertex. Paid comparison and
+production activation remain outside this subdelivery. T14 adds bounded stream
+ownership correction; its independent implementation review passed with reduced
+same-provider independence. T15's read-only assessment retained **KEEP_STATIC**:
+the normal request paths do not supply an output-token reservation, real capacity
+and quality assessments are absent, and the trigger's reachability is unknown.
+No live comparison is justified by the available evidence. A post-T16 bounded cache-key update now distinguishes routing policy, thresholds,
+primary availability and Bedrock region. The owner regression passed 99 tests under
+`-W error`; independent review approved the scoped initial-selection isolation with
+47 focused tests passing under `-W error`, with reduced same-provider independence.
+The broader AC17 cache-isolation claim remains unestablished. See
+[Appendix AL](docs/lld_apendix.md#appendix-al--post-t16-bounded-cache-key-isolation-2026-11-17)
+and [Appendix AK](docs/lld_apendix.md#appendix-ak--orq-42-bounded-t14-stream-ownership-2026-11-17).
 
 ### External Read Capabilities (Completed)
 
@@ -628,7 +676,7 @@ showing useful signal.
 
 - **Data models:** `tenant_id VARCHAR(64) NOT NULL DEFAULT 'default'` on `conversations` and `messages`; composite index `(tenant_id, created_at)`.
 - **Request context:** `TenantMiddleware` (pure ASGI — *not* `BaseHTTPMiddleware`, which resets ContextVars before SSE body is consumed). Extraction priority: `X-Tenant-ID` header → JWT Bearer claim `tenant_id` → fallback `"default"`. At the time of this ORQ it was the outermost middleware layer; as of ORQ-19.6, `CORSMiddleware` is now outermost (see below) — `TenantMiddleware` is unaffected otherwise.
-- **Cache isolation:** Redis key format is `chat:response:{tenant_id}:{sha256}`; its fingerprint covers the assembled message window passed to the cache (bounded prior messages plus the current message), not an unbounded conversation. Provider metadata is not part of the key; document RAG and E-BM25 augmentation therefore bypass cache reads and writes.
+- **Cache isolation:** Redis key format is `chat:response:{tenant_id}:{sha256}`; its fingerprint covers the assembled message window passed to the cache (bounded prior messages plus the current message), not an unbounded conversation. The version 2 fingerprint also includes configured provider and model choices, Bedrock prompt version and region, stub mode, routing policy and thresholds, and primary-provider availability. Legacy keys are cold misses; no Redis deletion or migration is performed. Account identity, timeout, retry/fallback behavior and dynamic health are not captured. Document RAG and E-BM25 augmentation bypass cache reads and writes.
 - **Telemetry:** `TenantContextFilter` on the root log handler injects `tenant_id` into every `provider.*`, `chat.*`, and `cache.*` log record without touching those modules.
 - **Cross-tenant enforcement:** App-layer guard — `conv.tenant_id != tenant_id → 404` in both streaming and non-streaming paths.
 - **Deferred:** Full RLS enforcement and corpus scoping (ORQ-21). See [ADR-003](docs/adr/003-multitenancy-transversal-foundation.md).

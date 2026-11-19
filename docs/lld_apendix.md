@@ -2286,4 +2286,240 @@ models, paid measurements or production policy activation. Existing static
 routing and retry/fallback/SSE behavior remain unchanged. ORQ-43 remains
 conditional; RAG remediation and future AI Green work remain separate.
 
+## Appendix AH — ORQ-42 T10-T11 preparatory implementation (2026-11-17)
+
+The revised ORQ-42 authorization covers a bounded T10-T11 subdelivery. The
+implementation adds optional Vertex generation settings (`vertex_project_id`,
+`vertex_location`, `vertex_model`, `vertex_max_output_tokens`, prompt version,
+retry count and backoff values), lazy Application Default Credentials (ADC)
+token loading, and an isolated Vertex adapter for REST generation and
+incremental streaming. The adapter uses `google-auth[requests]==2.62.2` and
+keeps credential discovery out of application startup.
+
+ADC resolution reads the explicitly configured credential file or the standard
+local ADC file, then falls back to attached compute identity. It does not invoke
+the Cloud SDK/gcloud CLI or infer a project; the Vertex project remains an
+explicit setting. Executable federation credentials, including nested
+executable sources, are rejected before library loading. Credential files are
+assumed deployment-controlled and not concurrently replaced: the executable
+source check and google-auth loader open the file separately. A narrow
+`DeprecationWarning` filter in the local ADC file test covers the current
+`load_credentials_from_file` deprecation. The timeout bounds the caller's wait,
+but Python cannot forcibly stop an already-running credential worker thread; the
+in-flight operation is shared rather than duplicated.
+
+These are preparatory adapter capabilities only. Settings continues to accept
+`stub`, `openai` and `bedrock` as primary/fallback providers and rejects
+`vertex`; direct factory construction also returns a disabled Vertex provider.
+The adapter is not eligible for `/chat`, runtime fallback or production
+activation. No deterministic routing integration, cache behavior change, live
+inference, paid comparison, model selection, runtime-readiness claim or ORQ
+closure follows from this subdelivery. Prior offline-planning text above is
+retained as historical scope.
+
+The following joint hermetic regression command completed with **133 passed in
+0.36s** under `-W error`:
+
+```sh
+.venv/bin/python -m pytest -q tests/core/test_google_adc.py tests/core/test_vertex_config.py tests/core/test_vertex_provider.py tests/core/test_settings_provider_config.py tests/core/test_provider_factory.py tests/core/test_provider_factory_routing.py tests/core/test_static_routing_policy.py tests/core/test_heuristic_routing_policy.py tests/core/test_routing_signals.py tests/core/test_chat_service_routing.py tests/core/test_resilient_provider.py tests/core/test_provider_rag_payloads.py tests/core/test_retry.py -W error
+```
+
+It used fake ADC credentials and `httpx.MockTransport`; no live credentials,
+inference, or external network were used. A fresh focused run of
+the three T10-T11 test modules completed with **78 passed in 0.24s** under
+`-W error`.
+
+The native Terra implementation review approved only this isolated,
+runtime-disabled T10-T11 preparation. It had reduced same-provider independence
+and was not an external bridge attestation. Review evidence is recorded at
+`.framework/orqs/ORQ-42-routing-evidence-dataset/execution-review/t10-t11-terra-review.md`.
+Neither test run nor review establishes cache or cross-layer cancellation
+readiness, deployed identity/IAM eligibility, live model quality, billing,
+runtime activation or ORQ closure. At the time of this subdelivery, T12-T16
+were not authorized.
+
+## Appendix AI — ORQ-42 bounded T12 preparation (2026-11-17)
+
+T12 adds a neutral observation seam over the same `ProviderInput` instance used
+for provider resolution and generation. The canonical provider-message preview
+reuses the shared memory/RAG formatter without recording the C1 prompt-mapping
+observation; the dispatch formatter still records its existing mapping once.
+The internal `RoutingContext` can carry immutable `EnvelopeSignals`: canonical
+character and UTF-8 byte totals, message count, history/memory/RAG presence,
+requested output and a deterministic fingerprint of canonical roles/text,
+requested controls and stream mode. These are descriptive inputs, not token
+counts, model-quality evidence, telemetry or content logging.
+
+Envelope observation is opt-in on the application context builder and defaults
+off. The standalone deterministic policy defaults to exact static-policy
+delegation and has no production assessment producer. Its isolated alternative
+rule requires bound capacity assessments and matching quality evidence; tests
+exercise that contract with synthetic values only. This establishes no real
+destination eligibility or quality. Settings
+continues to accept only the existing `static` and `heuristic` runtime policies,
+and direct composition rejects the new policy mode. Vertex remains ineligible
+as a runtime provider. No deterministic policy is activated, and T12 changes no
+cache, route, provider port, persistence, SSE or cross-layer stream-ownership
+behavior.
+
+The ORQ owner's final joint hermetic regression run completed with **271 passed
+in 0.64s** under `-W error`; the exact command is recorded in the local ORQ
+implementation evidence. A fresh Terra review approved T12 preparation only,
+with reduced same-provider independence, and its focused validation completed
+with **112 passed** under `-W error`. Review record:
+`.framework/orqs/ORQ-42-routing-evidence-dataset/execution-review/t12-terra-review-r2.md`.
+R2 supersedes the earlier review. The implementation record and review confirm
+that these tests use synthetic local assessments only and establish no
+production eligibility, quality, cache or cross-layer ownership readiness.
+At the time of this subdelivery, T13-T16, candidate/model selection, inference,
+paid comparison, activation, deployment, commits and ORQ closure were not
+authorized.
+
+## Appendix AJ — ORQ-42 bounded T13 cache and evidence preparation (2026-11-17)
+
+T13 extends cache admission and request-level evidence while preserving the
+existing `/chat` write path, response-cache key/payload shape, provider contract,
+and streaming behavior. The application cache policy preserves the existing RAG
+then EBM25 bypass precedence and adds bypasses for deterministic routing and
+Vertex primary/fallback configuration. Streaming remains unconditionally
+bypassed. These new configuration cases remain runtime-ineligible; they do not
+activate deterministic routing or Vertex.
+
+Production `/chat` composition takes one deep Settings snapshot for provider
+resolution, routing-context construction, timeout, and provider construction. An
+opaque execution-configuration identifier derived from safe cache/policy settings
+binds the resulting `ChatService` to that snapshot. Cache lookup and accepted-hit
+handling require the service binding, captured scope, and current scope to match
+with no cache bypass. The route rechecks before scheduling a write and immediately
+before post-commit write dispatch. A hit returned after its admission becomes
+stale is discarded. The existing tenant namespace and cache key remain unchanged;
+these checks do not repair legacy key omissions, validate historical entries, or
+revoke Redis work after dispatch.
+
+Cached responses retain their stored content and provider/model identity in the
+existing result path, but cached token and latency fields are null so they are not
+represented as current inference usage. Accepted hits emit a separate best-effort
+evidence record with no current selection, generation, cached source identity,
+usage, cost, or fallback. The legacy `UsageEvent` schema and writer are unchanged
+and coerce those null token counts to zero; the durable row still has no cache
+flag. Normal successful cache-hit turns continue through the existing atomic
+persistence transaction.
+
+Generation evidence is emitted best-effort as allowlisted JSON in the log message
+and describes the actual generation attempt, including selected identity, explicit
+fallback dispatch when known, nullable usage, and service timing. Final provider
+and model identity is retained only when the upstream pair exactly matches the
+configured selected or fallback pair; an injected provider without a routing
+decision or an unrecognized version alias therefore has null final identity and
+no corresponding cost estimate. Token counters may still be reported when valid.
+This is a privacy/trust boundary, not a model registry or alias-resolution system.
+Raw prompts, answers, metadata, credentials, raw exception text, and cache-hit
+source identity are excluded. A dated price snapshot may estimate final-generation
+cost only after a successful result with a trusted identity pair, valid usage, and
+a known rate. Unknown values remain null; request-total and failed-attempt charges
+remain unknown. Evidence is not a record of persistence success or provider
+billing. Existing routing, provider-error, retry/fallback, token, done, and error
+semantics are preserved.
+
+The owner joint hermetic regression run on the reviewed T13 implementation passed
+**319 tests in 0.70s** under `-W error`; the exact command and review evidence are
+recorded in the local ORQ implementation record. A separate focused native Terra
+run passed **57 tests** across cache admission, evidence, service/factory routing
+and resilience. Review independence is reduced because it used the operator-
+selected native Terra path. Both runs used local test doubles; no live credentials,
+inference, external model calls or runtime activation were used. These tests do not
+establish production readiness, model quality, billed amounts, or write/cache
+correctness outside the covered cases. T14-T16, candidate/model selection, live
+inference, paid comparison, activation, deployment, commits and ORQ closure were
+outside this preparation. At that point legacy heuristic caching was not repaired
+or newly certified; see Appendix AL for the later bounded correction and limits.
+
+## Appendix AK — ORQ-42 bounded T14 stream ownership (2026-11-17)
+
+T14 corrects stream ownership across the route, service, resilience wrapper,
+and existing OpenAI and Bedrock adapters. Explicit close covers sessions before
+the first pull, repeated or concurrent close, pending and later pulls, and
+acquired primary or fallback sessions. Cancellation does not initiate fallback;
+fallback remains unavailable after a fragment. The service delegates shared
+final-result isolation to the provider, so it cannot guarantee isolation for a
+provider that does not protect its own shared result. Shared injected clients
+remain open.
+
+On finalization or disconnect the route starts shielded cleanup and waits up to
+one second. If cleanup stalls or route cancellation recurs, the task remains
+retained and its outcome is observed; cleanup failure does not replace the
+original error or cancellation. Upstream cleanup can remain pending until it
+cooperates. A blocking SDK call or worker thread can outlive asyncio cancellation;
+late Bedrock acquisition is cleaned up after the call returns. These guarantees
+do not establish that remote generation stopped.
+
+The owner joint hermetic regression passed **231 tests** under `-W error`.
+Independent implementation review passed with **98 focused tests** under default
+warning handling; review independence is reduced by the same-provider path.
+The tests use local doubles and do not establish live provider behavior or production readiness. No paid
+calls or production activation were performed for this work. Provider contracts,
+SSE framing, atomic persistence and the no-fallback-after-fragment rule remain
+unchanged.
+
+T15 subsequently assessed reachability and existing evidence without live calls
+and retained **KEEP_STATIC**. Normal request paths do not supply an output-token
+reservation, real capacity and quality assessments are absent, and the trigger's
+reachability remains unknown. The evidence does not justify a live comparison.
+This is an evidence decision, not proof that the trigger cannot occur.
+
+## Appendix AL — Post-T16 bounded cache-key isolation (2026-11-17)
+
+Following the historical T13 and T16 evidence and limits, the response-cache
+fingerprint now uses version 2 and includes the routing policy, message-length and
+estimated-token thresholds, primary-provider availability, and Bedrock region.
+It also retains the configured primary/fallback providers, model choices, Bedrock
+prompt version and stub mode, alongside the assembled bounded message window.
+The tenant namespace remains `chat:response:{tenant_id}:{sha256}`. Version 2
+produces cold misses for legacy entries; there is no Redis deletion or migration.
+
+This is a bounded configuration distinction, not complete execution isolation:
+account identity and timeout, retry/fallback and dynamic health behavior are not
+captured. Existing bypasses and eligibility limits remain in force. The owner
+regression passed **99 tests** under `-W error`. Independent review approved the
+scoped initial-selection isolation, with **47 focused tests** passing under
+`-W error`; review independence is reduced by the same-provider path. These
+results do not establish full AC17 cache isolation or supersede the historical
+limits of T13 and T16.
+
+## Appendix AM — ORQ-42 validation result (2026-11-18)
+
+The operator-directed AC17 amendment narrows cache acceptance to documented
+configuration identity and admission bounds; the original broader condition and
+its partial review remain historical. Formal validation left ORQ-42 **Blocked /
+Validate**: AC12 still needs candidate-specific eligibility evidence and AC15
+still needs explicit capacity-boundary and unreachable-trigger tests. The
+disposition remains KEEP_STATIC; no live quality, account readiness or routing
+activation is implied.
+
+The local CI-equivalent pytest run passed **970 tests**, with **276 skipped**;
+the focused hermetic run passed **382 tests** with `-W error`. The historical
+GitHub Actions CI success for the existing HEAD predates the uncommitted
+implementation and does not validate it. The native independent review has
+reduced same-provider independence. No paid comparison, commit, deployment or
+governance sync occurred during validation.
+
+## Appendix AN — AC12 and AC15 isolated remediation (2026-11-18)
+
+After the blocked validation recorded above, an isolated matcher was added for
+caller-trusted candidate records. It checks exact project, model, location and
+transport and independently bounds configured and requested output against a
+supplied ceiling. Invalid or duplicate records fail closed. The record identity
+does not authenticate its issuer; the matcher is not connected to runtime
+composition or Vertex output serialization and establishes no real model, IAM,
+quota, account or quality eligibility.
+
+Separate tests exercise the dormant policy using arbitrary synthetic capacity
+units, including equality, one-above and a finite input set where the alternative
+is unreachable. These are fixture properties, not model token limits or proof of
+real trigger reachability. The owner joint hermetic run passed **395 tests** under
+`-W error`; a fresh native Terra review passed **102 focused tests** under
+`-W error`, with reduced same-provider independence. Final criterion disposition
+remains pending. KEEP_STATIC remains operational and no real model, credential,
+paid call, deployment or closure was authorized by this remediation.
+
 **End of appendix — complements the live LLD document**

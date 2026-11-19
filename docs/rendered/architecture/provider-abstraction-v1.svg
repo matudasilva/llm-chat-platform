@@ -1,6 +1,6 @@
-<svg width="900" height="560" viewBox="0 0 900 560" xmlns="http://www.w3.org/2000/svg" role="img">
+<svg width="980" height="560" viewBox="0 0 980 560" xmlns="http://www.w3.org/2000/svg" role="img">
 <title>Provider abstraction — LLM Chat Platform</title>
-<desc>How ChatService reaches an LLM without naming one. ORQ-25 bounded RAG sources travel through ProviderInput.metadata and one shared formatter materializes the same untrusted-evidence prompt for every adapter.</desc>
+<desc>How ChatService reaches an LLM without naming one. ORQ-25 bounded RAG sources travel through ProviderInput.metadata and one shared formatter materializes the same untrusted-evidence prompt for runtime adapters. Vertex is shown separately as an isolated, runtime-ineligible preparation.</desc>
 <defs>
 <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#5F5E5A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
 <marker id="arrowdim" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#8A8880" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></marker>
@@ -65,6 +65,11 @@
 <text x="650" y="422" text-anchor="middle" font-family="sans-serif" font-size="9.5" fill="#27500A">deterministic, no network</text>
 <text x="650" y="438" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#27500A">what the test suite runs against</text></g>
 
-<text x="450" y="492" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#5F5E5A">Metadata validation is shared; transport normalization stays adapter-local. No route or domain branch names a provider.</text>
-<text x="450" y="524" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#8A8880">Authoritative detail: docs/lld_llm_chat_platform_live_doc.md · docs/error_decision_table.md.</text>
+<g><rect x="770" y="378" width="180" height="72" rx="10" fill="#F1EFE8" stroke="#8A8880" stroke-width="0.8" stroke-dasharray="4 3"/>
+<text x="860" y="401" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="500" fill="#2C2C2A">Vertex adapter</text>
+<text x="860" y="419" text-anchor="middle" font-family="sans-serif" font-size="9.5" fill="#5F5E5A">isolated preparation</text>
+<text x="860" y="436" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#8A8880">runtime-ineligible · factory-disabled</text></g>
+
+<text x="490" y="492" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#5F5E5A">Metadata validation is shared; transport normalization stays adapter-local. No route or domain branch names a provider.</text>
+<text x="490" y="524" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#8A8880">Authoritative detail: docs/lld_llm_chat_platform_live_doc.md · docs/error_decision_table.md.</text>
 </svg>

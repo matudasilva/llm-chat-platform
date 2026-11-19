@@ -81,3 +81,9 @@ Ver [`template.md`](template.md) para la estructura mínima de un nuevo ADR.
 | [008](008-rag-generation-and-feedback-boundaries.md) | RAG Generation and Feedback Boundaries | Aceptada | 2026-08-06 |
 | [009](009-rag-evaluation-harness.md) | RAG Evaluation Harness — Instrument, Store, and Pre-registration | Propuesta | 2026-08-08 |
 | [010](010-orq27-no-go-and-orq29-gated-successor.md) | Close ORQ-27 and Evaluate ORQ-29 as a Gated Successor | Aceptada | 2026-08-14 |
+| [014](014-isolated-vertex-generation-preparation.md) | Prepare Vertex Generation Behind Disabled Runtime Selection | Accepted (isolated preparation) | 2026-11-17 |
+| [015](015-prepare-neutral-routing-without-runtime-activation.md) | Prepare Neutral Routing Without Runtime Activation | Accepted (bounded preparation) | 2026-11-17 |
+| [016](016-bind-cache-admission-and-routing-evidence.md) | Bind Cache Admission and Routing Evidence to the Executed Request | Accepted (bounded T13 only) | 2026-11-17 |
+| [017](017-explicit-stream-ownership.md) | Explicit Stream Ownership Across Chat Layers | Accepted (bounded T14 only) | 2026-11-17 |
+| [018](018-version-cache-policy-identity.md) | Version Cache Identity for Routing Policy | Accepted (bounded isolation) | 2026-11-17 |
+| [019](019-isolated-candidate-eligibility.md) | Isolated Candidate Eligibility Against Trusted Records | Accepted (isolated preparation) | 2026-11-18 |

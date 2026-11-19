@@ -1,6 +1,6 @@
 <svg width="960" height="640" viewBox="0 0 960 640" xmlns="http://www.w3.org/2000/svg" role="img">
 <title>Module boundaries — LLM Chat Platform</title>
-<desc>Package-level boundaries for chat, RAG generation, retrieval, feedback, providers, infrastructure and models. Dependencies point downward only; provider-specific coupling remains confined to adapters.</desc>
+<desc>Package-level boundaries for chat, RAG generation, retrieval, feedback, providers, infrastructure and models. Dependencies point downward only; provider-specific coupling remains confined to adapters. Vertex generation preparation is isolated and runtime-ineligible.</desc>
 <defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#5F5E5A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
 <rect width="960" height="640" fill="#FBFAF7"/>
 <text x="480" y="36" text-anchor="middle" font-family="sans-serif" font-size="19" font-weight="600" fill="#26215C">Module boundaries</text>
@@ -48,7 +48,7 @@
 <text x="520" y="416" font-family="sans-serif" font-size="13" font-weight="600" fill="#4A1B0C">app/core/providers</text>
 <text x="520" y="433" font-family="sans-serif" font-size="10" fill="#712B13">LLM, embedding, vector-store and reranker adapters</text>
 <text x="520" y="452" font-family="sans-serif" font-size="9.5" fill="#712B13">The only layer allowed to know a provider by name.</text>
-<text x="520" y="468" font-family="sans-serif" font-size="9" fill="#8A5A3E">Every adapter implements ProviderPort.</text></g>
+<text x="520" y="468" font-family="sans-serif" font-size="9" fill="#8A5A3E">Isolated Vertex preparation; factory-disabled.</text></g>
 <path d="M760 392 L760 330 Q760 320 750 320 L739 320 L739 300" fill="none" stroke="#8A8880" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#arrow)"/>
 <text x="772" y="360" font-family="sans-serif" font-size="9" fill="#8A8880">implements</text>
 

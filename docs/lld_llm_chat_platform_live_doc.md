@@ -25,15 +25,38 @@ resolution or bound for query/fact-template lexical alignment, completed human
 entailment and EN/ES review, and explicit operator reauthorization. ORQ-40
 provides zero scientifically usable evidence for a new capability; static facts
 remain disabled, with no automatic reopening. At the 2026-10-08 planning point,
-Production Retrieval Graduation (ORQ-41) was the next proposed step. ORQ-41
-completed and reached **Fully Synced** on 2026-11-12 after its 168-request
-operational campaign. ORQ-42, Routing Evidence Dataset, was reserved on
-2026-11-14 for bounded offline planning; no runtime policy activation, candidate
-model selection or paid campaign is authorized by that plan. The Offline ML
-Routing Baseline remains conditional on useful signal from ORQ-42. ORQ-41's campaign result
-supports only the approved operational workload, not scientific retrieval
-quality or general runtime readiness.
-See [Appendix AG](lld_apendix.md#appendix-ag--orq-39-closure-and-orq-40-status).
+Production Retrieval Graduation (ORQ-41) completed and reached **Fully Synced**
+on 2026-11-12 after its 168-request operational campaign. ORQ-42's scope was
+revised on 2026-11-16 to deterministic LLM routing and Vertex chat configuration.
+It is In Progress / Implement as of 2026-11-18 following remediation of the
+blocked AC12/AC15 findings. An isolated matcher checks caller-trusted candidate
+records, and synthetic tests exercise policy boundaries; neither establishes
+real eligibility or trigger reachability. T10-T11 prepared passive Vertex
+settings, lazy ADC authentication and an isolated generation adapter. Bounded T12
+preparation adds an optional canonical-envelope observation seam and a standalone
+dormant deterministic policy. Observation is off by default; Settings and direct
+composition reject the new policy mode, while Vertex remains ineligible for runtime
+primary/fallback selection. T13 adds cache admission bound to the request's private
+Settings snapshot and best-effort generation/cache-hit evidence. Cache hits do not
+report cached token counts as current inference usage; the legacy usage writer
+coerces those null counts to zero. No deterministic policy is activated, and paid
+comparison and production activation are not included. T14 corrects stream
+ownership as described in Appendix AK. The T15 read-only assessment retained
+**KEEP_STATIC**: normal request paths do not supply an output-token reservation,
+real capacity and quality assessments are absent, and trigger reachability is
+unknown. The available evidence does not justify a live comparison. A post-T16 bounded cache-key update distinguishes routing policy, thresholds,
+primary availability and Bedrock region. The owner regression passed 99 tests under
+`-W error`; independent review approved the scoped initial-selection isolation with
+47 focused tests passing under `-W error`, with reduced same-provider independence.
+The broader AC17 cache-isolation claim remains unestablished. See
+[Appendix AL](lld_apendix.md#appendix-al--post-t16-bounded-cache-key-isolation-2026-11-17).
+Prior offline-planning scope remains
+historical; implementation evidence is in [Appendix AH](lld_apendix.md#appendix-ah--orq-42-t10-t11-preparatory-implementation),
+[Appendix AI](lld_apendix.md#appendix-ai--orq-42-bounded-t12-preparation),
+[Appendix AJ](lld_apendix.md#appendix-aj--orq-42-bounded-t13-cache-and-evidence-preparation),
+and [Appendix AK](lld_apendix.md#appendix-ak--orq-42-bounded-t14-stream-ownership-2026-11-17).
+ORQ-41's campaign result supports only the approved operational workload, not
+scientific retrieval quality or general runtime readiness.
 
 The LLM Chat Platform implements the following core capabilities:
 
@@ -61,7 +84,8 @@ The `/chat` endpoint implements a fully transactional write-path:
 ### Traceability and Provider Abstraction
 
 * Request ID propagation end-to-end for trace reconstruction
-* `ProviderPort` abstraction with validated Stub, OpenAI, and Bedrock adapters
+* `ProviderPort` abstraction with validated Stub, OpenAI, and Bedrock runtime adapters
+* Separate Vertex generation adapter preparation under ORQ-42; isolated and runtime-ineligible
 * `ChatService` orchestration layer with no database coupling
 * `/chat` delegates to `ChatService` while preserving transaction semantics
 
@@ -72,6 +96,8 @@ The `/chat` endpoint implements a fully transactional write-path:
 * `routing.decision` events include signal metadata for observability
 * Best-effort shadow divergence logging for comparative routing analysis
 * `StaticRoutingPolicy` remains the default activation mode
+* T12 adds optional `EnvelopeSignals` over the canonical provider preview and a standalone deterministic policy whose default delegates to static routing; application observation is off and Settings/direct composition reject the new mode
+* T13 binds cache admission to a private request Settings snapshot and adds best-effort generation and accepted-cache-hit evidence; final provider/model identity is reported only when it matches a configured selected/fallback pair, and deterministic routing and Vertex configurations remain runtime-ineligible
 
 ---
 
@@ -704,6 +730,28 @@ Once any stream chunk has been emitted, fallback is no longer allowed and the st
 
 Streaming chunk size is not guaranteed and depends on upstream provider emission behavior.
 
+#### Stream ownership and cleanup
+
+The resilience layer owns the acquired primary or fallback session and its
+driver; the service wraps the acquired iterator, and the route closes it on
+stream finalization or disconnect. Explicit close works before the first pull,
+wakes pending pulls, and prevents later pulls. Repeated or concurrent close
+shares cleanup. Cancellation does not initiate fallback, and final-result waiters
+are not given a fabricated success. The service delegates final-result isolation
+to the upstream provider; it cannot guarantee isolation for a provider that does
+not protect its own shared result.
+
+The OpenAI and Bedrock adapters own their acquired response streams and consumer
+tasks. Injected clients remain shared. The route waits up to one second for
+shielded cleanup and retains and observes the task if cleanup remains pending or
+the route is cancelled again. Cleanup errors do not replace the original error
+or cancellation. A stalled upstream close can remain pending until it cooperates;
+an SDK call or worker thread already running can outlive asyncio cancellation.
+Late Bedrock acquisition is cleaned up after the call returns. None of this
+proves that remote generation has stopped. The current T14 implementation has
+hermetic regression evidence; independent implementation review passed with
+reduced same-provider independence.
+
 #### Important tradeoff
 
 The client may receive streamed tokens before the final DB transaction commits.
@@ -761,8 +809,9 @@ E-BM25 memory channel (`EBM25_ENABLED`).
 
 Prior messages are supplied before the current message on both streaming and
 non-streaming `/chat` paths. Because the Redis key fingerprints the assembled message
-list, this bounded history is represented in the key. Provider metadata is not; the
-cache is bypassed when document RAG or E-BM25 augmentation is enabled.
+list, this bounded history is represented in the key. The key also includes bounded
+configuration fields described in the cache isolation addendum. The cache is bypassed
+when document RAG or E-BM25 augmentation is enabled.
 
 ### 15.10 Lightweight chat feedback (ORQ-25)
 
@@ -1610,7 +1659,7 @@ A minimal best-effort Redis response cache has been implemented for non-streamin
 
 **Request context:** `TenantMiddleware` implemented as a pure ASGI class (not `BaseHTTPMiddleware`). The `BaseHTTPMiddleware` approach was ruled out because its `dispatch()` `finally` block resets the ContextVar before the SSE response body is consumed by the client. Pure ASGI `await self.app(scope, receive, send)` does not return until the full body is sent, keeping the ContextVar valid for the lifetime of any streaming response. Extraction priority: `X-Tenant-ID` request header → JWT Bearer `tenant_id` claim (best-effort, no signature verification) → fallback `"default"`. At the time of this ORQ, `TenantMiddleware` was registered last in `app/main.py` (Starlette LIFO ordering → outermost layer). **Superseded by ORQ-19.6:** `CORSMiddleware` is now registered after it and is the new outermost layer — see the CORS addendum below.
 
-**Cache isolation:** The key is tenant-namespaced as `chat:response:{tenant_id}:{sha256}`. At this ORQ, the fingerprint covered the message list available to `/chat`; current behavior fingerprints the assembled bounded prior-message window plus the current message, not an unbounded conversation. Provider metadata is not part of the key, so document RAG and E-BM25 augmentation bypass cache reads and writes.
+**Cache isolation:** The key is tenant-namespaced as `chat:response:{tenant_id}:{sha256}`. At this ORQ, the fingerprint covered the message list available to `/chat`; current behavior fingerprints the assembled bounded prior-message window plus the current message, not an unbounded conversation. The version 2 fingerprint also includes configured provider and model choices, Bedrock prompt version and region, stub mode, routing policy and thresholds, and primary-provider availability. Legacy keys are cold misses; no Redis deletion or migration is performed. Account identity, timeout, retry/fallback behavior and dynamic health are not captured. Document RAG and E-BM25 augmentation bypass cache reads and writes.
 
 **Telemetry:** `TenantContextFilter` (a `logging.Filter` subclass) attached to the root `StreamHandler`. Python's `callHandlers()` applies handler-level filters to propagated records from all child loggers, so `provider.*`, `chat.*`, and `cache.*` events receive `tenant_id` automatically without modifying those modules.
 
