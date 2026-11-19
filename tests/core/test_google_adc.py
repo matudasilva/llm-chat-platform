@@ -22,7 +22,7 @@ class Credentials:
     def refresh(self, request):
         self.calls += 1
         request("url", timeout=999)
-        self.token = "test-token"
+        self.token = "test"
         self.valid = True
 
 
@@ -36,8 +36,8 @@ async def test_lazy_scoped_discovery_refresh_and_cached_token():
         return creds, "ignored-project"
     provider = GoogleAdcAccessTokenProvider(2, credentials_loader=loader, request_factory=lambda: lambda *a, **kw: calls.append(kw))
     assert calls == []
-    assert await provider() == "test-token"
-    assert await provider() == "test-token"
+    assert await provider() == "test"
+    assert await provider() == "test"
     assert calls == [{"scopes": ("https://www.googleapis.com/auth/cloud-platform",)}, {"timeout": 2}, {"timeout": 2}]
     assert creds.calls == 1
 
@@ -61,7 +61,7 @@ async def test_cancelled_waiter_does_not_overlap_refresh():
     second = asyncio.create_task(provider())
     await asyncio.sleep(0)
     release.set()
-    assert await second == "test-token"
+    assert await second == "test"
     assert creds.calls == 1
 
 
@@ -88,7 +88,7 @@ async def test_timeout_preserves_single_inflight_work():
     finally:
         release.set()
     await asyncio.sleep(0.02)
-    assert await provider() == "test-token"
+    assert await provider() == "test"
 
 
 @pytest.mark.asyncio
@@ -143,7 +143,7 @@ async def test_missing_local_adc_uses_attached_identity(tmp_path, monkeypatch):
     creds = Credentials()
     monkeypatch.setattr(compute_engine, "Credentials", lambda *, scopes: creds)
     provider = GoogleAdcAccessTokenProvider(1, request_factory=lambda: lambda *a, **kw: None)
-    assert await provider() == "test-token"
+    assert await provider() == "test"
 
 
 @pytest.mark.asyncio
