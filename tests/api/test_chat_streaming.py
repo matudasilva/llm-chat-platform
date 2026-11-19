@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import asyncio
+import importlib
 import json
 from collections.abc import AsyncIterator
 from dataclasses import dataclass, field
@@ -21,6 +23,81 @@ from app.core.domain.provider import (
 from app.core.domain.provider_errors import ProviderError, ProviderErrorKind
 from app.core.providers.resilient_provider import ResilientProvider
 from app.schemas.chat import ChatRequest
+
+
+@pytest.mark.asyncio
+async def test_disconnect_closes_acquired_stream_and_preserves_cancellation() -> None:
+    entered = asyncio.Event()
+    closed = asyncio.Event()
+
+    class Chunks:
+        def __aiter__(self):
+            return self
+
+        async def __anext__(self):
+            entered.set()
+            await asyncio.Event().wait()
+
+        async def aclose(self):
+            closed.set()
+            raise RuntimeError("cleanup failure")
+
+    class Service:
+        async def stream_chat(self, **kwargs):
+            return type("Session", (), {"chunks": Chunks()})()
+
+    db = FakeAsyncSession()
+    response = await chat(ChatRequest(message="hello", stream=True), db=db, chat_service=Service())
+    pull = asyncio.create_task(anext(response.body_iterator))
+    await entered.wait()
+    pull.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await pull
+    assert closed.is_set()
+    assert db.items == []
+
+
+@pytest.mark.asyncio
+async def test_disconnect_retains_stalled_cleanup_after_repeated_cancellation() -> None:
+    route = importlib.import_module("app.api.routes.chat")
+    pulling = asyncio.Event()
+    closing = asyncio.Event()
+    release = asyncio.Event()
+    finished = asyncio.Event()
+
+    class Chunks:
+        def __aiter__(self):
+            return self
+
+        async def __anext__(self):
+            pulling.set()
+            await asyncio.Event().wait()
+
+        async def aclose(self):
+            closing.set()
+            await release.wait()
+            finished.set()
+            raise RuntimeError("late cleanup failure")
+
+    class Service:
+        async def stream_chat(self, **kwargs):
+            return type("Session", (), {"chunks": Chunks()})()
+
+    response = await chat(
+        ChatRequest(message="hello", stream=True), db=FakeAsyncSession(), chat_service=Service()
+    )
+    pull = asyncio.create_task(anext(response.body_iterator))
+    await pulling.wait()
+    pull.cancel()
+    await closing.wait()
+    pull.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await pull
+    assert route._stream_cleanup_tasks
+    release.set()
+    await finished.wait()
+    await asyncio.sleep(0)
+    assert not route._stream_cleanup_tasks
 
 
 def _retryable_error() -> ProviderError:

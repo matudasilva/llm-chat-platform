@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+import sys
 import time
 import uuid
 from typing import Any, AsyncIterator
@@ -34,10 +35,38 @@ from app.models.rag_request_metrics import RagRequestMetrics
 from app.models.usage_event import UsageEvent
 from app.schemas.chat import ChatRequest, ChatResponse, ChatStatus, RagSourceOut
 from app.services.chat_response_cache import get_chat_response_cache
+from app.services.chat_cache_policy import cache_bypass_reason, execution_configuration_id
+from app.core.observability.routing_evidence import emit_cache_hit_evidence
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["chat"])
+
+_stream_cleanup_tasks: set[asyncio.Task] = set()
+_STREAM_CLEANUP_TIMEOUT_S = 1.0
+
+
+async def _close_stream(chunks: Any) -> None:
+    close = getattr(chunks, "aclose", None)
+    if not callable(close):
+        return
+
+    try:
+        task = asyncio.create_task(close())
+    except Exception:
+        return
+    _stream_cleanup_tasks.add(task)
+
+    def observe(done: asyncio.Task) -> None:
+        _stream_cleanup_tasks.discard(done)
+        if not done.cancelled():
+            done.exception()
+
+    task.add_done_callback(observe)
+    try:
+        await asyncio.wait_for(asyncio.shield(task), timeout=_STREAM_CLEANUP_TIMEOUT_S)
+    except Exception:
+        pass
 
 
 def _sse(event: str, data: str) -> str:
@@ -111,11 +140,16 @@ def _cache_bypass_reason() -> str | None:
     places -- two gates plus the streaming log -- and extending one without
     the others is how the read and write halves drift apart.
     """
-    if settings.chat_rag_augmentation_enabled:
-        return "rag_augmentation"
-    if settings.ebm25_enabled:
-        return "ebm25_memory"
-    return None
+    return cache_bypass_reason(settings)
+
+
+def _cache_admitted(chat_service: ChatService, scope: str, initial_reason: str | None) -> bool:
+    return (
+        initial_reason is None
+        and _cache_bypass_reason() is None
+        and getattr(chat_service, "execution_configuration_id", None) == scope
+        and execution_configuration_id(settings) == scope
+    )
 
 
 async def _record_budget_outcome(outcome: str) -> None:
@@ -413,6 +447,8 @@ async def chat(
             )
             start_stream = time.perf_counter()
             chunks: list[str] = []
+            stream_session = None
+            stream_chunks = None
 
             try:
                 # 1) Stream from provider (no DB, no transaction)
@@ -426,8 +462,9 @@ async def chat(
                 if provider_metadata is not None:
                     stream_kwargs["provider_metadata"] = provider_metadata
                 stream_session = await chat_service.stream_chat(**stream_kwargs)
+                stream_chunks = stream_session.chunks
 
-                async for chunk in stream_session.chunks:
+                async for chunk in stream_chunks:
                     yield _sse("token", chunk)
 
                 stream_result = await stream_session.get_final_result()
@@ -565,6 +602,13 @@ async def chat(
                 yield _sse_json("error", {"error_kind": "internal"})
                 return
             finally:
+                original_exception = sys.exc_info()[1]
+                if stream_chunks is not None:
+                    try:
+                        await _close_stream(stream_chunks)
+                    except asyncio.CancelledError:
+                        if original_exception is None:
+                            raise
                 # AC18 outcome 8: on client disconnect the generator is
                 # finalized under cancellation, and any unshielded `await`
                 # here can be aborted before it completes. `asyncio.shield`
@@ -641,12 +685,21 @@ async def chat(
             # 3) Execute model (via ChatService)
             service_result = None
             bypass_reason = _cache_bypass_reason()
-            if bypass_reason is not None:
-                cache.log_bypass(reason=bypass_reason)
+            cache_scope = execution_configuration_id(settings)
+            if not _cache_admitted(chat_service, cache_scope, bypass_reason):
+                cache.log_bypass(reason=bypass_reason or "configuration_unbound")
             else:
                 service_result = await cache.get(
                     request_id=request_id, messages=_messages, tenant_id=tenant_id
                 )
+                if service_result is not None:
+                    if _cache_admitted(chat_service, cache_scope, bypass_reason):
+                        try:
+                            emit_cache_hit_evidence(request_id=request_id, source_result=service_result)
+                        except Exception:
+                            pass
+                    else:
+                        service_result = None
             if service_result is None:
                 run_kwargs: dict[str, Any] = {
                     "request_id": request_id,
@@ -655,7 +708,7 @@ async def chat(
                 if provider_metadata is not None:
                     run_kwargs["provider_metadata"] = provider_metadata
                 service_result = await chat_service.run(**run_kwargs)
-                if _cache_bypass_reason() is None:
+                if _cache_admitted(chat_service, cache_scope, bypass_reason):
                     cache_write_result = service_result
 
             assistant_content = truncate(
@@ -715,7 +768,7 @@ async def chat(
                 pass
 
         # commit OK (exit db.begin)
-        if cache_write_result is not None:
+        if cache_write_result is not None and _cache_admitted(chat_service, cache_scope, bypass_reason):
             await cache.set(messages=_messages, result=cache_write_result, tenant_id=tenant_id)
 
         return ChatResponse(

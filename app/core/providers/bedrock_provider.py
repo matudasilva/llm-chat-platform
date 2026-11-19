@@ -241,6 +241,7 @@ class BedrockProvider(ProviderPort):
                 messages_count=messages_count,
             )
 
+        acquisition_abandoned = False
         try:
             async def _op(attempt: int) -> dict[str, Any]:
                 attempt_start = time.monotonic()
@@ -259,7 +260,26 @@ class BedrockProvider(ProviderPort):
                     },
                 )
                 try:
-                    response = await self._call_client(client.converse_stream, **payload)
+                    nonlocal acquisition_abandoned
+                    acquisition = asyncio.create_task(asyncio.to_thread(client.converse_stream, **payload))
+                    try:
+                        response = await asyncio.shield(acquisition)
+                    except asyncio.CancelledError:
+                        acquisition_abandoned = True
+                        async def cleanup_acquisition():
+                            try:
+                                late_response = await acquisition
+                                await _close_event_stream(late_response)
+                            except BaseException:
+                                pass
+                            finally:
+                                try:
+                                    await _close_client_if_needed(True, client)
+                                except Exception:
+                                    pass
+                        task = asyncio.create_task(cleanup_acquisition())
+                        task.add_done_callback(_observe_task)
+                        raise
                 except Exception as exc:
                     perr = _map_bedrock_exc(exc)
                     attempt_ms = int((time.monotonic() - attempt_start) * 1000)
@@ -317,17 +337,22 @@ class BedrockProvider(ProviderPort):
                 return response
 
             response = await retry_async(_op, should_retry=_should_retry, policy=policy)
-        except Exception:
-            await _close_client_if_needed(self._runtime_client is None, client)
+        except BaseException:
+            if not acquisition_abandoned:
+                try:
+                    await _close_client_if_needed(True, client)
+                except Exception:
+                    pass
             raise
 
         queue: sync_queue.Queue[object] = sync_queue.Queue()
         state = _BedrockStreamState(queue=queue)
+        cleanup = _BedrockCleanup(response, client)
+        closed = asyncio.Event()
         consume_task = asyncio.create_task(
             self._consume_stream(
                 response=response,
-                client=client,
-                close_client=self._runtime_client is None,
+                cleanup=cleanup,
                 state=state,
                 start=start,
                 request_id=request_id,
@@ -347,7 +372,14 @@ class BedrockProvider(ProviderPort):
                 yield str(item)
 
         async def get_final_result() -> ProviderStreamResult:
-            await consume_task
+            close_waiter = asyncio.create_task(closed.wait())
+            try:
+                await asyncio.wait((consume_task, close_waiter), return_when=asyncio.FIRST_COMPLETED)
+                if closed.is_set():
+                    raise asyncio.CancelledError
+                await asyncio.shield(consume_task)
+            finally:
+                close_waiter.cancel()
             if state.error is not None:
                 raise state.error
             if state.final_result is None:
@@ -359,7 +391,7 @@ class BedrockProvider(ProviderPort):
             return state.final_result
 
         return ProviderStreamSession(
-            chunks=chunk_iterator(),
+            chunks=_OwnedBedrockChunks(chunk_iterator(), response, consume_task, on_close=closed.set, cleanup=cleanup),
             get_final_result=get_final_result,
         )
 
@@ -367,8 +399,7 @@ class BedrockProvider(ProviderPort):
         self,
         *,
         response: dict[str, Any],
-        client: Any,
-        close_client: bool,
+        cleanup: "_BedrockCleanup",
         state: "_BedrockStreamState",
         start: float,
         request_id: Any,
@@ -397,7 +428,7 @@ class BedrockProvider(ProviderPort):
                     prompt_version=self._cfg.prompt_version,
                 )
         finally:
-            await _close_client_if_needed(close_client, client)
+            await cleanup.close()
 
     def _build_client(self) -> Any:
         if self._runtime_client is not None:
@@ -656,9 +687,113 @@ def _build_inline_stream_session(
         return final_result
 
     return ProviderStreamSession(
-        chunks=chunk_iterator(),
+        chunks=_OwnedBedrockChunks(chunk_iterator(), response, on_close=done.set),
         get_final_result=get_final_result,
     )
+
+
+def _observe_task(task):
+    try:
+        task.result()
+    except BaseException:
+        pass
+
+
+async def _close_event_stream(response):
+    close = getattr(response.get("stream"), "close", None)
+    if callable(close):
+        try:
+            await asyncio.to_thread(close)
+        except Exception:
+            pass
+
+
+class _OwnedBedrockChunks:
+    """Own the SDK event stream and any worker, including before first pull.
+
+    Cancelling an asyncio task cannot stop an SDK call already running in a thread.
+    """
+    def __init__(self, iterator, response, worker=None, on_close=None, cleanup=None):
+        self._iterator = iterator
+        self._response = response
+        self._worker = worker
+        self._cleanup = cleanup
+        self._on_close = on_close
+        self._closed = False
+        self._pull = None
+        self._close_task = None
+
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self):
+        if self._closed:
+            raise StopAsyncIteration
+        self._pull = asyncio.create_task(self._iterator.__anext__())
+        try:
+            return await self._pull
+        except StopAsyncIteration:
+            await self.aclose(completed=True)
+            raise
+        except BaseException:
+            await self.aclose()
+            raise
+        finally:
+            self._pull = None
+
+    async def aclose(self, *, completed=False):
+        if self._close_task is None:
+            self._closed = True
+            if self._on_close and not completed:
+                self._on_close()
+            if self._worker and not completed and not self._worker.done():
+                self._worker.cancel()
+            self._close_task = asyncio.create_task(self._close())
+            self._close_task.add_done_callback(_observe_task)
+        await asyncio.shield(self._close_task)
+
+    async def _close(self):
+        if self._pull and not self._pull.done():
+            self._pull.cancel()
+            try:
+                await self._pull
+            except BaseException:
+                pass
+        try:
+            await self._iterator.aclose()
+        except BaseException:
+            pass
+        if self._worker:
+            try:
+                await self._worker
+            except BaseException:
+                pass
+        if self._cleanup:
+            await self._cleanup.close()
+        else:
+            await _close_event_stream(self._response)
+
+
+class _BedrockCleanup:
+    def __init__(self, response, client):
+        self._response = response
+        self._client = client
+        self._task = None
+
+    async def close(self):
+        if self._task is None:
+            self._task = asyncio.create_task(self._close())
+            self._task.add_done_callback(_observe_task)
+        await asyncio.shield(self._task)
+
+    async def _close(self):
+        try:
+            await _close_event_stream(self._response)
+        finally:
+            try:
+                await _close_client_if_needed(True, self._client)
+            except Exception:
+                pass
 
 
 def _build_payload(*, input: ProviderInput, model: str) -> dict[str, Any]:

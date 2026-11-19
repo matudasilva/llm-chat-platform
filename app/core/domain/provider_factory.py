@@ -5,6 +5,7 @@ import time
 from collections.abc import Callable
 from dataclasses import dataclass
 
+from app.core.observability.routing_evidence import RoutingEvidence
 from app.core.domain.provider import ProviderPort
 from app.core.domain.disabled_provider import DisabledProvider
 from app.core.domain.routing.heuristic_routing_policy import HeuristicRoutingPolicy
@@ -24,6 +25,7 @@ logger = logging.getLogger(__name__)
 class ResolvedProvider:
     provider: ProviderPort
     decision: RoutingDecision
+    evidence: RoutingEvidence | None = None
 
 
 ProviderResolver = Callable[[RoutingContext], ResolvedProvider]
@@ -52,6 +54,8 @@ def build_routing_policy(_settings=None) -> RoutingPolicy:
 
 
 def _build_named_routing_policy(cfg, policy_name: str) -> RoutingPolicy:
+    if policy_name not in {"static", "heuristic"}:
+        raise ValueError("Unsupported routing policy")
     primary_name = cfg.provider.lower()
     fallback_name = getattr(cfg, "fallback_provider", None)
     fallback_name = fallback_name.lower() if isinstance(fallback_name, str) and fallback_name.strip() else None
@@ -83,15 +87,21 @@ def build_provider_resolver(_settings=None) -> ProviderResolver:
 
     def _resolve(context: RoutingContext) -> ResolvedProvider:
         decision = policy.decide(context)
-        _log_routing_decision(context=context, decision=decision)
-        _maybe_log_shadow_divergence(cfg=cfg, context=context, active_decision=decision, shadow_policy=shadow_policy)
-        provider = build_provider_for_decision(cfg, decision)
-        return ResolvedProvider(provider=provider, decision=decision)
+        try:
+            _log_routing_decision(context=context, decision=decision)
+            _maybe_log_shadow_divergence(cfg=cfg, context=context, active_decision=decision, shadow_policy=shadow_policy)
+        except Exception:
+            pass
+        evidence = RoutingEvidence(decision, fallback_known=True)
+        provider = build_provider_for_decision(cfg, decision, evidence=evidence)
+        return ResolvedProvider(provider=provider, decision=decision, evidence=evidence)
 
     return _resolve
 
 
-def build_provider_for_decision(cfg, decision: RoutingDecision) -> ProviderPort:
+def build_provider_for_decision(cfg, decision: RoutingDecision, *, evidence: RoutingEvidence | None = None) -> ProviderPort:
+    if decision.policy_name not in {"static", "heuristic"}:
+        raise ValueError("Unsupported routing policy")
     primary = _build_single_provider(decision.provider, cfg, model_override=decision.model)
 
     fallback_name = decision.fallback_provider
@@ -107,10 +117,13 @@ def build_provider_for_decision(cfg, decision: RoutingDecision) -> ProviderPort:
         cfg,
         model_override=decision.fallback_model,
     )
-    return ResilientProvider(primary=primary, fallback=fallback)
+    return ResilientProvider(primary=primary, fallback=fallback, evidence=evidence)
 
 
 def _build_single_provider(provider: str, cfg, *, model_override: str | None = None) -> ProviderPort:
+    if provider == "vertex":
+        return DisabledProvider("vertex", "Vertex lifecycle and cache gates are not implemented")
+
     if provider == "stub":
         return StubProvider(
             mode=cfg.stub_provider_mode,
@@ -159,6 +172,8 @@ def _model_for_provider(provider: str | None, cfg) -> str | None:
         return cfg.openai_model
     if provider == "bedrock":
         return cfg.bedrock_model
+    if provider == "vertex":
+        return cfg.vertex_model
     return None
 
 
@@ -184,6 +199,9 @@ def _log_routing_decision(*, context: RoutingContext, decision: RoutingDecision)
 
 
 def _build_shadow_policy(cfg) -> RoutingPolicy | None:
+    shadow_name = getattr(cfg, "routing_shadow_policy", None)
+    if shadow_name is not None and shadow_name not in {"static", "heuristic"}:
+        raise ValueError("Unsupported routing policy")
     if not getattr(cfg, "routing_shadow_mode_enabled", False):
         return None
 

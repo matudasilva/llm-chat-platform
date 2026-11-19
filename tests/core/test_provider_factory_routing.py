@@ -204,3 +204,57 @@ def test_provider_resolver_swallows_shadow_errors(monkeypatch, caplog) -> None:
     assert isinstance(resolved.provider, StubProvider)
     error_record = next(record for record in caplog.records if getattr(record, "event", None) == "routing.shadow_error")
     assert error_record.request_id
+
+
+def test_dormant_policy_rejected_by_direct_factory_and_settings():
+    from types import SimpleNamespace
+    import pytest
+    from pydantic import ValidationError
+    from app.core.domain.provider_factory import build_provider_resolver
+    from app.core.settings import Settings
+
+    with pytest.raises(ValidationError):
+        Settings(routing_policy="deterministic")
+    with pytest.raises(ValidationError):
+        Settings(routing_shadow_policy="deterministic")
+    with pytest.raises(ValueError, match="Unsupported routing policy"):
+        build_provider_resolver(SimpleNamespace(routing_policy="deterministic"))
+    for enabled in (False, True):
+        cfg = Settings(routing_shadow_mode_enabled=enabled)
+        cfg.routing_shadow_policy = "deterministic"
+        with pytest.raises(ValueError, match="Unsupported routing policy"):
+            build_provider_resolver(cfg)
+
+
+def test_direct_decision_rejects_dormant_policy_before_construction(monkeypatch):
+    import pytest
+    from app.core.domain import provider_factory
+    from app.core.domain.routing.routing_types import RoutingDecision
+
+    def unexpected(*args, **kwargs):
+        raise AssertionError("provider construction must not run")
+
+    monkeypatch.setattr(provider_factory, "_build_single_provider", unexpected)
+    decision = RoutingDecision(provider="vertex", model="model", model_tier="balanced",
+                               rationale="test", policy_name="deterministic")
+    with pytest.raises(ValueError, match="Unsupported routing policy"):
+        provider_factory.build_provider_for_decision(object(), decision)
+
+
+def test_direct_decision_preserves_legacy_policy_construction(monkeypatch):
+    from app.core.domain import provider_factory
+    from app.core.domain.routing.routing_types import RoutingDecision
+
+    calls = []
+    expected = object()
+    def build(name, cfg, *, model_override=None):
+        calls.append((name, cfg, model_override))
+        return expected
+
+    monkeypatch.setattr(provider_factory, "_build_single_provider", build)
+    cfg = object()
+    for policy_name in ("static", "heuristic"):
+        decision = RoutingDecision(provider="stub", model="m", model_tier="balanced",
+                                   rationale="test", policy_name=policy_name)
+        assert provider_factory.build_provider_for_decision(cfg, decision) is expected
+    assert calls == [("stub", cfg, "m"), ("stub", cfg, "m")]

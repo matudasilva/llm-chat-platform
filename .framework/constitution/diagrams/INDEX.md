@@ -6,12 +6,18 @@ existing diagram.
 
 | tipo | alcance | archivo | generado/manual | última actualización | refresh_pending | refresh_baseline |
 |---|---|---|---|---|---|---|
-| context | producto | `context.svg` | generado | 2026-09-08 | no | `sha256:b7860c8b78c250020b27719dce1057d8c39c2408274451284112b6b6571b966c` |
+| context | producto | `context.svg` | generado | 2026-09-08 | sí (signal) | `sha256:b7860c8b78c250020b27719dce1057d8c39c2408274451284112b6b6571b966c` |
 | architecture | framework | `architecture.svg` | generado | 2026-08-07 | sí (deferred) | `sha256:6096ce9ea9c68868dd5216f05b946195f01a2d2db874d05e7612d69274ddf957` |
 | structural | producto | `structural.svg` | manual | 2026-08-07 | sí (deferred) | `sha256:6096ce9ea9c68868dd5216f05b946195f01a2d2db874d05e7612d69274ddf957` |
-| deployment | producto | `deployment.svg` | manual | 2026-09-08 | no | `sha256:b7860c8b78c250020b27719dce1057d8c39c2408274451284112b6b6571b966c` |
+| deployment | producto | `deployment.svg` | manual | 2026-09-08 | sí (signal) | `sha256:b7860c8b78c250020b27719dce1057d8c39c2408274451284112b6b6571b966c` |
 | behavior | producto | `behavior.svg` | manual | 2026-08-07 | sí (deferred) | `sha256:6096ce9ea9c68868dd5216f05b946195f01a2d2db874d05e7612d69274ddf957` |
 | erd | producto | `erd.svg` | manual | 2026-08-07 | sí (deferred) | `sha256:6096ce9ea9c68868dd5216f05b946195f01a2d2db874d05e7612d69274ddf957` |
+
+## ORQ-42 validation signal (2026-11-18)
+
+The report-only refresh check flagged all six diagram rows as pending after
+roadmap changes. This is a signal for later diagram review, not evidence that a
+specific drawing is stale. No SVG or baseline is changed by this observation.
 
 ## ORQ-37 replan result (2026-09-13) — deferred again, ORQ-37 still Blocked
 

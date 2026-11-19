@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import logging
 from dataclasses import dataclass
-from typing import Any, AsyncIterator
+from typing import Any
 
 from app.core.domain.provider import (
     ProviderInput,
@@ -66,10 +66,84 @@ class _ResilientStreamState:
     attempts_used: int = 1
     final_provider: str | None = None
     failure_kind: str | None = None
+    active_chunks: Any = None
+
+
+class _OwnedChunks:
+    def __init__(self, state: _ResilientStreamState, driver: asyncio.Task[None]) -> None:
+        self._state = state
+        self._driver = driver
+        self._closed = False
+        self._close_task: asyncio.Task[None] | None = None
+        self._closed_signal = asyncio.get_running_loop().create_future()
+
+    def __aiter__(self) -> _OwnedChunks:
+        return self
+
+    async def __anext__(self) -> str:
+        if self._closed:
+            raise StopAsyncIteration
+        item = await self._state.queue.get()
+        if self._closed or item is _STREAM_END:
+            self._state.queue.put_nowait(_STREAM_END)
+            raise StopAsyncIteration
+        return str(item)
+
+    async def aclose(self) -> None:
+        if self._close_task is None:
+            self._closed = True
+            self._closed_signal.set_result(None)
+            self._state.queue.put_nowait(_STREAM_END)
+            self._close_task = asyncio.create_task(self._close())
+            self._close_task.add_done_callback(_observe_task)
+        await asyncio.shield(self._close_task)
+
+    async def wait_for_driver(self) -> None:
+        if not self._driver.done():
+            await asyncio.wait(
+                (self._driver, self._closed_signal),
+                return_when=asyncio.FIRST_COMPLETED,
+            )
+        if not self._driver.done() or self._driver.cancelled():
+            raise asyncio.CancelledError
+        await asyncio.shield(self._driver)
+
+    async def _close(self) -> None:
+        self._driver.cancel()
+        try:
+            await self._driver
+        except asyncio.CancelledError:
+            pass
+        finally:
+            await _close_active(self._state)
+
+
+def _observe_task(task: asyncio.Task[None]) -> None:
+    if not task.cancelled():
+        task.exception()
+
+
+async def _close_active(state: _ResilientStreamState) -> None:
+    chunks, state.active_chunks = state.active_chunks, None
+    close = getattr(chunks, "aclose", None)
+    if close is not None:
+        async def cleanup() -> None:
+            try:
+                await close()
+            except Exception:
+                pass
+
+        cleanup_task = asyncio.create_task(cleanup())
+        try:
+            await asyncio.shield(cleanup_task)
+        except asyncio.CancelledError:
+            await asyncio.shield(cleanup_task)
+            raise
 
 
 class ResilientProvider(ProviderPort):
-    def __init__(self, primary: ProviderPort, fallback: ProviderPort) -> None:
+    def __init__(self, primary: ProviderPort, fallback: ProviderPort, *, evidence=None) -> None:
+        self._evidence = evidence
         self._primary = primary
         self._fallback = fallback
         self.provider_name = _provider_label(primary)
@@ -106,6 +180,7 @@ class ResilientProvider(ProviderPort):
                 stream=False,
             )
             try:
+                self._mark_fallback_dispatch()
                 result = await self._fallback.generate(input)
             except Exception as fallback_exc:
                 self._log_final(
@@ -188,6 +263,7 @@ class ResilientProvider(ProviderPort):
         fallback_stream = getattr(self._fallback, "stream", None)
         if not callable(fallback_stream):
             return None
+        self._mark_fallback_dispatch()
         return await fallback_stream(input)
 
     async def _start_fallback_session(
@@ -211,19 +287,14 @@ class ResilientProvider(ProviderPort):
         initial_session: ProviderStreamSession,
         state: _ResilientStreamState,
     ) -> ProviderStreamSession:
+        state.active_chunks = initial_session.chunks
         driver_task = asyncio.create_task(
             self._drive_stream(input=input, session=initial_session, state=state)
         )
-
-        async def chunk_iterator() -> AsyncIterator[str]:
-            while True:
-                item = await state.queue.get()
-                if item is _STREAM_END:
-                    break
-                yield str(item)
+        chunks = _OwnedChunks(state, driver_task)
 
         async def get_final_result() -> ProviderStreamResult:
-            await driver_task
+            await chunks.wait_for_driver()
             if state.error is not None:
                 raise state.error
             if state.final_result is None:
@@ -235,7 +306,7 @@ class ResilientProvider(ProviderPort):
             return state.final_result
 
         return ProviderStreamSession(
-            chunks=chunk_iterator(),
+            chunks=chunks,
             get_final_result=get_final_result,
         )
 
@@ -264,9 +335,11 @@ class ResilientProvider(ProviderPort):
                 state.fallback_used = True
                 state.attempts_used = 2
                 try:
+                    await _close_active(state)
                     fallback_session = await self._start_fallback_session(input=input, exc=exc)
                     if fallback_session is None:
                         raise
+                    state.active_chunks = fallback_session.chunks
                     state.final_result = await self._consume_session(
                         session=fallback_session,
                         state=state,
@@ -281,6 +354,7 @@ class ResilientProvider(ProviderPort):
                 state.final_provider = self._fallback_name if state.fallback_used else self.provider_name
                 state.failure_kind = _failure_kind(exc)
         finally:
+            await _close_active(state)
             self._log_final(
                 request_id=getattr(input, "request_id", None),
                 final_provider=state.final_provider or self.provider_name,
@@ -298,14 +372,27 @@ class ResilientProvider(ProviderPort):
         session: ProviderStreamSession,
         state: _ResilientStreamState,
     ) -> ProviderStreamResult:
-        async for chunk in session.chunks:
+        async for chunk in state.active_chunks:
             if not state.fallback_used:
                 state.first_token_emitted = True
             state.first_chunk_emitted = True
             await state.queue.put(chunk)
         return await session.get_final_result()
 
-    def _log_fallback(
+    def _mark_fallback_dispatch(self) -> None:
+        try:
+            if self._evidence is not None:
+                self._evidence.fallback_dispatched()
+        except Exception:
+            pass
+
+    def _log_fallback(self, **kwargs) -> None:
+        try:
+            self._log_fallback_impl(**kwargs)
+        except Exception:
+            pass
+
+    def _log_fallback_impl(
         self,
         *,
         request_id: Any,
@@ -325,7 +412,13 @@ class ResilientProvider(ProviderPort):
             },
         )
 
-    def _log_final(
+    def _log_final(self, **kwargs) -> None:
+        try:
+            self._log_final_impl(**kwargs)
+        except Exception:
+            pass
+
+    def _log_final_impl(
         self,
         *,
         request_id: Any,

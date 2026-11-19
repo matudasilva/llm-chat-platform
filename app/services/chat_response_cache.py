@@ -11,6 +11,7 @@ from app.core.domain.provider import ProviderResult
 from app.core.domain.types import ChatMessage
 from app.core.settings import settings
 from app.infra.redis_client import redis_client
+from app.services.chat_cache_policy import cache_configuration
 
 logger = logging.getLogger(__name__)
 
@@ -77,11 +78,15 @@ class ChatResponseCache:
                 provider=str(provider_payload["provider"]),
                 model_version=str(provider_payload["model_version"]),
                 prompt_version=str(provider_payload["prompt_version"]),
-                input_tokens=_as_int_or_none(provider_payload.get("input_tokens")),
-                output_tokens=_as_int_or_none(provider_payload.get("output_tokens")),
-                total_tokens=_as_int_or_none(provider_payload.get("total_tokens")),
+                input_tokens=None,
+                output_tokens=None,
+                total_tokens=None,
                 latency_ms=None,
             )
+            # Validate the stored values as before, even though they do not
+            # represent current inference usage on a cache hit.
+            for field in ("input_tokens", "output_tokens", "total_tokens"):
+                _as_int_or_none(provider_payload.get(field))
         except Exception:
             self._log(
                 logging.WARNING,
@@ -157,13 +162,9 @@ class ChatResponseCache:
 
     def _cache_key(self, *, messages: Sequence[ChatMessage], tenant_id: str) -> str:
         fingerprint = {
+            "version": 2,
             "messages": [{"role": m.role, "content": m.content} for m in messages],
-            "provider": settings.provider,
-            "fallback_provider": settings.fallback_provider,
-            "openai_model": settings.openai_model,
-            "bedrock_model": settings.bedrock_model,
-            "bedrock_prompt_version": settings.bedrock_prompt_version,
-            "stub_provider_mode": settings.stub_provider_mode,
+            **cache_configuration(settings),
         }
         digest = hashlib.sha256(
             json.dumps(fingerprint, sort_keys=True, separators=(",", ":")).encode("utf-8")

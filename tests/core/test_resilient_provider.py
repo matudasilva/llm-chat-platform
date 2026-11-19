@@ -283,3 +283,195 @@ async def test_resilient_provider_stream_does_not_fall_back_after_first_token(ca
     assert final_record.attempts_used == 1
     assert final_record.failure_kind == ProviderErrorKind.upstream
     assert final_record.first_token_emitted is True
+
+class _BlockingChunks:
+    def __init__(self, *, error: Exception | None = None) -> None:
+        self.started = asyncio.Event()
+        self.release = asyncio.Event()
+        self.closed = 0
+        self.error = error
+
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self):
+        self.started.set()
+        await self.release.wait()
+        if self.error:
+            raise self.error
+        raise StopAsyncIteration
+
+    async def aclose(self):
+        self.closed += 1
+        self.release.set()
+
+
+def _blocking_session(chunks: _BlockingChunks) -> ProviderStreamSession:
+    async def final():
+        raise AssertionError("closed stream has no result")
+
+    return ProviderStreamSession(chunks=chunks, get_final_result=final)
+
+
+@pytest.mark.asyncio
+async def test_stream_close_before_pull_wakes_waiters_and_is_idempotent() -> None:
+    upstream = _BlockingChunks()
+    provider = ResilientProvider(
+        ScriptedProvider("primary", stream_actions=[_blocking_session(upstream)]),
+        ScriptedProvider("fallback"),
+    )
+    session = await provider.stream(_provider_input())
+    assert session is not None
+    waiter = asyncio.create_task(session.get_final_result())
+    await asyncio.sleep(0)
+    pull = asyncio.create_task(anext(session.chunks))
+    await asyncio.sleep(0)
+    await asyncio.gather(session.chunks.aclose(), session.chunks.aclose())
+    with pytest.raises(StopAsyncIteration):
+        await pull
+    with pytest.raises(StopAsyncIteration):
+        await anext(session.chunks)
+    with pytest.raises(asyncio.CancelledError):
+        await waiter
+    assert upstream.closed == 1
+
+
+@pytest.mark.asyncio
+async def test_cancel_final_waiter_does_not_cancel_driver_or_other_waiters() -> None:
+    upstream = _BlockingChunks()
+    provider = ResilientProvider(
+        ScriptedProvider("primary", stream_actions=[_blocking_session(upstream)]),
+        ScriptedProvider("fallback"),
+    )
+    session = await provider.stream(_provider_input())
+    assert session is not None
+    first = asyncio.create_task(session.get_final_result())
+    second = asyncio.create_task(session.get_final_result())
+    await upstream.started.wait()
+    first.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await first
+    assert not second.done()
+    await session.chunks.aclose()
+    with pytest.raises(asyncio.CancelledError):
+        await second
+    assert upstream.closed == 1
+
+
+@pytest.mark.asyncio
+async def test_close_after_fallback_transfer_closes_both_sessions() -> None:
+    primary_chunks = _BlockingChunks(error=_retryable_error())
+    fallback_chunks = _BlockingChunks()
+    fallback = ScriptedProvider("fallback", stream_actions=[_blocking_session(fallback_chunks)])
+    provider = ResilientProvider(
+        ScriptedProvider("primary", stream_actions=[_blocking_session(primary_chunks)]), fallback
+    )
+    session = await provider.stream(_provider_input())
+    assert session is not None
+    await primary_chunks.started.wait()
+    primary_chunks.release.set()
+    await fallback_chunks.started.wait()
+    await session.chunks.aclose()
+    assert primary_chunks.closed == fallback_chunks.closed == 1
+    assert fallback.stream_calls == 1
+    with pytest.raises(asyncio.CancelledError):
+        await session.get_final_result()
+
+@pytest.mark.asyncio
+async def test_close_before_driver_starts_closes_acquired_session() -> None:
+    upstream = _BlockingChunks()
+    fallback = ScriptedProvider("fallback")
+    provider = ResilientProvider(
+        ScriptedProvider("primary", stream_actions=[_blocking_session(upstream)]), fallback
+    )
+    session = await provider.stream(_provider_input())
+    assert session is not None
+    await session.chunks.aclose()
+    assert upstream.closed == 1
+    assert fallback.stream_calls == 0
+    with pytest.raises(asyncio.CancelledError):
+        await session.get_final_result()
+
+
+@pytest.mark.asyncio
+async def test_close_failure_does_not_replace_cancellation() -> None:
+    class RaisingChunks(_BlockingChunks):
+        async def aclose(self):
+            self.closed += 1
+            raise RuntimeError("cleanup failed")
+
+    upstream = RaisingChunks()
+    provider = ResilientProvider(
+        ScriptedProvider("primary", stream_actions=[_blocking_session(upstream)]),
+        ScriptedProvider("fallback"),
+    )
+    session = await provider.stream(_provider_input())
+    assert session is not None
+    await upstream.started.wait()
+    await session.chunks.aclose()
+    with pytest.raises(asyncio.CancelledError):
+        await session.get_final_result()
+    assert upstream.closed == 1
+
+
+@pytest.mark.asyncio
+async def test_cancel_during_fallback_acquisition_does_not_retry() -> None:
+    class AcquiringProvider(ScriptedProvider):
+        async def stream(self, input):
+            self.stream_calls += 1
+            started.set()
+            try:
+                await asyncio.Event().wait()
+            finally:
+                cancelled.set()
+
+    started, cancelled = asyncio.Event(), asyncio.Event()
+    primary_chunks = _BlockingChunks(error=_retryable_error())
+    fallback = AcquiringProvider("fallback")
+    provider = ResilientProvider(
+        ScriptedProvider("primary", stream_actions=[_blocking_session(primary_chunks)]), fallback
+    )
+    session = await provider.stream(_provider_input())
+    assert session is not None
+    await primary_chunks.started.wait()
+    primary_chunks.release.set()
+    await started.wait()
+    await session.chunks.aclose()
+    assert cancelled.is_set()
+    assert primary_chunks.closed == 1
+    assert fallback.stream_calls == 1
+    with pytest.raises(asyncio.CancelledError):
+        await session.get_final_result()
+
+@pytest.mark.asyncio
+async def test_stalled_upstream_close_does_not_block_final_waiters() -> None:
+    class StalledCloseChunks(_BlockingChunks):
+        def __init__(self):
+            super().__init__()
+            self.close_started = asyncio.Event()
+            self.allow_close = asyncio.Event()
+
+        async def aclose(self):
+            self.closed += 1
+            self.close_started.set()
+            await self.allow_close.wait()
+
+    upstream = StalledCloseChunks()
+    provider = ResilientProvider(
+        ScriptedProvider("primary", stream_actions=[_blocking_session(upstream)]),
+        ScriptedProvider("fallback"),
+    )
+    session = await provider.stream(_provider_input())
+    assert session is not None
+    await upstream.started.wait()
+    waiter = asyncio.create_task(session.get_final_result())
+    close = asyncio.create_task(session.chunks.aclose())
+    await upstream.close_started.wait()
+    with pytest.raises(asyncio.CancelledError):
+        await asyncio.wait_for(waiter, timeout=1)
+    with pytest.raises(asyncio.CancelledError):
+        await asyncio.wait_for(session.get_final_result(), timeout=1)
+    assert not close.done()
+    upstream.allow_close.set()
+    await close
+    assert upstream.closed == 1

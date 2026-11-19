@@ -23,6 +23,76 @@ from app.core.utils.retry import RetryPolicy, retry_async
 
 
 _STREAM_END = object()
+_PENDING_ACQUISITION_CLEANUPS: set[asyncio.Task] = set()
+
+def _observe_task(task: asyncio.Task) -> None:
+    if not task.cancelled():
+        task.exception()
+
+
+class _OpenAIStreamOwner:
+    def __init__(self, queue: asyncio.Queue, context: Any, client: Any, close_client: bool) -> None:
+        self.queue = queue
+        self.context = context
+        self.client = client
+        self.close_client = close_client
+        self.driver: asyncio.Task | None = None
+        self.closed = False
+        self.closed_signal = asyncio.get_running_loop().create_future()
+        self.cleanup_task: asyncio.Task | None = None
+        self.close_task: asyncio.Task | None = None
+
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self):
+        if self.closed:
+            raise StopAsyncIteration
+        item = await self.queue.get()
+        if self.closed or item is _STREAM_END:
+            self.queue.put_nowait(_STREAM_END)
+            raise StopAsyncIteration
+        return str(item)
+
+    async def cleanup(self) -> None:
+        if self.cleanup_task is None:
+            self.cleanup_task = asyncio.create_task(self._cleanup())
+            self.cleanup_task.add_done_callback(_observe_task)
+        await asyncio.shield(self.cleanup_task)
+
+    async def _cleanup(self) -> None:
+        try:
+            await _close_stream_context(self.context, self.close_client, self.client)
+        except Exception:
+            pass
+
+    async def aclose(self) -> None:
+        if self.close_task is None:
+            self.closed = True
+            self.closed_signal.set_result(None)
+            self.queue.put_nowait(_STREAM_END)
+            self.close_task = asyncio.create_task(self._close())
+            self.close_task.add_done_callback(_observe_task)
+        await asyncio.shield(self.close_task)
+
+    async def _close(self) -> None:
+        assert self.driver is not None
+        self.driver.cancel()
+        try:
+            await self.driver
+        except asyncio.CancelledError:
+            pass
+        finally:
+            await self.cleanup()
+
+    async def wait(self) -> None:
+        assert self.driver is not None
+        if not self.driver.done():
+            await asyncio.wait((self.driver, self.closed_signal), return_when=asyncio.FIRST_COMPLETED)
+        if not self.driver.done() or self.driver.cancelled():
+            raise asyncio.CancelledError
+        await asyncio.shield(self.driver)
+
 
 def _map_httpx_exc(exc: Exception, *, provider: str) -> ProviderError:
     """
@@ -364,11 +434,25 @@ class OpenAIProvider(ProviderPort):
                     "stream": True,
                 },
             )
+        except asyncio.CancelledError:
+            cleanup = asyncio.create_task(
+                _close_stream_context(stream_context, self._client is None, client)
+            )
+            _PENDING_ACQUISITION_CLEANUPS.add(cleanup)
+            cleanup.add_done_callback(_PENDING_ACQUISITION_CLEANUPS.discard)
+            cleanup.add_done_callback(_observe_task)
+            raise
         except ProviderError:
-            await _close_stream_context(stream_context, self._client is None, client)
+            try:
+                await _close_stream_context(stream_context, self._client is None, client)
+            except Exception:
+                pass
             raise
         except Exception as exc:
-            await _close_stream_context(stream_context, self._client is None, client)
+            try:
+                await _close_stream_context(stream_context, self._client is None, client)
+            except Exception:
+                pass
             if isinstance(exc, httpx.HTTPError):
                 raise _map_httpx_exc(exc, provider="openai") from exc
             raise ProviderError(
@@ -379,12 +463,11 @@ class OpenAIProvider(ProviderPort):
         queue: asyncio.Queue[object] = asyncio.Queue()
         state = _OpenAIStreamState(queue=queue)
 
+        owner = _OpenAIStreamOwner(queue, stream_context, client, self._client is None)
         consume_task = asyncio.create_task(
             self._consume_stream(
                 response=response,
-                stream_context=stream_context,
-                client=client,
-                close_client=self._client is None,
+                owner=owner,
                 state=state,
                 start=start,
                 request_id=request_id,
@@ -392,15 +475,10 @@ class OpenAIProvider(ProviderPort):
             )
         )
 
-        async def chunk_iterator() -> AsyncIterator[str]:
-            while True:
-                item = await queue.get()
-                if item is _STREAM_END:
-                    break
-                yield str(item)
+        owner.driver = consume_task
 
         async def get_final_result() -> ProviderStreamResult:
-            await consume_task
+            await owner.wait()
             if state.error is not None:
                 raise state.error
             if state.final_result is None:
@@ -411,7 +489,7 @@ class OpenAIProvider(ProviderPort):
             return state.final_result
 
         return ProviderStreamSession(
-            chunks=chunk_iterator(),
+            chunks=owner,
             get_final_result=get_final_result,
         )
 
@@ -464,9 +542,7 @@ class OpenAIProvider(ProviderPort):
         self,
         *,
         response: httpx.Response,
-        stream_context: Any,
-        client: httpx.AsyncClient,
-        close_client: bool,
+        owner: _OpenAIStreamOwner,
         state: "_OpenAIStreamState",
         start: float,
         request_id: Any,
@@ -479,8 +555,9 @@ class OpenAIProvider(ProviderPort):
         last_event_name: str | None = None
         last_payload_keys: tuple[str, ...] = ()
 
+        events = _iter_sse_events(response)
         try:
-            async for event_name, payload in _iter_sse_events(response):
+            async for event_name, payload in events:
                 last_event_name = event_name or _stream_payload_type(payload)
                 last_payload_keys = tuple(sorted(payload.keys()))
 
@@ -571,8 +648,12 @@ class OpenAIProvider(ProviderPort):
                 },
             )
         finally:
+            try:
+                await events.aclose()
+            except Exception:
+                pass
+            await owner.cleanup()
             await state.queue.put(_STREAM_END)
-            await _close_stream_context(stream_context, close_client, client)
 
 
 @dataclass(slots=True)

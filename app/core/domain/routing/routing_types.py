@@ -19,6 +19,7 @@ class RoutingContext:
     estimated_tokens: int
     primary_provider_available: bool
     conversation_id: UUID | None = None
+    envelope: EnvelopeSignals | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -41,3 +42,48 @@ class RoutingOutcome:
     stream_completed: bool
     latency_bucket: RoutingLatencyBucket
     failure_kind: RoutingFailureKind | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class EnvelopeSignals:
+    character_count: int
+    utf8_bytes: int
+    message_count: int
+    has_history: bool
+    has_memory: bool
+    has_rag: bool
+    requested_output: int | None
+    fingerprint: str
+    stream: bool
+
+
+@dataclass(frozen=True, slots=True)
+class RoutingDestination:
+    provider: str
+    model: str | None
+    configuration_id: str | None
+    restriction_id: str | None
+
+
+@dataclass(frozen=True, slots=True)
+class CandidateAssessment:
+    provider: str
+    model: str
+    status: Literal["eligible", "capacity_ineligible", "other_ineligible", "unknown"]
+    fingerprint: str
+    configuration_id: str
+    restriction_id: str
+    certification_id: str
+    reserved_output: int
+    stream: bool
+
+
+@dataclass(frozen=True, slots=True)
+class QualityEvidence:
+    evidence_id: str
+    default_configuration_id: str
+    alternative_configuration_id: str
+    condition: str
+    capacity_certification_id: str
+    stream: bool
+    restriction_id: str

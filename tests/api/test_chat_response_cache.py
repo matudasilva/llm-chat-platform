@@ -18,6 +18,8 @@ from app.models.message import Message
 from app.schemas.chat import ChatRequest
 from app.services import chat_response_cache as cache_module
 from app.services.chat_response_cache import ChatResponseCache
+from app.services.chat_cache_policy import execution_configuration_id
+from app.core.settings import settings
 
 
 class _BeginTx:
@@ -106,6 +108,7 @@ class FakeChatService:
     content: str = "hello from provider"
     run_calls: int = 0
     stream_calls: int = 0
+    execution_configuration_id: str = field(default_factory=lambda: execution_configuration_id(settings))
 
     async def run(self, *, request_id: uuid.UUID, messages: list[ChatMessage]) -> ChatServiceResult:
         self.run_calls += 1

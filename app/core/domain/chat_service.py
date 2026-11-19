@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import asyncio
+import contextvars
 import logging
 from dataclasses import dataclass
 from typing import Any, AsyncIterator, Awaitable, Callable, Sequence
 from uuid import UUID
 
 from app.core.observability.tracing import set_attribute, span
+from app.core.observability.routing_evidence import RoutingEvidence
 
 from .provider_factory import ProviderResolver
 from .routing.routing_types import RoutingContext
@@ -18,6 +20,12 @@ from .provider_errors import ProviderError, ProviderErrorKind
 
 
 logger = logging.getLogger(__name__)
+
+def _safe_exception(*args, **kwargs):
+    try:
+        logger.exception(*args, **kwargs)
+    except Exception:
+        pass
 
 RoutingContextBuilder = Callable[..., RoutingContext]
 
@@ -34,7 +42,7 @@ class ChatServiceStreamSession:
     get_final_result: Callable[[], Awaitable[StreamChatResult]]
 
 async def _traced_generation_stream(
-    chunks: AsyncIterator[str], provider_name: str
+    chunks: AsyncIterator[str], provider_name: str, evidence: RoutingEvidence, request_id: UUID
 ) -> AsyncIterator[str]:
     """Wrap a provider stream so `rag.generate` covers the real generation.
 
@@ -55,12 +63,78 @@ async def _traced_generation_stream(
                 yield chunk
         except (GeneratorExit, asyncio.CancelledError):
             set_attribute(generate_span, "rag.generation_outcome", "cancelled")
+            evidence.terminal(request_id=request_id, stream=True, status="cancelled")
             raise
-        except BaseException:
+        except BaseException as exc:
             set_attribute(generate_span, "rag.generation_outcome", "error")
+            evidence.terminal(request_id=request_id, stream=True, status="error", error=exc)
             raise
         else:
             set_attribute(generate_span, "rag.generation_outcome", "ok")
+
+
+class _OwnedGenerationStream:
+    """Own the provider iterator even before the traced generator starts."""
+
+    def __init__(self, chunks, provider_name, evidence, request_id):
+        self._chunks = chunks
+        self._evidence = evidence
+        self._request_id = request_id
+        self._traced = _traced_generation_stream(chunks, provider_name, evidence, request_id)
+        self._pull = None
+        self._context = None
+        self._close_task = None
+        self._closed = False
+
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self):
+        if self._closed:
+            raise StopAsyncIteration
+        if self._pull is not None:
+            raise RuntimeError("concurrent stream pulls are not supported")
+        if self._context is None:
+            self._context = contextvars.copy_context()
+        self._pull = asyncio.create_task(self._traced.__anext__(), context=self._context)
+        try:
+            return await self._pull
+        except StopAsyncIteration:
+            await self.aclose(completed=True)
+            raise
+        except BaseException:
+            await self.aclose()
+            raise
+        finally:
+            self._pull = None
+
+    async def aclose(self, *, completed=False):
+        if self._close_task is None:
+            self._closed = True
+            if not completed:
+                self._evidence.terminal(request_id=self._request_id, stream=True, status="cancelled")
+            self._close_task = asyncio.create_task(self._close())
+        await asyncio.shield(self._close_task)
+
+    async def _close(self):
+        pull = self._pull
+        if pull is not None and not pull.done():
+            pull.cancel()
+            try:
+                await pull
+            except BaseException:
+                pass
+        for iterator in (self._traced, self._chunks):
+            close = getattr(iterator, "aclose", None)
+            if callable(close):
+                try:
+                    if iterator is self._traced:
+                        await asyncio.create_task(close(), context=self._context)
+                    else:
+                        await close()
+                except BaseException:
+                    # Cleanup must not replace the stream outcome.
+                    pass
 
 
 class ChatService:
@@ -80,15 +154,21 @@ class ChatService:
         timeout_s: float,
         provider_resolver: ProviderResolver | None = None,
         routing_context_builder: RoutingContextBuilder | None = None,
+        execution_configuration_id: str | None = None,
     ) -> None:
         if provider is None and provider_resolver is None:
             raise ValueError("provider or provider_resolver is required")
         if provider_resolver is not None and routing_context_builder is None:
             raise ValueError("routing_context_builder is required when provider_resolver is set")
+        self._execution_configuration_id = execution_configuration_id
         self._provider = provider
         self._timeout_s = timeout_s
         self._provider_resolver = provider_resolver
         self._routing_context_builder = routing_context_builder
+
+    @property
+    def execution_configuration_id(self) -> str | None:
+        return self._execution_configuration_id
 
     async def run(
         self,
@@ -97,12 +177,20 @@ class ChatService:
         messages: Sequence[ChatMessage],
         provider_metadata: dict[str, Any] | None = None,
     ) -> ChatServiceResult:
-        provider = self._resolve_provider(request_id=request_id, messages=messages, stream=False)
         provider_in = ProviderInput(
             request_id=request_id,
             messages=messages,
             metadata=provider_metadata,
         )
+        evidence = RoutingEvidence()
+        try:
+            provider, evidence = self._resolve_provider(provider_in=provider_in, stream=False, evidence=evidence)
+        except asyncio.CancelledError:
+            evidence.terminal(request_id=request_id, stream=False, status="cancelled")
+            raise
+        except Exception as exc:
+            evidence.terminal(request_id=request_id, stream=False, status="error", error=exc)
+            raise
 
         # `rag.generate` is emitted here because this is the provider-agnostic
         # generation boundary: instrumenting inside the OpenAI/Bedrock adapters
@@ -114,14 +202,19 @@ class ChatService:
             "rag.generate", **{"provider.name": type(provider).__name__}
         ) as generate_span:
             try:
+                evidence.attempted = True
                 provider_out = await asyncio.wait_for(
                     provider.generate(provider_in),
                     timeout=self._timeout_s,
                 )
+            except asyncio.CancelledError:
+                evidence.terminal(request_id=request_id, stream=False, status="cancelled")
+                raise
             except asyncio.TimeoutError as e:
+                evidence.terminal(request_id=request_id, stream=False, status="timeout")
                 # Internal diagnostics: full stacktrace in logs, sanitized error outward.
                 set_attribute(generate_span, "rag.generation_outcome", "timeout")
-                logger.exception(
+                _safe_exception(
                     "provider_timeout request_id=%s provider=%s messages_count=%d timeout_s=%.3f",
                     str(request_id),
                     type(provider).__name__,
@@ -131,13 +224,14 @@ class ChatService:
                 raise ProviderTimeoutError("provider timeout") from e
 
             except ProviderError as e:
+                evidence.terminal(request_id=request_id, stream=False, status="error", error=e)
                 # Provider already normalized the failure; keep outward message safe and short.
                 set_attribute(
                     generate_span,
                     "rag.generation_outcome",
                     "timeout" if e.kind == ProviderErrorKind.timeout else "provider_error",
                 )
-                logger.exception(
+                _safe_exception(
                     "provider_error request_id=%s provider=%s kind=%s messages_count=%d",
                     str(request_id),
                     type(provider).__name__,
@@ -149,9 +243,10 @@ class ChatService:
                 raise ProviderExecutionError(str(e)) from e
 
             except Exception as e:
+                evidence.terminal(request_id=request_id, stream=False, status="error", error=e)
                 # Keep provider internals out of the boundary. Details belong in logs.
                 set_attribute(generate_span, "rag.generation_outcome", "error")
-                logger.exception(
+                _safe_exception(
                     "provider_execution_error request_id=%s provider=%s messages_count=%d",
                     str(request_id),
                     type(provider).__name__,
@@ -161,6 +256,7 @@ class ChatService:
 
             set_attribute(generate_span, "rag.generation_outcome", "ok")
 
+        evidence.terminal(request_id=request_id, stream=False, status="success", result=provider_out)
         assistant = ChatMessage(role="assistant", content=provider_out.content)
 
         return ChatServiceResult(
@@ -176,12 +272,20 @@ class ChatService:
         messages: Sequence[ChatMessage],
         provider_metadata: dict[str, Any] | None = None,
     ) -> ChatServiceStreamSession:
-        provider = self._resolve_provider(request_id=request_id, messages=messages, stream=True)
         provider_in = ProviderInput(
             request_id=request_id,
             messages=messages,
             metadata=provider_metadata,
         )
+        evidence = RoutingEvidence()
+        try:
+            provider, evidence = self._resolve_provider(provider_in=provider_in, stream=True, evidence=evidence)
+        except asyncio.CancelledError:
+            evidence.terminal(request_id=request_id, stream=True, status="cancelled")
+            raise
+        except Exception as exc:
+            evidence.terminal(request_id=request_id, stream=True, status="error", error=exc)
+            raise
 
         stream_fn = getattr(provider, "stream", None)
         if not callable(stream_fn):
@@ -206,7 +310,15 @@ class ChatService:
                 get_final_result=fallback_final_result,
             )
 
-        provider_session = await stream_fn(provider_in)
+        try:
+            evidence.attempted = True
+            provider_session = await stream_fn(provider_in)
+        except asyncio.CancelledError:
+            evidence.terminal(request_id=request_id, stream=True, status="cancelled")
+            raise
+        except Exception as exc:
+            evidence.terminal(request_id=request_id, stream=True, status="error", error=exc)
+            raise
 
         if provider_session is None:
             result = await self.run(
@@ -231,7 +343,16 @@ class ChatService:
             )
 
         async def final_result() -> StreamChatResult:
-            provider_stream_result = await provider_session.get_final_result()
+            try:
+                provider_stream_result = await provider_session.get_final_result()
+            except asyncio.CancelledError:
+                # A caller may cancel only its own waiter; stream ownership and
+                # terminal cancellation are handled by the iterator proxy.
+                raise
+            except Exception as exc:
+                evidence.terminal(request_id=request_id, stream=True, status="error", error=exc)
+                raise
+            evidence.terminal(request_id=request_id, stream=True, status="success", result=provider_stream_result.provider_result)
             assistant = ChatMessage(
                 role="assistant",
                 content=provider_stream_result.content,
@@ -246,8 +367,8 @@ class ChatService:
         # delegate to run(), which already emits its own `rag.generate`; wrapping
         # them again would double-count a single generation.
         return ChatServiceStreamSession(
-            chunks=_traced_generation_stream(
-                provider_session.chunks, type(provider).__name__
+            chunks=_OwnedGenerationStream(
+                provider_session.chunks, type(provider).__name__, evidence, request_id
             ),
             get_final_result=final_result,
         )
@@ -255,19 +376,20 @@ class ChatService:
     def _resolve_provider(
         self,
         *,
-        request_id: UUID,
-        messages: Sequence[ChatMessage],
+        provider_in: ProviderInput,
         stream: bool,
-    ) -> ProviderPort:
+        evidence: RoutingEvidence,
+    ) -> tuple[ProviderPort, RoutingEvidence]:
         if self._provider_resolver is None:
             assert self._provider is not None
-            return self._provider
+            return self._provider, evidence
 
         assert self._routing_context_builder is not None
         context = self._routing_context_builder(
-            request_id=request_id,
-            messages=messages,
+            provider_input=provider_in,
             stream=stream,
         )
         resolved = self._provider_resolver(context)
-        return resolved.provider
+        evidence = resolved.evidence or evidence
+        evidence.decision = resolved.decision
+        return resolved.provider, evidence
