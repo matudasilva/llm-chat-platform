@@ -6,18 +6,24 @@ existing diagram.
 
 | tipo | alcance | archivo | generado/manual | última actualización | refresh_pending | refresh_baseline |
 |---|---|---|---|---|---|---|
-| context | producto | `context.svg` | generado | 2026-11-23 | no | `sha256:8e8e52510578c13175b0fdd7aad545d4e5c91e46cd6f557f8e6f181b7bd9e7bc` |
-| architecture | framework | `architecture.svg` | generado | 2026-11-23 | no | `sha256:8e8e52510578c13175b0fdd7aad545d4e5c91e46cd6f557f8e6f181b7bd9e7bc` |
-| structural | producto | `structural.svg` | manual | 2026-11-23 | no | `sha256:8e8e52510578c13175b0fdd7aad545d4e5c91e46cd6f557f8e6f181b7bd9e7bc` |
-| deployment | producto | `deployment.svg` | manual | 2026-11-23 | no | `sha256:8e8e52510578c13175b0fdd7aad545d4e5c91e46cd6f557f8e6f181b7bd9e7bc` |
-| behavior | producto | `behavior.svg` | manual | 2026-11-23 | no | `sha256:8e8e52510578c13175b0fdd7aad545d4e5c91e46cd6f557f8e6f181b7bd9e7bc` |
-| erd | producto | `erd.svg` | manual | 2026-11-23 | no | `sha256:8e8e52510578c13175b0fdd7aad545d4e5c91e46cd6f557f8e6f181b7bd9e7bc` |
+| context | producto | `context.svg` | generado | 2026-11-23 | sí | `sha256:8e8e52510578c13175b0fdd7aad545d4e5c91e46cd6f557f8e6f181b7bd9e7bc` |
+| architecture | framework | `architecture.svg` | generado | 2026-11-23 | sí | `sha256:8e8e52510578c13175b0fdd7aad545d4e5c91e46cd6f557f8e6f181b7bd9e7bc` |
+| structural | producto | `structural.svg` | manual | 2026-11-23 | sí | `sha256:8e8e52510578c13175b0fdd7aad545d4e5c91e46cd6f557f8e6f181b7bd9e7bc` |
+| deployment | producto | `deployment.svg` | manual | 2026-11-23 | sí | `sha256:8e8e52510578c13175b0fdd7aad545d4e5c91e46cd6f557f8e6f181b7bd9e7bc` |
+| behavior | producto | `behavior.svg` | manual | 2026-11-23 | sí | `sha256:8e8e52510578c13175b0fdd7aad545d4e5c91e46cd6f557f8e6f181b7bd9e7bc` |
+| erd | producto | `erd.svg` | manual | 2026-11-23 | sí | `sha256:8e8e52510578c13175b0fdd7aad545d4e5c91e46cd6f557f8e6f181b7bd9e7bc` |
 
 ## ORQ-42 validation signal (2026-11-18)
 
 The report-only refresh check flagged all six diagram rows as pending after
 roadmap changes. This is a signal for later diagram review, not evidence that a
 specific drawing is stale. No SVG or baseline is changed by this observation.
+
+## ORQ-43 validation signal (2026-11-23)
+
+`fw_check_diagram_refresh.py` reports `estado=sí` for all six diagram rows
+after the current Constitution signature changed. This is a non-blocking
+refresh signal; no diagram content or baseline was changed by this check.
 
 ## ORQ-37 replan result (2026-09-13) — deferred again, ORQ-37 still Blocked
 

@@ -87,3 +87,4 @@ Ver [`template.md`](template.md) para la estructura mínima de un nuevo ADR.
 | [017](017-explicit-stream-ownership.md) | Explicit Stream Ownership Across Chat Layers | Accepted (bounded T14 only) | 2026-11-17 |
 | [018](018-version-cache-policy-identity.md) | Version Cache Identity for Routing Policy | Accepted (bounded isolation) | 2026-11-17 |
 | [019](019-isolated-candidate-eligibility.md) | Isolated Candidate Eligibility Against Trusted Records | Accepted (isolated preparation) | 2026-11-18 |
+| [020](020-global-manual-model-catalog.md) | Admit Global Manual Model Selections | Accepted | 2026-11-23 |

@@ -57,11 +57,12 @@ Providers implement an async-first contract:
 #### Vertex adapter preparation (ORQ-42 T10-T11)
 
 The isolated Vertex generation adapter and optional `VERTEX_*` settings are
-preparatory only. The runtime provider selection set remains `stub`, `openai`,
+preparatory only. The global primary/fallback selection set remains `stub`, `openai`,
 and `bedrock`; Settings rejects Vertex as a primary or fallback provider, and
 direct factory construction returns a disabled provider. ADC discovery and
-refresh are lazy inside the adapter. These changes do not make Vertex eligible
-for `/chat` or runtime fallback.
+refresh are lazy inside the adapter. At that stage these changes did not make Vertex eligible
+for `/chat` or runtime fallback. ORQ-43 subsequently added the catalog-only
+exception described below; global primary and fallback guards remain.
 
 `ChatService` orchestrates execution but:
 
@@ -72,6 +73,24 @@ for `/chat` or runtime fallback.
 This preserves strict separation between domain orchestration and persistence.
 
 #### Provider Resilience Boundary
+
+#### Global manual model catalog (ORQ-43)
+
+`GET /models` returns a `models` array of enabled entries using only `id`,
+`display_name`, and `description`. `POST /chat` accepts an optional `model_id`; omission or null
+keeps configured routing. An invalid or disabled ID returns 422 before chat
+session acquisition, retrieval, inference, or SSE. The server validates one
+startup-only catalog/settings generation; the default catalog is empty. Operators
+configure `MANUAL_MODEL_CATALOG_JSON` and `MANUAL_MODEL_ALLOWLIST_JSON`;
+`MANUAL_VERTEX_ENABLED` defaults to false.
+
+A selected entry uses exactly one configured Bedrock or Vertex adapter, with its
+output bound, no cross-provider fallback, and no response-cache reads or writes.
+Vertex additionally requires the default-off manual gate; global Vertex primary
+and fallback settings remain rejected. ADC is lazy. Manual evidence retains
+known token counts but leaves final model identity and cost unknown without a
+trusted version mapping. Hermetic coverage does not establish model eligibility
+or authorize live or paid use. See [ADR-020](docs/adr/020-global-manual-model-catalog.md).
 
 The provider layer acts as a hardened isolation boundary between external LLM APIs and core domain logic.
 

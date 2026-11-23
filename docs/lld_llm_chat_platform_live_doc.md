@@ -85,7 +85,7 @@ The `/chat` endpoint implements a fully transactional write-path:
 
 * Request ID propagation end-to-end for trace reconstruction
 * `ProviderPort` abstraction with validated Stub, OpenAI, and Bedrock runtime adapters
-* Separate Vertex generation adapter preparation under ORQ-42; isolated and runtime-ineligible
+* Vertex adapter selectable only through the default-off ORQ-43 manual catalog gate; global primary and fallback remain guarded
 * `ChatService` orchestration layer with no database coupling
 * `/chat` delegates to `ChatService` while preserving transaction semantics
 
@@ -97,7 +97,7 @@ The `/chat` endpoint implements a fully transactional write-path:
 * Best-effort shadow divergence logging for comparative routing analysis
 * `StaticRoutingPolicy` remains the default activation mode
 * T12 adds optional `EnvelopeSignals` over the canonical provider preview and a standalone deterministic policy whose default delegates to static routing; application observation is off and Settings/direct composition reject the new mode
-* T13 binds cache admission to a private request Settings snapshot and adds best-effort generation and accepted-cache-hit evidence; final provider/model identity is reported only when it matches a configured selected/fallback pair, and deterministic routing and Vertex configurations remain runtime-ineligible
+* T13 binds cache admission to a private request Settings snapshot and adds best-effort generation and accepted-cache-hit evidence; manual selections use the conservative identity and cache rules in ADR-020. Deterministic routing and global Vertex primary/fallback remain runtime-ineligible
 
 ---
 
@@ -524,6 +524,24 @@ Dependency readiness is not enforced at API startup.
 Runtime checks remain explicit and read-only.
 
 ---
+
+## ORQ-43 — global manual catalog
+
+`GET /models` returns enabled catalog entries with `id`, `display_name`, and
+`description`. The optional `model_id` in `POST /chat` selects an enabled
+server-owned entry for that message; null or omission retains configured
+routing. Unknown, disabled and malformed IDs fail with 422 before chat database,
+RAG, memory, cache or provider work and before SSE headers. Startup validates a
+single immutable catalog/settings generation; the catalog defaults to empty.
+
+Manual selection binds tenant, entry, settings and output cap to the request,
+uses one Bedrock or Vertex adapter without cross-provider fallback, and bypasses
+response cache. Vertex is available only through an enabled catalog entry and
+its default-off gate; global primary/fallback guards remain. ADC is lazy.
+Evidence reports known tokens but leaves manual final identity and cost unknown
+without a trusted mapping. This is implementation coverage, not model
+eligibility or authorization for paid or live inference. See
+[ADR-020](adr/020-global-manual-model-catalog.md) and Appendix AO.
 
 ## 15. `/chat` endpoint
 

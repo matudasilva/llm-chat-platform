@@ -2522,4 +2522,20 @@ real trigger reachability. The owner joint hermetic run passed **395 tests** und
 remains pending. KEEP_STATIC remains operational and no real model, credential,
 paid call, deployment or closure was authorized by this remediation.
 
+## Appendix AO — ORQ-43 manual catalog implementation
+
+The global catalog is empty by default and is validated with effective settings
+as one startup generation. Optional `/chat` model selection bypasses cache and
+cross-provider fallback; Vertex requires the separate default-off gate. Static
+and fallback Vertex guards remain. Manual routing evidence keeps unknown final
+identity and cost null; the legacy usage writer still maps unknown counts to
+zero.
+
+Hermetic HTTP tests exercise invalid admission before side effects, two tenants,
+cache bypass, stream and non-stream execution, an in-flight generation change,
+output caps and failure without fallback. The real Vertex adapter is exercised
+through a mock HTTP transport and fake token provider, including context and
+usage finalization. These tests make no paid calls and do not establish live
+model eligibility, account access, capacity, quality or price.
+
 **End of appendix — complements the live LLD document**
