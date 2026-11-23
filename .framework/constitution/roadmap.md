@@ -8,6 +8,33 @@
 > recorded in an ADR. The authoritative live state lives in the Notion Master
 > Project Document; this file is the local AIT V3 planning surface.
 
+## Current next steps — 2026-11-23
+
+1. **Plan optional static Vertex chat integration** as an unnumbered candidate;
+   check the remote ORQ sequence before reservation. The direct post-ORQ-42
+   canary exercised one non-streaming and one streaming request, but Vertex is
+   still disabled in `/chat`. Review and integrate the existing adapter and
+   generation settings through the runtime guards; verify actual eligibility,
+   conservative cache handling, best-effort telemetry, tenant isolation, atomic
+   persistence, SSE and technical fallback end to end. Existing settings, cache
+   bypass and stream-ownership preparation do not prove live integration. Live
+   frontend checks require separately approved limits and budget.
+   Keep the established provider abstraction and `/chat` write path.
+2. **Assess routing only after static provider integration**, if warranted:
+   define an observable pre-generation condition and obtain bounded quality,
+   effective-cost and latency evidence on representative EN/ES chat and RAG
+   requests. Candidate models, comparison configuration and spend require
+   separate approval. KEEP_STATIC remains valid if no alternative is justified.
+3. **Maintain RAG production-path debt separately:** provenance and delivery,
+   failure/latency/cost evidence and independent review remain distinct from
+   Vertex integration and routing work.
+4. **Consider the ML routing placeholder only conditionally** after a measured
+   residual gap that simple routing cannot address. AI Green remains future
+   work. Placeholder numbers do not reserve ORQs.
+
+The sequence below contains historical planning snapshots. It does not authorize
+implementation, paid calls or production activation.
+
 ## Phase 0 — V1.1 clean closure — ✅ done
 
 Left V1.1 without blocking debt and installed the anti-drift machinery: `docs/adr/`
@@ -721,9 +748,9 @@ enough when the initial candidate set is poor — intent detection plus an
 "overview" canonical query expansion plus path-priority reranking is the pattern
 that worked. Relevant here because project documentation is bilingual.
 
-### Production Retrieval Graduation — scope proposal
+### Production Retrieval Graduation — historical scope proposal
 
-Current sequence: **ORQ-40 → Production Retrieval Graduation → Deterministic LLM
+Historical sequence: **ORQ-40 → Production Retrieval Graduation → Deterministic LLM
 Routing and Vertex Chat Configuration → Offline ML Routing Baseline (only with
 demonstrated residual signal) → AI Green**. RAG improvements remain separate debt;
 this routing scope excludes Katanemo/ML, OpenRouter/gateways, web search in chat,
@@ -742,8 +769,8 @@ disposition under its existing protocol permits closure/deferral of this researc
 stage and advancement to graduation. Planning blockers alone are not a scientific
 terminal result. No successor semantic-memory research ORQ opens automatically.
 The operator has now explicitly deferred this research line without changing
-the scientific contract or assigning a terminal result. Graduation is the next
-recommended step; no new ORQ is created or reserved by this disposition.
+the scientific contract or assigning a terminal result. At that time graduation
+was the next recommended step; ORQ-41 subsequently completed.
 
 | ORQ-40 disposition | Entry rule for production graduation |
 |---|---|
