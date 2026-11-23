@@ -32,9 +32,9 @@ def test_dependency_takes_no_db_session() -> None:
     # incomplete twice over (the documental channel is only fully visible at
     # the route), so enforcement moved to
     # `added_context_budget.enforce_added_context_cap`, called once from
-    # `chat.py`, and this signature returned to its original two parameters.
+    # `chat.py`; the dependency also consumes the shared admission snapshot.
     parameters = inspect.signature(get_chat_memory_context).parameters
-    assert set(parameters) == {"payload", "request"}
+    assert set(parameters) == {"payload", "request", "admission"}
     assert "db" not in parameters
 
 

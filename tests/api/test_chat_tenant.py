@@ -66,11 +66,11 @@ class FakeCache:
     writes: int = 0
     bypasses: list[str] = field(default_factory=list)
 
-    async def get(self, *, request_id: uuid.UUID, messages: list, tenant_id: str) -> ChatServiceResult | None:
+    async def get(self, *, request_id: uuid.UUID, messages: list, tenant_id: str, configuration=None) -> ChatServiceResult | None:
         self.reads += 1
         return None
 
-    async def set(self, *, messages: list, result: ChatServiceResult, tenant_id: str) -> None:
+    async def set(self, *, messages: list, result: ChatServiceResult, tenant_id: str, configuration=None) -> None:
         self.writes += 1
 
     def log_bypass(self, *, reason: str) -> None:

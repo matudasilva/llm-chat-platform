@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import Enum
+import re
 from typing import Literal, Optional
 from uuid import UUID
 
@@ -18,6 +19,7 @@ class ChatStatus(str, Enum):
 class ChatRequest(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
     stream: bool = False
+    model_id: Optional[str] = Field(default=None, min_length=1, max_length=64, pattern=r"^[a-z0-9][a-z0-9_-]{0,63}$")
 
     conversation_id: Optional[UUID] = Field(
         default=None,
@@ -29,6 +31,13 @@ class ChatRequest(BaseModel):
         max_length=settings.max_message_chars,
         description="User message content.",
     )
+
+    @field_validator("model_id", mode="before")
+    @classmethod
+    def validate_model_id(cls, value):
+        if value is not None and (not isinstance(value, str) or not re.fullmatch(r"[a-z0-9][a-z0-9_-]{0,63}", value)):
+            raise ValueError("invalid model ID")
+        return value
 
     @field_validator("message")
     @classmethod

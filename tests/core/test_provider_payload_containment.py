@@ -179,10 +179,9 @@ def test_all_three_shipped_providers_are_covered_here():
     shipped set grows without this matrix growing with it."""
     from app.core.domain import provider_factory
 
-    source = (
-        provider_factory.__file__
-        and open(provider_factory.__file__, encoding="utf-8").read()
-    )
+    from pathlib import Path
+
+    source = Path(provider_factory.__file__).read_text(encoding="utf-8")
     for name in ("BedrockProvider", "OpenAIProvider", "StubProvider"):
         assert name in source
     assert "DisabledProvider" in source  # not a generating provider; no payload to assert

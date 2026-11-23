@@ -82,7 +82,7 @@ class FakeCache:
     writes: int = 0
     bypasses: list[str] = field(default_factory=list)
 
-    async def get(self, *, request_id: uuid.UUID, messages: list, tenant_id: str) -> ChatServiceResult | None:
+    async def get(self, *, request_id: uuid.UUID, messages: list, tenant_id: str, configuration=None) -> ChatServiceResult | None:
         self.reads += 1
         if self.read_error is not None:
             raise self.read_error
@@ -94,7 +94,7 @@ class FakeCache:
             provider_result=self.hit_result.provider_result,
         )
 
-    async def set(self, *, messages: list, result: ChatServiceResult, tenant_id: str) -> None:
+    async def set(self, *, messages: list, result: ChatServiceResult, tenant_id: str, configuration=None) -> None:
         self.writes += 1
         if self.write_error is not None:
             raise self.write_error
@@ -340,6 +340,50 @@ async def test_cache_key_differs_when_only_the_memory_window_differs(monkeypatch
     key_b = cache._cache_key(messages=messages_b, tenant_id="acme")
 
     assert key_a != key_b, "identical latest message must not collide across windows"
+
+
+@pytest.mark.asyncio
+async def test_cache_key_and_ttl_use_the_admitted_configuration_snapshot(monkeypatch) -> None:
+    from app.core.domain.manual_model_catalog import build_chat_generation
+    from app.core.settings import settings
+
+    class RecordingRedis:
+        def __init__(self):
+            self.get_keys = []
+            self.sets = []
+
+        async def get(self, key):
+            self.get_keys.append(key)
+            return None
+
+        async def set(self, key, value, ex=None):
+            self.sets.append((key, ex))
+            return True
+
+    cache = ChatResponseCache()
+    redis = RecordingRedis()
+    monkeypatch.setattr(cache_module, "redis_client", redis)
+    source = settings.model_copy(deep=True)
+    source.chat_response_cache_ttl_s = 41
+    admitted = build_chat_generation(source).settings
+    messages = [ChatMessage(role="user", content="hello")]
+    expected_key = cache._cache_key(messages=messages, tenant_id="tenant-a", configuration=admitted)
+
+    monkeypatch.setattr(settings, "bedrock_region", "eu-west-1")
+    monkeypatch.setattr(settings, "chat_response_cache_ttl_s", 99)
+    assert cache._cache_key(messages=messages, tenant_id="tenant-a", configuration=admitted) == expected_key
+    assert cache._cache_key(messages=messages, tenant_id="tenant-a") != expected_key
+
+    request_id = uuid.uuid4()
+    await cache.get(request_id=request_id, messages=messages, tenant_id="tenant-a", configuration=admitted)
+    await cache.set(
+        messages=messages,
+        result=_chat_service_result(request_id=request_id, content="answer"),
+        tenant_id="tenant-a",
+        configuration=admitted,
+    )
+    assert redis.get_keys == [expected_key]
+    assert redis.sets == [(expected_key, 41)]
 
 
 @pytest.mark.asyncio

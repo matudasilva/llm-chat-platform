@@ -12,6 +12,7 @@ from app.api.router import api_router
 from app.api.runtime_ops import router as runtime_ops_router
 from app.core.observability.tracing import init_tracing, shutdown_tracing
 from app.core.settings import settings
+from app.core.domain.manual_model_catalog import build_chat_generation
 from app.http.middleware.request_context import RequestContextMiddleware
 from app.http.middleware.request_size_limit import RequestSizeLimitMiddleware
 from app.http.middleware.staging_guard import StagingGuardMiddleware
@@ -64,6 +65,7 @@ logger = logging.getLogger("app")
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("app starting application")
+    app.state.chat_generation = build_chat_generation(settings)
     init_db(app)          # <-- crea engine + sessionmaker en app.state
 
     # ORQ-37 Gate A: tracing bootstrap. The provider/exporter setup lives inside

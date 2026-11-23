@@ -7,10 +7,13 @@ import uuid
 from typing import Any, AsyncIterator
 
 from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.routing import APIRoute
+from pydantic import ValidationError
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import get_chat_memory_context, get_chat_rag_context, get_chat_service
+from app.api.deps import ChatAdmission, admit_chat_request, get_chat_db, get_chat_memory_context, get_chat_rag_context, get_chat_service
 from app.core.domain.added_context_budget import enforce_added_context_cap
 from app.core.domain.chat_memory import ChatMemoryContext
 from app.core.domain.chat_service import ChatService
@@ -40,7 +43,32 @@ from app.core.observability.routing_evidence import emit_cache_hit_evidence
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(tags=["chat"])
+class ChatAdmissionRoute(APIRoute):
+    """Validate and admit /chat before FastAPI resolves side-effectful dependencies."""
+
+    def get_route_handler(self):
+        original = super().get_route_handler()
+
+        async def admitted_handler(request: Request):
+            try:
+                body = await request.json()
+                payload = ChatRequest.model_validate(body)
+            except ValidationError as exc:
+                errors = [
+                    {**error, "loc": ("body", *error.get("loc", ()))}
+                    for error in exc.errors()
+                ]
+                raise RequestValidationError(errors, body=body) from None
+            except Exception:
+                raise HTTPException(status_code=422, detail="Invalid request body") from None
+            admission = admit_chat_request(payload, request)
+            request.state.chat_admission = admission
+            return await original(request)
+
+        return admitted_handler
+
+
+router = APIRouter(tags=["chat"], route_class=ChatAdmissionRoute)
 
 _stream_cleanup_tasks: set[asyncio.Task] = set()
 _STREAM_CLEANUP_TIMEOUT_S = 1.0
@@ -82,7 +110,9 @@ def _sse_json(event: str, payload: dict) -> str:
     return _sse(event, json.dumps(payload, separators=(",", ":")))
 
 
-def _error_provider_name(chat_service: ChatService) -> str:
+def _error_provider_name(chat_service: ChatService, selected_provider: str | None = None) -> str:
+    if isinstance(selected_provider, str) and selected_provider:
+        return selected_provider
     provider = getattr(chat_service, "_provider", None)
     for attr in ("provider", "provider_name"):
         value = getattr(provider, attr, None)
@@ -122,7 +152,7 @@ def _business_transaction_released(db: Any) -> bool:
         return True
 
 
-def _cache_bypass_reason() -> str | None:
+def _cache_bypass_reason(configuration=None) -> str | None:
     """Why the response cache must not be consulted, or `None` if it may be.
 
     ADR-008 §5 bypasses the cache whenever chat RAG augmentation is on,
@@ -140,15 +170,16 @@ def _cache_bypass_reason() -> str | None:
     places -- two gates plus the streaming log -- and extending one without
     the others is how the read and write halves drift apart.
     """
-    return cache_bypass_reason(settings)
+    return cache_bypass_reason(configuration or settings)
 
 
-def _cache_admitted(chat_service: ChatService, scope: str, initial_reason: str | None) -> bool:
+def _cache_admitted(chat_service: ChatService, scope: str, initial_reason: str | None, configuration=None) -> bool:
+    configuration = configuration or settings
     return (
         initial_reason is None
-        and _cache_bypass_reason() is None
+        and _cache_bypass_reason(configuration) is None
         and getattr(chat_service, "execution_configuration_id", None) == scope
-        and execution_configuration_id(settings) == scope
+        and execution_configuration_id(configuration) == scope
     )
 
 
@@ -176,6 +207,8 @@ async def _write_rag_request_metrics(
     provider_result: ProviderResult | None,
     memory_context: ChatMemoryContext,
     total_latency_ms: int,
+    configuration=None,
+    manual_selection: bool = False,
 ) -> None:
     """The single post-transaction write site's logic, shared by both paths (T14).
 
@@ -260,7 +293,8 @@ async def _write_rag_request_metrics(
       by guessing. *(Independent re-validation raised the third; an earlier
       version of this comment confidently said "two".)*
     """
-    if not settings.rag_request_metrics_enabled:
+    configuration = configuration or settings
+    if not configuration.rag_request_metrics_enabled:
         return
     if request is None:
         return
@@ -311,11 +345,11 @@ async def _write_rag_request_metrics(
                         request_instance_id=request_instance_id,
                         request_id=correlation_request_id,
                         tenant_id=tenant_id,
-                        mode="B" if settings.ebm25_enabled else "A",
+                        mode="B" if configuration.ebm25_enabled else "A",
                         retrieval_outcome=snapshot.get("retrieval_outcome"),
                         memory_outcome=snapshot.get("memory_outcome"),
                         ebm25_selected_count=snapshot.get("ebm25_selected_count"),
-                        estimated_cost_usd=estimate_generation_cost_usd(
+                        estimated_cost_usd=None if manual_selection else estimate_generation_cost_usd(
                             provider=provider_result.provider if provider_result else None,
                             model=provider_result.model_version if provider_result else None,
                             input_tokens=(
@@ -354,14 +388,17 @@ async def chat(
     # without constructing one. `_write_rag_request_metrics` treats `None`
     # as "skip the write" (T14).
     request: Request = None,  # type: ignore[assignment]
-    db: AsyncSession = Depends(get_db),
+    admission: ChatAdmission = Depends(admit_chat_request),
+    db: AsyncSession = Depends(get_chat_db),
     chat_service: ChatService = Depends(get_chat_service),
     rag_context: RagGenerationContext = Depends(get_chat_rag_context),
     memory_context: ChatMemoryContext = Depends(get_chat_memory_context),
 ) -> ChatResponse:
     start = time.perf_counter()
     request_id = request_uuid()
-    tenant_id = get_tenant_id()
+    effective_admission = admission if isinstance(admission, ChatAdmission) else None
+    configuration = effective_admission.settings if effective_admission is not None else settings
+    tenant_id = effective_admission.tenant_id if effective_admission is not None else get_tenant_id()
 
     status = ChatStatus.error
     error_message: str | None = None
@@ -377,14 +414,14 @@ async def chat(
     if not isinstance(rag_context, RagGenerationContext):
         # Direct unit calls bypass FastAPI dependency resolution.
         rag_context = RagGenerationContext()
-    if not settings.chat_rag_augmentation_enabled:
+    if not configuration.chat_rag_augmentation_enabled:
         # The route remains fail-closed if a dependency override supplies
         # context while the independent rollout flag is disabled.
         rag_context = RagGenerationContext()
     if not isinstance(memory_context, ChatMemoryContext):
         # Direct unit calls bypass FastAPI dependency resolution.
         memory_context = ChatMemoryContext()
-    if not settings.conversation_history_enabled:
+    if not configuration.conversation_history_enabled:
         # The same fail-closed reset the RAG channel has, for the independent
         # memory flag: an override must not be able to inject memory into the
         # prompt while the rollout flag is off.
@@ -400,7 +437,7 @@ async def chat(
         memory_context=memory_context,
         rag_context=rag_context,
         current_message=payload.message,
-        max_chars=settings.chat_prompt_max_added_context_chars,
+        max_chars=configuration.chat_prompt_max_added_context_chars,
     )
     if budget_outcome is not None:
         # Recorded here rather than in the domain function: the outcome the
@@ -434,7 +471,12 @@ async def chat(
     ]
 
     if getattr(payload, "stream", False):
-        cache.log_bypass(reason=_cache_bypass_reason() or "streaming")
+        stream_bypass_reason = (
+            "manual_selection"
+            if effective_admission is not None and effective_admission.cache_bypass
+            else _cache_bypass_reason(configuration) or "streaming"
+        )
+        cache.log_bypass(reason=stream_bypass_reason)
 
         async def event_generator() -> AsyncIterator[str]:
             generation_outcome: str | None = None
@@ -473,7 +515,7 @@ async def chat(
                 assistant_text = stream_result.assistant_message.content
                 assistant_content_final = truncate(
                     assistant_text,
-                    settings.max_assistant_chars,
+                    configuration.max_assistant_chars,
                 )
 
                 user_msg_id = uuid.uuid4()
@@ -645,8 +687,10 @@ async def chat(
                                     total_latency_ms=max(
                                         0, int((time.perf_counter() - start_stream) * 1000)
                                     ),
+                                    configuration=configuration,
+                                    manual_selection=effective_admission is not None and effective_admission.cache_bypass,
                                 ),
-                                timeout=settings.rag_request_metrics_timeout_s,
+                                timeout=configuration.rag_request_metrics_timeout_s,
                             )
                         )
                     except Exception:
@@ -684,16 +728,17 @@ async def chat(
 
             # 3) Execute model (via ChatService)
             service_result = None
-            bypass_reason = _cache_bypass_reason()
-            cache_scope = execution_configuration_id(settings)
-            if not _cache_admitted(chat_service, cache_scope, bypass_reason):
+            bypass_reason = "manual_selection" if effective_admission is not None and effective_admission.cache_bypass else _cache_bypass_reason(configuration)
+            cache_scope = execution_configuration_id(configuration)
+            if not _cache_admitted(chat_service, cache_scope, bypass_reason, configuration):
                 cache.log_bypass(reason=bypass_reason or "configuration_unbound")
             else:
                 service_result = await cache.get(
-                    request_id=request_id, messages=_messages, tenant_id=tenant_id
+                    request_id=request_id, messages=_messages, tenant_id=tenant_id,
+                    configuration=configuration,
                 )
                 if service_result is not None:
-                    if _cache_admitted(chat_service, cache_scope, bypass_reason):
+                    if _cache_admitted(chat_service, cache_scope, bypass_reason, configuration):
                         try:
                             emit_cache_hit_evidence(request_id=request_id, source_result=service_result)
                         except Exception:
@@ -708,12 +753,12 @@ async def chat(
                 if provider_metadata is not None:
                     run_kwargs["provider_metadata"] = provider_metadata
                 service_result = await chat_service.run(**run_kwargs)
-                if _cache_admitted(chat_service, cache_scope, bypass_reason):
+                if _cache_admitted(chat_service, cache_scope, bypass_reason, configuration):
                     cache_write_result = service_result
 
             assistant_content = truncate(
                 service_result.assistant_message.content,
-                settings.max_assistant_chars,
+                configuration.max_assistant_chars,
             )
             provider_result = service_result.provider_result
 
@@ -768,8 +813,11 @@ async def chat(
                 pass
 
         # commit OK (exit db.begin)
-        if cache_write_result is not None and _cache_admitted(chat_service, cache_scope, bypass_reason):
-            await cache.set(messages=_messages, result=cache_write_result, tenant_id=tenant_id)
+        if cache_write_result is not None and _cache_admitted(chat_service, cache_scope, bypass_reason, configuration):
+            await cache.set(
+                messages=_messages, result=cache_write_result, tenant_id=tenant_id,
+                configuration=configuration,
+            )
 
         return ChatResponse(
             request_id=request_id,
@@ -787,7 +835,7 @@ async def chat(
 
     except (ProviderTimeoutError, ProviderExecutionError) as e:
         generation_outcome = "timeout" if isinstance(e, ProviderTimeoutError) else "error"
-        error_message = sanitize_error_message(str(e), settings.max_error_message_chars)
+        error_message = sanitize_error_message(str(e), configuration.max_error_message_chars)
 
         try:
             await db.rollback()
@@ -801,7 +849,12 @@ async def chat(
                 db.add(
                     UsageEvent(
                         id=uuid.uuid4(),
-                        provider=_error_provider_name(chat_service),
+                        provider=_error_provider_name(
+                            chat_service,
+                            effective_admission.entry.provider
+                            if effective_admission is not None and effective_admission.entry is not None
+                            else None,
+                        ),
                         model_version="local",
                         prompt_version="v0",
                         status=ChatStatus.error.value,
@@ -833,7 +886,7 @@ async def chat(
             str(request_id),
             str(conversation_id),
         )
-        error_message = sanitize_error_message("internal error", settings.max_error_message_chars)
+        error_message = sanitize_error_message("internal error", configuration.max_error_message_chars)
 
         try:
             await db.rollback()
@@ -847,13 +900,18 @@ async def chat(
                 db.add(
                     UsageEvent(
                         id=uuid.uuid4(),
-                        provider=_error_provider_name(chat_service),
+                        provider=_error_provider_name(
+                            chat_service,
+                            effective_admission.entry.provider
+                            if effective_admission is not None and effective_admission.entry is not None
+                            else None,
+                        ),
                         model_version="local",
                         prompt_version="v0",
                         status=ChatStatus.error.value,
                         request_id=request_id,
                         latency_ms=latency_ms,
-                        error_message=sanitize_error_message(str(e), settings.max_error_message_chars),
+                        error_message=sanitize_error_message(str(e), configuration.max_error_message_chars),
                         conversation_id=None,
                         message_id=None,
                     )
@@ -895,8 +953,10 @@ async def chat(
                         provider_result=metrics_provider_result,
                         memory_context=memory_context,
                         total_latency_ms=max(0, int((time.perf_counter() - start) * 1000)),
+                        configuration=configuration,
+                        manual_selection=effective_admission is not None and effective_admission.cache_bypass,
                     ),
-                    timeout=settings.rag_request_metrics_timeout_s,
+                    timeout=configuration.rag_request_metrics_timeout_s,
                 )
             except Exception:
                 pass

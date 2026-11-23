@@ -201,6 +201,12 @@ class _Session:
 
 
 class _StubChatService:
+    @property
+    def execution_configuration_id(self):
+        from app.services.chat_cache_policy import execution_configuration_id
+
+        return execution_configuration_id(chat_routes.settings)
+
     async def run(self, *, request_id, messages, provider_metadata=None):
         from app.core.domain.chat_types import ChatServiceResult
         from app.core.domain.provider import ProviderResult

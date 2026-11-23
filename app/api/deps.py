@@ -5,7 +5,7 @@ import logging
 import uuid
 from typing import Sequence
 
-from fastapi import Request
+from fastapi import Depends, HTTPException, Request
 
 from app.core.observability import context_evidence as c1
 
@@ -21,7 +21,8 @@ from app.core.observability.tracing import set_attribute, span
 from app.core.domain.conversation_turns import build_materialized_window
 from app.core.domain.retrieval_corpus import RetrievalCorpus
 from app.core.domain.provider import ProviderPort
-from app.core.domain.provider_factory import build_provider, build_provider_resolver
+from app.core.domain.provider_factory import build_manual_provider_resolver, build_provider, build_provider_resolver
+from app.core.domain.manual_model_catalog import ManualModelCatalog, ManualModelEntry
 from app.core.domain.chat_service import ChatService
 from app.core.domain.rag_generation import (
     RETRIEVAL_ERROR,
@@ -35,6 +36,7 @@ from app.http.middleware.tenant import get_tenant_id
 from app.http.request_context import request_uuid
 from app.http import pipeline_metrics
 from app.infra.db.session import (
+    get_db,
     get_history_sessionmaker,
     short_lived_history_session,
 )
@@ -53,19 +55,65 @@ def get_provider() -> ProviderPort:
     return build_provider(settings)
 
 
-def get_chat_service() -> ChatService:
-    configuration = settings.model_copy(deep=True)
+@dataclasses.dataclass(frozen=True, slots=True)
+class ChatAdmission:
+    settings: object
+    entry: ManualModelEntry | None
+    tenant_id: object
+    generation: object | None
+
+    @property
+    def cache_bypass(self) -> bool:
+        return self.entry is not None
+
+
+def admit_chat_request(payload: ChatRequest, request: Request) -> ChatAdmission:
+    already_admitted = getattr(request.state, "chat_admission", None)
+    if isinstance(already_admitted, ChatAdmission):
+        return already_admitted
+    generation = getattr(request.app.state, "chat_generation", None)
+    configuration = generation.settings if generation is not None else settings.model_copy(deep=True)
+    catalog = generation.catalog if generation is not None else ManualModelCatalog()
+    entry = catalog.resolve(payload.model_id) if payload.model_id is not None else None
+    if payload.model_id is not None and entry is None:
+        raise HTTPException(status_code=422, detail="Invalid model selection")
+    return ChatAdmission(configuration, entry, get_tenant_id(), generation)
+
+
+async def get_chat_db(
+    admission: ChatAdmission = Depends(admit_chat_request),
+    db=Depends(get_db),
+):
+    # FastAPI resolves the admission prerequisite before the session dependency;
+    # the HTTP tests pin that invalid selections never acquire a session.
+    yield db
+
+
+def get_chat_service(admission: ChatAdmission = Depends(admit_chat_request)) -> ChatService:
+    if not isinstance(admission, ChatAdmission):
+        configuration = settings.model_copy(deep=True)
+        entry = None
+    else:
+        configuration = admission.settings
+        entry = admission.entry
+    resolver = build_provider_resolver(configuration) if entry is None else build_manual_provider_resolver(
+        configuration, provider=entry.provider, model=entry.model, location=entry.location,
+        output_cap=entry.max_output_tokens,
+        vertex_enabled=getattr(configuration, "manual_vertex_enabled", False),
+    )
     return ChatService(
-        provider_resolver=build_provider_resolver(configuration),
+        provider_resolver=resolver,
         routing_context_builder=build_routing_context_builder(configuration),
         timeout_s=configuration.provider_timeout_s,
         execution_configuration_id=execution_configuration_id(configuration),
     )
 
 
-async def get_chat_rag_context(payload: ChatRequest, request: Request) -> RagGenerationContext:
-    c1.bind_scope(lambda: (get_tenant_id(), payload.conversation_id))
-    if not settings.chat_rag_augmentation_enabled:
+async def get_chat_rag_context(payload: ChatRequest, request: Request, admission: ChatAdmission = Depends(admit_chat_request)) -> RagGenerationContext:
+    configuration = settings if not isinstance(admission, ChatAdmission) else admission.settings
+    tenant_id = get_tenant_id() if not isinstance(admission, ChatAdmission) else admission.tenant_id
+    c1.bind_scope(lambda: (tenant_id, payload.conversation_id))
+    if not configuration.chat_rag_augmentation_enabled:
         # AC24: the flag is only visible here, so `skipped` is the dependency's
         # to record. The domain never learns the feature exists.
         await _record_retrieval_outcome(RETRIEVAL_SKIPPED)
@@ -75,11 +123,11 @@ async def get_chat_rag_context(payload: ChatRequest, request: Request) -> RagGen
     try:
         async with short_lived_rag_session(request) as db:
             augmentor = RagGenerationAugmentor(
-                pipeline=build_retrieval_pipeline(db, settings),
-                timeout_s=settings.chat_rag_retrieval_timeout_s,
-                max_sources=settings.chat_rag_max_sources,
-                max_source_chars=settings.chat_rag_max_source_chars,
-                max_context_chars=settings.chat_rag_max_context_chars,
+                pipeline=build_retrieval_pipeline(db, configuration),
+                timeout_s=configuration.chat_rag_retrieval_timeout_s,
+                max_sources=configuration.chat_rag_max_sources,
+                max_source_chars=configuration.chat_rag_max_source_chars,
+                max_context_chars=configuration.chat_rag_max_context_chars,
             )
             context = await augmentor.augment(request_id=request_id, query=payload.message)
         # Recorded from the context the DOMAIN classified, so the vocabulary
@@ -101,7 +149,7 @@ async def get_chat_rag_context(payload: ChatRequest, request: Request) -> RagGen
 
 
 async def get_chat_memory_context(
-    payload: ChatRequest, request: Request
+    payload: ChatRequest, request: Request, admission: ChatAdmission = Depends(admit_chat_request)
 ) -> ChatMemoryContext:
     """Assemble conversation memory OUTSIDE the write transaction.
 
@@ -133,8 +181,10 @@ async def get_chat_memory_context(
     captures `ProviderInput` for exactly that reason.
 
     """
-    c1.bind_scope(lambda: (get_tenant_id(), payload.conversation_id))
-    if not settings.conversation_history_enabled:
+    configuration = settings if not isinstance(admission, ChatAdmission) else admission.settings
+    tenant_id = get_tenant_id() if not isinstance(admission, ChatAdmission) else admission.tenant_id
+    c1.bind_scope(lambda: (tenant_id, payload.conversation_id))
+    if not configuration.conversation_history_enabled:
         c1.observe("window.outcome", lambda _: {"outcome": "disabled"})
         return ChatMemoryContext()
 
@@ -151,7 +201,6 @@ async def get_chat_memory_context(
         await _record_memory_outcome("skipped_first_turn")
         return ChatMemoryContext()
 
-    tenant_id = get_tenant_id()
     request_id = request_uuid()
 
     # H3/AC3: `memory.assemble` covers assembling the context the dependency
@@ -163,22 +212,22 @@ async def get_chat_memory_context(
     # The session's lifetime is unchanged: only the span's extent is wider.
     with span(
         "memory.assemble",
-        **{"memory.mode": "B" if settings.ebm25_enabled else "A"},
+        **{"memory.mode": "B" if configuration.ebm25_enabled else "A"},
     ) as assemble_span:
         try:
             sessionmaker = get_history_sessionmaker(request)
             async with short_lived_history_session(sessionmaker) as db:
                 assembler = ConversationHistoryAssembler(
-                    max_messages=settings.conversation_history_max_messages,
-                    max_chars=settings.conversation_history_max_chars,
+                    max_messages=configuration.conversation_history_max_messages,
+                    max_chars=configuration.conversation_history_max_chars,
                 )
                 adapter = SqlConversationHistoryAdapter(
                     ConversationQueryService(db),
-                    max_rows=settings.conversation_history_max_rows,
+                    max_rows=configuration.conversation_history_max_rows,
                 )
                 partition, truncated, cap_reached = await asyncio.wait_for(
-                    _materialize_window(adapter, assembler, conversation_id, tenant_id),
-                    timeout=settings.conversation_history_timeout_s,
+                    _materialize_window(adapter, assembler, conversation_id, tenant_id, configuration),
+                    timeout=configuration.conversation_history_timeout_s,
                 )
         except ConversationNotFoundError:
             # Caught DISTINCTLY from the generic handler below (AC13). The two are
@@ -213,7 +262,7 @@ async def get_chat_memory_context(
         # whether `ebm25_enabled` is on or off, which is what keeps AC16's
         # byte-identity claim true by construction.
         packed = pack_recent_window(
-            context.messages, max_chars=settings.chat_prompt_max_added_context_chars
+            context.messages, max_chars=configuration.chat_prompt_max_added_context_chars
         )
         context = dataclasses.replace(
             context,
@@ -241,9 +290,9 @@ async def get_chat_memory_context(
     # request. Tracked explicitly rather than calling `_record_memory_outcome`
     # twice, which would let the final unconditional call silently clobber
     # whichever of these two fired (`record()` is last-write-wins).
-    c1.observe("episodic.mode", lambda _: {"enabled": settings.ebm25_enabled})
+    c1.observe("episodic.mode", lambda _: {"enabled": configuration.ebm25_enabled})
     mode_b_outcome: str | None = None
-    if settings.ebm25_enabled:
+    if configuration.ebm25_enabled:
         # H9: Mode B runs inside its own degradation boundary.
         #
         # This function's contract is that it NEVER raises (§Diseño 7): every
@@ -282,7 +331,7 @@ async def get_chat_memory_context(
                     "memory.rank",
                     **{"memory.corpus_turn_count": len(corpus.events)},
                 ) as rank_span:
-                  remaining_budget = settings.chat_prompt_max_added_context_chars - sum(
+                  remaining_budget = configuration.chat_prompt_max_added_context_chars - sum(
                       len(m.content) for m in context.messages
                   )
                   ranked = rank_events(corpus.events, query_tokens(payload.message))
@@ -372,7 +421,8 @@ class _PrefetchedHistoryPort:
         return self._messages
 
 
-async def _materialize_window(adapter, assembler, conversation_id, tenant_id):
+async def _materialize_window(adapter, assembler, conversation_id, tenant_id, configuration=None):
+    configuration = configuration or settings
     """Fetch once, bound with ADR-011's rules, then snap and filter (T10/T12)."""
     # The real adapter first: this is the call that raises
     # `ConversationNotFoundError` for a conversation the tenant does not own,
@@ -390,7 +440,7 @@ async def _materialize_window(adapter, assembler, conversation_id, tenant_id):
     # AC36: the cap is reached when the SQL read returned exactly the limit --
     # not "close to it", since a shorter conversation legitimately returns
     # fewer rows than the cap without ever having been bounded.
-    cap_reached = len(all_messages) == settings.conversation_history_max_rows
+    cap_reached = len(all_messages) == configuration.conversation_history_max_rows
     # R2 (independent re-validation, 2026-09-09): `truncated` is derived from
     # the FINAL materialized window, not from `assembled.truncated`.
     #

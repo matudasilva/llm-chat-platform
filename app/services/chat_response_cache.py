@@ -44,9 +44,11 @@ class ChatResponseCache:
             pass
 
     async def get(
-        self, *, request_id: UUID, messages: Sequence[ChatMessage], tenant_id: str
+        self, *, request_id: UUID, messages: Sequence[ChatMessage], tenant_id: str,
+        configuration=None,
     ) -> ChatServiceResult | None:
-        key = self._cache_key(messages=messages, tenant_id=tenant_id)
+        configuration = configuration or settings
+        key = self._cache_key(messages=messages, tenant_id=tenant_id, configuration=configuration)
         try:
             raw = await redis_client.get(key)
         except Exception:
@@ -111,9 +113,11 @@ class ChatResponseCache:
         )
 
     async def set(
-        self, *, messages: Sequence[ChatMessage], result: ChatServiceResult, tenant_id: str
+        self, *, messages: Sequence[ChatMessage], result: ChatServiceResult, tenant_id: str,
+        configuration=None,
     ) -> None:
-        key = self._cache_key(messages=messages, tenant_id=tenant_id)
+        configuration = configuration or settings
+        key = self._cache_key(messages=messages, tenant_id=tenant_id, configuration=configuration)
         payload = {
             "assistant_content": result.assistant_message.content,
             "provider_result": {
@@ -129,7 +133,7 @@ class ChatResponseCache:
             await redis_client.set(
                 key,
                 json.dumps(payload, separators=(",", ":")),
-                ex=settings.chat_response_cache_ttl_s,
+                ex=configuration.chat_response_cache_ttl_s,
             )
         except Exception:
             self._log(
@@ -160,11 +164,12 @@ class ChatResponseCache:
         except Exception:
             pass
 
-    def _cache_key(self, *, messages: Sequence[ChatMessage], tenant_id: str) -> str:
+    def _cache_key(self, *, messages: Sequence[ChatMessage], tenant_id: str, configuration=None) -> str:
+        configuration = configuration or settings
         fingerprint = {
             "version": 2,
             "messages": [{"role": m.role, "content": m.content} for m in messages],
-            **cache_configuration(settings),
+            **cache_configuration(configuration),
         }
         digest = hashlib.sha256(
             json.dumps(fingerprint, sort_keys=True, separators=(",", ":")).encode("utf-8")

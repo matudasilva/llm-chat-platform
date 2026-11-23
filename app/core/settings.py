@@ -53,6 +53,11 @@ class Settings(BaseSettings):
     bedrock_backoff_base_ms: int = 200
     bedrock_backoff_max_ms: int = 2000
 
+    # Server-owned manual selection remains disabled until explicitly configured.
+    manual_model_catalog_json: str = "[]"
+    manual_model_allowlist_json: str = "[]"
+    manual_vertex_enabled: bool = False
+
     vertex_project_id: str | None = None
     vertex_location: str | None = None
     vertex_model: str | None = None

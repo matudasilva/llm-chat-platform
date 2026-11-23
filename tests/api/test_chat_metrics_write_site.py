@@ -863,6 +863,19 @@ async def test_an_unpriced_model_persists_null_not_zero(metrics_on, collector) -
     assert rows[0].estimated_cost_usd is None
 
 
+async def test_manual_model_alias_never_estimates_cost_from_alias(metrics_on, collector) -> None:
+    await chat_routes._write_rag_request_metrics(
+        object(), tenant_id=TENANT, generation_outcome="ok",
+        provider_result=_priced_result(
+            "bedrock", "nvidia.nemotron-nano-12b-v2", inp=1000, out=500
+        ),
+        memory_context=ChatMemoryContext(), total_latency_ms=1,
+        manual_selection=True,
+    )
+    rows = await _rows(metrics_on)
+    assert rows[0].estimated_cost_usd is None
+
+
 async def test_a_genuine_zero_cost_persists_as_zero_not_null(
     metrics_on, collector
 ) -> None:

@@ -3,10 +3,10 @@ from __future__ import annotations
 import logging
 import time
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from app.core.observability.routing_evidence import RoutingEvidence
-from app.core.domain.provider import ProviderPort
+from app.core.domain.provider import ProviderInput, ProviderPort, ProviderResult, ProviderStreamSession
 from app.core.domain.disabled_provider import DisabledProvider
 from app.core.domain.routing.heuristic_routing_policy import HeuristicRoutingPolicy
 from app.core.domain.routing.routing_policy import RoutingPolicy
@@ -16,6 +16,7 @@ from app.core.providers.bedrock_provider import BedrockProvider, BedrockProvider
 from app.core.providers.resilient_provider import ResilientProvider
 from app.core.providers.stub_provider import StubProvider
 from app.core.providers.openai_provider import OpenAIProvider, OpenAIProviderConfig
+from app.core.providers.vertex_provider import VertexProvider, VertexProviderConfig
 from app.core.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -29,6 +30,24 @@ class ResolvedProvider:
 
 
 ProviderResolver = Callable[[RoutingContext], ResolvedProvider]
+
+
+class _OutputCappedProvider:
+    """Apply an admitted output bound without taking ownership of a stream."""
+
+    def __init__(self, provider: ProviderPort, output_cap: int) -> None:
+        self.provider = provider
+        self.output_cap = output_cap
+
+    def _bounded(self, input: ProviderInput) -> ProviderInput:
+        limit = self.output_cap if input.max_tokens is None else min(input.max_tokens, self.output_cap)
+        return replace(input, max_tokens=limit)
+
+    async def generate(self, input: ProviderInput) -> ProviderResult:
+        return await self.provider.generate(self._bounded(input))
+
+    async def stream(self, input: ProviderInput) -> ProviderStreamSession:
+        return await self.provider.stream(self._bounded(input))
 
 
 def build_provider(_settings=None) -> ProviderPort:
@@ -95,6 +114,55 @@ def build_provider_resolver(_settings=None) -> ProviderResolver:
         evidence = RoutingEvidence(decision, fallback_known=True)
         provider = build_provider_for_decision(cfg, decision, evidence=evidence)
         return ResolvedProvider(provider=provider, decision=decision, evidence=evidence)
+
+    return _resolve
+
+
+def build_manual_provider_resolver(
+    cfg, *, provider: str, model: str, location: str, output_cap: int,
+    vertex_enabled: bool = False,
+) -> ProviderResolver:
+    """Compose one admitted catalog selection without cross-provider fallback.
+
+    The caller owns catalog eligibility. The selected provider receives a
+    request capped at output_cap; Vertex also enforces it in its adapter.
+    """
+    if provider not in {"bedrock", "vertex"}:
+        raise ValueError("Unsupported manual provider")
+    if not isinstance(model, str) or not model.strip() or not isinstance(location, str) or not location.strip():
+        raise ValueError("Manual model and location are required")
+    if type(output_cap) is not int or output_cap <= 0:
+        raise ValueError("Manual output cap must be a positive integer")
+    if provider == "vertex" and vertex_enabled is not True:
+        raise ValueError("Manual Vertex selection is disabled")
+
+    decision = RoutingDecision(
+        provider=provider, model=model, model_tier="balanced",
+        rationale="manual_selection", policy_name="manual", policy_version="v1",
+    )
+
+    def _resolve(context: RoutingContext) -> ResolvedProvider:
+        if provider == "vertex":
+            selected = VertexProvider(VertexProviderConfig(
+                project_id=cfg.vertex_project_id, location=location, model=model,
+                max_output_tokens=output_cap, timeout_s=cfg.provider_timeout_s,
+                prompt_version=cfg.vertex_prompt_version, max_attempts=cfg.vertex_max_attempts,
+                backoff_base_ms=cfg.vertex_backoff_base_ms, backoff_max_ms=cfg.vertex_backoff_max_ms,
+            ))
+        else:
+            selected = BedrockProvider(BedrockProviderConfig(
+                region=location, model=model, prompt_version=cfg.bedrock_prompt_version,
+                timeout_s=cfg.provider_timeout_s, max_attempts=cfg.bedrock_max_attempts,
+                backoff_base_ms=cfg.bedrock_backoff_base_ms, backoff_max_ms=cfg.bedrock_backoff_max_ms,
+                aws_access_key_id=cfg.aws_access_key_id, aws_secret_access_key=cfg.aws_secret_access_key,
+                aws_session_token=cfg.aws_session_token,
+            ))
+        try:
+            _log_routing_decision(context=context, decision=decision)
+        except Exception:
+            pass
+        return ResolvedProvider(provider=_OutputCappedProvider(selected, output_cap), decision=decision,
+                                evidence=RoutingEvidence(decision, fallback_known=True))
 
     return _resolve
 

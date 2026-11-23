@@ -23,7 +23,7 @@ def _clock() -> float | None:
 _IDENTIFIER = re.compile(r"[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}\Z")
 _SECRET_MARKERS = re.compile(r"(?i)(?:secret|password|credential|api[-_]?key|bearer|token|(?:^|[/:-])sk[-_]|AKIA[0-9A-Z]{12})")
 _LONG_OPAQUE = re.compile(r"[A-Za-z0-9]{40,}")
-_REASONS = frozenset({"static_default", "heuristic_stream_safe", "heuristic_primary_unavailable", "heuristic_message_length_cheap", "heuristic_estimated_tokens_smart", "heuristic_default", "deterministic_default_eligible", "deterministic_capacity_alternative"})
+_REASONS = frozenset({"static_default", "heuristic_stream_safe", "heuristic_primary_unavailable", "heuristic_message_length_cheap", "heuristic_estimated_tokens_smart", "heuristic_default", "deterministic_default_eligible", "deterministic_capacity_alternative", "manual_selection"})
 _FAILURE_KINDS = frozenset({"timeout", "network", "auth", "rate_limit", "bad_request", "upstream", "unknown"})
 
 
@@ -93,7 +93,11 @@ class RoutingEvidence:
                     configured_model = _identifier(getattr(decision, model_attr, None))
                     if configured_provider is not None and configured_model is not None:
                         trusted_pairs.add((configured_provider, configured_model))
-            if (provider, model) not in trusted_pairs:
+            # Catalog membership does not certify an immutable version, and no
+            # server-controlled mapping of reported versions is available yet.
+            # Even provider-sourced metadata cannot establish manual identity alone.
+            manual = getattr(decision, "policy_name", None) == "manual"
+            if manual or (provider, model) not in trusted_pairs:
                 provider = model = None
             it = _token_count(result.input_tokens) if success else None
             ot = _token_count(result.output_tokens) if success else None
