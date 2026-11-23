@@ -35,24 +35,27 @@ over feature velocity.
 - Provider abstraction (`ProviderPort`) with Stub, OpenAI and Bedrock adapters,
   plus `ResilientProvider` single-hop fallback.
 - Atomic persistence: `Conversation`, `Message`, `UsageEvent`.
-- Read endpoints separated from the write-path: conversations, usage events.
+- Read endpoints separated from the write-path: conversations, usage events,
+  web and Notion capabilities, and retrieval. Retrieval is implemented behind
+  a default-disabled feature flag.
+- Provider-neutral routing policies are implemented; heuristic routing and
+  shadow comparison are configurable, with static routing as the default.
 - External read/write capabilities behind explicit contracts: controlled web
   read, Notion read via MCP, Notion write with a safety contract.
 - Foundational multitenancy: `tenant_id` propagation via pure-ASGI middleware,
   service-layer scoping, tenant-namespaced cache.
-- Best-effort Redis response cache and structured JSON logging.
+- Best-effort Redis response cache, structured JSON logging, and OpenTelemetry
+  tracing behind a default-disabled flag.
 - Explicit Alembic migrations (never auto-run at startup).
 - Container-image promotion path to a PaaS runtime, with a staging environment.
-- Planned: retrieval (RAG) as a separate read capability, routing policies,
-  and an AI Green extension for energy/CO2e accounting.
+- Planned: an AI Green extension for energy/CO2e accounting.
 
 **Excluded:**
 - Authentication and authorization as a product feature (currently declared
   no-auth; JWT signature verification is documented debt).
 - The frontend implementation (separate repository, separate release cycle).
 - Infrastructure-as-code and automated deploy workflows (deployment is manual).
-- Advanced telemetry backends (OpenTelemetry, MLflow, Prometheus) until the
-  phases that require them.
+- MLflow and Prometheus telemetry backends.
 - Any provider-specific behavior in routes or domain services.
 
 ## Related

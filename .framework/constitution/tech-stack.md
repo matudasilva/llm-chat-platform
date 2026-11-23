@@ -28,6 +28,13 @@
   `1.44.0`), disabled by default (`otel_enabled=False`). The only module under
   `app/` importing `opentelemetry` is `app/core/observability/tracing.py`
   (ORQ-37 / ADR-012).
+- Provider-neutral routing policies (`static` by default, optional `heuristic`)
+  are active through the provider resolver. Shadow comparison is optional and
+  disabled by default; deterministic eligibility-based routing remains dormant
+  and cannot be selected through the runtime factory (ADR-015–019).
+- The retrieval pipeline and `POST /rag/retrieve` route are implemented but
+  disabled by default (`retrieval_pipeline_enabled=False`). Chat RAG
+  augmentation and the RAG corpus are separately gated.
 
 **Packaging and local ops**
 - Docker + Docker Compose (`docker-compose.yml` prod, `docker-compose.dev.yml` dev)
@@ -46,7 +53,8 @@
 ## Structure (real, not aspirational)
 
 ```
-app/api/routes/    chat, conversations, usage_events, web_read, notion_read, notion_write
+app/api/routes/    chat, chat_feedback, conversations, usage_events, web_read,
+                   notion_read, notion_write, retrieval
 app/core/          settings, logging, domain, providers/, utils
 app/services/      chat_response_cache, conversation_query_service, readiness,
                    routing_signals, trace, usage_events, usage_logger,
@@ -55,7 +63,7 @@ app/http/          request context, middleware/ (TenantMiddleware, CORS, guards)
 app/infra/         db/, schemas/, redis client
 app/models/        conversation, message, usage_event
 app/alembic/       deterministic migration chain
-docs/adr/          ADR-001 … ADR-005
+docs/adr/          ADR-001 … ADR-019
 ```
 
 ## Constraints

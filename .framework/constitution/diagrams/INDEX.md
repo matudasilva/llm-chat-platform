@@ -6,12 +6,12 @@ existing diagram.
 
 | tipo | alcance | archivo | generado/manual | última actualización | refresh_pending | refresh_baseline |
 |---|---|---|---|---|---|---|
-| context | producto | `context.svg` | generado | 2026-09-08 | sí (signal) | `sha256:b7860c8b78c250020b27719dce1057d8c39c2408274451284112b6b6571b966c` |
-| architecture | framework | `architecture.svg` | generado | 2026-08-07 | sí (deferred) | `sha256:6096ce9ea9c68868dd5216f05b946195f01a2d2db874d05e7612d69274ddf957` |
-| structural | producto | `structural.svg` | manual | 2026-08-07 | sí (deferred) | `sha256:6096ce9ea9c68868dd5216f05b946195f01a2d2db874d05e7612d69274ddf957` |
-| deployment | producto | `deployment.svg` | manual | 2026-09-08 | sí (signal) | `sha256:b7860c8b78c250020b27719dce1057d8c39c2408274451284112b6b6571b966c` |
-| behavior | producto | `behavior.svg` | manual | 2026-08-07 | sí (deferred) | `sha256:6096ce9ea9c68868dd5216f05b946195f01a2d2db874d05e7612d69274ddf957` |
-| erd | producto | `erd.svg` | manual | 2026-08-07 | sí (deferred) | `sha256:6096ce9ea9c68868dd5216f05b946195f01a2d2db874d05e7612d69274ddf957` |
+| context | producto | `context.svg` | generado | 2026-11-23 | no | `sha256:8e8e52510578c13175b0fdd7aad545d4e5c91e46cd6f557f8e6f181b7bd9e7bc` |
+| architecture | framework | `architecture.svg` | generado | 2026-11-23 | no | `sha256:8e8e52510578c13175b0fdd7aad545d4e5c91e46cd6f557f8e6f181b7bd9e7bc` |
+| structural | producto | `structural.svg` | manual | 2026-11-23 | no | `sha256:8e8e52510578c13175b0fdd7aad545d4e5c91e46cd6f557f8e6f181b7bd9e7bc` |
+| deployment | producto | `deployment.svg` | manual | 2026-11-23 | no | `sha256:8e8e52510578c13175b0fdd7aad545d4e5c91e46cd6f557f8e6f181b7bd9e7bc` |
+| behavior | producto | `behavior.svg` | manual | 2026-11-23 | no | `sha256:8e8e52510578c13175b0fdd7aad545d4e5c91e46cd6f557f8e6f181b7bd9e7bc` |
+| erd | producto | `erd.svg` | manual | 2026-11-23 | no | `sha256:8e8e52510578c13175b0fdd7aad545d4e5c91e46cd6f557f8e6f181b7bd9e7bc` |
 
 ## ORQ-42 validation signal (2026-11-18)
 

@@ -627,7 +627,8 @@ invariant.
    evidence-backed capabilities. Its completion permits routing work to proceed.
 3. **ORQ-42 — Deterministic LLM Routing and Vertex Chat Configuration**
    (reserved on 2026-11-14 at `46a1b45`; scope revised on 2026-11-16;
-   In Progress / Implement on 2026-11-18 after a blocked validation identified
+   Closed Locally / Validate on 2026-11-19, merged to main in PR #16 at
+   `aef1802`, after a blocked validation identified
    missing candidate eligibility (AC12) and capacity-boundary/unreachable-trigger
    tests (AC15). Their isolated remediation uses caller-trusted synthetic
    capability records and test-only capacity units; real candidate eligibility
@@ -671,9 +672,9 @@ invariant.
    not yet decided. On 2026-11-18 AC17 was amended to the tested bounded cache
    identity and admission guarantees, preserving the prior broader criterion and
    partial review as historical evidence. The amendment does not certify account
-   identity, live health or actual fallback provenance. Paid comparison, model choice,
-   production activation, deployment, commits and closure remain
-   unauthorized. T9 design on 2026-11-17 retains KEEP_STATIC pending
+   identity, live health or actual fallback provenance. Model selection for
+   routing, comparative measurement and production activation remain outside
+   the closure. T9 design on 2026-11-17 retains KEEP_STATIC pending
    certified input/output capacity and bounded quality evidence, and specifies
    independent Vertex ADC/REST configuration, conservative cache bypass and
    neutral stream-cleanup ownership. A fresh Terra review approved the corrected
@@ -681,8 +682,15 @@ invariant.
    bounded T10-T11 grant before its checkpoint. T10-T11 completed as isolated
    preparation on 2026-11-17: 133 joint hermetic tests passed and a fresh
    implementation review approved only the disabled-runtime subdelivery.
-   Vertex remains ineligible for `/chat`; no live capability or quality claim
-   follows. Numbered ORQ-22 in the
+   Vertex remains ineligible for `/chat`. A separately authorized post-closure
+   canary on 2026-11-23 exercised direct Vertex generation and streaming once
+   each with synthetic text: both returned successfully, with two incremental
+   stream chunks. Output token accounting and billed cost remain unconfirmed;
+   this limited observation does not establish production readiness or quality.
+   The next unnumbered work candidate is optional static Vertex chat integration,
+   with tenant, transaction, cache, telemetry and SSE/fallback validation. Keep
+   Bedrock as the local test provider and retain KEEP_STATIC until separate routing
+   evidence exists. RAG improvements remain separate technical debt. Numbered ORQ-22 in the
    original plan, then ORQ-28
    before the 2026-08-07 split, then ORQ-32 before the 2026-08-20 replan, then
    ORQ-33 before the 2026-08-25 replan's first pass, then ORQ-34 after the
