@@ -1,4 +1,5 @@
 """Hermetic HTTP coverage of the installed chat route and manual resolver."""
+import asyncio
 import json
 
 import httpx
@@ -139,6 +140,67 @@ async def test_two_messages_in_one_conversation_can_select_different_models(monk
     assert first.status_code == second.status_code == 200
     assert selections == ["model-a", "model-b"]
     assert len(session.messages) == 4
+    assert cache.reads == cache.writes == 0
+
+
+@pytest.mark.asyncio
+async def test_concurrent_requests_keep_their_own_tenant_and_model_snapshot(monkeypatch):
+    cfg = settings.model_copy(deep=True)
+    cfg.chat_rag_augmentation_enabled = False
+    cfg.conversation_history_enabled = False
+    cfg.rag_request_metrics_enabled = False
+    cfg.manual_model_allowlist_json = json.dumps([
+        ["bedrock", "model-a", "us-east-1"], ["bedrock", "model-b", "us-east-1"]
+    ])
+    cfg.manual_model_catalog_json = json.dumps([
+        {"id": name, "enabled": True, "display_name": name, "description": "",
+         "provider": "bedrock", "model": model, "location": "us-east-1", "max_output_tokens": cap}
+        for name, model, cap in [("first", "model-a", 37), ("second", "model-b", 51)]
+    ])
+    initial = build_chat_generation(cfg)
+    monkeypatch.setattr(app.state, "chat_generation", initial, raising=False)
+    cache = FakeCache()
+    monkeypatch.setattr(route, "get_chat_response_cache", lambda: cache)
+    sessions = {}
+
+    async def override_db():
+        tenant = get_tenant_id()
+        sessions[tenant] = FakeAsyncSession()
+        yield sessions[tenant]
+
+    monkeypatch.setitem(app.dependency_overrides, get_db, override_db)
+    both_started, release = asyncio.Event(), asyncio.Event()
+    calls = []
+
+    class FakeBedrock:
+        def __init__(self, provider_cfg):
+            self.model = provider_cfg.model
+
+        async def generate(self, input):
+            calls.append((get_tenant_id(), self.model, input.max_tokens))
+            if len(calls) == 2:
+                both_started.set()
+            await release.wait()
+            assert get_tenant_id() in {"tenant-a", "tenant-b"}
+            return ProviderResult(content=self.model, provider="bedrock", model_version=self.model, prompt_version="v1")
+
+    monkeypatch.setattr(factory, "BedrockProvider", FakeBedrock)
+    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as client:
+        requests = [asyncio.create_task(client.post("/chat", headers={"X-Tenant-ID": tenant},
+                    json={"message": tenant, "model_id": model_id}))
+                    for tenant, model_id in [("tenant-a", "first"), ("tenant-b", "second")]]
+        try:
+            await asyncio.wait_for(both_started.wait(), timeout=2)
+            app.state.chat_generation = generation("replacement", 99)
+        finally:
+            release.set()
+        first, second = await asyncio.gather(*requests)
+    assert first.status_code == second.status_code == 200
+    assert first.json()["assistant_content"] == "model-a"
+    assert second.json()["assistant_content"] == "model-b"
+    assert sorted(calls) == [("tenant-a", "model-a", 37), ("tenant-b", "model-b", 51)]
+    assert all(len(session.messages) == 2 for session in sessions.values())
+    assert initial.settings.manual_model_catalog_json == cfg.manual_model_catalog_json
     assert cache.reads == cache.writes == 0
 
 
@@ -340,6 +402,75 @@ def vertex_failure_generation():
         "provider": "vertex", "model": "gemini-test", "location": "us-central1", "max_output_tokens": 47,
     }])
     return build_chat_generation(cfg)
+
+
+@pytest.mark.asyncio
+async def test_vertex_route_emits_each_chunk_before_requesting_the_next(monkeypatch):
+    from app.core.providers.vertex_provider import VertexProvider
+
+    monkeypatch.setattr(app.state, "chat_generation", vertex_failure_generation(), raising=False)
+    session, cache = FakeAsyncSession(), FakeCache()
+    monkeypatch.setattr(route, "get_chat_response_cache", lambda: cache)
+
+    async def override_db():
+        yield session
+
+    monkeypatch.setitem(app.dependency_overrides, get_db, override_db)
+    first_delivered, closed = asyncio.Event(), asyncio.Event()
+    messages = []
+
+    class ProgressiveStream(httpx.AsyncByteStream):
+        async def __aiter__(self):
+            for text in ("first", " second"):
+                if text == " second":
+                    await asyncio.wait_for(first_delivered.wait(), timeout=2)
+                chunk = {"candidates": [{"content": {"parts": [{"text": text}]}}]}
+                yield ("data: " + json.dumps(chunk) + "\n\n").encode()
+            final = {"candidates": [{"finishReason": "STOP"}],
+                     "usageMetadata": {"promptTokenCount": 2, "candidatesTokenCount": 2, "totalTokenCount": 4}}
+            yield ("data: " + json.dumps(final) + "\n\n").encode()
+
+        async def aclose(self):
+            closed.set()
+
+    def respond(request):
+        return httpx.Response(200, headers={"content-type": "text/event-stream"}, stream=ProgressiveStream())
+
+    async def token():
+        return "fake-token"
+
+    raw = json.dumps({"message": "hello", "model_id": "selected", "stream": True}).encode()
+    received = False
+
+    async def receive():
+        nonlocal received
+        if not received:
+            received = True
+            return {"type": "http.request", "body": raw, "more_body": False}
+        await asyncio.Event().wait()
+
+    async def send(message):
+        messages.append(message)
+        if message["type"] == "http.response.body" and b"first" in message.get("body", b""):
+            first_delivered.set()
+
+    scope = {"type": "http", "asgi": {"version": "3.0", "spec_version": "2.3"},
+             "http_version": "1.1", "method": "POST", "scheme": "http", "path": "/chat",
+             "raw_path": b"/chat", "query_string": b"", "root_path": "",
+             "headers": [(b"host", b"test"), (b"content-type", b"application/json"),
+                         (b"content-length", str(len(raw)).encode())],
+             "client": ("test", 1234), "server": ("test", 80)}
+    async with httpx.AsyncClient(transport=httpx.MockTransport(respond)) as vertex_client:
+        monkeypatch.setattr(factory, "VertexProvider", lambda cfg: VertexProvider(cfg, http_client=vertex_client, access_token_provider=token))
+        await asyncio.wait_for(app(scope, receive, send), timeout=3)
+    bodies = [message.get("body", b"") for message in messages if message["type"] == "http.response.body"]
+    token_bodies = [body for body in bodies if b"event: token" in body]
+    assert len(token_bodies) == 2
+    assert b"first" in token_bodies[0] and b"second" in token_bodies[1]
+    assert any(b"event: done" in body for body in bodies)
+    assert first_delivered.is_set() and closed.is_set()
+    assert [message.content for message in session.messages] == ["hello", "first second"]
+    assert cache.reads == cache.writes == 0
 
 
 @pytest.mark.asyncio
