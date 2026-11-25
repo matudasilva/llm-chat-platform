@@ -1,0 +1,30 @@
+{
+  "provider": "vertex",
+  "model": "gemini-3.5-flash-lite",
+  "location": "global",
+  "endpoint": "countTokens",
+  "fixture_protocol_sha256": "da2023036a50ad3d08b25ea2d15edfc17ebcb7f4a832cff9c5ad9f29d18bd6ab",
+  "input_cap": 4000,
+  "cases": {
+    "CHAT-EN-01": {
+      "request_body_sha256": "52381e879833771ef0a40ffa24511ec3f2104a50a498fdcf1fd38239aa29fc54",
+      "http_status": 200,
+      "input_tokens": 66
+    },
+    "CHAT-ES-01": {
+      "request_body_sha256": "9f2dd151f1e02bf68ad1e125807ead011b023cef07d6056b7293750e14d05780",
+      "http_status": 200,
+      "input_tokens": 67
+    },
+    "RAG-EN-01": {
+      "request_body_sha256": "8391b7c758ccd64b73ef2725562663c3576f5f030d8ca168026a763a8f0c6fdd",
+      "http_status": 200,
+      "input_tokens": 110
+    },
+    "RAG-ES-01": {
+      "request_body_sha256": "4c226783a22dda147ba6838bbb0222ea57cc8e01993902614621e88e3ad2b1a6",
+      "http_status": 200,
+      "input_tokens": 118
+    }
+  }
+}
