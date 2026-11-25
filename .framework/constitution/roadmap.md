@@ -8,29 +8,34 @@
 > recorded in an ADR. The authoritative live state lives in the Notion Master
 > Project Document; this file is the local AIT V3 planning surface.
 
-## Current next steps — 2026-11-23
+## Current next steps — 2026-11-25
 
-1. **Plan optional static Vertex chat integration** as an unnumbered candidate;
-   check the remote ORQ sequence before reservation. The direct post-ORQ-42
-   canary exercised one non-streaming and one streaming request, but Vertex is
-   still disabled in `/chat`. Review and integrate the existing adapter and
-   generation settings through the runtime guards; verify actual eligibility,
-   conservative cache handling, best-effort telemetry, tenant isolation, atomic
-   persistence, SSE and technical fallback end to end. Existing settings, cache
-   bypass and stream-ownership preparation do not prove live integration. Live
-   frontend checks require separately approved limits and budget.
-   Keep the established provider abstraction and `/chat` write path.
-2. **Assess routing only after static provider integration**, if warranted:
-   define an observable pre-generation condition and obtain bounded quality,
-   effective-cost and latency evidence on representative EN/ES chat and RAG
-   requests. Candidate models, comparison configuration and spend require
-   separate approval. KEEP_STATIC remains valid if no alternative is justified.
-3. **Maintain RAG production-path debt separately:** provenance and delivery,
-   failure/latency/cost evidence and independent review remain distinct from
-   Vertex integration and routing work.
-4. **Consider the ML routing placeholder only conditionally** after a measured
-   residual gap that simple routing cannot address. AI Green remains future
-   work. Placeholder numbers do not reserve ORQs.
+1. **Reconcile and validate ORQ-43's manual model-selection scope.** The
+   backend-managed catalog exposes the approved Bedrock and Vertex entries, and
+   the separate web client now has a thin manual selector. Local operator
+   verification confirmed the catalog and conversation history load from the
+   ORQ-43 backend. This is local evidence only; the web changes remain
+   uncommitted, and production activation is not authorized. Keep `/chat` as
+   the only write path and preserve backend validation, tenant isolation,
+   provider abstraction, atomic persistence, best-effort telemetry, SSE and
+   technical-fallback semantics.
+2. **Close AC8 and AC9b with the amended criteria.** The operator approved
+   per-candidate AC8 (retirement at least six months away, or a provider-documented
+   six-month legacy or notice period while Active) and AC9b (observed usage,
+   quotas, budget alerts, enforced caps and accepted risk, with no hard pre-call
+   ceiling claimed). Remaining work: fresh lifecycle and access checks for
+   Nemotron and Gemini, invoice reconciliation of the 2026-11-25 comparison,
+   and committing the T6 runner, tests and evidence. No further paid calls or
+   production activation without separate authorization.
+3. **Keep retrieval debt separate.** ORQ-41's technical limitations and the
+   bounded RAG production-path follow-up remain their own work; they are not
+   prerequisites to changing ORQ-43's model selector or reason to expand this
+   ORQ.
+4. **Defer learned routing and AI Green.** Consider the ML-routing placeholder
+   only after measured evidence shows a residual gap simple rules cannot
+   address. AI Green remains future work; no energy/CO2e measurement or
+   carbon-aware operation is part of ORQ-43. Placeholder numbers do not reserve
+   ORQs.
 
 The sequence below contains historical planning snapshots. It does not authorize
 implementation, paid calls or production activation.
