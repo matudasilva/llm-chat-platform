@@ -162,10 +162,17 @@ class _Accumulator:
         thoughts = _count(self.usage.get("thoughtsTokenCount"))
         # A missing thoughts counter does not prove there were no billable thoughts.
         # Prefer the provider's total; output is known only when thought usage is explicit.
-        output = output + thoughts if output is not None and thoughts is not None else None
+        total = _count(self.usage.get("totalTokenCount"))
+        if output is not None and thoughts is not None:
+            output = output + thoughts
+        elif inp is not None and total is not None and total >= inp:
+            # The provider total includes reasoning tokens: derive output as total minus prompt.
+            output = total - inp
+        else:
+            output = None
         return ProviderResult(content=content, provider="vertex", model_version=self.model,
                               prompt_version=self.cfg.prompt_version, input_tokens=inp,
-                              output_tokens=output, total_tokens=_count(self.usage.get("totalTokenCount")),
+                              output_tokens=output, total_tokens=total,
                               latency_ms=max(0, int((_monotonic() - self.started) * 1000)),
                               raw={"model_version_source": self.model_source})
 

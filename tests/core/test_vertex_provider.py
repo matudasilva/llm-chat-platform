@@ -78,6 +78,15 @@ async def test_missing_reasoning_and_total_remain_unknown():
 
 
 @pytest.mark.asyncio
+async def test_missing_thoughts_counter_derives_output_from_total_minus_prompt():
+    async def handler(req):
+        return httpx.Response(200, json={**candidate("x", "STOP"), "usageMetadata": {"promptTokenCount": 12, "totalTokenCount": 25}})
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
+        result = await VertexProvider(cfg(), http_client=client, access_token_provider=token).generate(request())
+    assert (result.input_tokens, result.output_tokens, result.total_tokens) == (12, 13, 25)
+
+
+@pytest.mark.asyncio
 async def test_reject_controls_interleaving_and_invalid_endpoint():
     p = VertexProvider(cfg(), access_token_provider=token)
     for inp in (request(temperature=0.5), request(max_tokens=0), request(ChatMessage("user", "x"), ChatMessage("system", "late"))):
