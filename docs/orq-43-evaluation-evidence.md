@@ -48,7 +48,31 @@ pre-call spend ceiling is claimed. Observed usage is recorded for every
 evaluation call, and the request output cap and message-size limit apply on the
 manual `/chat` path.
 
-Dated provider quota or throttle configuration and budget alerts for each
-candidate are deferred by operator decision. They remain open evidence for the
-spend-control criterion before any production enablement, as does reconciling
-the estimates above against the provider invoice.
+### Controls recorded on 2026-11-26
+
+| Control | Evidence | Limits |
+|---|---|---|
+| Bedrock quota, Nemotron Nano 3 30B on-demand, `us-east-1` | Service Quotas CLI output: 100 requests and 100,000,000 tokens per minute, not adjustable | Account quota, not a spend ceiling |
+| Bedrock budget | Monthly cost budget of USD 5, Bedrock filter, alerts at 80% and 100%, no automatic action | Covers all Bedrock use in the account; alert delivery untested |
+| Vertex quota, `gemini-3.5-flash-lite` | No fixed per-model request quota found; the model uses Standard PayGo with usage tiers | Usage tier not verified; no quota is not unlimited capacity |
+| Vertex budget | Monthly alerts-only budget of USD 5 for the project, alerts at 80% and 100%, spend cap disabled | Alert delivery untested |
+| Request limits on manual `/chat` | Deterministic tests: oversized body and over-long message with `model_id` are rejected before any session or provider is reached; the catalog output cap reaches the adapter in both stream modes | Hermetic tests only |
+
+### Invoice reconciliation, 2026-11-25
+
+The estimate above covers only the eight evaluation calls. Provider invoices
+also include fifteen manual-selection calls made through a local `/chat`
+instance and one short streaming probe per candidate. Reconstructing all three
+sources explains about 79% of the Nemotron cost and about 88% of the Gemini
+cost at the recorded rates. The unexplained remainder is roughly 21 input and
+213 output tokens for Nemotron and 12 input and 112 output tokens for Gemini.
+Possible causes include unreported reasoning tokens or unrecorded failed calls,
+but the available exports carry no token counts or request identifiers, so the
+cause is not established. Bedrock also shows spend on a different model, the
+application default, which is outside this comparison. Because workloads
+differ, the invoice does not support a cost ranking of the candidates. Further
+evidence would be provider token metrics for the same day.
+
+Quota and budget entries are operator-reported configuration, not an export in
+this repository. Production enablement of either candidate remains a separate
+operator decision.
